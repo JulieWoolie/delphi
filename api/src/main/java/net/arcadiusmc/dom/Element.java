@@ -156,8 +156,10 @@ public interface Element extends Node, EventTarget, ParentNode {
    *         this element.
    *
    * @see #removeChild(int)
+   *
+   * @throws NullPointerException if {@code node} is {@code null}
    */
-  boolean removeChild(Node node);
+  boolean removeChild(@NotNull Node node);
 
   /**
    * Removes a child element by its index.
