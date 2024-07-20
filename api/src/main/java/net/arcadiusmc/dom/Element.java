@@ -37,7 +37,7 @@ public interface Element extends Node, EventTarget, ParentNode {
    * Get a set of attribute keys that exist on this element.
    * @return Unmodifiable key set
    */
-  Set<String> getAttributeKeys();
+  Set<String> getAttributeNames();
 
   /**
    * Shorthand for getting the id attribute's value
