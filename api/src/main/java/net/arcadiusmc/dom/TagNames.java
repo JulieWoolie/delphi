@@ -33,7 +33,7 @@ public interface TagNames {
    * Used by {@link ItemElement} to display an item's name when creating
    * an item tooltip.
    */
-  String ITEM_TOOLTIP_NAME = ITEM_TOOLTIP + "-name";
+  String ITEM_TOOLTIP_NAME = "item-tooltip-name";
 
   /**
    * Item tooltip line
@@ -41,6 +41,6 @@ public interface TagNames {
    * Used by {@link ItemElement} to display each individual line of an item's
    * tooltip.
    */
-  String ITEM_TOOLTIP_LINE = ITEM_TOOLTIP + "-line";
+  String ITEM_TOOLTIP_LINE = "item-tooltip-line";
 
 }
