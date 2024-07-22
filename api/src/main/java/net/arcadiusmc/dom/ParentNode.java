@@ -24,7 +24,7 @@ public interface ParentNode {
    */
   @NotNull List<Element> getElementsByClassName(@NotNull String className);
 
-  @NotNull List<Element> querySelectorAll(@NotNull String query);
+  @NotNull List<Element> querySelectorAll(@NotNull String query) throws ParserException;
 
-  @Nullable Element querySelector(@NotNull String query);
+  @Nullable Element querySelector(@NotNull String query) throws ParserException;
 }
