@@ -1,11 +1,15 @@
 package net.arcadiusmc.dom;
 
+import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
-import net.arcadiusmc.dom.event.AttributeMutateEvent;
+import java.util.StringJoiner;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
-import net.arcadiusmc.dom.event.MutationEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +28,7 @@ public interface Element extends Node, EventTarget, ParentNode {
    * If the specified {@code value} is already set as the value for this attribute, nothing
    * will change.
    * <br>
-   * Otherwise, a {@link AttributeMutateEvent} will be called after the value is set.
+   * Otherwise, an {@link EventTypes#MODIFY_ATTR} event will be triggered after the value is set.
    *
    * @param key Attribute key
    * @param value Attribute value, or {@code null} to remove.
@@ -38,6 +42,12 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @return Unmodifiable key set
    */
   Set<String> getAttributeNames();
+
+  /**
+   * Gets a set of attribute entries that exist on this element.
+   * @return Unmodifiable entry set
+   */
+  Set<Entry<String, String>> getAttributeEntries();
 
   /**
    * Shorthand for getting the id attribute's value
@@ -60,6 +70,59 @@ public interface Element extends Node, EventTarget, ParentNode {
    */
   default void setId(@Nullable String elementId) {
     setAttribute(Attr.ID, elementId);
+  }
+
+  /**
+   * Gets the element's {@link Attr#CLASS} attribute value.
+   * @return Class name
+   */
+  default @Nullable String getClassName() {
+    return getAttribute(Attr.CLASS);
+  }
+
+  /**
+   * Sets the element's {@link Attr#CLASS} attribute value
+   * @param className Class name
+   */
+  default void setClassName(String className) {
+    setAttribute(Attr.CLASS, className);
+  }
+
+  /**
+   * Gets the element's class array list.
+   * @return An array list containing all the classes of this element.
+   */
+  default @NotNull List<String> getClassList() {
+    String str = getClassName();
+
+    if (Strings.isNullOrEmpty(str)) {
+      return new ArrayList<>();
+    }
+
+    String[] split = str.split("\s+");
+    List<String> stringList = new ArrayList<>();
+
+    Collections.addAll(stringList, split);
+
+    return stringList;
+  }
+
+  /**
+   * Sets the element's class list.
+   * @param classList Class list, or {@code null}, to remove classes.
+   */
+  default void setClassList(@Nullable Collection<String> classList) {
+    if (classList == null) {
+      setAttribute(Attr.CLASS, null);
+      return;
+    }
+
+    StringJoiner joiner = new StringJoiner(" ");
+    for (String s : classList) {
+      joiner.add(s);
+    }
+
+    setAttribute(Attr.CLASS, joiner.toString());
   }
 
   /**
@@ -94,19 +157,34 @@ public interface Element extends Node, EventTarget, ParentNode {
   void setTitleNode(@Nullable Node title);
 
   /**
-   * Appends a child node to this element.
+   * Adds a child node to the end of this element's child nodes.
    * <p>
    * If the specified {@code node} belongs to a different document, it will be adopted to the
    * current document. if the {@code node} already has a parent, it will be orphaned before
    * addition.
    * <p>
-   * Will result in a {@link MutationEvent} call, with type {@link EventTypes#APPEND_CHILD}.
+   * Will trigger an {@link EventTypes#APPEND_CHILD} event.
    *
    * @param node Node
    *
    * @throws NullPointerException if {@code node} is {@code null}
    */
   void appendChild(@NotNull Node node);
+
+  /**
+   * Adds a child node to start of this element's child nodes.
+   * <p>
+   * If the specified {@code node} belongs to a different document, it will be adopted to the
+   * current document. if the {@code node} already has a parent, it will be orphaned before
+   * addition.
+   * <p>
+   * Will trigger an {@link EventTypes#APPEND_CHILD} event.
+   *
+   * @param node Prepended node
+   *
+   * @throws NullPointerException if {@code node} is {@code null}
+   */
+  void prependChild(@NotNull Node node);
 
   /**
    * Inserts an element before the specified node
@@ -118,7 +196,7 @@ public interface Element extends Node, EventTarget, ParentNode {
    * If the specified {@code before} node does not belong to the children of this element,
    * then nothing happens.
    * <p>
-   * Will result in a {@link MutationEvent} call, with type {@link EventTypes#APPEND_CHILD}.
+   * Will trigger a {@link EventTypes#APPEND_CHILD} event.
    *
    * @param node Node to insert
    * @param before Node to insert before
@@ -135,7 +213,7 @@ public interface Element extends Node, EventTarget, ParentNode {
    * If the specified {@code after} node does not belong to the children of this element,
    * then nothing happens.
    * <p>
-   * Will result in a {@link MutationEvent} call, with type {@link EventTypes#APPEND_CHILD}.
+   * Will trigger a {@link EventTypes#APPEND_CHILD} event.
    *
    * @param node Node to insert
    * @param after Node to insert after
@@ -148,8 +226,8 @@ public interface Element extends Node, EventTarget, ParentNode {
    * If the specified {@code node} is not a child of this element, then {@code false} will be
    * returned.
    * <p>
-   * Will result in a {@link MutationEvent} call, with type {@link EventTypes#REMOVE_CHILD}.
-   * The removed node will be orphaned after removal.
+   * Will trigger a {@link EventTypes#REMOVE_CHILD} event. The removed node will be orphaned
+   * after removal.
    *
    * @param node Node to remove
    * @return {@code true}, if the node was removed, {@code false} if the node was not a child of
@@ -164,8 +242,8 @@ public interface Element extends Node, EventTarget, ParentNode {
   /**
    * Removes a child element by its index.
    * <p>
-   * Will result in a {@link MutationEvent} call, with type {@link EventTypes#REMOVE_CHILD}.
-   * The removed node will be orphaned after removal.
+   * Will trigger a {@link EventTypes#REMOVE_CHILD} event. The removed node will be orphaned
+   * after removal.
    *
    * @param childIndex Index of the child element to remove
    * @throws IndexOutOfBoundsException If the specified {@code childIndex} is invalid
@@ -197,6 +275,7 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @return Created element
    *
    * @throws NullPointerException if {@code tagName} is {@code null}
+   * @see #appendChild(Node)
    */
   default @NotNull Element appendElement(@NotNull String tagName) {
     Element el = getOwningDocument().createElement(tagName);
@@ -206,8 +285,11 @@ public interface Element extends Node, EventTarget, ParentNode {
 
   /**
    * Creates a text node and appends it to this element
+   *
    * @param text Text content
    * @return Created node
+   *
+   * @see #appendChild(Node)
    */
   default @NotNull TextNode appendText(@Nullable String text) {
     TextNode node = getOwningDocument().createText(text);
