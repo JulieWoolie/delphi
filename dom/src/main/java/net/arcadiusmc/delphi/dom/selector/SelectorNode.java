@@ -4,9 +4,8 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import net.arcadiusmc.delphi.dom.DelphiElement;
-import net.arcadiusmc.delphi.dom.DelphiNode;
 
-public class SelectorNode implements SelectorFunction {
+public class SelectorNode {
 
   final SelectorFunction[] functions;
 
