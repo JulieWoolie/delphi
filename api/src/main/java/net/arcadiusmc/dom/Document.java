@@ -1,8 +1,9 @@
 package net.arcadiusmc.dom;
 
 import java.util.Set;
+import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.dom.event.EventTarget;
-import net.arcadiusmc.dom.event.AttributeMutateEvent;
+import net.arcadiusmc.dom.event.EventTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,6 +13,12 @@ public interface Document extends EventTarget, ParentNode {
    * Amount of ticks an element remains 'active' for after being clicked
    */
   int ACTIVE_TICKS = 4;
+
+  /**
+   * Gets the document view.
+   * @return Document view, or {@code null}, if the document hasn't been shown to a player yet.
+   */
+  DocumentView getView();
 
   /**
    * Gets the value of the option
@@ -26,7 +33,7 @@ public interface Document extends EventTarget, ParentNode {
    * If the option value is {@code null} or empty, then this acts the same
    * as calling {@link #removeOption(String)}
    * <p>
-   * Will cause a {@link AttributeMutateEvent} call after the value has been changed.
+   * Will trigger an {@link EventTypes#MODIFY_OPTION} event after changing the value.
    *
    * @param optionKey Option key
    * @param value Option value
@@ -38,8 +45,8 @@ public interface Document extends EventTarget, ParentNode {
   /**
    * Removes an option's value.
    * <p>
-   * If the option already has no set value, this method does nothing. Otherwise it will cause
-   * a {@link AttributeMutateEvent} call after changing the value.
+   * If the option already has no set value, this method does nothing. Otherwise, it will trigger
+   * an {@link EventTypes#MODIFY_OPTION} event after changing the value.
    *
    * @param optionKey Option key
    *
