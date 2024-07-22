@@ -2,11 +2,11 @@ package net.arcadiusmc.dom.event;
 
 public interface AttributeMutateEvent extends Event {
 
-  String getOptionKey();
+  String getKey();
 
   String getPreviousValue();
 
   String getNewValue();
 
-  AttributeMutation getAction();
+  AttributeAction getAction();
 }

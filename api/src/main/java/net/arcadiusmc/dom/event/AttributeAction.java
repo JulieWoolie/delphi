@@ -1,7 +1,8 @@
 package net.arcadiusmc.dom.event;
 
-public enum AttributeMutation {
+public enum AttributeAction {
   ADD,
   REMOVE,
-  SET
+  SET,
+  ;
 }
