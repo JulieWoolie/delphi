@@ -122,6 +122,7 @@ public class Parser {
       case "click", "active" -> PseudoClass.ACTIVE;
       case "enabled" -> PseudoClass.ENABLED;
       case "disabled" -> PseudoClass.DISABLED;
+      case "root" -> PseudoClass.ROOT;
 
       default -> {
         errors.fatal(id.location(), "Invalid/unsupported pseudo class :%s", id.value());

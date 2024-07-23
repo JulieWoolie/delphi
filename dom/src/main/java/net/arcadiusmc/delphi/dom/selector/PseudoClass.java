@@ -4,5 +4,7 @@ public enum PseudoClass {
   ACTIVE,
   HOVER,
   DISABLED,
-  ENABLED;
+  ENABLED,
+  ROOT,
+  ;
 }
