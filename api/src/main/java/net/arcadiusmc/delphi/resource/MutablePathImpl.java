@@ -1,5 +1,7 @@
 package net.arcadiusmc.delphi.resource;
 
+import com.google.common.base.Strings;
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +21,7 @@ final class MutablePathImpl extends PathImpl implements MutablePagePath {
   public MutablePagePath setQuery(@NotNull String key, @Nullable String value) {
     PagePath.validateQuery(key);
 
-    if (value != null) {
+    if (!Strings.isNullOrEmpty(value)) {
       PagePath.validateQuery(value);
     } else {
       value = "";
@@ -32,6 +34,20 @@ final class MutablePathImpl extends PathImpl implements MutablePagePath {
   @Override
   public MutablePagePath addAllElements(@NotNull PagePath path) {
     elements.addAll(path.getElements());
+    return this;
+  }
+
+  @Override
+  public MutablePagePath setElements(PagePath path) {
+    elements.clear();
+    elements.addAll(path.getElements());
+    return this;
+  }
+
+  @Override
+  public MutablePagePath removeElement(int index) {
+    Objects.checkIndex(index, elements.size());
+    elements.remove(index);
     return this;
   }
 
@@ -50,6 +66,12 @@ final class MutablePathImpl extends PathImpl implements MutablePagePath {
     PagePath.validateFilename(element);
     elements.set(index, element);
 
+    return this;
+  }
+
+  @Override
+  public MutablePagePath clearElements() {
+    elements.clear();
     return this;
   }
 

@@ -67,6 +67,26 @@ public sealed interface MutablePagePath extends PagePath permits MutablePathImpl
   MutablePagePath addAllElements(@NotNull PagePath path);
 
   /**
+   * Sets the elements of this path
+   * @param path Path elements
+   * @return {@code this}
+   */
+  MutablePagePath setElements(PagePath path);
+
+  /**
+   * Removes a path element
+   * @param index Index of the element to remove
+   * @return {@code this}
+   */
+  MutablePagePath removeElement(int index);
+
+  /**
+   * Clears all of this path's file elements.
+   * @return {@code this}
+   */
+  MutablePagePath clearElements();
+
+  /**
    * Creates an immutable copy of this path.
    * @return Immutable copy
    */
