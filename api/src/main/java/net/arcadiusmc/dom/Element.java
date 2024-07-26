@@ -10,10 +10,30 @@ import java.util.Set;
 import java.util.StringJoiner;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.style.StyleProperties;
+import net.arcadiusmc.dom.style.StylePropertiesReadonly;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface Element extends Node, EventTarget, ParentNode {
+
+  /**
+   * Gets the modifiable inline style properties.
+   * <p>
+   * Any changes made to the returned properties will be reflected the {@link Attr#STYLE}
+   * attribute, and any changes to the {@link Attr#STYLE} attribute will be reflected in
+   * the returned properties.
+   *
+   * @return Inline style
+   */
+  StyleProperties getInlineStyle();
+
+  /**
+   * Gets this element's current style
+   * @return Unmodifiable style properties
+   */
+  StylePropertiesReadonly getCurrentStyle();
 
   /**
    * Gets the value of an attribute.
@@ -163,7 +183,9 @@ public interface Element extends Node, EventTarget, ParentNode {
    * current document. if the {@code node} already has a parent, it will be orphaned before
    * addition.
    * <p>
-   * Will trigger an {@link EventTypes#APPEND_CHILD} event.
+   * Will trigger an {@link EventTypes#APPEND_CHILD} event. Can additionally trigger a
+   * {@link EventTypes#REMOVE_CHILD} event on its previous parent, if it has one.
+   *
    *
    * @param node Node
    *
@@ -178,7 +200,8 @@ public interface Element extends Node, EventTarget, ParentNode {
    * current document. if the {@code node} already has a parent, it will be orphaned before
    * addition.
    * <p>
-   * Will trigger an {@link EventTypes#APPEND_CHILD} event.
+   * Will trigger an {@link EventTypes#APPEND_CHILD} event. Can additionally trigger a
+   * {@link EventTypes#REMOVE_CHILD} event on its previous parent, if it has one.
    *
    * @param node Prepended node
    *
@@ -196,7 +219,8 @@ public interface Element extends Node, EventTarget, ParentNode {
    * If the specified {@code before} node does not belong to the children of this element,
    * then nothing happens.
    * <p>
-   * Will trigger a {@link EventTypes#APPEND_CHILD} event.
+   * Will trigger an {@link EventTypes#APPEND_CHILD} event. Can additionally trigger a
+   * {@link EventTypes#REMOVE_CHILD} event on its previous parent, if it has one.
    *
    * @param node Node to insert
    * @param before Node to insert before
@@ -213,7 +237,8 @@ public interface Element extends Node, EventTarget, ParentNode {
    * If the specified {@code after} node does not belong to the children of this element,
    * then nothing happens.
    * <p>
-   * Will trigger a {@link EventTypes#APPEND_CHILD} event.
+   * Will trigger an {@link EventTypes#APPEND_CHILD} event. Can additionally trigger a
+   * {@link EventTypes#REMOVE_CHILD} event on its previous parent, if it has one.
    *
    * @param node Node to insert
    * @param after Node to insert after
@@ -255,6 +280,49 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @return Child node list
    */
   List<Node> getChildren();
+
+  /**
+   * Tests if this element has children.
+   * @return {@code true}, if the element has children, {@code false} otherwise
+   */
+  boolean hasChildren();
+
+  /**
+   * Tests if the specified {@code node} is a direct child of this element
+   *
+   * @param node Node to test
+   *
+   * @return {@code true}, if {@code node} is a direct child of this element,
+   *         {@code false} otherwise.
+   */
+  @Contract("null -> false")
+  boolean hasChild(@Nullable Node node);
+
+  /**
+   * Gets the index of a node that is the direct child of this element.
+   *
+   * @param node Direct child node
+   *
+   * @return The node's index, or {@code -1}, if the node is not a direct child of this element
+   */
+  int indexOf(@Nullable Node node);
+
+  /**
+   * Gets the amount of children the element has
+   * @return Child count
+   */
+  int getChildCount();
+
+  /**
+   * Gets the nth child of this element.
+   *
+   * @param index Child index from 0 (inclusive) to {@link #getChildCount()} (exclusive)
+   * @return Child node.
+   *
+   * @throws IndexOutOfBoundsException If {@code index} is less than 0 or greater/equal to
+   *                                   {@link #getChildCount()}.
+   */
+  Node getChild(int index) throws IndexOutOfBoundsException;
 
   /**
    * Gets the first child of this element.

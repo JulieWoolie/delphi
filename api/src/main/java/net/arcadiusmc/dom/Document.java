@@ -1,9 +1,11 @@
 package net.arcadiusmc.dom;
 
+import java.util.List;
 import java.util.Set;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.style.Stylesheet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -136,4 +138,19 @@ public interface Document extends EventTarget, ParentNode {
    * Forces the whole document tree to recalculate alignment and layout
    */
   void realign();
+
+  /**
+   * Adds a stylesheet to this document.
+   *
+   * @param stylesheet Style sheet
+   *
+   * @throws NullPointerException if {@code stylesheet} is {@code null}
+   */
+  void addStylesheet(@NotNull Stylesheet stylesheet);
+
+  /**
+   * Gets an unmodifiable list of stylesheets this document has.
+   * @return Unmodifiable stylesheet list.
+   */
+  @NotNull List<Stylesheet> getStylesheets();
 }
