@@ -9,7 +9,7 @@ public sealed interface ResourceModule permits IoModule, ApiModule {
    * Gets a collection of files/documents contained in this module.
    * <p>
    * The resulting file paths are used mainly for suggestions in the
-   * {@code /delphi open <path>} command.
+   * {@code /delphi open <player> <path>} command.
    * <p>
    * Assuming we have the following files in the module: <pre><code>
    * index.xml
@@ -35,6 +35,10 @@ public sealed interface ResourceModule permits IoModule, ApiModule {
    *  <tr>
    *    <td>{@code admin-tab/}</td>
    *    <td>{@code index.xml}, {@code head-item.json}, {@code confirm/dialogue.xml}, {@code confirm/style.scss}</td>
+   *  </tr>
+   *  <tr>
+   *    <td>{@code admin-tab/confirm/}</td>
+   *    <td>{@code dialogue.xml}, {@code style.scss}</td>
    *  </tr>
    *  <tr>
    *    <td>{@code spectator-tab/}</td>
