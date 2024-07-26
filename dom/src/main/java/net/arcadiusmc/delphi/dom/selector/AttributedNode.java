@@ -37,6 +37,21 @@ public class AttributedNode implements FilteringFunction {
     }
   }
 
+  @Override
+  public void appendDebug(StringBuilder builder) {
+    builder.append("    <attributed>");
+    for (AttributeTest attributeTest : attributeTests) {
+      builder.append("\n      <attribute");
+
+      builder.append(" attr-name=").append('"').append(attributeTest.attrName).append('"');
+      builder.append(" op=").append('"').append(attributeTest.op.name().toLowerCase()).append('"');
+      builder.append(" value=").append('"').append(attributeTest.value).append('"');
+
+      builder.append(" />");
+    }
+    builder.append("\n    </attributed>");
+  }
+
   public record AttributeTest(String attrName, Operation op, String value) {
 
     public void append(StringBuilder builder) {

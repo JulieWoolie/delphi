@@ -39,9 +39,10 @@ public record Token(int type, Location location, int length, @Nullable String va
   public static final int AT            = STAR + 1;
   public static final int COMMA         = AT + 1;
   public static final int PERCENT       = COMMA + 1;
-  public static final int SPACE         = PERCENT + 1;
+  public static final int EXCLAMATION   = PERCENT + 1;
+  public static final int WHITESPACE    = EXCLAMATION + 1;
 
-  static String typeToString(int ttype) {
+  public static String typeToString(int ttype) {
     return switch (ttype) {
       case EOF -> "end-of-input";
       case ID -> "identifier";
@@ -68,7 +69,8 @@ public record Token(int type, Location location, int length, @Nullable String va
       case AT -> "'@'";
       case COMMA -> "','";
       case PERCENT -> "'%'";
-      case SPACE -> "white-space";
+      case WHITESPACE -> "white-space";
+      case EXCLAMATION -> "'!'";
       default -> "unknown";
     };
   }

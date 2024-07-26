@@ -2,6 +2,8 @@ package net.arcadiusmc.delphi.dom;
 
 import java.util.List;
 import lombok.Getter;
+import net.arcadiusmc.delphi.dom.scss.ComputedStyle;
+import net.arcadiusmc.delphi.dom.scss.PropertySet;
 import net.arcadiusmc.dom.Node;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,8 +15,36 @@ public abstract class DelphiNode implements Node {
   int depth;
   DelphiElement parent;
 
+  private int flags = 0;
+
+  public final ComputedStyle style;
+  public final PropertySet styleSet;
+
   public DelphiNode(DelphiDocument document) {
     this.owningDocument = document;
+
+    this.style = new ComputedStyle();
+    this.styleSet = new PropertySet();
+  }
+
+  public boolean hasFlag(NodeFlag flag) {
+    return (flags & flag.mask) == flag.mask;
+  }
+
+  public void addFlag(NodeFlag flag) {
+    this.flags |= flag.mask;
+  }
+
+  public void removeFlag(NodeFlag flag) {
+    this.flags &= ~flag.mask;
+  }
+
+  public void setAdded(boolean added) {
+    if (added) {
+      addFlag(NodeFlag.ADDED);
+    } else {
+      removeFlag(NodeFlag.ADDED);
+    }
   }
 
   @Override

@@ -62,6 +62,14 @@ public class TokenStream {
     return new Location(lineno, col, cursor);
   }
 
+  int ahead() {
+    return ahead(1);
+  }
+
+  int ahead(int off) {
+    return charAt(cursor + off);
+  }
+
   void advance() {
     int nCursor = cursor + 1;
 
@@ -111,7 +119,7 @@ public class TokenStream {
       }
 
       if (currentChar == '/') {
-        int next = charAt(cursor + 1);
+        int next = ahead();
 
         if (next == '*') {
           skipBlockComment();
@@ -197,6 +205,21 @@ public class TokenStream {
     return n;
   }
 
+  public Token sortExpect(int tokenType) {
+    Token n = next();
+
+    if (n.type() != tokenType) {
+      errors.err(
+          n.location(),
+          "Expected %s, found %s",
+          Token.typeToString(tokenType),
+          n.info()
+      );
+    }
+
+    return n;
+  }
+
   Token readToken() {
     skipIrrelevant();
 
@@ -215,7 +238,6 @@ public class TokenStream {
       case ']' -> singleChar(Token.SQUARE_CLOSE);
       case '$' -> singleChar(Token.DOLLAR_SIGN);
       case ';' -> singleChar(Token.SEMICOLON);
-      case '.' -> singleChar(Token.DOT);
       case ',' -> singleChar(Token.COMMA);
       case '*' -> singleChar(Token.STAR);
       case '^' -> singleChar(Token.UP_ARROW);
@@ -225,13 +247,14 @@ public class TokenStream {
       case '@' -> singleChar(Token.AT);
       case '=' -> singleChar(Token.EQUALS);
       case '%' -> singleChar(Token.PERCENT);
+      case '!' -> singleChar(Token.EXCLAMATION);
 
       case ' ' -> {
         while (currentChar == ' ') {
           advance();
         }
 
-        yield token(Token.SPACE);
+        yield token(Token.WHITESPACE);
       }
 
       case '#' -> {
@@ -271,9 +294,13 @@ public class TokenStream {
       }
 
       default -> {
-        if (isNumberPrefix(currentChar)) {
-          String number = parseNumberValue();
-          yield token(Token.NUMBER, number);
+        if (isNumberStart()) {
+          yield parseNumberValue();
+        }
+
+        // Dot has to be checked after, it could be a number decimal
+        if (currentChar == '.') {
+          yield singleChar(Token.DOT);
         }
 
         if (isIdStart(currentChar)) {
@@ -295,8 +322,27 @@ public class TokenStream {
         || (ch >= 'a' && ch <= 'f');
   }
 
-  private boolean isNumberPrefix(int ch) {
-    return isNumber(ch);
+  private boolean isNumberStart() {
+    int ahead1 = charAt(cursor + 1);
+    int ahead2 = charAt(cursor + 2);
+
+    if (currentChar == '+' || currentChar == '-') {
+      if (isNumber(ahead1)) {
+        return true;
+      }
+
+      if (ahead1 != '.') {
+        return false;
+      }
+
+      return isNumber(ahead2);
+    }
+
+    if (currentChar == '.') {
+      return isNumber(ahead1);
+    }
+
+    return isNumber(currentChar);
   }
 
   private boolean isNumber(int ch) {
@@ -395,34 +441,27 @@ public class TokenStream {
     return builder.toString();
   }
 
-  private String readId() {
-    if (!isIdStart(currentChar)) {
-      errors.err(location(), "Invalid identifier");
-      return "";
+  private boolean isValidEscape() {
+    if (currentChar != '\\') {
+      return false;
     }
 
+    int ahead = ahead();
+    return ahead != LF && ahead != CR && ahead != EOF;
+  }
+
+  private String readId() {
     StringBuffer buf = new StringBuffer();
-    boolean escaped = false;
 
     while (true) {
       if (currentChar == EOF) {
         break;
       }
 
-      if (escaped) {
-        buf.appendCodePoint(currentChar);
+      if (isValidEscape()) {
+        // Skip the '\' character
         advance();
-        escaped = false;
-        continue;
-      }
-
-      if (currentChar == '\\') {
-        advance();
-        escaped = true;
-        continue;
-      }
-
-      if (!isIdPart(currentChar)) {
+      } else if (!isIdPart(currentChar)) {
         break;
       }
 
@@ -433,38 +472,54 @@ public class TokenStream {
     return buf.toString();
   }
 
-  private String parseNumberValue() {
-    StringBuffer result = new StringBuffer();
-    boolean decimalSet = false;
+  private Token parseNumberValue() {
+    StringBuffer repr = new StringBuffer();
 
-    while (true) {
-      if (currentChar == '.') {
-        if (decimalSet) {
-          errors.err(currentTokenStart, "Invalid number sequence");
-          return result.toString();
-        }
-
-        decimalSet = true;
-        result.append(".");
-        advance();
-
-        continue;
-      }
-
-      if (!isNumber(currentChar)) {
-        break;
-      }
-
-      result.appendCodePoint(currentChar);
+    if (currentChar == '-') {
+      repr.append('-');
+      advance();
+    } else if (currentChar == '+') {
       advance();
     }
 
-    if (result.charAt(result.length() - 1) == '.') {
-      errors.err(location(), "Invalid number, ending in '.': %s", result);
-      result.deleteCharAt(result.length() - 1);
+    while (isNumber(currentChar)) {
+      repr.appendCodePoint(currentChar);
+      advance();
     }
 
-    return result.toString();
+    if (currentChar == '.' && isNumber(charAt(cursor + 1))) {
+      repr.append('.');
+      advance();
+
+      while (isNumber(currentChar)) {
+        repr.appendCodePoint(currentChar);
+        advance();
+      }
+    }
+
+    if (currentChar == 'e' || currentChar == 'E') {
+      int ahead = charAt(cursor + 1);
+
+      if (ahead == '+' || ahead == '-') {
+        ahead = charAt(cursor + 2);
+      }
+
+      if (isNumber(ahead)) {
+        advance();
+
+        if (currentChar == '+' || currentChar == '-') {
+          repr.appendCodePoint(currentChar);
+          advance();
+        }
+
+        while (isNumber(currentChar)) {
+          repr.appendCodePoint(currentChar);
+          advance();
+        }
+      }
+    }
+
+    return token(Token.NUMBER, repr.toString());
   }
 
   private Token singleChar(int type) {

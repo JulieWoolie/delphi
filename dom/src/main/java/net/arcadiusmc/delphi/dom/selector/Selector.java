@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import net.arcadiusmc.delphi.dom.DelphiElement;
 import net.arcadiusmc.delphi.dom.DelphiNode;
+import net.arcadiusmc.delphi.parser.Parser;
+import net.arcadiusmc.delphi.parser.ParserErrors;
+import org.jetbrains.annotations.NotNull;
 
-public class Selector {
+public class Selector implements Comparable<Selector> {
 
   private final SelectorNode[] nodes;
   private final Spec spec;
+
+  private String toStringCached;
 
   public Selector(SelectorNode[] nodes) {
     this.nodes = nodes;
@@ -17,6 +22,18 @@ public class Selector {
     for (SelectorNode node : nodes) {
       node.appendSpec(spec);
     }
+  }
+
+  public static Selector parse(String query) {
+    StringBuffer buf = new StringBuffer(query);
+    Parser parser = new Parser(buf);
+    ParserErrors errors = parser.getErrors();
+
+    Selector selector = parser.selector();
+
+    errors.orThrow();
+
+    return selector;
   }
 
   public boolean test(DelphiElement el) {
@@ -48,26 +65,50 @@ public class Selector {
     }
 
     SelectorNode selectorNode = nodes[index];
+    List<DelphiElement> selected = selectorNode.select(el);
 
-    if (!selectorNode.test(el)) {
+    if (selected.isEmpty()) {
       return;
     }
 
-    if (index == (nodes.length - 1)) {
-      out.add(el);
-      return;
+    if (index < (nodes.length - 1)) {
+      for (DelphiElement delphiElement : selected) {
+        selectNodes(delphiElement, index + 1, out);
+      }
+    } else {
+      out.addAll(selected);
+    }
+  }
+
+  public String debugString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("<selector src=").append('"').append(this).append('"').append(">");
+
+    for (SelectorNode node : nodes) {
+      builder.append("\n  <node>");
+
+      for (SelectorFunction function : node.functions) {
+        builder.append("\n");
+        function.appendDebug(builder);
+      }
+
+      builder.append("\n  </node>");
     }
 
-    for (DelphiNode delphiNode : el.childList()) {
-      selectNodes(delphiNode, index + 1, out);
-    }
+    builder.append("\n</selector>");
+    return builder.toString();
   }
 
   @Override
   public String toString() {
+    if (toStringCached != null) {
+      return toStringCached;
+    }
+
     StringBuilder builder = new StringBuilder();
     append(builder);
-    return builder.toString();
+
+    return toStringCached = builder.toString();
   }
 
   public void append(StringBuilder builder) {
@@ -80,5 +121,10 @@ public class Selector {
 
       node.append(builder);
     }
+  }
+
+  @Override
+  public int compareTo(@NotNull Selector o) {
+    return spec.compareTo(o.spec);
   }
 }

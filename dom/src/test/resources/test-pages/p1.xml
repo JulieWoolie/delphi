@@ -1,0 +1,13 @@
+<page>
+  <header>
+    <option key="title" value="Hello, world!"/>
+    <screen width="3" height="2"/>
+  </header>
+  <body>
+    Hello, world!
+
+    <div class="cool-class">
+      some text
+    </div>
+  </body>
+</page>

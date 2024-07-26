@@ -9,9 +9,11 @@ public interface SelectorFunction {
 
   boolean test(DelphiElement element);
 
-  List<DelphiElement> selectNext(DelphiElement element);
+  List<DelphiElement> selectNext(List<DelphiElement> elements);
 
   void append(StringBuilder builder);
+
+  void appendDebug(StringBuilder builder);
 
   void appendSpec(Spec spec);
 }

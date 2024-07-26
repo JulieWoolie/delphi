@@ -1,9 +1,7 @@
 package net.arcadiusmc.delphi.dom.selector;
 
-import java.util.ArrayList;
 import java.util.List;
 import net.arcadiusmc.delphi.dom.DelphiElement;
-import net.arcadiusmc.delphi.dom.DelphiNode;
 
 final class MatchAll implements SelectorFunction {
 
@@ -13,16 +11,12 @@ final class MatchAll implements SelectorFunction {
   }
 
   @Override
-  public List<DelphiElement> selectNext(DelphiElement element) {
-    List<DelphiElement> elements = new ArrayList<>(element.childList().size());
+  public void appendDebug(StringBuilder builder) {
+    builder.append("    <match-all />");
+  }
 
-    for (DelphiNode delphiNode : element.childList()) {
-      if (!(delphiNode instanceof DelphiElement el)) {
-        continue;
-      }
-      elements.add(el);
-    }
-
+  @Override
+  public List<DelphiElement> selectNext(List<DelphiElement> elements) {
     return elements;
   }
 

@@ -6,7 +6,7 @@ import static net.arcadiusmc.delphi.parser.Token.DOT;
 import static net.arcadiusmc.delphi.parser.Token.EQUALS;
 import static net.arcadiusmc.delphi.parser.Token.HASHTAG;
 import static net.arcadiusmc.delphi.parser.Token.ID;
-import static net.arcadiusmc.delphi.parser.Token.SPACE;
+import static net.arcadiusmc.delphi.parser.Token.WHITESPACE;
 import static net.arcadiusmc.delphi.parser.Token.SQUARE_CLOSE;
 import static net.arcadiusmc.delphi.parser.Token.SQUARE_OPEN;
 import static net.arcadiusmc.delphi.parser.Token.SQUIGLY;
@@ -58,6 +58,10 @@ public class Parser {
     return stream.expect(tokenType);
   }
 
+  public Token softExpect(int tokenType) {
+    return stream.expect(tokenType);
+  }
+
   public Selector selector() {
     stream.pushMode(ParseMode.TOKENS);
     stream.whitespaceMatters(true);
@@ -91,8 +95,9 @@ public class Parser {
 
       functions.add(node);
 
-      if (peek().type() == SPACE) {
+      if (peek().type() == WHITESPACE) {
         pushFunctions(nodes, functions);
+        next();
       }
     }
 
@@ -111,6 +116,7 @@ public class Parser {
     SelectorFunction[] arr = functions.toArray(SelectorFunction[]::new);
     SelectorNode n = new SelectorNode(arr);
     nodes.add(n);
+    functions.clear();
   }
 
   private PseudoClassFunction pseudoClass() {
@@ -134,11 +140,11 @@ public class Parser {
   }
 
   private AttributedNode attributed() {
-    expect(SQUARE_OPEN);
-
     List<AttributeTest> tests = new ArrayList<>();
 
-    while (true) {
+    while (peek().type() == SQUARE_OPEN) {
+      next();
+
       Token attrNameT = expect(ID);
       String attrValue;
 
@@ -189,12 +195,6 @@ public class Parser {
 
       AttributeTest test = new AttributeTest(attrNameT.value(), op, attrValue);
       tests.add(test);
-
-      if (peek().type() != SQUARE_OPEN) {
-        break;
-      } else {
-        next();
-      }
     }
 
     return new AttributedNode(tests);

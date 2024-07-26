@@ -13,15 +13,17 @@ import java.util.function.Predicate;
 import lombok.Getter;
 import net.arcadiusmc.delphi.dom.event.EventImpl;
 import net.arcadiusmc.delphi.dom.event.EventListenerList;
+import net.arcadiusmc.delphi.dom.scss.InlineStyle;
+import net.arcadiusmc.delphi.dom.scss.PropertySet;
+import net.arcadiusmc.delphi.dom.scss.ReadonlyMap;
+import net.arcadiusmc.delphi.dom.scss.ScssParser;
 import net.arcadiusmc.delphi.dom.selector.Selector;
-import net.arcadiusmc.delphi.parser.Parser;
-import net.arcadiusmc.delphi.parser.ParserErrors;
-import net.arcadiusmc.delphi.parser.ParserErrors.Error;
 import net.arcadiusmc.delphi.parser.StringUtil;
 import net.arcadiusmc.dom.Attr;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.ParserException;
+import net.arcadiusmc.dom.Visitor;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventPhase;
@@ -38,10 +40,14 @@ public class DelphiElement extends DelphiNode implements Element {
 
   final EventListenerList listenerList;
 
+  public final ReadonlyMap styleApi;
+
+  @Getter
+  public final InlineStyle inlineStyle;
+  public boolean inlineUpdatesSuppressed = false;
+
   @Getter
   DelphiNode titleNode;
-
-  private int flags = 0;
 
   public DelphiElement(DelphiDocument document, String tagName) {
     super(document);
@@ -51,18 +57,23 @@ public class DelphiElement extends DelphiNode implements Element {
     this.listenerList.setIgnoreCancelled(true);
     this.listenerList.setIgnorePropagationStops(false);
     this.listenerList.setRealTarget(this);
+
+    this.styleApi = new ReadonlyMap(styleSet);
+    this.inlineStyle = new InlineStyle(new PropertySet(), this);
   }
 
-  public boolean hasFlag(NodeFlag flag) {
-    return (flags & flag.mask) == flag.mask;
+  @Override
+  public ReadonlyMap getCurrentStyle() {
+    return styleApi;
   }
 
-  public void addFlag(NodeFlag flag) {
-    this.flags |= flag.mask;
-  }
+  @Override
+  public void setAdded(boolean added) {
+    super.setAdded(added);
 
-  public void removeFlag(NodeFlag flag) {
-    this.flags &= ~flag.mask;
+    for (DelphiNode child : children) {
+      child.setAdded(added);
+    }
   }
 
   @Override
@@ -97,7 +108,28 @@ public class DelphiElement extends DelphiNode implements Element {
       attributes.put(key, value);
     }
 
+    if (key.equals(Attr.STYLE) && !inlineUpdatesSuppressed) {
+      updateInlineStyle(value);
+    }
+
     owningDocument.attributeChanged(this, key, previousValue, value);
+  }
+
+  void updateInlineStyle(String str) {
+    inlineStyle.getBacking().clear();
+
+    if (Strings.isNullOrEmpty(str)) {
+      return;
+    }
+
+    ScssParser parser = new ScssParser(new StringBuffer(str));
+    parser.getErrors().setListener(owningDocument.getErrorListener());
+
+    try {
+      parser.inlineRules(inlineStyle.getBacking());
+    } catch (ParserException exc) {
+      owningDocument.inlineStyleError(exc);
+    }
   }
 
   @Override
@@ -169,6 +201,10 @@ public class DelphiElement extends DelphiNode implements Element {
 
     int insertionIndex = idx + mod;
 
+    if (node.getParent() == this && insertionIndex > node.siblingIndex) {
+      insertionIndex--;
+    }
+
     if (node.getParent() != null) {
       node.getParent().removeChild(node);
     }
@@ -180,6 +216,10 @@ public class DelphiElement extends DelphiNode implements Element {
     node.parent = this;
     node.setDepth(depth + 1);
     node.siblingIndex = insertionIndex;
+
+    if (hasFlag(NodeFlag.ADDED)) {
+      node.setAdded(true);
+    }
 
     children.add(insertionIndex, node);
 
@@ -194,13 +234,12 @@ public class DelphiElement extends DelphiNode implements Element {
   @Override
   public boolean removeChild(@NotNull Node node) {
     Objects.requireNonNull(node, "Null node");
-    Element parent = node.getParent();
-
-    if (!Objects.equals(this, parent)) {
+    int idx = indexOf(node);
+    if (idx < 0) {
       return false;
     }
 
-    removeChild(node.getSiblingIndex());
+    removeChild(idx);
     return true;
   }
 
@@ -215,6 +254,7 @@ public class DelphiElement extends DelphiNode implements Element {
     node.parent = null;
     node.setDepth(0);
     node.siblingIndex = -1;
+    node.setAdded(false);
 
     children.remove(childIndex);
   }
@@ -226,6 +266,42 @@ public class DelphiElement extends DelphiNode implements Element {
   @Override
   public List<Node> getChildren() {
     return Collections.unmodifiableList(children);
+  }
+
+  @Override
+  public int getChildCount() {
+    return children.size();
+  }
+
+  @Override
+  public boolean hasChildren() {
+    return !children.isEmpty();
+  }
+
+  @Override
+  public int indexOf(Node node) {
+    if (node == null) {
+      return -1;
+    }
+
+    DelphiNode dnode = (DelphiNode) node;
+    if (Objects.equals(this, dnode.parent)) {
+      return dnode.siblingIndex;
+    }
+
+    return -1;
+  }
+
+  @Override
+  public boolean hasChild(@Nullable Node node) {
+    int index = indexOf(node);
+    return index >= 0;
+  }
+
+  @Override
+  public Node getChild(int index) throws IndexOutOfBoundsException {
+    Objects.checkIndex(index, children.size());
+    return children.get(index);
   }
 
   @Override
@@ -280,41 +356,16 @@ public class DelphiElement extends DelphiNode implements Element {
     return elementList;
   }
 
-  private Selector parseSelector(String query) {
-    StringBuffer buf = new StringBuffer(query);
-    Parser parser = new Parser(buf);
-    ParserErrors errors = parser.getErrors();
-
-    Selector selector = parser.selector();
-
-    if (errors.isErrorPresent()) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Error(s) during selector parsing");
-
-      for (Error error : errors.getErrors()) {
-        builder.append('\n')
-            .append('[')
-            .append(error.level())
-            .append("] ")
-            .append(error.message());
-      }
-
-      throw new ParserException(builder.toString());
-    }
-
-    return selector;
-  }
-
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
   public @NotNull List<Element> querySelectorAll(@NotNull String query) {
-    Selector selector = parseSelector(query);
+    Selector selector = Selector.parse(query);
     return (List) selector.selectAll(this);
   }
 
   @Override
   public @Nullable Element querySelector(@NotNull String query) {
-    Selector selector = parseSelector(query);
+    Selector selector = Selector.parse(query);
     return selector.selectOne(this);
   }
 
@@ -352,5 +403,34 @@ public class DelphiElement extends DelphiNode implements Element {
     }
 
     owningDocument.dispatchGlobalEvent(event);
+  }
+
+  @Override
+  public void enterVisitor(Visitor visitor) {
+    visitor.enterElement(this);
+  }
+
+  @Override
+  public void exitVisitor(Visitor visitor) {
+    visitor.exitElement(this);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("<")
+        .append(tagName);
+
+    attributes.forEach((s, s2) -> {
+      builder
+          .append(' ')
+          .append(s)
+          .append('=')
+          .append(s2);
+    });
+
+    builder.append("/>");
+
+    return builder.toString();
   }
 }

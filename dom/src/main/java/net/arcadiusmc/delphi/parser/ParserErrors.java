@@ -1,8 +1,10 @@
 package net.arcadiusmc.delphi.parser;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.dom.ParserException;
 
 public final class ParserErrors {
@@ -14,6 +16,9 @@ public final class ParserErrors {
 
   @Getter
   private boolean errorPresent = false;
+
+  @Getter @Setter
+  private ErrorListener listener;
 
   public ParserErrors(StringBuffer input) {
     this.input = input;
@@ -37,9 +42,18 @@ public final class ParserErrors {
 
   public void fatal(Location l, String format, Object... args) {
     String message = format(l, format, args);
-    addError(new Error(message, ErrorLevel.ERROR));
+    addError(new Error(message, ErrorLevel.FATAL));
+  }
 
-    throw new ParserException(message);
+  public void orThrow() throws ParserException {
+    if (!isErrorPresent()) {
+      return;
+    }
+
+    StringBuilder builder = new StringBuilder();
+    Error.append(builder, errors);
+
+    throw new ParserException(builder.toString());
   }
 
   private void addError(Error error) {
@@ -48,6 +62,14 @@ public final class ParserErrors {
     }
 
     errors.add(error);
+
+    if (listener != null) {
+      listener.onError(error);
+    }
+
+    if (error.level == ErrorLevel.FATAL) {
+      throw new ParserException(error.message);
+    }
   }
 
   public static String format(StringBuffer input, Location location, String message) {
@@ -100,11 +122,24 @@ public final class ParserErrors {
     return Math.max(0, r);
   }
 
-  public record Error(String message, ErrorLevel level) {}
+  public record Error(String message, ErrorLevel level) {
+
+    public void append(StringBuilder builder) {
+      builder.append('[').append(level.name()).append("] ").append(message);
+    }
+
+    public static void append(StringBuilder builder, Collection<Error> errors) {
+      for (Error error : errors) {
+        builder.append("\n");
+        error.append(builder);
+      }
+    }
+  }
 
   public enum ErrorLevel {
     WARN,
     ERROR,
+    FATAL,
     ;
   }
 }

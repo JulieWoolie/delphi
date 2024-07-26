@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import net.arcadiusmc.delphi.dom.DelphiElement;
+import net.arcadiusmc.delphi.dom.DelphiNode;
 
 public class SelectorNode {
 
@@ -27,17 +28,19 @@ public class SelectorNode {
   }
 
   public List<DelphiElement> select(DelphiElement el) {
-    List<DelphiElement> nodes = new ArrayList<>();
-    nodes.addAll(functions[0].selectNext(el));
+    List<DelphiElement> result = new ArrayList<>();
 
-    if (functions.length > 1) {
-      for (int i = 1; i < functions.length; i++) {
-        SelectorFunction func = functions[i];
-        nodes.removeIf(delphiNode -> !func.test(delphiNode));
+    for (DelphiNode delphiNode : el.childList()) {
+      if (delphiNode instanceof DelphiElement e) {
+        result.add(e);
       }
     }
 
-    return nodes;
+    for (SelectorFunction function : functions) {
+      result = function.selectNext(result);
+    }
+
+    return result;
   }
 
   public void append(StringBuilder builder) {
@@ -50,5 +53,12 @@ public class SelectorNode {
     for (SelectorFunction function : functions) {
       function.appendSpec(spec);
     }
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    append(builder);
+    return builder.toString();
   }
 }

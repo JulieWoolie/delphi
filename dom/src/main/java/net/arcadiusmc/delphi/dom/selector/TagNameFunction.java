@@ -16,6 +16,11 @@ public record TagNameFunction(String tagName) implements FilteringFunction {
   }
 
   @Override
+  public void appendDebug(StringBuilder builder) {
+    builder.append("    <tag-name value=").append('"').append(tagName).append('"').append(" />");
+  }
+
+  @Override
   public void appendSpec(Spec spec) {
     spec.typeColumn++;
   }

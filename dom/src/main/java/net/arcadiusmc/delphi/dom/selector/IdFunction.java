@@ -17,6 +17,11 @@ public record IdFunction(String elementId) implements FilteringFunction {
   }
 
   @Override
+  public void appendDebug(StringBuilder builder) {
+    builder.append("    <id value=").append('"').append(elementId).append('"').append(" />");
+  }
+
+  @Override
   public void appendSpec(Spec spec) {
     spec.idColumn++;
   }

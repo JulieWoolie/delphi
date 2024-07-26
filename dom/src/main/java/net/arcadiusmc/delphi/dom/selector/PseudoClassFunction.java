@@ -1,8 +1,6 @@
 package net.arcadiusmc.delphi.dom.selector;
 
 import com.google.common.base.Strings;
-import java.util.List;
-import net.arcadiusmc.delphi.StringUtil;
 import net.arcadiusmc.delphi.dom.DelphiElement;
 import net.arcadiusmc.delphi.dom.NodeFlag;
 import net.arcadiusmc.dom.Attr;
@@ -51,6 +49,15 @@ public record PseudoClassFunction(PseudoClass pseudo) implements FilteringFuncti
       case HOVER -> builder.append("hover");
       case ROOT -> builder.append("root");
     }
+  }
+
+  @Override
+  public void appendDebug(StringBuilder builder) {
+    builder.append("    <pseudo-class class=").append('"');
+
+    append(builder);
+
+    builder.append('"').append(" />");
   }
 
   @Override

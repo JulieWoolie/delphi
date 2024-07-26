@@ -18,6 +18,11 @@ public record ClassNameFunction(String className) implements FilteringFunction {
   }
 
   @Override
+  public void appendDebug(StringBuilder builder) {
+    builder.append("    <classname value=").append('"').append(className).append('"').append(" />");
+  }
+
+  @Override
   public void appendSpec(Spec spec) {
     spec.classColumn++;
   }
