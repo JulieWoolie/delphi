@@ -5,13 +5,51 @@ import net.arcadiusmc.dom.Document;
 public interface EventTypes {
   /**
    * Called when a cursor enter an element's bounds.
-   * @see MouseEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MouseEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
-  String MOUSE_ENTER = "mouse-over";
+  String MOUSE_ENTER = "mouse-enter";
 
   /**
    * Called when a cursor leaves an element's bounds.
-   * @see MouseEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MouseEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String MOUSE_LEAVE = "mouse-exit";
 
@@ -22,13 +60,50 @@ public interface EventTypes {
    * if the mouse moves in or out of an element, then {@link #MOUSE_LEAVE} or {@link #MOUSE_ENTER}
    * will be called instead.
    *
-   * @see MouseEvent
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MouseEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String MOUSE_MOVE = "mouse-move";
 
   /**
    * Called when the mouse is clicked
-   * @see MouseEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MouseEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String MOUSE_DOWN = "mouse-down";
 
@@ -38,31 +113,126 @@ public interface EventTypes {
    * Length of time between clicking and the active state expiring is determined by
    * {@link Document#ACTIVE_TICKS}
    *
-   * @see MouseEvent
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MouseEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String CLICK_EXPIRE = "click-expire";
 
   /**
    * Called when a node is appended onto another node.
-   * @see MutationEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MutationEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String APPEND_CHILD = "append-child";
 
   /**
    * Called when a node is removed from another node
-   * @see MutationEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MutationEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String REMOVE_CHILD = "remove-child";
 
   /**
    * Called when an attribute is modified.
-   * @see AttributeMutateEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link AttributeMutateEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
    */
   String MODIFY_ATTR = "modify-attribute";
 
   /**
    * Called when an option is modified.
-   * @see AttributeMutateEvent
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link AttributeMutateEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
+   *
    * @see Document#setOption(String, String)
    */
   String MODIFY_OPTION = "modify-option";
