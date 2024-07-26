@@ -6,6 +6,9 @@ import org.joml.Vector3f;
 
 public interface Screen {
 
+  int DEFAULT_WIDTH = 3;
+  int DEFAULT_HEIGHT = 2;
+
   /**
    * Sets the screen's position and size.
    *
@@ -17,9 +20,9 @@ public interface Screen {
 
   /**
    * Applies a transformation to this screen
-   * @param matrix Transformation matrix
+   * @param transform Transformation
    */
-  void apply(Matrix4f matrix);
+  void apply(Matrix4f transform);
 
   /**
    * Gets the width of the screen
@@ -37,13 +40,13 @@ public interface Screen {
    * Gets the normal of the screen's plane
    * @return Screen normal
    */
-  Vector3f getNormal();
+  Vector3f normal();
 
   /**
    * Gets the center point of the screen
    * @return Screen center
    */
-  Vector3f getCenter();
+  Vector3f center();
 
   /**
    * Gets the screen's yaw and pitch
