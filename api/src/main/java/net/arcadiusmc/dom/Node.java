@@ -47,4 +47,8 @@ public interface Node {
    * @return Node depth
    */
   int getDepth();
+
+  void enterVisitor(Visitor visitor);
+
+  void exitVisitor(Visitor visitor);
 }
