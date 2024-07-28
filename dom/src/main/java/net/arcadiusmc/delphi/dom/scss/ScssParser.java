@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.delphi.StringUtil;
 import net.arcadiusmc.delphi.dom.scss.func.ArgsParser;
 import net.arcadiusmc.delphi.dom.scss.func.ScssFunction;
@@ -36,6 +38,7 @@ import net.arcadiusmc.dom.style.Primitive.Unit;
 
 public class ScssParser extends Parser {
 
+  @Setter @Getter
   private Map<String, Object> variables = new HashMap<>();
 
   public ScssParser(StringBuffer in) {
