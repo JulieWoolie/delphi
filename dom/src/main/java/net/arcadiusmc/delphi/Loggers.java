@@ -9,6 +9,10 @@ public final class Loggers {
 
   private static final boolean USE_GLOBAL_LOGGER = false;
 
+  public static Logger getDocumentLogger() {
+    return getLogger("Document");
+  }
+
   public static Logger getLogger() {
     if (USE_GLOBAL_LOGGER) {
       return LoggerFactory.getLogger("Delphi");
