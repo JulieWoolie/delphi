@@ -16,6 +16,7 @@ import net.arcadiusmc.delphi.dom.event.AttributeMutation;
 import net.arcadiusmc.delphi.dom.event.EventImpl;
 import net.arcadiusmc.delphi.dom.event.EventListenerList;
 import net.arcadiusmc.delphi.dom.event.Mutation;
+import net.arcadiusmc.delphi.dom.scss.DocumentSheetBuilder;
 import net.arcadiusmc.delphi.dom.scss.DocumentStyles;
 import net.arcadiusmc.delphi.dom.scss.Sheet;
 import net.arcadiusmc.delphi.parser.ErrorListener;
@@ -37,7 +38,7 @@ import org.slf4j.Logger;
 
 public class DelphiDocument implements Document {
 
-  private static final Logger LOGGER = Loggers.getLogger("Document");
+  private static final Logger LOGGER = Loggers.getDocumentLogger();
   public static final ErrorListener ERROR_LISTENER = ErrorListener.logging(LOGGER);
 
   final Map<String, String> options = new HashMap<>();
@@ -309,6 +310,11 @@ public class DelphiDocument implements Document {
   @Override
   public @NotNull List<Stylesheet> getStylesheets() {
     return Collections.unmodifiableList(styles.stylesheets);
+  }
+
+  @Override
+  public @NotNull DocumentSheetBuilder createStylesheet() {
+    return new DocumentSheetBuilder(this);
   }
 
   /* --------------------------- Inputs ---------------------------- */
