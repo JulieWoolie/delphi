@@ -2,9 +2,7 @@ package net.arcadiusmc.delphi.dom.scss;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphi.dom.DelphiDocument;
 import net.arcadiusmc.delphi.dom.DelphiElement;
@@ -18,7 +16,6 @@ import net.arcadiusmc.dom.event.EventTypes;
 
 public class DocumentStyles {
 
-  private final Map<String, Object> variables = new HashMap<>();
   public final List<Sheet> stylesheets = new ArrayList<>();
   private final List<Rule> rules = new ArrayList<>();
 
