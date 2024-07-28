@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
  * <h2>Query</h2>
  * Optional search parameters that scripts can use.
  */
-public sealed interface PagePath permits MutablePagePath, PathImpl {
+public sealed interface ResourcePath permits PathImpl {
 
   Pattern VALID_ELEMENT = Pattern.compile("[a-zA-Z0-9 .\\-_$]+");
   Pattern VALID_QUERY = Pattern.compile("[a-zA-Z0-9.\\-_$]+");
@@ -34,11 +34,9 @@ public sealed interface PagePath permits MutablePagePath, PathImpl {
    *
    * @param moduleName Path Module name
    * @return Created path
-   *
-   * @see MutablePagePath
    */
-  static MutablePagePath create(@NotNull String moduleName) {
-    return new MutablePathImpl(moduleName);
+  static ResourcePath create(@NotNull String moduleName) {
+    return new PathImpl(moduleName);
   }
 
   /**
@@ -89,6 +87,85 @@ public sealed interface PagePath permits MutablePagePath, PathImpl {
    */
   @NotNull
   String getModuleName();
+
+  /**
+   * Sets the module name.
+   *
+   * @param moduleName New module name
+   *
+   * @return A copy of this path with the specified module name
+   *
+   * @throws NullPointerException If the module name is null
+   * @throws IllegalArgumentException If the module name fails {@link #validateQuery(String)}
+   */
+  ResourcePath setModuleName(@NotNull String moduleName);
+
+  /**
+   * Adds an element to the path's filepath.
+   *
+   * @param element Filename
+   * @return A copy of this path with the specified element added
+   *
+   * @throws NullPointerException If the {@code element} is {@code null}
+   * @throws IllegalArgumentException If the element fails {@link #validateFilename(String)}
+   */
+  ResourcePath addElement(@NotNull String element);
+
+  /**
+   * Sets the element at a specific index.
+   *
+   * @param index Element index
+   * @param element New element
+   *
+   * @return A copy of this path with the specified element changed
+   *
+   * @throws IndexOutOfBoundsException If the index is less than 0 or greater/equal to
+   *                                   {@link #elementCount()}.
+   * @throws NullPointerException If the {@code element} is {@code null}
+   * @throws IllegalArgumentException If the element fails {@link #validateFilename(String)}
+   */
+  ResourcePath setElement(int index, @NotNull String element) throws IndexOutOfBoundsException;
+
+  /**
+   * Sets a query value.
+   *
+   * @param key Query key
+   * @param value Query value
+   *
+   * @return A copy of this path with the specified query changed
+   *
+   * @throws NullPointerException If the {@code key} is null
+   * @throws IllegalArgumentException If the {@code key} or {@code value} (if not null)
+   *                                  fails {@link #validateQuery(String)}.
+   */
+  ResourcePath setQuery(@NotNull String key, @Nullable String value);
+
+  /**
+   * Adds all elements from the specified path.
+   * @param path Path to copy elements from
+   * @return A copy of this path with all the elements of the specified path added
+   */
+  ResourcePath addAllElements(@NotNull ResourcePath path);
+
+  /**
+   * Sets the elements of this path
+   * @param path Path elements
+   * @return A copy of this path with the elements of the specified path
+   */
+  ResourcePath setElements(ResourcePath path);
+
+  /**
+   * Removes a path element
+   * @param index Index of the element to remove
+   * @return A copy of this path with the specified element removed
+   */
+  ResourcePath removeElement(int index);
+
+  /**
+   * Clears all of this path's file elements.
+   * @return A copy of this path with no elements
+   */
+  ResourcePath clearElements();
 
   /**
    * Gets the value of a query
@@ -152,11 +229,13 @@ public sealed interface PagePath permits MutablePagePath, PathImpl {
   String getElement(int index) throws IndexOutOfBoundsException;
 
   /**
-   * Gets the file path part of this path.
+   * Gets the file path part of this page path.
+   * <p>
+   * Example: {@code foo/bar/foobar.json}
    * @return File path string, or {@code ""}, if no file elements were specified
    */
   @NotNull
-  String elements();
+  String path();
 
   /**
    * Gets the query part of this path as a string.
@@ -168,6 +247,16 @@ public sealed interface PagePath permits MutablePagePath, PathImpl {
   String query();
 
   /**
+   * Gets the file path of this page path combined with the query parameters.
+   * <p>
+   * Example: {@code dir/file.xml?foo=bar}
+   * @return File path + query parameters.
+   * @see #query()
+   * @see #path()
+   */
+  String elements();
+
+  /**
    * Combines the module name, elements and queries into a string that can be given to
    * {@link Delphi#parsePath(String)} to parse.
    *
@@ -175,8 +264,8 @@ public sealed interface PagePath permits MutablePagePath, PathImpl {
    * <ul>
    *   <li>{@code module}</li>
    *   <li>{@code module:file.ext}</li>
-   *   <li>{@code module:"file with space.ext"}</li>
-   *   <li>{@code module:"dir with space"/file.xml}</li>
+   *   <li>{@code module:'file with space.ext'}</li>
+   *   <li>{@code module:'dir with space'/file.xml}</li>
    *   <li>{@code module:foobar/file.ext}</li>
    *   <li>{@code module:foobar/file.ext?foo=bar&bar=foo}</li>
    *   <li>{@code module:foobar/file.ext?foo&bar=false}</li>

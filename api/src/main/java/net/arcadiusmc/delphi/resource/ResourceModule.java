@@ -48,5 +48,5 @@ public sealed interface ResourceModule permits IoModule, ApiModule {
    * @param pathSoFar The current page path.
    * @return A list of files contained in the directory specified by {@code pathSoFar}.
    */
-  @NotNull Collection<String> getModulePaths(PagePath pathSoFar);
+  @NotNull Collection<String> getModulePaths(ResourcePath pathSoFar);
 }

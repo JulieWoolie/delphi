@@ -11,12 +11,13 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-sealed class PathImpl implements PagePath permits MutablePathImpl {
+final class PathImpl implements ResourcePath {
 
-  protected String moduleName;
-  protected final List<String> elements = new ArrayList<>();
-  protected final Map<String, String> queries = new HashMap<>();
+  private String moduleName;
+  private final List<String> elements = new ArrayList<>();
+  private final Map<String, String> queries = new HashMap<>();
 
   public PathImpl(String moduleName) {
     setModule(moduleName);
@@ -28,9 +29,9 @@ sealed class PathImpl implements PagePath permits MutablePathImpl {
     this.queries.putAll(source.queries);
   }
 
-  protected void setModule(String moduleName) {
+  void setModule(String moduleName) {
     Objects.requireNonNull(moduleName, "Null module name");
-    PagePath.validateQuery(moduleName);
+    ResourcePath.validateQuery(moduleName);
 
     this.moduleName = moduleName;
   }
@@ -66,7 +67,7 @@ sealed class PathImpl implements PagePath permits MutablePathImpl {
   }
 
   @Override
-  public @NotNull String elements() {
+  public @NotNull String path() {
     StringBuilder builder = new StringBuilder();
     appendElements(builder);
     return builder.toString();
@@ -77,6 +78,91 @@ sealed class PathImpl implements PagePath permits MutablePathImpl {
     StringBuilder builder = new StringBuilder();
     appendQuery(builder);
     return builder.toString();
+  }
+
+  @Override
+  public String elements() {
+    StringBuilder builder = new StringBuilder();
+    appendElements(builder);
+    appendQuery(builder);
+    return builder.toString();
+  }
+
+  @Override
+  public ResourcePath setModuleName(@NotNull String moduleName) {
+    ResourcePath.validateQuery(moduleName);
+    PathImpl p = new PathImpl(this);
+    p.setModule(moduleName);
+    return p;
+  }
+
+  @Override
+  public ResourcePath addElement(@NotNull String element) {
+    ResourcePath.validateFilename(element);
+    PathImpl p = new PathImpl(this);
+    p.elements.add(element);
+    return p;
+  }
+
+  @Override
+  public ResourcePath setElement(int index, @NotNull String element) throws IndexOutOfBoundsException {
+    ResourcePath.validateFilename(element);
+    Objects.checkIndex(index, elements.size());
+
+    PathImpl p = new PathImpl(this);
+    p.elements.set(index, element);
+
+    return p;
+  }
+
+  @Override
+  public ResourcePath setQuery(@NotNull String key, @Nullable String value) {
+    ResourcePath.validateQuery(key);
+
+    if (Strings.isNullOrEmpty(value)) {
+      value = "";
+    } else {
+      ResourcePath.validateQuery(value);
+    }
+
+    PathImpl p = new PathImpl(this);
+    p.queries.put(key, value);
+
+    return p;
+  }
+
+  @Override
+  public ResourcePath addAllElements(@NotNull ResourcePath path) {
+    PathImpl p = new PathImpl(this);
+    p.elements.addAll(((PathImpl) path).elements);
+    return p;
+  }
+
+  @Override
+  public ResourcePath setElements(ResourcePath path) {
+    PathImpl p = new PathImpl(this);
+    p.elements.clear();
+    p.elements.addAll(((PathImpl) path).elements);
+    return p;
+  }
+
+  @Override
+  public ResourcePath removeElement(int index) {
+    Objects.checkIndex(index, elements.size());
+    PathImpl p = new PathImpl(this);
+    p.elements.remove(index);
+    return p;
+  }
+
+  @Override
+  public ResourcePath clearElements() {
+    if (elements.isEmpty()) {
+      return this;
+    }
+
+    PathImpl p = new PathImpl(this);
+    p.elements.clear();
+    return p;
   }
 
   @Override
@@ -127,7 +213,7 @@ sealed class PathImpl implements PagePath permits MutablePathImpl {
 
   private static String escapeElement(String element) {
     if (element.contains(" ")) {
-      return '"' + element + '"';
+      return "'" + element + "'";
     }
     return element;
   }

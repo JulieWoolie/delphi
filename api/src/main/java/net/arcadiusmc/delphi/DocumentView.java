@@ -1,6 +1,6 @@
 package net.arcadiusmc.delphi;
 
-import net.arcadiusmc.delphi.resource.PagePath;
+import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.dom.Document;
 import org.bukkit.entity.Player;
@@ -9,17 +9,50 @@ import org.joml.Vector3f;
 
 public interface DocumentView {
 
+  /**
+   * Gets the document that belongs to this view
+   * @return View document
+   */
   Document getDocument();
 
+  /**
+   * Gets the screen that this view is rendered with
+   * @return View Screen
+   */
   Screen getScreen();
 
+  /**
+   * Gets the position of the player's cursor in screen coordinates.
+   * @return Cursor screen position, or {@code null}, if the player is not looking at the screen
+   */
   Vector2f getCursorScreenPosition();
 
+  /**
+   * Gets the position of the player's cursor along the screen in world coordinates.
+   * @return Cursor world position, or {@code null}, if the player is not looking at the screen
+   */
   Vector3f getCursorWorldPosition();
 
-  PagePath getPath();
+  /**
+   * Gets the path of the opened document
+   * @return Document path
+   */
+  ResourcePath getPath();
 
+  /**
+   * Gets the resources of this view
+   * @return View resources
+   */
   ViewResources getResources();
 
+  /**
+   * Gets the player this view belongs to
+   * @return View player
+   */
   Player getPlayer();
+
+  /**
+   * Closes this view
+   */
+  void close();
 }
