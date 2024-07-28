@@ -1,9 +1,9 @@
 package net.arcadiusmc.delphiplugin.render;
 
 import net.arcadiusmc.delphi.Screen;
-import net.arcadiusmc.delphi.dom.DelphiNode;
-import net.arcadiusmc.delphi.dom.scss.ComputedStyle;
-import net.arcadiusmc.delphi.dom.scss.PropertySet;
+import net.arcadiusmc.delphidom.DelphiNode;
+import net.arcadiusmc.delphidom.scss.ComputedStyle;
+import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import org.joml.Vector2f;
 

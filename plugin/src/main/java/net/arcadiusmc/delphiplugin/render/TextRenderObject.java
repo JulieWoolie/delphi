@@ -2,7 +2,7 @@ package net.arcadiusmc.delphiplugin.render;
 
 import lombok.Getter;
 import net.arcadiusmc.delphi.Screen;
-import net.arcadiusmc.delphi.dom.Text;
+import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import org.joml.Vector2f;
 

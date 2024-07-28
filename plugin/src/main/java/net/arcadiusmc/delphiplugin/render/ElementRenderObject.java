@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import net.arcadiusmc.delphi.Screen;
-import net.arcadiusmc.delphi.dom.DelphiNode;
+import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import org.joml.Vector2f;
 

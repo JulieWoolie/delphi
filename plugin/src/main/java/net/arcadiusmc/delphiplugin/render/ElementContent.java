@@ -1,6 +1,6 @@
 package net.arcadiusmc.delphiplugin.render;
 
-import net.arcadiusmc.delphi.dom.scss.ComputedStyle;
+import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;

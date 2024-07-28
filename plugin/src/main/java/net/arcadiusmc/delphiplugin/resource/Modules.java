@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import net.arcadiusmc.delphi.Loggers;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
