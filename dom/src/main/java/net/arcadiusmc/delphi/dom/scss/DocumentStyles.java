@@ -26,6 +26,8 @@ public class DocumentStyles {
   }
 
   public void addSheet(Sheet sheet) {
+    stylesheets.add(sheet);
+
     for (int i = 0; i < sheet.getLength(); i++) {
       Rule r = sheet.getRule(i);
       rules.add(r);
@@ -33,8 +35,13 @@ public class DocumentStyles {
 
     rules.sort(Comparator.naturalOrder());
 
+    ChangeSet changed = new ChangeSet();
+    if (document.getBody() != null) {
+      updateStyles(document.getBody(), changed);
+    }
+
     if (document.getView() != null) {
-      document.getView().sheetAdded();
+      document.getView().sheetAdded(changed);
     }
   }
 
@@ -61,7 +68,7 @@ public class DocumentStyles {
 
     if (node instanceof DelphiElement el) {
       for (Rule rule : rules) {
-        if (rule.getSelectorObj().test(el)) {
+        if (!rule.getSelectorObj().test(el)) {
           continue;
         }
 
@@ -142,7 +149,7 @@ public class DocumentStyles {
         continue;
       }
 
-      func.apply(s, screen, el);
+      func.apply(s, screen, set.get(prop));
     }
   }
 

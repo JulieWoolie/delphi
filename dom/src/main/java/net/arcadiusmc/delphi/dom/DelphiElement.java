@@ -123,6 +123,11 @@ public class DelphiElement extends DelphiNode implements Element {
     }
 
     ScssParser parser = new ScssParser(new StringBuffer(str));
+
+    if (owningDocument.getView() != null) {
+      parser.setVariables(owningDocument.getView().getStyleVariables());
+    }
+
     parser.getErrors().setListener(owningDocument.getErrorListener());
 
     try {
