@@ -280,7 +280,6 @@ public class ScssParser extends Parser {
       Primitive value = parseAs(Primitive.class);
 
       if (value == null) {
-        errors.err(peek.location(), "Expected number value/variable");
         err = true;
         continue;
       }
