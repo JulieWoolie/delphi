@@ -2,8 +2,6 @@ package net.arcadiusmc.delphidom;
 
 import java.util.Map;
 import net.arcadiusmc.delphi.DocumentView;
-import net.arcadiusmc.delphidom.DelphiNode;
-import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.scss.DocumentStyles.ChangeSet;
 
 public interface ExtendedView extends DocumentView {
