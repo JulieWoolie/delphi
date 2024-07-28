@@ -6,6 +6,7 @@ import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.Stylesheet;
+import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -153,4 +154,14 @@ public interface Document extends EventTarget, ParentNode {
    * @return Unmodifiable stylesheet list.
    */
   @NotNull List<Stylesheet> getStylesheets();
+
+  /**
+   * Creates a new style sheet builder.
+   * <p>
+   * When {@link StylesheetBuilder#build()} is called on the returned sheet, the
+   * stylesheet is automatically added to this document's stylesheet list.
+   *
+   * @return Created stylesheet builder
+   */
+  @NotNull StylesheetBuilder createStylesheet();
 }
