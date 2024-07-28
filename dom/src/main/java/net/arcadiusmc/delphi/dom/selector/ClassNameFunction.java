@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphi.dom.selector;
 
+import com.google.common.base.Strings;
 import net.arcadiusmc.delphi.StringUtil;
 import net.arcadiusmc.delphi.dom.DelphiElement;
 import net.arcadiusmc.dom.Attr;
@@ -9,6 +10,9 @@ public record ClassNameFunction(String className) implements FilteringFunction {
   @Override
   public boolean test(DelphiElement element) {
     String classList = element.getAttribute(Attr.CLASS);
+    if (Strings.isNullOrEmpty(classList)) {
+      return false;
+    }
     return StringUtil.containsWord(classList, className);
   }
 
