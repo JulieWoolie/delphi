@@ -83,6 +83,31 @@ public interface EventTypes {
   String MOUSE_MOVE = "mouse-move";
 
   /**
+   * Called when the mouse scrolls up or down.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link MouseEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
+   */
+  String MOUSE_SCROLL = "mouse-scroll";
+
+  /**
    * Called when the mouse is clicked
    *
    * <table>
