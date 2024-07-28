@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.delphi.dom.DelphiDocument;
 import net.arcadiusmc.delphi.dom.DelphiElement;
 import net.arcadiusmc.delphi.dom.DelphiNode;
@@ -18,7 +19,6 @@ import net.arcadiusmc.delphi.parser.ParserErrors.Error;
 import net.arcadiusmc.delphi.parser.ParserErrors.ErrorLevel;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.dom.Attr;
-import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -30,7 +30,7 @@ import org.xml.sax.helpers.DefaultHandler;
 @Getter
 public class DocumentSaxParser extends DefaultHandler {
 
-  static final SAXParserFactory PARSER_FACTORY = SAXParserFactory.newInstance();
+  public static final SAXParserFactory PARSER_FACTORY = SAXParserFactory.newInstance();
 
   static final String ROOT_ELEMENT = "page";
   static final String HEADER_ELEMENT = "header";
@@ -63,6 +63,9 @@ public class DocumentSaxParser extends DefaultHandler {
 
   private final List<Error> errors = new ArrayList<>();
   private boolean failed = false;
+
+  @Setter
+  private ErrorListener listener;
 
   public DocumentSaxParser(ViewResources resources) {
     this.resources = resources;
@@ -277,9 +280,10 @@ public class DocumentSaxParser extends DefaultHandler {
           return;
         }
 
-        resources.loadStylesheet(src).ifPresent(stylesheet -> {
-          document.addStylesheet(stylesheet);
-        });
+        resources.loadStylesheet(src)
+            .mapError(string -> "Failed to load stylesheet from " + string + ": " + string)
+            .ifSuccess(stylesheet -> document.addStylesheet(stylesheet))
+            .ifError(this::error);
       }
 
       case SCREEN_ELEMENT -> {
@@ -361,18 +365,12 @@ public class DocumentSaxParser extends DefaultHandler {
         exc.getMessage()
     );
 
-    errors.add(new Error(message, level));
-  }
+    Error e = new Error(message, level);
+    errors.add(e);
 
-  public void throwIfFailed() {
-    if (!failed) {
-      return;
+    if (listener != null) {
+      listener.onError(e);
     }
-
-    StringBuilder builder = new StringBuilder();
-    Error.append(builder, errors);
-
-    throw new ParserException(builder.toString());
   }
 
   private enum LoadMode {
