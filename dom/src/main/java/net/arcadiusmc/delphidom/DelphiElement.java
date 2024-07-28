@@ -431,7 +431,9 @@ public class DelphiElement extends DelphiNode implements Element {
           .append(' ')
           .append(s)
           .append('=')
-          .append(s2);
+          .append('"')
+          .append(s2)
+          .append('"');
     });
 
     builder.append("/>");
