@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
 import net.arcadiusmc.delphi.Loggers;
 import net.arcadiusmc.delphi.dom.DelphiDocument;
@@ -18,6 +17,7 @@ import net.arcadiusmc.delphi.parser.ParserErrors.Error;
 import net.arcadiusmc.delphi.parser.ParserErrors.ErrorLevel;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ViewResources;
+import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.style.Stylesheet;
 import org.junit.jupiter.api.Test;
@@ -38,13 +38,13 @@ class DocumentSaxParserTest {
     }
 
     @Override
-    public Optional<Document> loadDocument(String uri) {
-      return Optional.empty();
+    public Result<Document, String> loadDocument(String uri) {
+      return Result.err("NOP");
     }
 
     @Override
-    public Optional<Stylesheet> loadStylesheet(String uri) {
-      return Optional.empty();
+    public Result<Stylesheet, String> loadStylesheet(String uri) {
+      return Result.err("NOP");
     }
   };
 
