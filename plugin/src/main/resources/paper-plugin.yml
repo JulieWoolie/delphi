@@ -1,0 +1,4 @@
+name: "Delphi"
+main: "net.arcadiusmc.delphiplugin.DelphiPlugin"
+api-version: "1.21"
+version: "1.0"

@@ -1,0 +1,10 @@
+/delphi open <player> <path>
+/delphi close <player> all
+/delphi close from-module <player> <module name>
+/delphi close from-path <player> <path>
+/delphi close targeted <player>
+/delphi close-all
+/delphi close-all <player>
+/delphi reload
+/delphi module-data clear <module>
+/delphi module-data clear-all
