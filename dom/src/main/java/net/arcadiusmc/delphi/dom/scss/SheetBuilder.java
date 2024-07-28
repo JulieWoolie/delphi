@@ -19,13 +19,13 @@ public class SheetBuilder implements StylesheetBuilder {
   }
 
   @Override
-  public StylesheetBuilder addRule(@NotNull String selector, @NotNull Consumer<StyleProperties> consumer) {
+  public SheetBuilder addRule(@NotNull String selector, @NotNull Consumer<StyleProperties> consumer) {
     Objects.requireNonNull(selector, "Null selector");
     Objects.requireNonNull(consumer, "Null consumer");
 
     Selector s = Selector.parse(selector);
-    PropertySet set = new PropertySet();
 
+    PropertySet set = new PropertySet();
     PropertyMap map = new PropertyMap(set);
     consumer.accept(map);
 
