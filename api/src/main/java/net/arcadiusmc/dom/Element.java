@@ -19,10 +19,10 @@ import org.jetbrains.annotations.Nullable;
 public interface Element extends Node, EventTarget, ParentNode {
 
   /**
-   * Gets the modifiable inline style properties.
+   * Get the modifiable inline style properties.
    * <p>
-   * Any changes made to the returned properties will be reflected the {@link Attr#STYLE}
-   * attribute, and any changes to the {@link Attr#STYLE} attribute will be reflected in
+   * Any changes made to the returned properties will be reflected in the {@link Attributes#STYLE}
+   * attribute, and any changes to the {@link Attributes#STYLE} attribute will be reflected in
    * the returned properties.
    *
    * @return Inline style
@@ -30,7 +30,11 @@ public interface Element extends Node, EventTarget, ParentNode {
   StyleProperties getInlineStyle();
 
   /**
-   * Gets this element's current style
+   * Get the element's current style.
+   * <p>
+   * The returned result's properties will be the computed style values of all applicable
+   * stylesheet rules and the inline style for the element.
+   *
    * @return Unmodifiable style properties
    */
   StylePropertiesReadonly getCurrentStyle();
@@ -74,10 +78,10 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @return Element ID
    *
    * @see #getAttribute(String)
-   * @see Attr#ID
+   * @see Attributes#ID
    */
   default String getId() {
-    return getAttribute(Attr.ID);
+    return getAttribute(Attributes.ID);
   }
 
   /**
@@ -86,26 +90,26 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @param elementId Element ID
    *
    * @see #setAttribute(String, String)
-   * @see Attr#ID
+   * @see Attributes#ID
    */
   default void setId(@Nullable String elementId) {
-    setAttribute(Attr.ID, elementId);
+    setAttribute(Attributes.ID, elementId);
   }
 
   /**
-   * Gets the element's {@link Attr#CLASS} attribute value.
+   * Gets the element's {@link Attributes#CLASS} attribute value.
    * @return Class name
    */
   default @Nullable String getClassName() {
-    return getAttribute(Attr.CLASS);
+    return getAttribute(Attributes.CLASS);
   }
 
   /**
-   * Sets the element's {@link Attr#CLASS} attribute value
+   * Sets the element's {@link Attributes#CLASS} attribute value
    * @param className Class name
    */
   default void setClassName(String className) {
-    setAttribute(Attr.CLASS, className);
+    setAttribute(Attributes.CLASS, className);
   }
 
   /**
@@ -119,7 +123,7 @@ public interface Element extends Node, EventTarget, ParentNode {
       return new ArrayList<>();
     }
 
-    String[] split = str.split("\s+");
+    String[] split = str.split("\\s+");
     List<String> stringList = new ArrayList<>();
 
     Collections.addAll(stringList, split);
@@ -133,7 +137,7 @@ public interface Element extends Node, EventTarget, ParentNode {
    */
   default void setClassList(@Nullable Collection<String> classList) {
     if (classList == null) {
-      setAttribute(Attr.CLASS, null);
+      setAttribute(Attributes.CLASS, null);
       return;
     }
 
@@ -142,7 +146,7 @@ public interface Element extends Node, EventTarget, ParentNode {
       joiner.add(s);
     }
 
-    setAttribute(Attr.CLASS, joiner.toString());
+    setAttribute(Attributes.CLASS, joiner.toString());
   }
 
   /**
@@ -190,6 +194,8 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @param node Node
    *
    * @throws NullPointerException if {@code node} is {@code null}
+   *
+   * @apiNote If {@link #canHaveChildren()} returns {@code false}, this does nothing.
    */
   void appendChild(@NotNull Node node);
 
@@ -206,6 +212,8 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @param node Prepended node
    *
    * @throws NullPointerException if {@code node} is {@code null}
+   *
+   * @apiNote If {@link #canHaveChildren()} returns {@code false}, this does nothing.
    */
   void prependChild(@NotNull Node node);
 
@@ -224,6 +232,10 @@ public interface Element extends Node, EventTarget, ParentNode {
    *
    * @param node Node to insert
    * @param before Node to insert before
+   *
+   * @throws NullPointerException If either {@code node} or {@code before} are {@code null}
+   *
+   * @apiNote If {@link #canHaveChildren()} returns {@code false}, this does nothing.
    */
   void insertBefore(@NotNull Node node, @NotNull Node before);
 
@@ -242,6 +254,10 @@ public interface Element extends Node, EventTarget, ParentNode {
    *
    * @param node Node to insert
    * @param after Node to insert after
+   *
+   * @throws NullPointerException If either {@code node} or {@code after} are {@code null}
+   *
+   * @apiNote If {@link #canHaveChildren()} returns {@code false}, this does nothing.
    */
   void insertAfter(@NotNull Node node, @NotNull Node after);
 
@@ -312,6 +328,16 @@ public interface Element extends Node, EventTarget, ParentNode {
    * @return Child count
    */
   int getChildCount();
+
+  /**
+   * Tests if this element is capable of having child nodes.
+   * <p>
+   * This returns {@code true} in most cases. It returns false if the element's tag is
+   * {@code <item>}.
+   *
+   * @return {@code true}, if this element can support child noes, {@code false} otherwise.
+   */
+  boolean canHaveChildren();
 
   /**
    * Gets the nth child of this element.

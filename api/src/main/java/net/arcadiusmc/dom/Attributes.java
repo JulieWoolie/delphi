@@ -1,0 +1,106 @@
+package net.arcadiusmc.dom;
+
+import com.google.common.base.Strings;
+import net.arcadiusmc.delphi.util.Result;
+
+public interface Attributes {
+  /**
+   * ID attribute.
+   * @see Document#getElementById(String)
+   */
+  String ID = "id";
+
+  /**
+   * Class list attribute.
+   */
+  String CLASS = "class";
+
+  /**
+   * Inline style attribute.
+   */
+  String STYLE = "style";
+
+  /**
+   * Source attribute, used by {@code <script>}, {@code <style>} and {@code <item>} elements.
+   */
+  String SOURCE = "src";
+
+  /**
+   * Option name attribute, used during parsing by the {@code <option>} element.
+   */
+  String NAME = "name";
+
+  /**
+   * Key attribute, used during parsing by the {@code <option>} element.
+   */
+  String VALUE = "value";
+
+  /**
+   * Enabled/disabled state attribute, used by {@code <button>} elements.
+   * @see ButtonElement
+   */
+  String ENABLED = "enabled";
+
+  /**
+   * Item tooltip hide state attribute, used by {@code <item>} elements to determine
+   * whether the item tooltip should be hidden or not.
+   *
+   * @see ItemElement
+   */
+  String ITEM_TOOLTIP_HIDE = "hide-item-tooltip";
+
+  /**
+   * If item tooltips use advanced tooltips. (Including the {@code F3+H} debug information).
+   * <p>
+   * This attribute overrides the {@link Options#ADVANCED_ITEM_TOOLTIPS} option, if it is set.
+   *
+   * @see Options#ADVANCED_ITEM_TOOLTIPS
+   */
+  String ADVANCED_ITEM_TOOLTIPS = Options.ADVANCED_ITEM_TOOLTIPS;
+
+  /**
+   * Parses a float attribute value.
+   * <p>
+   * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
+   * error {@code "Invalid number"} is returned.
+   * <p>
+   * If the number is parsed successfully, then it is clamped according to the {@code min} and
+   * {@code max} parameters.
+   *
+   * @param value Value to parse from
+   * @param min Minimum value
+   * @param max Maximum value
+   *
+   * @return Parsed float result
+   */
+  static Result<Float, String> floatAttribute(String value, float min, float max) {
+    float f;
+
+    try {
+      f = Float.parseFloat(value);
+    } catch (NumberFormatException exc) {
+      return Result.err("Invalid number");
+    }
+
+    if (f < min) {
+      return Result.ok(min);
+    }
+    if (f > max) {
+      return Result.ok(max);
+    }
+
+    return Result.ok(f);
+  }
+
+  static boolean boolAttribute(String value, boolean fallback) {
+    if (Strings.isNullOrEmpty(value)) {
+      return fallback;
+    }
+
+    return switch (value.toLowerCase()) {
+      case "true" -> true;
+      case "false" -> false;
+      default -> fallback;
+    };
+  }
+}
