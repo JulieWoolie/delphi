@@ -261,4 +261,85 @@ public interface EventTypes {
    * @see Document#setOption(String, String)
    */
   String MODIFY_OPTION = "modify-option";
+
+  /**
+   * Called when the DOM has been fully loaded and is about to be spawned.
+   * <p>
+   * This event is only dispatched on {@link Document} instances.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link Event}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>None, only triggered on the {@link Document} itself</td>
+   *   </tr>
+   * </table>
+   */
+  String DOM_LOADED = "load";
+
+  /**
+   * Called when the DOM has been spawned after being loaded
+   * <p>
+   * This event is only dispatched on {@link Document} instances.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link Event}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>None, only triggered on the {@link Document} itself</td>
+   *   </tr>
+   * </table>
+   */
+  String DOM_SPAWNED = "spawned";
+
+  /**
+   * Called when a document is about to be closed.
+   * <p>
+   * This event is only dispatched on {@link Document} instances.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link Event}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>None, only triggered on the {@link Document} itself</td>
+   *   </tr>
+   * </table>
+   */
+  String DOM_CLOSING = "close";
 }
