@@ -19,7 +19,6 @@ import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
-import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.NodeFlag;
 import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.event.EventImpl;
@@ -52,11 +51,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.slf4j.Logger;
 
 public class PageView implements ExtendedView {
-
-  private static final Logger LOGGER = Loggers.getLogger();
 
   public static boolean debugOutlines = false;
 
@@ -219,16 +215,12 @@ public class PageView implements ExtendedView {
 
   @Override
   public void styleUpdated(DelphiNode node, int changes) {
-    LOGGER.debug("styleUpdated called");
-
     if (changes == 0) {
-      LOGGER.debug("empty");
       return;
     }
 
     RenderObject obj = getRenderObject(node);
     if (obj == null) {
-      LOGGER.debug("obj == null");
       return;
     }
 
@@ -242,12 +234,10 @@ public class PageView implements ExtendedView {
     }
 
     if (respawn) {
-      LOGGER.debug("spawn");
       obj.spawn();
     }
 
     if (changed(changes, DirtyBit.LAYOUT)) {
-      LOGGER.debug("realign");
       triggerRealign();
     }
   }
@@ -418,8 +408,6 @@ public class PageView implements ExtendedView {
     );
 
     target.dispatchEvent(event);
-    LOGGER.debug("Fired event {}", type);
-
     return event;
   }
 
