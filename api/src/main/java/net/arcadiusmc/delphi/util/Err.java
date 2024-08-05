@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 final class Err<T, E> implements Result<T, E> {
 
@@ -71,12 +72,26 @@ final class Err<T, E> implements Result<T, E> {
     if (error instanceof Throwable throwable) {
       throw new ResultException(throwable);
     }
+    if (error instanceof String string) {
+      throw new ResultException(string);
+    }
 
-    throw new ResultException(String.valueOf(error));
+    throw new ResultException(error);
   }
 
   @Override
   public <X extends Exception> T getOrThrow(Function<E, X> factory) throws X {
     throw factory.apply(error);
+  }
+
+  @Override
+  public T orElseGet(Supplier<T> getter) {
+    Objects.requireNonNull(getter, "Null fallback value supplier");
+    return getter.get();
+  }
+
+  @Override
+  public T orElse(T defaultValue) {
+    return defaultValue;
   }
 }

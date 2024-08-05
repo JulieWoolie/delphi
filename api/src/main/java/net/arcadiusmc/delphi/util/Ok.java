@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 final class Ok<T, E> implements Result<T, E> {
 
@@ -75,6 +76,17 @@ final class Ok<T, E> implements Result<T, E> {
 
   @Override
   public <X extends Exception> T getOrThrow(Function<E, X> factory) throws X {
+    return value;
+  }
+
+  @Override
+  public T orElse(T defaultValue) {
+    return value;
+  }
+
+  @Override
+  public T orElseGet(Supplier<T> getter) {
+    Objects.requireNonNull(getter, "Null fallback value supplier");
     return value;
   }
 }
