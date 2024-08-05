@@ -1,12 +1,9 @@
 package net.arcadiusmc.delphiplugin.command;
 
 import com.google.common.base.Strings;
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -14,22 +11,21 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ResourceModule;
+import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphiplugin.resource.Modules;
-import net.forthecrown.grenadier.Completions;
 
 @Getter @Setter
 public class PathParser<S> implements SuggestionProvider<S> {
 
-  static final SimpleCommandExceptionType EMPTY_MODULE
-      = new SimpleCommandExceptionType(new LiteralMessage("Empty module name"));
+  static final TranslatableExceptionType EMPTY_MODULE
+      = new TranslatableExceptionType("delphi.paths.emptyModule");
 
-  static final DynamicCommandExceptionType UNKNOWN_MODULE
-      = new DynamicCommandExceptionType(o -> new LiteralMessage("Unknown module: " + o));
+  static final TranslatableExceptionType UNKNOWN_MODULE
+      = new TranslatableExceptionType("delphi.paths.unknownModule");
 
-  static final DynamicCommandExceptionType ILLEGAL_CHARACTER
-      = new DynamicCommandExceptionType(o -> new LiteralMessage("Illegal character '" + o + "' in path"));
+  static final TranslatableExceptionType ILLEGAL_CHARACTER
+      = new TranslatableExceptionType("delphi.paths.illegalCharacter");
 
   static final char QUERY_START = '?';
   static final char QUERY_DELIMITER = '&';
@@ -46,7 +42,7 @@ public class PathParser<S> implements SuggestionProvider<S> {
   private ResourceModule module;
 
   private int suggestionsStart = -1;
-  private SuggestionMode suggestionMode = SuggestionMode.MODULE_NAMES;
+  private SuggestionMode suggestionMode = null;
 
   public PathParser(Modules modules, StringReader reader) {
     this.reader = reader;
@@ -259,12 +255,6 @@ public class PathParser<S> implements SuggestionProvider<S> {
       CommandContext<S> context,
       SuggestionsBuilder builder
   ) {
-    try {
-      parse();
-    } catch (CommandSyntaxException exc) {
-      // Ignored
-    }
-
     if (suggestionMode == null) {
       suggestionMode = SuggestionMode.MODULE_NAMES;
     }
@@ -279,7 +269,7 @@ public class PathParser<S> implements SuggestionProvider<S> {
           return builder.buildFuture();
         }
 
-        return Completions.suggest(builder, modules.getModuleNames());
+        return suggest(builder, modules.getModuleNames());
       }
       case COLON -> {
         builder.suggest(":");
@@ -291,14 +281,28 @@ public class PathParser<S> implements SuggestionProvider<S> {
         }
 
         Collection<String> paths = module.getModulePaths(suggestionsPath);
-        return Completions.suggest(builder, paths);
+        return suggest(builder, paths);
       }
     }
 
     return builder.buildFuture();
   }
 
-  private enum SuggestionMode {
+  private CompletableFuture<Suggestions> suggest(SuggestionsBuilder builder, Iterable<String> strings) {
+    String token = builder.getRemainingLowerCase();
+
+    for (String string : strings) {
+      if (!string.toLowerCase().startsWith(token)) {
+        continue;
+      }
+
+      builder.suggest(string);
+    }
+
+    return builder.buildFuture();
+  }
+
+  enum SuggestionMode {
     MODULE_NAMES,
     COLON,
     FILE_PATHS

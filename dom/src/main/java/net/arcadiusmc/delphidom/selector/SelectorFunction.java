@@ -1,15 +1,12 @@
 package net.arcadiusmc.delphidom.selector;
 
-import java.util.List;
 import net.arcadiusmc.delphidom.DelphiElement;
 
 public interface SelectorFunction {
 
   SelectorFunction ALL = new MatchAll();
 
-  boolean test(DelphiElement element);
-
-  List<DelphiElement> selectNext(List<DelphiElement> elements);
+  boolean test(DelphiElement root, DelphiElement element);
 
   void append(StringBuilder builder);
 

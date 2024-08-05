@@ -2,12 +2,16 @@ plugins {
   java
 }
 
+group = "net.arcadiusmc"
+
 repositories {
   mavenCentral()
 }
 
 subprojects {
   apply(plugin = "java")
+
+  group = rootProject.group
 
   repositories {
     mavenCentral()
@@ -34,6 +38,13 @@ subprojects {
     test {
       useJUnitPlatform()
       systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace")
+    }
+    compileJava {
+      options.release = 21
+      options.encoding = Charsets.UTF_8.name()
+    }
+    javadoc {
+      options.encoding = Charsets.UTF_8.name()
     }
   }
 

@@ -3,10 +3,10 @@ package net.arcadiusmc.delphidom.selector;
 import java.util.Objects;
 import net.arcadiusmc.delphidom.DelphiElement;
 
-public record TagNameFunction(String tagName) implements FilteringFunction {
+public record TagNameFunction(String tagName) implements SelectorFunction {
 
   @Override
-  public boolean test(DelphiElement element) {
+  public boolean test(DelphiElement root, DelphiElement element) {
     return Objects.equals(tagName, element.getTagName());
   }
 

@@ -1,15 +1,15 @@
 package net.arcadiusmc.delphidom.selector;
 
 import com.google.common.base.Strings;
-import net.arcadiusmc.delphidom.StringUtil;
 import net.arcadiusmc.delphidom.DelphiElement;
-import net.arcadiusmc.dom.Attr;
+import net.arcadiusmc.delphidom.StringUtil;
+import net.arcadiusmc.dom.Attributes;
 
-public record ClassNameFunction(String className) implements FilteringFunction {
+public record ClassNameFunction(String className) implements SelectorFunction {
 
   @Override
-  public boolean test(DelphiElement element) {
-    String classList = element.getAttribute(Attr.CLASS);
+  public boolean test(DelphiElement root, DelphiElement element) {
+    String classList = element.getAttribute(Attributes.CLASS);
     if (Strings.isNullOrEmpty(classList)) {
       return false;
     }

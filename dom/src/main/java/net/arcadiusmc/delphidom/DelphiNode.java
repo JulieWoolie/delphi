@@ -4,13 +4,15 @@ import java.util.List;
 import lombok.Getter;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphidom.scss.PropertySet;
+import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Node;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
 public abstract class DelphiNode implements Node {
 
-  DelphiDocument owningDocument;
+  DelphiDocument document;
   int siblingIndex = -1;
   int depth;
   DelphiElement parent;
@@ -21,10 +23,15 @@ public abstract class DelphiNode implements Node {
   public final PropertySet styleSet;
 
   public DelphiNode(DelphiDocument document) {
-    this.owningDocument = document;
+    this.document = document;
 
     this.style = new ComputedStyle();
     this.styleSet = new PropertySet();
+  }
+
+  @Override
+  public @NotNull Document getOwningDocument() {
+    return document;
   }
 
   public boolean hasFlag(NodeFlag flag) {

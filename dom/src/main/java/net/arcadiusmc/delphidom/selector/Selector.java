@@ -1,9 +1,6 @@
 package net.arcadiusmc.delphidom.selector;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.arcadiusmc.delphidom.DelphiElement;
-import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.parser.Parser;
 import net.arcadiusmc.delphidom.parser.ParserErrors;
 import org.jetbrains.annotations.NotNull;
@@ -36,48 +33,43 @@ public class Selector implements Comparable<Selector> {
     return selector;
   }
 
-  public boolean test(DelphiElement el) {
-    for (int i = nodes.length - 1; i >= 0; i--) {
-      SelectorNode n = nodes[i];
+  public boolean test(DelphiElement root, DelphiElement el) {
+    if (nodes.length < 1) {
+      return false;
+    }
 
-      if (!n.test(el)) {
+    if (!nodes[nodes.length - 1].test(root, el)) {
+      return false;
+    }
+
+    if (nodes.length < 2) {
+      return true;
+    }
+
+    int minDepth = root == null ? -1 : root.getDepth();
+    int nodeIndex = nodes.length - 2;
+    DelphiElement p = el.getParent();
+
+    while (p != null) {
+      if (p.getDepth() < minDepth) {
         return false;
       }
-    }
 
-    return true;
-  }
+      SelectorNode node = nodes[nodeIndex--];
 
-  public DelphiElement selectOne(DelphiElement element) {
-    List<DelphiElement> list = selectAll(element);
-    return list.isEmpty() ? null : list.getFirst();
-  }
-
-  public List<DelphiElement> selectAll(DelphiElement element) {
-    List<DelphiElement> out = new ArrayList<>();
-    selectNodes(element, 0, out);
-    return out;
-  }
-
-  private void selectNodes(DelphiNode node, int index, List<DelphiElement> out) {
-    if (!(node instanceof DelphiElement el)) {
-      return;
-    }
-
-    SelectorNode selectorNode = nodes[index];
-    List<DelphiElement> selected = selectorNode.select(el);
-
-    if (selected.isEmpty()) {
-      return;
-    }
-
-    if (index < (nodes.length - 1)) {
-      for (DelphiElement delphiElement : selected) {
-        selectNodes(delphiElement, index + 1, out);
+      if (!node.test(root, p)) {
+        p = p.getParent();
+        continue;
       }
-    } else {
-      out.addAll(selected);
+
+      if (nodeIndex < 0) {
+        return true;
+      }
+
+      p = p.getParent();
     }
+
+    return false;
   }
 
   public String debugString() {

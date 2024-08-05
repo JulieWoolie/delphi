@@ -3,10 +3,10 @@ package net.arcadiusmc.delphidom.selector;
 import java.util.Objects;
 import net.arcadiusmc.delphidom.DelphiElement;
 
-public record IdFunction(String elementId) implements FilteringFunction {
+public record IdFunction(String elementId) implements SelectorFunction {
 
   @Override
-  public boolean test(DelphiElement element) {
+  public boolean test(DelphiElement root, DelphiElement element) {
     String id = element.getId();
     return Objects.equals(elementId, id);
   }

@@ -6,22 +6,20 @@ import java.util.List;
 import java.util.Objects;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
-import net.arcadiusmc.delphidom.Loggers;
-import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
+import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphiplugin.command.PathParser;
+import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
+import org.joml.Vector3f;
 
 public class PageManager implements Delphi {
-
-  private static final Logger LOGGER = Loggers.getLogger("Delphi");
 
   private final Modules modules;
   private final SessionManager sessions;
@@ -66,13 +64,16 @@ public class PageManager implements Delphi {
       return Result.err(moduleResult);
     }
 
-    // Won't throw, we return above
+    // Won't throw, we returned above if error
     ResourceModule module = moduleResult.getOrThrow();
-    ResourcePath cwd = path;
+    ResourcePath cwd;
 
-    if (cwd.elementCount() > 0) {
-      int lastIndex = cwd.elementCount() - 1;
-      cwd = cwd.removeElement(lastIndex);
+    if (path.elementCount() > 0) {
+      int lastIndex = path.elementCount() - 1;
+      cwd = path.removeElement(lastIndex);
+    } else {
+      cwd = path;
+      path = path.addElement("index.xml");
     }
 
     PageResources resources = new PageResources(modules, moduleName, module);
@@ -80,19 +81,39 @@ public class PageManager implements Delphi {
 
     PageView view = new PageView(player, path);
     view.setResources(resources);
+    resources.setView(view);
 
     PlayerSession session = sessions.getOrCreateSession(player);
     session.addView(view);
 
-    Result<DelphiDocument, String> res = resources.loadDocument(path, path.path() + path.query())
+    Result<DelphiDocument, String> res = resources.loadDocument(path, path.elements())
         .mapError(string -> "Failed to load document: " + string);
 
     if (res.isError()) {
-      session.removeView(view);
+      session.closeView(view);
       return Result.err(res);
     }
 
-    view.initializeDocument(res.getOrThrow());
+    DelphiDocument doc = res.getOrThrow();
+
+    if (modules.getDefaultStyle() != null) {
+      doc.addStylesheet(modules.getDefaultStyle());
+    }
+
+    view.initializeDocument(doc);
+
+    Screen screen = view.getScreen();
+    float width = screen.getWidth();
+    float height = screen.getHeight();
+
+    Vector3f center = new Vector3f();
+    center.x = (float) player.getX();
+    center.y = (float) player.getY();
+    center.z = (float) player.getZ();
+
+    screen.set(center, width, height);
+
+    view.spawn();
 
     return Result.ok(view);
   }

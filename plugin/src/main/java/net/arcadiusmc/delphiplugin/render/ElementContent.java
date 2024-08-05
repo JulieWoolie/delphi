@@ -18,5 +18,5 @@ public interface ElementContent {
 
   boolean isEmpty();
 
-  //void configureInitial(Layer layer, RenderObject element);
+  void configureInitial(Layer layer, RenderObject element);
 }

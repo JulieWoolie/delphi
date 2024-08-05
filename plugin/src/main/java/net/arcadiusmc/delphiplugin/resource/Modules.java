@@ -2,6 +2,11 @@ package net.arcadiusmc.delphiplugin.resource;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -13,17 +18,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import net.arcadiusmc.delphidom.Loggers;
+import lombok.Getter;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
-import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ResourceModule;
+import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphi.util.Result;
+import net.arcadiusmc.delphidom.Loggers;
+import net.arcadiusmc.delphidom.parser.ErrorListener;
+import net.arcadiusmc.delphidom.scss.ScssParser;
+import net.arcadiusmc.delphidom.scss.Sheet;
+import net.arcadiusmc.dom.ParserException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 public class Modules implements DelphiResources {
+
+  static final String DEFAULT_STYLE = "default-style.scss";
 
   private static final Logger LOGGER = Loggers.getLogger("DelphiResources");
 
@@ -35,8 +47,61 @@ public class Modules implements DelphiResources {
   private final Path directory;
   private FileSystemProvider zipProvider;
 
+  @Getter
+  private Sheet defaultStyle;
+
   public Modules(Path directory) {
     this.directory = directory;
+    ensureDirectoryExists();
+  }
+
+  private void ensureDirectoryExists() {
+    if (Files.isDirectory(directory)) {
+      return;
+    }
+
+    try {
+      Files.createDirectories(directory);
+    } catch (IOException exc) {
+      LOGGER.error("Failed to create modules directory", exc);
+    }
+  }
+
+  public void loadDefaultStyle() {
+    URL url = getClass().getClassLoader().getResource(DEFAULT_STYLE);
+
+    if (url == null) {
+      LOGGER.error("Failed to load {}, resource not found", DEFAULT_STYLE);
+      return;
+    }
+
+    StringBuffer buf;
+
+    try (InputStream stream = url.openStream()) {
+      StringWriter writer = new StringWriter();
+      InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
+      reader.transferTo(writer);
+      buf = writer.getBuffer();
+    } catch (IOException exc) {
+      LOGGER.error("Error loading {}: IO Error", DEFAULT_STYLE, exc);
+      defaultStyle = null;
+      return;
+    }
+
+    ScssParser parser = new ScssParser(buf);
+    parser.getErrors().setListener(ErrorListener.logging(LOGGER));
+
+    Sheet sheet;
+
+    try {
+      sheet = parser.stylesheet();
+    } catch (ParserException exc) {
+      LOGGER.error("Error parsing {}", DEFAULT_STYLE, exc);
+      defaultStyle = null;
+      return;
+    }
+
+    defaultStyle = sheet;
   }
 
   @Override

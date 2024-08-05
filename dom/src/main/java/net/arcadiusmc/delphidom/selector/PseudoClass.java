@@ -6,5 +6,7 @@ public enum PseudoClass {
   DISABLED,
   ENABLED,
   ROOT,
+  FIRST_CHILD,
+  LAST_CHILD,
   ;
 }

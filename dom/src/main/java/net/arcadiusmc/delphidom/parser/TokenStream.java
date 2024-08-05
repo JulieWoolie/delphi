@@ -25,7 +25,6 @@ public class TokenStream {
   private Location currentTokenStart;
 
   private final Stack<ParseMode> modeStack = new Stack<>();
-  private boolean whitespaceMatters = false;
 
   public TokenStream(StringBuffer input, ParserErrors errors) {
     this.input = input;
@@ -36,10 +35,6 @@ public class TokenStream {
 
   public ParserErrors errors() {
     return errors;
-  }
-
-  public void whitespaceMatters(boolean whitespaceMatters) {
-    this.whitespaceMatters = whitespaceMatters;
   }
 
   ParseMode mode() {
@@ -109,7 +104,7 @@ public class TokenStream {
 
   void skipIrrelevant() {
     while (currentChar != EOF) {
-      if (currentChar == ' ' && whitespaceMatters) {
+      if (currentChar == ' ' && mode() == ParseMode.SELECTOR) {
         return;
       }
 
@@ -260,7 +255,8 @@ public class TokenStream {
       case '#' -> {
         advance();
 
-        if (!isHexNumber(currentChar) || mode() == ParseMode.TOKENS) {
+        ParseMode mode = mode();
+        if (!isHexNumber(currentChar) || mode == ParseMode.TOKENS || mode == ParseMode.SELECTOR) {
           yield token(Token.HASHTAG);
         }
 
@@ -546,6 +542,7 @@ public class TokenStream {
 
   public enum ParseMode {
     TOKENS,
+    SELECTOR,
     VALUES;
   }
 }

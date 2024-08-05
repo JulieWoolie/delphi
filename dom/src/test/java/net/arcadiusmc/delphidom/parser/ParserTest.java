@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import net.arcadiusmc.delphidom.Loggers;
-import net.arcadiusmc.delphidom.selector.Selector;
 import net.arcadiusmc.delphidom.parser.ParserErrors.ErrorLevel;
+import net.arcadiusmc.delphidom.selector.Selector;
 import net.arcadiusmc.dom.ParserException;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -29,7 +29,12 @@ class ParserTest {
       "div div[id=\"facts\"]",
       "div #idddd",
       "#id-element",
-      "*"
+      "*",
+      ":first-child",
+      ":last-child",
+      ":not(div)",
+      ":is(div, span)",
+      ":nth-child(4)"
   };
 
   @Test

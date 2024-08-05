@@ -18,4 +18,7 @@ public interface Consts {
 
   float LEN0 = 5;
   float LEN0_PX = LEN0 * CHAR_PX_SIZE;
+
+  float MIN_SCREEN_SIZE = 1;
+  float MAX_SCREEN_SIZE = 10;
 }

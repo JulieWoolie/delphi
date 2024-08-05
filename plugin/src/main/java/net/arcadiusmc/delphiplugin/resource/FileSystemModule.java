@@ -59,6 +59,29 @@ public abstract class FileSystemModule implements IoModule {
         // I hate windows
         String str = relative.toString().replace("\\", "/");
 
+        if (str.contains(" ")) {
+          String[] split = str.split("/+");
+          StringBuilder builder = new StringBuilder();
+
+          for (int i = 0; i < split.length; i++) {
+            if (i != 0) {
+              builder.append('/');
+            }
+
+            String el = split[i];
+
+            if (el.contains(" ")) {
+              builder.append('"')
+                  .append(el)
+                  .append('"');
+            } else {
+              builder.append(el);
+            }
+          }
+
+          str = builder.toString();
+        }
+
         stringList.add(str);
       });
     } catch (IOException e) {

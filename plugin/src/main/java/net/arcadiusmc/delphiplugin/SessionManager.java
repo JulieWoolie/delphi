@@ -64,4 +64,15 @@ public class SessionManager {
       }
     }
   }
+
+  public void endSession(UUID playerId) {
+    PlayerSession removed = sessionMap.remove(playerId);
+    if (removed == null) {
+      return;
+    }
+
+    for (PageView view : removed.getViews()) {
+      view.onClose();
+    }
+  }
 }

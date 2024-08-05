@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import net.arcadiusmc.delphi.Screen;
-import net.arcadiusmc.delphidom.scss.Property.StyleFunction;
 import net.arcadiusmc.delphidom.Consts;
+import net.arcadiusmc.delphidom.scss.Property.StyleFunction;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.NamedColor;
@@ -32,8 +32,8 @@ public final class Properties {
       .build();
 
   public static final Property<Color> BACKGROUND_COLOR = Property.builder(Color.class)
-      .defaultValue(NamedColor.WHITE)
-      .cascading(true)
+      .defaultValue(NamedColor.TRANSPARENT)
+      .cascading(false)
       .layoutAffecting(false)
       .function((n, screen, color) -> n.backgroundColor = color)
       .build();

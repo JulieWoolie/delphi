@@ -17,7 +17,10 @@ public class Text extends DelphiNode implements TextNode {
   @Override
   public void setTextContent(@Nullable String textContent) {
     this.textContent = textContent;
-    owningDocument.textChanged(this, textContent);
+
+    if (hasFlag(NodeFlag.ADDED) && document.getView() != null) {
+      document.getView().contentChanged(this);
+    }
   }
 
   @Override

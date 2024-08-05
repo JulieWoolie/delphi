@@ -338,7 +338,6 @@ class DelphiElementTest {
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
     DelphiElement div3 = doc.createElement("div");
-
     DelphiElement body = doc.getBody();
 
     final String selector = "div#cool";

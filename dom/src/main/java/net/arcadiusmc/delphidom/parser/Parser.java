@@ -1,8 +1,24 @@
 package net.arcadiusmc.delphidom.parser;
 
+import static net.arcadiusmc.delphidom.parser.Token.BRACKET_CLOSE;
+import static net.arcadiusmc.delphidom.parser.Token.BRACKET_OPEN;
+import static net.arcadiusmc.delphidom.parser.Token.COLON;
+import static net.arcadiusmc.delphidom.parser.Token.COMMA;
+import static net.arcadiusmc.delphidom.parser.Token.DOT;
+import static net.arcadiusmc.delphidom.parser.Token.EQUALS;
+import static net.arcadiusmc.delphidom.parser.Token.HASHTAG;
+import static net.arcadiusmc.delphidom.parser.Token.ID;
+import static net.arcadiusmc.delphidom.parser.Token.NUMBER;
+import static net.arcadiusmc.delphidom.parser.Token.SQUARE_CLOSE;
+import static net.arcadiusmc.delphidom.parser.Token.SQUARE_OPEN;
+import static net.arcadiusmc.delphidom.parser.Token.STAR;
+import static net.arcadiusmc.delphidom.parser.Token.STRING;
+import static net.arcadiusmc.delphidom.parser.Token.WHITESPACE;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import net.arcadiusmc.delphidom.parser.TokenStream.ParseMode;
 import net.arcadiusmc.delphidom.selector.AttributedNode;
 import net.arcadiusmc.delphidom.selector.AttributedNode.AttributeTest;
 import net.arcadiusmc.delphidom.selector.AttributedNode.Operation;
@@ -10,11 +26,13 @@ import net.arcadiusmc.delphidom.selector.ClassNameFunction;
 import net.arcadiusmc.delphidom.selector.IdFunction;
 import net.arcadiusmc.delphidom.selector.PseudoClass;
 import net.arcadiusmc.delphidom.selector.PseudoClassFunction;
+import net.arcadiusmc.delphidom.selector.PseudoFuncFunction;
+import net.arcadiusmc.delphidom.selector.PseudoFunctions;
 import net.arcadiusmc.delphidom.selector.Selector;
 import net.arcadiusmc.delphidom.selector.SelectorFunction;
+import net.arcadiusmc.delphidom.selector.SelectorGroup;
 import net.arcadiusmc.delphidom.selector.SelectorNode;
 import net.arcadiusmc.delphidom.selector.TagNameFunction;
-import net.arcadiusmc.delphidom.parser.TokenStream.ParseMode;
 
 public class Parser {
 
@@ -47,9 +65,26 @@ public class Parser {
     return stream.expect(tokenType);
   }
 
+  public SelectorGroup selectorGroup() {
+    Selector first = selector();
+    List<Selector> list = new ArrayList<>();
+    list.add(first);
+
+    while (peek().type() == COMMA) {
+      next();
+
+      if (peek().type() == WHITESPACE) {
+        next();
+      }
+
+      list.add(selector());
+    }
+
+    return new SelectorGroup(list.toArray(Selector[]::new));
+  }
+
   public Selector selector() {
-    stream.pushMode(ParseMode.TOKENS);
-    stream.whitespaceMatters(true);
+    stream.pushMode(ParseMode.SELECTOR);
 
     List<SelectorNode> nodes = new ArrayList<>();
     List<SelectorFunction> functions = new ArrayList<>();
@@ -58,21 +93,21 @@ public class Parser {
       SelectorFunction node;
       Token p = peek();
 
-      if (p.type() == Token.STAR) {
+      if (p.type() == STAR) {
         next();
         node = SelectorFunction.ALL;
-      } else if (p.type() == Token.DOT) {
+      } else if (p.type() == DOT) {
         next();
-        node = new ClassNameFunction(stream.expect(Token.ID).value());
-      } else if (p.type() == Token.HASHTAG) {
+        node = new ClassNameFunction(stream.expect(ID).value());
+      } else if (p.type() == HASHTAG) {
         next();
-        node = new IdFunction(stream.expect(Token.ID).value());
-      } else if (p.type() == Token.ID) {
+        node = new IdFunction(stream.expect(ID).value());
+      } else if (p.type() == ID) {
         next();
         node = new TagNameFunction(p.value());
-      } else if (p.type() == Token.SQUARE_OPEN) {
+      } else if (p.type() == SQUARE_OPEN) {
         node = attributed();
-      } else if (p.type() == Token.COLON) {
+      } else if (p.type() == COLON) {
         node = pseudoClass();
       } else {
         break;
@@ -80,7 +115,7 @@ public class Parser {
 
       functions.add(node);
 
-      if (peek().type() == Token.WHITESPACE) {
+      if (peek().type() == WHITESPACE) {
         pushFunctions(nodes, functions);
         next();
       }
@@ -91,7 +126,6 @@ public class Parser {
     }
 
     stream.popMode();
-    stream.whitespaceMatters(false);
 
     SelectorNode[] nodeArr = nodes.toArray(SelectorNode[]::new);
     return new Selector(nodeArr);
@@ -104,20 +138,49 @@ public class Parser {
     functions.clear();
   }
 
-  private PseudoClassFunction pseudoClass() {
-    expect(Token.COLON);
-    Token id = expect(Token.ID);
+  private SelectorFunction pseudoClass() {
+    expect(COLON);
+    Token id = expect(ID);
 
-    PseudoClass pseudoClass = switch (id.value()) {
-      case "hover" -> PseudoClass.HOVER;
-      case "click", "active" -> PseudoClass.ACTIVE;
-      case "enabled" -> PseudoClass.ENABLED;
-      case "disabled" -> PseudoClass.DISABLED;
-      case "root" -> PseudoClass.ROOT;
+    PseudoClass pseudoClass;
+
+    switch (id.value()) {
+      case "hover" -> pseudoClass = PseudoClass.HOVER;
+      case "click", "active" -> pseudoClass = PseudoClass.ACTIVE;
+      case "enabled" -> pseudoClass = PseudoClass.ENABLED;
+      case "disabled" -> pseudoClass = PseudoClass.DISABLED;
+      case "root" -> pseudoClass = PseudoClass.ROOT;
+      case "first-child" -> pseudoClass = PseudoClass.FIRST_CHILD;
+      case "last-child" -> pseudoClass = PseudoClass.LAST_CHILD;
+
+      case "is" -> {
+        expect(BRACKET_OPEN);
+        SelectorGroup group = selectorGroup();
+        expect(BRACKET_CLOSE);
+
+        return new PseudoFuncFunction<>(PseudoFunctions.IS, group);
+      }
+
+      case "not" -> {
+        expect(BRACKET_OPEN);
+        SelectorGroup group = selectorGroup();
+        expect(BRACKET_CLOSE);
+
+        return new PseudoFuncFunction<>(PseudoFunctions.NOT, group);
+      }
+
+      case "nth-child" -> {
+        expect(BRACKET_OPEN);
+        Token indexToken = expect(NUMBER);
+        float f = Float.parseFloat(indexToken.value());
+        expect(BRACKET_CLOSE);
+
+        return new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, (int) f);
+      }
 
       default -> {
         errors.fatal(id.location(), "Invalid/unsupported pseudo class :%s", id.value());
-        yield null;
+        pseudoClass = null;
       }
     };
 
@@ -127,22 +190,22 @@ public class Parser {
   private AttributedNode attributed() {
     List<AttributeTest> tests = new ArrayList<>();
 
-    while (peek().type() == Token.SQUARE_OPEN) {
+    while (peek().type() == SQUARE_OPEN) {
       next();
 
-      Token attrNameT = expect(Token.ID);
+      Token attrNameT = expect(ID);
       String attrValue;
 
       Token peek = peek();
       int ptype = peek.type();
 
       Operation op = switch (ptype) {
-        case Token.EQUALS -> Operation.EQUALS;
+        case EQUALS -> Operation.EQUALS;
         case Token.SQUIGLY -> Operation.CONTAINS_WORD;
         case Token.WALL -> Operation.DASH_PREFIXED;
         case Token.UP_ARROW -> Operation.STARTS_WITH;
         case Token.DOLLAR_SIGN -> Operation.ENDS_WITH;
-        case Token.STAR -> Operation.CONTAINS_SUBSTRING;
+        case STAR -> Operation.CONTAINS_SUBSTRING;
         default -> Operation.HAS;
       };
 
@@ -155,7 +218,7 @@ public class Parser {
         case ENDS_WITH:
         case CONTAINS_SUBSTRING:
           next();
-          expect(Token.EQUALS);
+          expect(EQUALS);
           expectValue = true;
           break;
 
@@ -170,13 +233,13 @@ public class Parser {
       }
 
       if (expectValue) {
-        Token valT = expect(Token.STRING);
+        Token valT = expect(STRING);
         attrValue = valT.value();
       } else {
         attrValue = null;
       }
 
-      expect(Token.SQUARE_CLOSE);
+      expect(SQUARE_CLOSE);
 
       AttributeTest test = new AttributeTest(attrNameT.value(), op, attrValue);
       tests.add(test);

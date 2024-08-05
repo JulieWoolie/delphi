@@ -3,10 +3,10 @@ package net.arcadiusmc.delphidom.selector;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import java.util.List;
-import net.arcadiusmc.delphidom.StringUtil;
 import net.arcadiusmc.delphidom.DelphiElement;
+import net.arcadiusmc.delphidom.StringUtil;
 
-public class AttributedNode implements FilteringFunction {
+public class AttributedNode implements SelectorFunction {
 
   private final List<AttributeTest> attributeTests;
 
@@ -20,7 +20,7 @@ public class AttributedNode implements FilteringFunction {
   }
 
   @Override
-  public boolean test(DelphiElement element) {
+  public boolean test(DelphiElement root, DelphiElement element) {
     for (AttributeTest attributeTest : attributeTests) {
       if (!attributeTest.test(element)) {
         return false;

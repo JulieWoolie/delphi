@@ -2,7 +2,6 @@ package net.arcadiusmc.delphidom.scss;
 
 import static net.arcadiusmc.delphidom.parser.Token.BRACKET_OPEN;
 import static net.arcadiusmc.delphidom.parser.Token.COLON;
-import static net.arcadiusmc.delphidom.parser.Token.COMMA;
 import static net.arcadiusmc.delphidom.parser.Token.DOLLAR_SIGN;
 import static net.arcadiusmc.delphidom.parser.Token.EOF;
 import static net.arcadiusmc.delphidom.parser.Token.HEX;
@@ -15,22 +14,20 @@ import static net.arcadiusmc.delphidom.parser.Token.SQUIG_CLOSE;
 import static net.arcadiusmc.delphidom.parser.Token.SQUIG_OPEN;
 import static net.arcadiusmc.delphidom.parser.Token.STRING;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphidom.StringUtil;
-import net.arcadiusmc.delphidom.scss.func.ArgsParser;
-import net.arcadiusmc.delphidom.scss.func.ScssFunction;
-import net.arcadiusmc.delphidom.scss.func.StyleFunctions;
-import net.arcadiusmc.delphidom.selector.Selector;
 import net.arcadiusmc.delphidom.parser.Location;
 import net.arcadiusmc.delphidom.parser.Parser;
 import net.arcadiusmc.delphidom.parser.Token;
 import net.arcadiusmc.delphidom.parser.TokenStream.ParseMode;
+import net.arcadiusmc.delphidom.scss.func.ArgsParser;
+import net.arcadiusmc.delphidom.scss.func.ScssFunction;
+import net.arcadiusmc.delphidom.scss.func.StyleFunctions;
+import net.arcadiusmc.delphidom.selector.SelectorGroup;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.NamedColor;
 import net.arcadiusmc.dom.style.Primitive;
@@ -109,18 +106,11 @@ public class ScssParser extends Parser {
   }
 
   void style(SheetBuilder out) {
-    List<Selector> selectorList = new ArrayList<>();
-    selectorList.add(selector());
-
-    while (peek().type() == COMMA) {
-      next();
-      selectorList.add(selector());
-    }
-
+    SelectorGroup selectorList = selectorGroup();
     PropertySet set = ruleset();
 
-    for (Selector selector : selectorList) {
-      out.add(selector, set);
+    for (int i = 0; i < selectorList.length(); i++) {
+      out.add(selectorList.get(i), set);
     }
   }
 
@@ -321,7 +311,6 @@ public class ScssParser extends Parser {
         return;
     }
   }
-
 
   public <T> T parseAs(Class<T> type) {
     Object o = parseValue(type);

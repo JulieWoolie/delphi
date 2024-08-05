@@ -3,20 +3,22 @@ package net.arcadiusmc.delphidom.selector;
 import com.google.common.base.Strings;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.NodeFlag;
-import net.arcadiusmc.dom.Attr;
+import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.TagNames;
 import net.kyori.adventure.util.TriState;
 
-public record PseudoClassFunction(PseudoClass pseudo) implements FilteringFunction {
+public record PseudoClassFunction(PseudoClass pseudo) implements SelectorFunction {
 
   @Override
-  public boolean test(DelphiElement element) {
+  public boolean test(DelphiElement root, DelphiElement element) {
     return switch (pseudo) {
       case HOVER -> element.hasFlag(NodeFlag.HOVERED);
       case ACTIVE -> element.hasFlag(NodeFlag.CLICKED);
       case DISABLED -> buttonEnabled(element) == TriState.FALSE;
       case ENABLED -> buttonEnabled(element) == TriState.TRUE;
       case ROOT -> element.hasFlag(NodeFlag.ROOT);
+      case LAST_CHILD -> PseudoFunctions.NTH_CHILD.test(root, element, -1);
+      case FIRST_CHILD -> PseudoFunctions.NTH_CHILD.test(root, element, 0);
     };
   }
 
@@ -25,7 +27,7 @@ public record PseudoClassFunction(PseudoClass pseudo) implements FilteringFuncti
       return TriState.NOT_SET;
     }
 
-    String enabled = element.getAttribute(Attr.ENABLED);
+    String enabled = element.getAttribute(Attributes.ENABLED);
 
     if (Strings.isNullOrEmpty(enabled)) {
       return TriState.TRUE;
@@ -48,6 +50,8 @@ public record PseudoClassFunction(PseudoClass pseudo) implements FilteringFuncti
       case ACTIVE -> builder.append("active");
       case HOVER -> builder.append("hover");
       case ROOT -> builder.append("root");
+      case LAST_CHILD -> builder.append("last-child");
+      case FIRST_CHILD -> builder.append("first-child");
     }
   }
 

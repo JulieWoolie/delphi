@@ -3,27 +3,25 @@ package net.arcadiusmc.delphidom.parser;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.io.Resources;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import javax.xml.parsers.ParserConfigurationException;
-import net.arcadiusmc.delphidom.Loggers;
-import net.arcadiusmc.delphidom.DelphiDocument;
-import net.arcadiusmc.delphidom.parser.DocumentSaxParser;
-import net.arcadiusmc.delphidom.parser.ParserErrors.Error;
-import net.arcadiusmc.delphidom.parser.ParserErrors.ErrorLevel;
+import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphi.util.Result;
+import net.arcadiusmc.delphidom.DelphiDocument;
+import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.style.Stylesheet;
+import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 class DocumentSaxParserTest {
 
@@ -39,6 +37,16 @@ class DocumentSaxParserTest {
     }
 
     @Override
+    public DocumentView getView() {
+      return null;
+    }
+
+    @Override
+    public Result<ItemStack, String> loadItemStack(String uri) {
+      return Result.err("NOP");
+    }
+
+    @Override
     public Result<Document, String> loadDocument(String uri) {
       return Result.err("NOP");
     }
@@ -50,61 +58,77 @@ class DocumentSaxParserTest {
   };
 
   @Test
+  void pluginOptionTest() {
+    DocumentSaxParser handler = createHandler();
+    handler.setCallbacks(pluginName -> false);
+
+    InputSource in = getInput("test-pages/option/pl-req.xml");
+
+    assertThrows(PluginMissingException.class, () -> {
+      DocumentSaxParser.runParser(in, handler);
+    });
+  }
+
+  @Test
   void screenSizeTest() {
-    DocumentSaxParser handler = runSafe("test-pages/screen/w1h1.xml");
-    assertEquals(1, handler.getWidth());
-    assertEquals(1, handler.getHeight());
 
-    DocumentSaxParser w = runSafe("test-pages/screen/missing-w.xml");
-    assertFalse(w.getErrors().isEmpty());
-    assertTrue(w.getErrors().getFirst().message().contains("Missing 'width' attribute"));
+  }
 
-    DocumentSaxParser h = runSafe("test-pages/screen/missing-h.xml");
-    assertFalse(h.getErrors().isEmpty());
-    assertTrue(h.getErrors().getFirst().message().contains("Missing 'height' attribute"));
+  @Test
+  void testOptionsTag() {
+    DocumentSaxParser parser = runHandlerSafe("test-pages/option/options-tag.xml");
+    assertFalse(parser.isFailed());
+
+    DelphiDocument document = parser.getDocument();
+    assertEquals("3", document.getOption(Options.SCREEN_WIDTH));
+    assertEquals("2", document.getOption(Options.SCREEN_HEIGHT));
+    assertEquals("bar", document.getOption("foo"));
+    assertEquals("true", document.getOption("foobar"));
   }
 
   @Test
   void optionsTest() {
-    DocumentSaxParser correct = runSafe("test-pages/option/correct.xml");
+    DocumentSaxParser correct = runHandlerSafe("test-pages/option/correct.xml");
     assertFalse(correct.isFailed());
 
     DelphiDocument doc = correct.getDocument();
     assertEquals("bar", doc.getOption("foo"));
 
-    DocumentSaxParser missingkey = runSafe("test-pages/option/missing-key.xml");
+    DocumentSaxParser missingkey = runHandlerSafe("test-pages/option/missing-key.xml");
     assertFalse(missingkey.getErrors().isEmpty());
-    assertTrue(missingkey.getErrors().getFirst().message().contains("Missing 'key' attribute"));
 
-    DocumentSaxParser missingValue = runSafe("test-pages/option/missing-value.xml");
+    assertTrue(
+        missingkey.getErrors()
+            .getFirst()
+            .message()
+            .contains("Missing '" + Attributes.NAME + "' attribute")
+    );
+
+    DocumentSaxParser missingValue = runHandlerSafe("test-pages/option/missing-value.xml");
     assertTrue(missingValue.getErrors().isEmpty());
     assertEquals("", missingValue.getDocument().getOption("foo"));
   }
 
-  static DocumentSaxParser runSafe(String resourceId) {
-    return assertDoesNotThrow(() -> run(resourceId));
+  static DocumentSaxParser runHandlerSafe(String resourceId) {
+    return assertDoesNotThrow(() -> {
+      DocumentSaxParser handler = createHandler();
+      DocumentSaxParser.runParser(getInput(resourceId), handler);
+      return handler;
+    });
   }
 
-  static DocumentSaxParser run(String resourceId)
-      throws ParserConfigurationException, IOException, SAXException
-  {
+  static InputSource getInput(String resourceId) {
     String in = getStringResource(resourceId);
-
     InputSource source = new InputSource(resourceId);
+
     source.setPublicId(resourceId);
     source.setCharacterStream(new StringReader(in));
 
-    DocumentSaxParser ran = DocumentSaxParser.runParser(NOP, source);
+    return source;
+  }
 
-    for (Error error : ran.getErrors()) {
-      if (error.level() != ErrorLevel.WARN) {
-        continue;
-      }
-
-      Loggers.getLogger().warn(error.message());
-    }
-
-    return ran;
+  static DocumentSaxParser createHandler() {
+    return new DocumentSaxParser(NOP);
   }
 
   static String getStringResource(String uri) {

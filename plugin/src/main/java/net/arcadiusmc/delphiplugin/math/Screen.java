@@ -1,8 +1,6 @@
 package net.arcadiusmc.delphiplugin.math;
 
 import lombok.Getter;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.joml.Intersectionf;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -10,9 +8,6 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Screen implements net.arcadiusmc.delphi.Screen {
-
-  public static final float DEFAULT_WIDTH = 3;
-  public static final float DEFAULT_HEIGHT = 2;
 
   private static final float EPSILON = 0.0000001f;
 
@@ -31,6 +26,10 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
 
   public Screen() {
     set(new Vector3f(), DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public void setDimensions(float width, float height) {
+    set(center, width, height);
   }
 
   @Override
@@ -56,11 +55,6 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
 
     this.width = width;
     this.height = height;
-  }
-
-  public Location getLowerRightLocation(World world) {
-    Vector2f rot = getRotation();
-    return new Location(world, lowerRight.x, lowerRight.y, lowerRight.z, rot.x, rot.y);
   }
 
   @Override
@@ -97,18 +91,23 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
 
   private float toYaw() {
     double t = Math.atan2(-normal.x, normal.z);
-    return (float) Math.toDegrees(((t + Math.TAU) % Math.TAU));
+    return (float) Math.toDegrees((t + Math.TAU) % Math.TAU);
   }
 
   private float toPitch() {
-    if (normal.x == 0 || normal.z == 0) {
-      return normal.y < 0 ? 90 : -90;
+    float x = normal.x;
+    float z = normal.z;
+    float y = normal.y;
+
+    if (x == 0 && z == 0) {
+      return y > 0 ? -90 : 90;
     }
 
-    float xSq = normal.x * normal.x;
-    float zSq = normal.z * normal.z;
+    float xSq = x * x;
+    float zSq = z * z;
+    double zs = Math.sqrt(xSq + zSq);
 
-    return (float) Math.toDegrees(Math.atan(normal.y / Math.sqrt(xSq + zSq)));
+    return (float) Math.toDegrees(Math.atan(-y / zs));
   }
 
   @Override

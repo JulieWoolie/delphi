@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
-import net.arcadiusmc.dom.Attr;
+import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
 import net.arcadiusmc.dom.style.Stylesheet;
@@ -20,7 +20,7 @@ class DocumentStylesTest {
     DelphiDocument doc = createDoc();
     DelphiElement body = doc.getBody();
 
-    body.setAttribute(Attr.STYLE, "padding-left: 4px;");
+    body.setAttribute(Attributes.STYLE, "padding-left: 4px;");
     ReadonlyMap map = body.getCurrentStyle();
     InlineStyle inline = body.getInlineStyle();
 
@@ -35,11 +35,11 @@ class DocumentStylesTest {
     DelphiElement body = doc.getBody();
 
     assertDoesNotThrow(() -> {
-      body.setAttribute(Attr.STYLE, "paddi: 4px;");
+      body.setAttribute(Attributes.STYLE, "paddi: 4px;");
     });
 
     assertDoesNotThrow(() -> {
-      body.setAttribute(Attr.STYLE, "padding: $non-existent-variable;");
+      body.setAttribute(Attributes.STYLE, "padding: $non-existent-variable;");
     });
   }
 
@@ -68,7 +68,7 @@ class DocumentStylesTest {
     DelphiElement body = doc.getBody();
     body.setClassName("test");
 
-    assertEquals("test", body.getAttribute(Attr.CLASS));
+    assertEquals("test", body.getAttribute(Attributes.CLASS));
 
     ReadonlyMap map = body.getCurrentStyle();
     InlineStyle inline = body.getInlineStyle();
@@ -83,7 +83,7 @@ class DocumentStylesTest {
 
     Rule r = sheet.getRule(0);
     assertEquals(v, r.getProperties().getPaddingLeft());
-    assertTrue(r.getSelectorObj().test(body));
+    assertTrue(r.getSelectorObj().test(null, body));
 
     assertEquals(v, map.getPaddingLeft());
     assertEquals(Properties.PADDING_LEFT.getDefaultValue(), inline.getPaddingLeft());

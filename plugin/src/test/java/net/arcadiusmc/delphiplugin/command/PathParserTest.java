@@ -2,14 +2,22 @@ package net.arcadiusmc.delphiplugin.command;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import net.arcadiusmc.delphi.resource.ResourcePath;
+import net.arcadiusmc.delphiplugin.command.PathParser.SuggestionMode;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +31,66 @@ class PathParserTest {
     file = new File(PathParserTest.class.getClassLoader().getResource("test-modules").getFile());
     path = file.toPath();
     modules = new Modules(path);
+  }
+
+  @Test
+  void testSuggestions() {
+    assertSuggestionMode("mod", SuggestionMode.MODULE_NAMES);
+    assertSuggestionMode("module", SuggestionMode.COLON);
+    assertSuggestionMode("module:", SuggestionMode.FILE_PATHS);
+    assertSuggestionMode("module:path.xml", SuggestionMode.FILE_PATHS);
+
+    assertSuggestions("", List.of("module", "zipped"));
+    assertSuggestions("mod", List.of("module"));
+    assertSuggestions("module", List.of(":"));
+    assertSuggestions("module:", List.of("subdir1/randomfile.json", "path.xml", "\"dir with space\"/file.xml"));
+    assertSuggestions("module:subdir1", List.of("subdir1/randomfile.json"));
+    assertSuggestions("module:subdir1/", List.of("randomfile.json"));
+    assertSuggestions("module:path", List.of("path.xml"));
+  }
+
+  void assertSuggestions(String string, List<String> expected) {
+    StringReader reader = new StringReader(string);
+    PathParser<?> parser = new PathParser<>(modules, reader);
+
+    try {
+      parser.parse();
+    } catch (CommandSyntaxException exc) {
+      // Ignored
+    }
+
+    SuggestionsBuilder builder = new SuggestionsBuilder(string, 0);
+    Suggestions result = parser.getSuggestions(null, builder).resultNow();
+
+    List<String> suggestions = new ArrayList<>(
+        result.getList().stream().map(Suggestion::getText).toList()
+    );
+
+    System.out.printf("input='%s', returned: %s\n", string, suggestions);
+
+    for (String s : expected) {
+      int index = suggestions.indexOf(s);
+      assertNotEquals(-1, index,
+          "Expected suggestion '" + s + "' not found in returned list: " + suggestions
+      );
+
+      suggestions.remove(index);
+    }
+
+    assertTrue(suggestions.isEmpty(), "Too many returned suggestions: " + suggestions);
+  }
+
+  void assertSuggestionMode(String string, SuggestionMode mode) {
+    StringReader reader = new StringReader(string);
+    PathParser<?> parser = new PathParser<>(modules, reader);
+
+    try {
+      parser.parse();
+    } catch (CommandSyntaxException exc) {
+      // Ignored
+    }
+
+    assertEquals(mode, parser.getSuggestionMode());
   }
 
   @Test

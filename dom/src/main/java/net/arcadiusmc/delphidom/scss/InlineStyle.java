@@ -1,7 +1,7 @@
 package net.arcadiusmc.delphidom.scss;
 
 import net.arcadiusmc.delphidom.DelphiElement;
-import net.arcadiusmc.dom.Attr;
+import net.arcadiusmc.dom.Attributes;
 
 public class InlineStyle extends PropertyMap {
 
@@ -16,7 +16,7 @@ public class InlineStyle extends PropertyMap {
   protected void onChange() {
     String str = backing.toParseString();
     element.inlineUpdatesSuppressed = true;
-    element.setAttribute(Attr.STYLE, str);
+    element.setAttribute(Attributes.STYLE, str);
     element.inlineUpdatesSuppressed = false;
   }
 }

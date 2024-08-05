@@ -1,7 +1,6 @@
 package net.arcadiusmc.delphidom.parser;
 
 import com.google.common.base.Strings;
-import it.unimi.dsi.fastutil.floats.FloatConsumer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +10,18 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
+import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
+import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.parser.ParserErrors.Error;
 import net.arcadiusmc.delphidom.parser.ParserErrors.ErrorLevel;
-import net.arcadiusmc.delphi.resource.ViewResources;
-import net.arcadiusmc.dom.Attr;
+import net.arcadiusmc.dom.Attributes;
+import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.TagNames;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -36,7 +37,7 @@ public class DocumentSaxParser extends DefaultHandler {
   static final String HEADER_ELEMENT = "header";
   static final String BODY_ELEMENT = TagNames.BODY;
   static final String OPTION_ELEMENT = "option";
-  static final String SCREEN_ELEMENT = "screen";
+  static final String OPTIONS_ELEMENT = "options";
   static final String STYLE_ELEMENT = "style";
 
   static final String ATTR_WIDTH = "width";
@@ -54,8 +55,8 @@ public class DocumentSaxParser extends DefaultHandler {
   private String ignoreElement = null;
   private boolean ignoreWarningLogged = false;
 
-  private float width;
-  private float height;
+  @Setter
+  private ParserCallbacks callbacks;
 
   private Locator locator;
 
@@ -67,20 +68,19 @@ public class DocumentSaxParser extends DefaultHandler {
   @Setter
   private ErrorListener listener;
 
+  @Setter
+  private ExtendedView view;
+
   public DocumentSaxParser(ViewResources resources) {
     this.resources = resources;
   }
 
-  public static DocumentSaxParser runParser(ViewResources resources, InputSource source)
+  public static DocumentSaxParser runParser(InputSource source, DocumentSaxParser handler)
       throws ParserConfigurationException, SAXException, IOException
   {
-    DocumentSaxParser handler = new DocumentSaxParser(resources);
-
     SAXParser parser = PARSER_FACTORY.newSAXParser();
     PARSER_FACTORY.setXIncludeAware(false);
-
     parser.parse(source, handler);
-
     return handler;
   }
 
@@ -144,7 +144,7 @@ public class DocumentSaxParser extends DefaultHandler {
   }
 
   @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes)
+  public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes)
       throws SAXException
   {
     depth++;
@@ -183,6 +183,17 @@ public class DocumentSaxParser extends DefaultHandler {
           String name = attributes.getLocalName(i);
           String value = attributes.getValue(i);
           element.setAttribute(name, value);
+        }
+
+        if (element instanceof DelphiItemElement item) {
+          String src = item.getAttribute(Attributes.SOURCE);
+
+          if (!Strings.isNullOrEmpty(src)) {
+            resources.loadItemStack(src)
+                .mapError(string -> "Failed to load item stack from " + src + ": " + string)
+                .ifError(this::warn)
+                .ifSuccess(item::setItemStack);
+          }
         }
 
         break;
@@ -239,7 +250,7 @@ public class DocumentSaxParser extends DefaultHandler {
     popNode();
   }
 
-  private String validateAttribute(String elementName, String attrib, Attributes attributes) {
+  private String validateAttribute(String elementName, String attrib, org.xml.sax.Attributes attributes) {
     String value = attributes.getValue(attrib);
     return validateAttribute(elementName, attrib, value);
   }
@@ -253,28 +264,67 @@ public class DocumentSaxParser extends DefaultHandler {
     return null;
   }
 
-  private void headerElement(String name, Attributes attributes) throws SAXException {
+  private void pushOption(String key, String value) {
+    document.setOption(key, value);
+
+    if (callbacks == null) {
+      return;
+    }
+
+    switch (key) {
+      case Options.REQUIRED_PLUGINS -> {
+        String[] split = value.split("\\s+");
+        List<String> missingPlugins = new ArrayList<>();
+
+        for (String s : split) {
+          if (callbacks.isPluginEnabled(s)) {
+            continue;
+          }
+
+          missingPlugins.add(s);
+        }
+
+        if (!missingPlugins.isEmpty()) {
+          throw new PluginMissingException(missingPlugins);
+        }
+      }
+
+      default -> {
+
+      }
+    }
+  }
+
+  private void headerElement(String name, org.xml.sax.Attributes attributes) throws SAXException {
     switch (name) {
+      case OPTIONS_ELEMENT -> {
+        for (int i = 0; i < attributes.getLength(); i++) {
+          String optionName = attributes.getLocalName(i);
+          String optionValue = attributes.getValue(i);
+          pushOption(optionName, optionValue);
+        }
+      }
+
       case OPTION_ELEMENT -> {
         beginIgnoringChildren(OPTION_ELEMENT);
 
-        String key = validateAttribute(name, Attr.KEY, attributes);
+        String key = validateAttribute(name, Attributes.NAME, attributes);
         if (Strings.isNullOrEmpty(key)) {
           return;
         }
 
-        String value = attributes.getValue(Attr.VALUE);
+        String value = attributes.getValue(Attributes.VALUE);
         if (value == null) {
           value = "";
         }
 
-        document.setOption(key, value);
+        pushOption(key, value);
       }
 
       case STYLE_ELEMENT -> {
         beginIgnoringChildren(STYLE_ELEMENT);
 
-        String src = validateAttribute(name, Attr.SOURCE, attributes);
+        String src = validateAttribute(name, Attributes.SOURCE, attributes);
 
         if (Strings.isNullOrEmpty(src)) {
           return;
@@ -286,45 +336,12 @@ public class DocumentSaxParser extends DefaultHandler {
             .ifError(this::error);
       }
 
-      case SCREEN_ELEMENT -> {
-        beginIgnoringChildren(SCREEN_ELEMENT);
-
-        String widthStr = validateAttribute(name, ATTR_WIDTH, attributes);
-        String heightStr = validateAttribute(name, ATTR_HEIGHT, attributes);
-
-        if (Strings.isNullOrEmpty(widthStr) || Strings.isNullOrEmpty(heightStr)) {
-          return;
-        }
-
-        parseScreenDimension(widthStr, ATTR_WIDTH, t -> this.width = t);
-        parseScreenDimension(heightStr, ATTR_HEIGHT, t -> this.height = t);
-      }
-
       default -> {
         // :shrug: idk, it's not a valid header element, so it doesn't really matter
         // but should it be logged? I don't care
       }
     }
   }
-
-  private void parseScreenDimension(String str, String dim, FloatConsumer consumer) {
-    float f;
-
-    try {
-      f = Float.parseFloat(str);
-    } catch (NumberFormatException exc) {
-      error("Failed to convert '%s' to number for screen %s", str, dim);
-      return;
-    }
-
-    if (f < 1) {
-      error("Screen %s cannot be less than 1, value: %s", dim, f);
-      return;
-    }
-
-    consumer.accept(f);
-  }
-
 
   @Override
   public void warning(SAXParseException e) throws SAXException {

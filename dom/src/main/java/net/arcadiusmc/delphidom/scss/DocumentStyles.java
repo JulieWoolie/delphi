@@ -7,14 +7,18 @@ import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.scss.Property.StyleFunction;
 import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
+import org.slf4j.Logger;
 
 public class DocumentStyles {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   public final List<Sheet> stylesheets = new ArrayList<>();
   private final List<Rule> rules = new ArrayList<>();
@@ -35,13 +39,8 @@ public class DocumentStyles {
 
     rules.sort(Comparator.naturalOrder());
 
-    ChangeSet changed = new ChangeSet();
     if (document.getBody() != null) {
-      updateStyles(document.getBody(), changed);
-    }
-
-    if (document.getView() != null) {
-      document.getView().sheetAdded(changed);
+      updateStyles(document.getBody());
     }
   }
 
@@ -58,7 +57,7 @@ public class DocumentStyles {
     target.addEventListener(EventTypes.MOUSE_LEAVE, listener);
   }
 
-  public void updateStyles(DelphiNode node, ChangeSet changes) {
+  public void updateStyles(DelphiNode node) {
     PropertySet set = node.styleSet;
     PropertySet newSet = new PropertySet();
     PropertySet old = new PropertySet();
@@ -68,7 +67,7 @@ public class DocumentStyles {
 
     if (node instanceof DelphiElement el) {
       for (Rule rule : rules) {
-        if (!rule.getSelectorObj().test(el)) {
+        if (!rule.getSelectorObj().test(null, el)) {
           continue;
         }
 
@@ -82,15 +81,13 @@ public class DocumentStyles {
     int dirtyBits = set.putAll(newSet);
 
     if (dirtyBits != 0) {
-      if (document.getView() != null) {
-        document.getView().styleChanged(dirtyBits, node);
-      }
-
       applyRules(node, newSet);
-    }
 
-    if (changes != null) {
-      changes.changes |= dirtyBits;
+      if (document.getView() != null) {
+        ChangeSet changeSet = new ChangeSet();
+        changeSet.changes |= dirtyBits;
+        document.getView().styleUpdated(node, dirtyBits);
+      }
     }
 
     if (!(node instanceof DelphiElement el)) {
@@ -98,7 +95,7 @@ public class DocumentStyles {
     }
 
     for (DelphiNode delphiNode : el.childList()) {
-      updateStyles(delphiNode, changes);
+      updateStyles(delphiNode);
     }
   }
 
@@ -157,28 +154,24 @@ public class DocumentStyles {
 
     @Override
     public void onEvent(Event event) {
-      ChangeSet set = new ChangeSet();
+      Loggers.getDocumentLogger().debug("style update listener called");
       DelphiNode node = (DelphiNode) event.getTarget();
-      updateStyles(node, set);
-
-      if (document.getView() != null) {
-        document.getView().styleUpdated(node, set);
-      }
+      updateStyles(node);
     }
   }
 
   public static class ChangeSet {
     private int changes = 0;
 
-    boolean contains(DirtyBit change) {
+    public boolean contains(DirtyBit change) {
       return (changes & change.mask) == change.mask;
     }
 
-    void add(DirtyBit change) {
+    public void add(DirtyBit change) {
       changes |= change.mask;
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
       return changes == 0;
     }
   }

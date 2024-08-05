@@ -1,0 +1,75 @@
+package net.arcadiusmc.delphiplugin.render;
+
+import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
+import static net.arcadiusmc.delphidom.Consts.ITEM_SPRITE_SIZE;
+
+import java.util.Objects;
+import net.arcadiusmc.delphidom.scss.ComputedStyle;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.ItemDisplay.ItemDisplayTransform;
+import org.bukkit.inventory.ItemStack;
+import org.joml.Vector2f;
+
+public class ItemContent implements ElementContent {
+
+  public static final float Z_SCALE = 0.150f * GLOBAL_SCALAR;
+  public static final float Z_OFF = 0.033f * GLOBAL_SCALAR;
+  public static final float Y_OFF_MODIFIER = 0.5f;
+  public static final float ROTATION = (float) Math.toRadians(180);
+
+  private final ItemStack item;
+
+  public ItemContent(ItemStack item) {
+    this.item = Objects.requireNonNull(item, "Null item");
+  }
+
+  public static boolean isEmpty(ItemStack item) {
+    return item == null || item.getAmount() < 1 || item.getType().isAir();
+  }
+
+  @Override
+  public Display createEntity(World world, Location location) {
+    ItemDisplay display = world.spawn(location, ItemDisplay.class);
+    display.setItemDisplayTransform(ItemDisplayTransform.GUI);
+    return display;
+  }
+
+  @Override
+  public void applyContentTo(Display entity, ComputedStyle set) {
+    ItemDisplay display = (ItemDisplay) entity;
+    display.setItemStack(item);
+  }
+
+  @Override
+  public Class<? extends Display> getEntityClass() {
+    return ItemDisplay.class;
+  }
+
+  @Override
+  public void measureContent(Vector2f out, ComputedStyle set) {
+    if (isEmpty(item)) {
+      out.set(0);
+      return;
+    }
+
+    out.set(ITEM_SPRITE_SIZE);
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return isEmpty(item);
+  }
+
+  @Override
+  public void configureInitial(Layer layer, RenderObject element) {
+    layer.scale.z = Z_SCALE;
+
+    float transY = layer.size.y * Y_OFF_MODIFIER * element.getStyle().scale.y * GLOBAL_SCALAR;
+    layer.translate.y += transY;
+    layer.translate.z -= Z_OFF;
+    layer.leftRotation.rotateY(ROTATION);
+  }
+}

@@ -1,0 +1,109 @@
+/* Variables */
+
+$button-color: white;
+$button-outline: black;
+$button-bg: darken(gray, 20%);
+$button-bg-hover: lighten($button-bg, 20%);
+$button-bg-active: darken($button-bg, 25%);
+$button-padding: 1px;
+$body-bg: darken(white, 45%);
+
+/* Background */
+
+:root {
+  background-color: $body-bg;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  padding-left: 1vw;
+  padding-right: 1vw;
+  min-width: 98vw;
+  min-height: 98vh;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+/* Text elements */
+
+h1 {
+  scale: 2;
+}
+
+h2 {
+  scale: 1.75;
+}
+
+h3 {
+  scale: 1.5;
+}
+
+h3 {
+  scale: 1.25;
+}
+
+b {
+  bold: true;
+}
+
+i {
+  italic: true;
+}
+
+u {
+  underlined: true;
+}
+
+/* Item */
+
+item {
+  scale: 0.5;
+}
+
+/* Item tooltip stuff */
+
+item-tooltip-name {
+  margin-bottom: 1px;
+}
+
+item-tooltip {
+  scale: 0.5;
+  z-index: 10;
+
+  padding: 1px;
+  background-color: #170817;
+  border: 1px;
+  border-color: #270558;
+  outline: 1px;
+  outline-color: #170817;
+}
+
+/* Regular Tooltips */
+
+tooltip {
+  scale: 0.5;
+  z-index: 10;
+
+  padding: 1px;
+  background-color: #170817;
+  border: 1px;
+  border-color: #270558;
+  outline: 1px;
+  outline-color: #170817;
+}
+
+/* Buttons */
+
+button {
+  color: $button-color;
+  background-color: $button-bg;
+  border-color: $button-outline;
+  padding: $button-padding;
+  border: $button-padding;
+}
+
+button:hover {
+  background-color: $button-bg-hover;
+}
+
+button:active {
+  background-color: $button-bg-active;
+}

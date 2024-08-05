@@ -1,16 +1,17 @@
 package net.arcadiusmc.delphidom;
 
 import java.util.Map.Entry;
+import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.Visitor;
 
 public class XmlPrintVisitor implements Visitor {
 
-  private int indent = 0;
-  private StringBuilder builder = new StringBuilder();
+  protected int indent = 0;
+  protected StringBuilder builder = new StringBuilder();
 
-  private StringBuilder nlIndent() {
+  protected StringBuilder nlIndent() {
     return builder.append("\n")
         .append("  ".repeat(indent));
   }
@@ -46,6 +47,16 @@ public class XmlPrintVisitor implements Visitor {
 
   @Override
   public void exitText(TextNode text) {
+
+  }
+
+  @Override
+  public void enterComponent(ComponentNode node) {
+    nlIndent().append("<chat-component text=\"unknown\"/>");
+  }
+
+  @Override
+  public void exitComponent(ComponentNode node) {
 
   }
 

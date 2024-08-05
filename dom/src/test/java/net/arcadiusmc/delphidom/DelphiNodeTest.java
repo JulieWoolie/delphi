@@ -1,6 +1,8 @@
 package net.arcadiusmc.delphidom;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static net.arcadiusmc.delphidom.TestUtil.createDoc;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +27,7 @@ class DelphiNodeTest {
   void getOwningDocument() {
     DelphiDocument doc = new DelphiDocument();
     DelphiElement body = doc.createElement("body");
-    assertEquals(body.getOwningDocument(), doc);
+    assertEquals(body.getDocument(), doc);
   }
 
   @Test
@@ -93,5 +95,23 @@ class DelphiNodeTest {
     body.removeChild(div1);
 
     assertNull(div1.getParent());
+  }
+
+  @Test
+  void depthTest() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+
+    DelphiElement body = doc.getBody();
+    body.appendChild(div1);
+    div1.appendChild(div2);
+    div2.appendChild(div3);
+
+    assertEquals(0, body.getDepth());
+    assertEquals(1, div1.getDepth());
+    assertEquals(2, div2.getDepth());
+    assertEquals(3, div3.getDepth());
   }
 }

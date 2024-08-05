@@ -456,6 +456,11 @@ public final class NamedColor {
   public static final Color YELLOW_GREEN = Color.rgb(0x9acd32);
 
   /**
+   * Transparent
+   */
+  public static final Color TRANSPARENT = Color.argb(0, 0, 0, 0);
+
+  /**
    * Gets a named color
    * @param name Color name, case-insensitive
    * @return Found color, or {@code null}, if no color with the specified name was found.
@@ -622,6 +627,7 @@ public final class NamedColor {
     map.put("whitesmoke", WHITE_SMOKE);
     map.put("yellow", YELLOW);
     map.put("yellowgreen", YELLOW_GREEN);
+    map.put("transparent", TRANSPARENT);
 
     NAMES = Object2ObjectMaps.unmodifiable(map);
   }
