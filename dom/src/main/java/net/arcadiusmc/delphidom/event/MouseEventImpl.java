@@ -16,9 +16,7 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
   MouseButton button;
   ScrollDirection scrollDirection;
 
-  float screenX;
-  float screenY;
-
+  Vector2f screenPosition;
   Vector3f worldPosition;
 
   public MouseEventImpl(String type, DelphiDocument document) {
@@ -32,22 +30,20 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
       boolean shiftPressed,
       MouseButton button,
       ScrollDirection direction,
-      float screenX,
-      float screenY,
+      Vector2f screenPosition,
       Vector3f worldPosition
   ) {
     super.initEvent(target, bubbles, cancellable);
     this.shiftPressed = shiftPressed;
     this.button = button;
     this.scrollDirection = direction;
-    this.screenX = screenX;
-    this.screenY = screenY;
+    this.screenPosition = screenPosition;
     this.worldPosition = worldPosition;
   }
 
   @Override
   public Vector2f getScreenPosition() {
-    return new Vector2f(screenX, screenY);
+    return new Vector2f(screenPosition);
   }
 
   @Override
