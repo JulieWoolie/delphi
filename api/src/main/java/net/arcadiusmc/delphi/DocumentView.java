@@ -64,9 +64,7 @@ public interface DocumentView {
   void close();
 
   /**
-   * Tests if this view is currently selected by the player.
-   * <p>
-   * A view is "selected" if a player is directly looking at it.
+   * Tests if this view is currently being looked at by the player.
    *
    * @return {@code true}, if {@link #getPlayer()} is currently looking at the view,
    *         {@code false} otherwise.
