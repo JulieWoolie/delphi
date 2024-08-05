@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.DelphiResources;
@@ -145,5 +146,11 @@ public class PageManager implements Delphi {
     }
 
     return views;
+  }
+
+  @Override
+  public Optional<DocumentView> getSelectedView(@NotNull Player player) {
+    Objects.requireNonNull(player, "Null player");
+    return sessions.getSession(player.getUniqueId()).map(PlayerSession::getSelectedView);
   }
 }

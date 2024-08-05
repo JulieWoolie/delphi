@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphi;
 
 import java.util.List;
+import java.util.Optional;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ViewResources;
@@ -115,4 +116,16 @@ public interface Delphi {
    * @return Unmodifiable open view list, may be empty.
    */
   List<DocumentView> getAllViews();
+
+  /**
+   * Get the view currently being looked at by the specified {@code player}.
+   *
+   * @param player Player
+   *
+   * @return An optional containing the view the player is currently looking at, or an empty
+   *         optional, if the {@code player} is not looking at any document views.
+   *
+   * @throws NullPointerException If {@code player} is {@code null}
+   */
+  Optional<DocumentView> getSelectedView(@NotNull Player player);
 }
