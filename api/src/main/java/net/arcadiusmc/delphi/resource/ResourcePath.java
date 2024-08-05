@@ -259,8 +259,8 @@ public sealed interface ResourcePath permits PathImpl {
   /**
    * Combines the module name, elements and queries into a string that can be given to
    * {@link Delphi#parsePath(String)} to parse.
-   *
-   * <h3>Examples</h3>
+   * <p>
+   * Examples:
    * <ul>
    *   <li>{@code module}</li>
    *   <li>{@code module:file.ext}</li>
