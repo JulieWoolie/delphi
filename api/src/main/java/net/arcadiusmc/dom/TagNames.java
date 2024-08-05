@@ -4,7 +4,6 @@ public interface TagNames {
 
   /**
    * Body tag
-   * @see BodyElement
    */
   String BODY = "body";
 

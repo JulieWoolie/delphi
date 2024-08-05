@@ -24,7 +24,26 @@ public interface ParentNode {
    */
   @NotNull List<Element> getElementsByClassName(@NotNull String className);
 
+  /**
+   * Gets all the elements that match the specified {@code query} CSS selector, or group of
+   * selectors.
+   *
+   * @param query CSS selector
+   * @return Array list of all matching elements, may be empty
+   *
+   * @throws ParserException If the {@code query} could not be parsed into a CSS selector
+   */
   @NotNull List<Element> querySelectorAll(@NotNull String query) throws ParserException;
 
+  /**
+   * Gets the first element that matches the specified {@code query} CSS selector or group of
+   * selectors.
+   * <p>
+   * Matching is done in a depth-first traversal of nodes.
+   *
+   * @param query CSS Selector
+   * @return Found element, or {@code null}, if no matching node was found
+   * @throws ParserException If the {@code query} could not be parsed into a CSS selector
+   */
   @Nullable Element querySelector(@NotNull String query) throws ParserException;
 }
