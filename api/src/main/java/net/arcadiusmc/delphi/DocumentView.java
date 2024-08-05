@@ -3,6 +3,7 @@ package net.arcadiusmc.delphi;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.dom.Document;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -50,6 +51,12 @@ public interface DocumentView {
    * @return View player
    */
   Player getPlayer();
+
+  /**
+   * Gets the world the view is spawned in.
+   * @return View world.
+   */
+  World getWorld();
 
   /**
    * Closes this view
