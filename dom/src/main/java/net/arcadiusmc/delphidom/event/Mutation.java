@@ -10,6 +10,7 @@ import net.arcadiusmc.dom.event.MutationEvent;
 public class Mutation extends EventImpl implements MutationEvent {
 
   DelphiNode node;
+  int mutationIndex;
 
   public Mutation(String type, DelphiDocument document) {
     super(type, document);
@@ -19,9 +20,11 @@ public class Mutation extends EventImpl implements MutationEvent {
       DelphiElement target,
       boolean bubbles,
       boolean cancellable,
-      DelphiNode node
+      DelphiNode node,
+      int mutationIndex
   ) {
     super.initEvent(target, bubbles, cancellable);
     this.node = node;
+    this.mutationIndex = mutationIndex;
   }
 }
