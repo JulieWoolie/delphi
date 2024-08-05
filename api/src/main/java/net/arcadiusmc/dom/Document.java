@@ -7,6 +7,7 @@ import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,6 +86,38 @@ public interface Document extends EventTarget, ParentNode {
   TextNode createText(@Nullable String content);
 
   /**
+   * Creates a component node.
+   * <p>
+   * Component nodes differ from {@link TextNode}s by the fact they use a fully-styled,
+   * {@link Component}. It is not recommended to use this, because it can conflict with
+   * document styling.
+   * <p>
+   * Components are required in certain instances, like in item tooltips, where it's not
+   * possible to dissect each line of the tooltip, and instead, a component node is used
+   * for the content.
+   *
+   * @return Created component node
+   */
+  ComponentNode createComponent();
+
+  /**
+   * Create a component node.
+   * <p>
+   * Component nodes differ from {@link TextNode}s by the fact they use a fully-styled,
+   * {@link Component}. It is not recommended to use this, because it can conflict with
+   * document styling.
+   * <p>
+   * Components are required in certain instances, like in item tooltips, where it's not
+   * possible to dissect each line of the tooltip, and instead, a component node is used
+   * for the content.
+   *
+   * @param component Node content
+   *
+   * @return Created component node
+   */
+  ComponentNode createComponent(@Nullable Component component);
+
+  /**
    * Gets the last clicked element that's still active.
    * <p>
    * When an element is clicked, it will remain active for {@link #ACTIVE_TICKS} ticks.
@@ -134,11 +167,6 @@ public interface Document extends EventTarget, ParentNode {
    * @throws NullPointerException if {@code node} is {@code null}
    */
   void adopt(@NotNull Node node);
-
-  /**
-   * Forces the whole document tree to recalculate alignment and layout
-   */
-  void realign();
 
   /**
    * Adds a stylesheet to this document.
