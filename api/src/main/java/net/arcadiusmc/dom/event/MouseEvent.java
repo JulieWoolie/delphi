@@ -32,18 +32,6 @@ public interface MouseEvent extends Event {
   ScrollDirection getScrollDirection();
 
   /**
-   * Gets the cursor's screen X coordinate
-   * @return Cursor screen X coordinate
-   */
-  float getScreenX();
-
-  /**
-   * Gets the cursor's screen Y coordinate
-   * @return Cursor screen Y coordinate
-   */
-  float getScreenY();
-
-  /**
    * Gets the screen coordinates of the viewer's cursor
    * @return Cursor screen position
    */

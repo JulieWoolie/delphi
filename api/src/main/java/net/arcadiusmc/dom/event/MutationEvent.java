@@ -9,4 +9,10 @@ public interface MutationEvent extends Event {
    * @return Affected node
    */
   Node getNode();
+
+  /**
+   * Gets the index of the node that was removed/added
+   * @return Mutation index
+   */
+  int getMutationIndex();
 }
