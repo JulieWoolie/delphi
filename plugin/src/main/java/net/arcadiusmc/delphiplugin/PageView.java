@@ -71,6 +71,9 @@ public class PageView implements ExtendedView {
   @Setter @Getter
   private PlayerSession session;
 
+  @Getter
+  private boolean selected = false;
+
   @Getter @Setter
   private World world;
 
@@ -364,9 +367,12 @@ public class PageView implements ExtendedView {
 
   public void onInteract(MouseButton button, boolean shift) {
     triggerClickEvent(button, shift);
+    selected = true;
   }
 
   public void cursorMoveTo(Vector2f screenPos, Vector3f targetPos) {
+    selected = true;
+
     if (screenPos.equals(this.cursorScreen)) {
       return;
     }
@@ -380,11 +386,13 @@ public class PageView implements ExtendedView {
   public void onUnselect() {
     cursorScreen.set(-1);
     cursorWorld.set(-1);
+    selected = false;
     unselectHovered();
   }
 
   public void onSelect(Vector2f screenPos, Vector3f targetPos) {
     cursorMoveTo(screenPos, targetPos);
+    selected = true;
   }
 
   private MouseEventImpl fireMouseEvent(
