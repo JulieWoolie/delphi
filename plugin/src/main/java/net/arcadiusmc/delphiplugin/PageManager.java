@@ -2,6 +2,7 @@ package net.arcadiusmc.delphiplugin;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.arcadiusmc.delphi.Delphi;
@@ -128,11 +129,21 @@ public class PageManager implements Delphi {
 
   @Override
   public List<DocumentView> getOpenViews(@NotNull Player player) {
-    return List.of();
+    Objects.requireNonNull(player, "Null player");
+
+    return sessions.getSession(player.getUniqueId())
+        .map(session -> new ArrayList<DocumentView>(session.getViews()))
+        .orElseGet(ArrayList::new);
   }
 
   @Override
   public List<DocumentView> getAllViews() {
-    return List.of();
+    List<DocumentView> views = new ArrayList<>();
+
+    for (PlayerSession session : sessions.getSessions()) {
+      views.addAll(session.getViews());
+    }
+
+    return views;
   }
 }

@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphiplugin;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,5 +75,9 @@ public class SessionManager {
     for (PageView view : removed.getViews()) {
       view.onClose();
     }
+  }
+
+  public Collection<PlayerSession> getSessions() {
+    return sessionMap.values();
   }
 }
