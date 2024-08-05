@@ -21,4 +21,8 @@ public interface Visitor {
   void enterText(TextNode text);
 
   void exitText(TextNode text);
+
+  void enterComponent(ComponentNode node);
+
+  void exitComponent(ComponentNode node);
 }
