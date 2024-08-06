@@ -41,6 +41,9 @@ public record Token(int type, Location location, int length, @Nullable String va
   public static final int PERCENT       = COMMA + 1;
   public static final int EXCLAMATION   = PERCENT + 1;
   public static final int WHITESPACE    = EXCLAMATION + 1;
+  public static final int PLUS          = WHITESPACE + 1;
+  public static final int ANGLE_LEFT    = PLUS + 1;
+  public static final int ANGLE_RIGHT   = ANGLE_LEFT + 1;
 
   public static String typeToString(int ttype) {
     return switch (ttype) {
@@ -71,6 +74,9 @@ public record Token(int type, Location location, int length, @Nullable String va
       case PERCENT -> "'%'";
       case WHITESPACE -> "white-space";
       case EXCLAMATION -> "'!'";
+      case PLUS -> "'+'";
+      case ANGLE_LEFT -> "'<'";
+      case ANGLE_RIGHT -> "'>'";
       default -> "unknown";
     };
   }

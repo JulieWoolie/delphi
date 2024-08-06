@@ -1,10 +1,12 @@
 package net.arcadiusmc.delphidom.selector;
 
+import lombok.Getter;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.parser.Parser;
 import net.arcadiusmc.delphidom.parser.ParserErrors;
 import org.jetbrains.annotations.NotNull;
 
+@Getter
 public class Selector implements Comparable<Selector> {
 
   private final SelectorNode[] nodes;
@@ -46,30 +48,19 @@ public class Selector implements Comparable<Selector> {
       return true;
     }
 
-    int minDepth = root == null ? -1 : root.getDepth();
     int nodeIndex = nodes.length - 2;
-    DelphiElement p = el.getParent();
+    DelphiElement next = el;
 
-    while (p != null) {
-      if (p.getDepth() < minDepth) {
+    while (nodeIndex >= 0) {
+      SelectorNode node = nodes[nodeIndex--];
+      next = node.combinator.findNextMatching(root, next, node);
+
+      if (next == null) {
         return false;
       }
-
-      SelectorNode node = nodes[nodeIndex--];
-
-      if (!node.test(root, p)) {
-        p = p.getParent();
-        continue;
-      }
-
-      if (nodeIndex < 0) {
-        return true;
-      }
-
-      p = p.getParent();
     }
 
-    return false;
+    return true;
   }
 
   public String debugString() {
@@ -77,7 +68,11 @@ public class Selector implements Comparable<Selector> {
     builder.append("<selector src=").append('"').append(this).append('"').append(">");
 
     for (SelectorNode node : nodes) {
-      builder.append("\n  <node>");
+      builder.append("\n  <node combinator=")
+          .append('"')
+          .append(node.getCombinator().name().toLowerCase())
+          .append('"')
+          .append('>');
 
       for (SelectorFunction function : node.functions) {
         builder.append("\n");
@@ -106,12 +101,7 @@ public class Selector implements Comparable<Selector> {
   public void append(StringBuilder builder) {
     for (int i = 0; i < nodes.length; i++) {
       SelectorNode node = nodes[i];
-
-      if (i != 0) {
-        builder.append(' ');
-      }
-
-      node.append(builder);
+      node.append(builder, i != (nodes.length - 1));
     }
   }
 

@@ -104,11 +104,11 @@ public class TokenStream {
 
   void skipIrrelevant() {
     while (currentChar != EOF) {
-      if (currentChar == ' ' && mode() == ParseMode.SELECTOR) {
-        return;
-      }
-
       if (Character.isWhitespace(currentChar)) {
+        if (mode() == ParseMode.SELECTOR) {
+          return;
+        }
+
         advance();
         continue;
       }
@@ -200,21 +200,6 @@ public class TokenStream {
     return n;
   }
 
-  public Token sortExpect(int tokenType) {
-    Token n = next();
-
-    if (n.type() != tokenType) {
-      errors.err(
-          n.location(),
-          "Expected %s, found %s",
-          Token.typeToString(tokenType),
-          n.info()
-      );
-    }
-
-    return n;
-  }
-
   Token readToken() {
     skipIrrelevant();
 
@@ -224,6 +209,14 @@ public class TokenStream {
       return token(Token.EOF);
     }
 
+    if (Character.isWhitespace(currentChar)) {
+      while (Character.isWhitespace(currentChar)) {
+        advance();
+      }
+
+      return token(Token.WHITESPACE);
+    }
+
     return switch (currentChar) {
       case '{' -> singleChar(Token.SQUIG_OPEN);
       case '}' -> singleChar(Token.SQUIG_CLOSE);
@@ -231,6 +224,9 @@ public class TokenStream {
       case ')' -> singleChar(Token.BRACKET_CLOSE);
       case '[' -> singleChar(Token.SQUARE_OPEN);
       case ']' -> singleChar(Token.SQUARE_CLOSE);
+      case '<' -> singleChar(Token.ANGLE_LEFT);
+      case '>' -> singleChar(Token.ANGLE_RIGHT);
+
       case '$' -> singleChar(Token.DOLLAR_SIGN);
       case ';' -> singleChar(Token.SEMICOLON);
       case ',' -> singleChar(Token.COMMA);
@@ -243,14 +239,7 @@ public class TokenStream {
       case '=' -> singleChar(Token.EQUALS);
       case '%' -> singleChar(Token.PERCENT);
       case '!' -> singleChar(Token.EXCLAMATION);
-
-      case ' ' -> {
-        while (currentChar == ' ') {
-          advance();
-        }
-
-        yield token(Token.WHITESPACE);
-      }
+      case '+' -> singleChar(Token.PLUS);
 
       case '#' -> {
         advance();

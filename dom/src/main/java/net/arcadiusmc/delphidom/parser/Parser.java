@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom.parser;
 
+import static net.arcadiusmc.delphidom.parser.Token.ANGLE_RIGHT;
 import static net.arcadiusmc.delphidom.parser.Token.BRACKET_CLOSE;
 import static net.arcadiusmc.delphidom.parser.Token.BRACKET_OPEN;
 import static net.arcadiusmc.delphidom.parser.Token.COLON;
@@ -9,8 +10,10 @@ import static net.arcadiusmc.delphidom.parser.Token.EQUALS;
 import static net.arcadiusmc.delphidom.parser.Token.HASHTAG;
 import static net.arcadiusmc.delphidom.parser.Token.ID;
 import static net.arcadiusmc.delphidom.parser.Token.NUMBER;
+import static net.arcadiusmc.delphidom.parser.Token.PLUS;
 import static net.arcadiusmc.delphidom.parser.Token.SQUARE_CLOSE;
 import static net.arcadiusmc.delphidom.parser.Token.SQUARE_OPEN;
+import static net.arcadiusmc.delphidom.parser.Token.SQUIGLY;
 import static net.arcadiusmc.delphidom.parser.Token.STAR;
 import static net.arcadiusmc.delphidom.parser.Token.STRING;
 import static net.arcadiusmc.delphidom.parser.Token.WHITESPACE;
@@ -23,6 +26,7 @@ import net.arcadiusmc.delphidom.selector.AttributedNode;
 import net.arcadiusmc.delphidom.selector.AttributedNode.AttributeTest;
 import net.arcadiusmc.delphidom.selector.AttributedNode.Operation;
 import net.arcadiusmc.delphidom.selector.ClassNameFunction;
+import net.arcadiusmc.delphidom.selector.Combinator;
 import net.arcadiusmc.delphidom.selector.IdFunction;
 import net.arcadiusmc.delphidom.selector.PseudoClass;
 import net.arcadiusmc.delphidom.selector.PseudoClassFunction;
@@ -43,6 +47,20 @@ public class Parser {
   public Parser(StringBuffer in) {
     this.errors = new ParserErrors(in);
     this.stream = new TokenStream(in, errors);
+  }
+
+  public boolean matches(int... ttypes) {
+    Token peek = peek();
+
+    for (int ttype : ttypes) {
+      if (peek.type() != ttype) {
+        continue;
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
   public boolean hasNext() {
@@ -115,14 +133,16 @@ public class Parser {
 
       functions.add(node);
 
-      if (peek().type() == WHITESPACE) {
-        pushFunctions(nodes, functions);
-        next();
+      if (matches(WHITESPACE, PLUS, SQUIGLY, ANGLE_RIGHT)) {
+        skipWhitespace();
+        Combinator combinator = combinator();
+        pushFunctions(nodes, functions, combinator);
+        skipWhitespace();
       }
     }
 
     if (!functions.isEmpty()) {
-      pushFunctions(nodes, functions);
+      pushFunctions(nodes, functions, Combinator.DESCENDANT);
     }
 
     stream.popMode();
@@ -131,9 +151,39 @@ public class Parser {
     return new Selector(nodeArr);
   }
 
-  private void pushFunctions(List<SelectorNode> nodes, List<SelectorFunction> functions) {
+  private void skipWhitespace() {
+    if (peek().type() == WHITESPACE) {
+      next();
+    }
+  }
+
+  private Combinator combinator() {
+    // Assume white space has been skipped, we expect combinator character now
+    return switch (peek().type()) {
+      case PLUS -> {
+        next();
+        yield Combinator.DIRECT_SIBLING;
+      }
+      case SQUIGLY -> {
+        next();
+        yield Combinator.SIBLING;
+      }
+      case ANGLE_RIGHT -> {
+        next();
+        yield Combinator.PARENT;
+      }
+
+      default -> Combinator.DESCENDANT;
+    };
+  }
+
+  private void pushFunctions(
+      List<SelectorNode> nodes,
+      List<SelectorFunction> functions,
+      Combinator combinator
+  ) {
     SelectorFunction[] arr = functions.toArray(SelectorFunction[]::new);
-    SelectorNode n = new SelectorNode(arr);
+    SelectorNode n = new SelectorNode(combinator, arr);
     nodes.add(n);
     functions.clear();
   }

@@ -1,12 +1,15 @@
 package net.arcadiusmc.delphidom.parser;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.parser.ParserErrors.ErrorLevel;
+import net.arcadiusmc.delphidom.selector.Combinator;
 import net.arcadiusmc.delphidom.selector.Selector;
+import net.arcadiusmc.delphidom.selector.SelectorNode;
 import net.arcadiusmc.dom.ParserException;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -36,6 +39,35 @@ class ParserTest {
       ":is(div, span)",
       ":nth-child(4)"
   };
+
+  @Test
+  void testCombinators() {
+    assertCombinator("node1 > node2", Combinator.PARENT);
+    assertCombinator("node1 ~ node2", Combinator.SIBLING);
+    assertCombinator("node1 + node2", Combinator.DIRECT_SIBLING);
+    assertCombinator("node1 node2", Combinator.DESCENDANT);
+    assertCombinator("node1 node2 node3", Combinator.DESCENDANT, Combinator.DESCENDANT);
+    assertCombinator("node1 > node2 ~ node3", Combinator.PARENT, Combinator.SIBLING);
+    assertCombinator("node1 + node2 ~ node3", Combinator.DIRECT_SIBLING, Combinator.SIBLING);
+  }
+
+  void assertCombinator(String str, Combinator... combinator) {
+    Selector selector = assertDoesNotThrow(() -> Selector.parse(str));
+    SelectorNode[] nodes = selector.getNodes();
+
+    assertEquals(combinator.length + 1, nodes.length);
+
+    for (int i = 0; i < nodes.length; i++) {
+      SelectorNode node = nodes[i];
+
+      if (i == (nodes.length - 1)) {
+        assertEquals(Combinator.DESCENDANT, node.getCombinator());
+        continue;
+      }
+
+      assertEquals(combinator[i], node.getCombinator());
+    }
+  }
 
   @Test
   void testSpecificity() {

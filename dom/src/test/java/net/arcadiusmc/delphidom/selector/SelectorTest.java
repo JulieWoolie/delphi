@@ -1,11 +1,14 @@
 package net.arcadiusmc.delphidom.selector;
 
 import static net.arcadiusmc.delphidom.TestUtil.createDoc;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
+import net.arcadiusmc.dom.Element;
 import org.junit.jupiter.api.Test;
 
 class SelectorTest {
@@ -133,5 +136,89 @@ class SelectorTest {
     assertFalse(func.test(null, div1));
     assertTrue(func.test(null, div2));
     assertTrue(func.test(null, div3));
+  }
+
+  @Test
+  void testSiblingCombinator() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div1");
+    DelphiElement div2 = doc.createElement("div2");
+    DelphiElement div3 = doc.createElement("div3");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse("div2 ~ div3");
+    assertFalse(selector.test(null, div1));
+    assertFalse(selector.test(null, div2));
+    assertTrue(selector.test(null, div3));
+
+    Element el = body.querySelector("div2 ~ div3");
+    assertEquals(div3, el);
+  }
+
+  @Test
+  void testSiblingCombinator_indirect() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div1");
+    DelphiElement div2 = doc.createElement("div2");
+    DelphiElement div3 = doc.createElement("div3");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div2);
+    body.appendChild(div1);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse("div2 ~ div3");
+    assertFalse(selector.test(null, div1));
+    assertFalse(selector.test(null, div2));
+    assertTrue(selector.test(null, div3));
+
+    Element el = body.querySelector("div2 ~ div3");
+    assertEquals(div3, el);
+  }
+
+  @Test
+  void testDirectSiblingCombinator() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div1");
+    DelphiElement div2 = doc.createElement("div2");
+    DelphiElement div3 = doc.createElement("div3");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse("div2 + div3");
+    assertFalse(selector.test(null, div1));
+    assertFalse(selector.test(null, div2));
+    assertTrue(selector.test(null, div3));
+
+    Element el = body.querySelector("div2 ~ div3");
+    assertEquals(div3, el);
+  }
+
+  @Test
+  void testDirectSiblingCombinator_indirect() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div1");
+    DelphiElement div2 = doc.createElement("div2");
+    DelphiElement div3 = doc.createElement("div3");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div2);
+    body.appendChild(div1);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse("div2 + div3");
+    assertFalse(selector.test(null, div1));
+    assertFalse(selector.test(null, div2));
+    assertFalse(selector.test(null, div3));
+
+    Element el = body.querySelector("div2 + div3");
+    assertNull(el);
   }
 }

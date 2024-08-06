@@ -1,15 +1,20 @@
 package net.arcadiusmc.delphidom.selector;
 
 import com.google.common.base.Preconditions;
+import lombok.Getter;
 import net.arcadiusmc.delphidom.DelphiElement;
 
+@Getter
 public class SelectorNode {
 
   final SelectorFunction[] functions;
+  final Combinator combinator;
 
-  public SelectorNode(SelectorFunction[] functions) {
+  public SelectorNode(Combinator combinator, SelectorFunction[] functions) {
     this.functions = functions;
+    this.combinator = combinator;
 
+    Preconditions.checkArgument(combinator != null, "Null combinator");
     Preconditions.checkArgument(functions != null, "Null functions array");
     Preconditions.checkArgument(functions.length >= 1, "At least 1 function required");
   }
@@ -24,9 +29,13 @@ public class SelectorNode {
     return true;
   }
 
-  public void append(StringBuilder builder) {
+  public void append(StringBuilder builder, boolean appendCombinator) {
     for (SelectorFunction function : functions) {
       function.append(builder);
+    }
+
+    if (appendCombinator) {
+      combinator.append(builder);
     }
   }
 
@@ -39,7 +48,7 @@ public class SelectorNode {
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    append(builder);
+    append(builder, false);
     return builder.toString();
   }
 }

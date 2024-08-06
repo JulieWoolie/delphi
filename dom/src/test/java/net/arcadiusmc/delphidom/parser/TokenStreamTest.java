@@ -3,9 +3,6 @@ package net.arcadiusmc.delphidom.parser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import net.arcadiusmc.delphidom.parser.ParserErrors;
-import net.arcadiusmc.delphidom.parser.Token;
-import net.arcadiusmc.delphidom.parser.TokenStream;
 import net.arcadiusmc.delphidom.parser.TokenStream.ParseMode;
 import org.junit.jupiter.api.Test;
 
@@ -48,30 +45,42 @@ class TokenStreamTest {
     recognizeToken(Token.STAR, "*");
     recognizeToken(Token.UP_ARROW, "^");
     recognizeToken(Token.AT, "@");
+    recognizeToken(Token.COMMA, ",");
+    recognizeToken(Token.PERCENT, "%");
+    recognizeToken(Token.EXCLAMATION, "!");
+    recognizeToken(Token.PLUS, "+");
+    recognizeToken(Token.ANGLE_RIGHT, ">");
+    recognizeToken(Token.ANGLE_LEFT, "<");
+  }
+
+  @Test
+  void recognizeWhitespace() {
+    recognizeToken(Token.WHITESPACE, ParseMode.SELECTOR, " ");
+    recognizeToken(Token.WHITESPACE, ParseMode.SELECTOR, "  ");
+    recognizeToken(Token.WHITESPACE, ParseMode.SELECTOR, "\n");
+    recognizeToken(Token.WHITESPACE, ParseMode.SELECTOR, "\n ");
+    recognizeToken(Token.WHITESPACE, ParseMode.SELECTOR, " \n ");
+    recognizeToken(Token.WHITESPACE, ParseMode.SELECTOR, " \n\n    ");
   }
 
   @Test
   void recognizeHex() {
-    recognizeToken(Token.HEX, true, "#ffcc00");
-    recognizeToken(Token.HEX_SHORT, true, "#fc0");
-    recognizeToken(Token.HEX_ALPHA, true, "#ffcc2200");
+    recognizeToken(Token.HEX, ParseMode.VALUES, "#ffcc00");
+    recognizeToken(Token.HEX_SHORT, ParseMode.VALUES, "#fc0");
+    recognizeToken(Token.HEX_ALPHA, ParseMode.VALUES, "#ffcc2200");
   }
 
   private void recognizeToken(int ttype, String input) {
-    recognizeToken(ttype, false, input);
+    recognizeToken(ttype, ParseMode.TOKENS, input);
   }
 
-  private void recognizeToken(int ttype, boolean valueMode, String input) {
+  private void recognizeToken(int ttype, ParseMode parseMode, String input) {
     StringBuffer buf = new StringBuffer(input);
 
     ParserErrors err = new ParserErrors(buf);
     TokenStream stream = new TokenStream(buf, err);
 
-    if (valueMode) {
-      stream.pushMode(ParseMode.VALUES);
-    } else {
-      stream.pushMode(ParseMode.TOKENS);
-    }
+    stream.pushMode(parseMode);
 
     Token t = stream.next();
 
