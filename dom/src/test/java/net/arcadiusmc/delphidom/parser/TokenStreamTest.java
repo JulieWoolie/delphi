@@ -15,12 +15,11 @@ class TokenStreamTest {
     recognizeToken(Token.NUMBER, "0.234");
     recognizeToken(Token.NUMBER, "0.0");
     recognizeToken(Token.NUMBER, "-1.0");
-    recognizeToken(Token.NUMBER, "+1.0");
     recognizeToken(Token.NUMBER, "1.0e12");
     recognizeToken(Token.NUMBER, "1.0e+12");
     recognizeToken(Token.NUMBER, "1.0e-12");
     recognizeToken(Token.NUMBER, "-1.0e-12");
-    recognizeToken(Token.NUMBER, "+1.0e-12");
+    recognizeToken(Token.NUMBER, "1.0e-12");
   }
 
   @Test

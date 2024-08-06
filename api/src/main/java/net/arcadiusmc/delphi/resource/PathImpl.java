@@ -213,7 +213,7 @@ final class PathImpl implements ResourcePath {
 
   private static String escapeElement(String element) {
     if (element.contains(" ")) {
-      return "'" + element + "'";
+      return "\"" + element + "\"";
     }
     return element;
   }

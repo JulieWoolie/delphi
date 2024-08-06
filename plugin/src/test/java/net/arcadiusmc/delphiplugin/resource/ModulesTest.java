@@ -10,8 +10,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
 import net.arcadiusmc.delphi.resource.JarResourceModule;
-import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ResourceModule;
+import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphi.util.Result;
 import org.junit.jupiter.api.Test;
@@ -36,9 +36,10 @@ class ModulesTest {
     DirectoryModule module = assertInstanceOf(DirectoryModule.class, opt.getOrThrow());
 
     Collection<String> list = module.getModulePaths(ResourcePath.create("module"));
-    assertEquals(list.size(), 2);
+    assertEquals(3, list.size());
     assertTrue(list.contains("path.xml"));
     assertTrue(list.contains("subdir1/randomfile.json"));
+    assertTrue(list.contains("\"dir with space\"/file.xml"));
 
     list = module.getModulePaths(ResourcePath.create("module").addElement("subdir1"));
     assertEquals(list.size(), 1);

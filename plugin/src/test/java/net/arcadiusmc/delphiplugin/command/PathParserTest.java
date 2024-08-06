@@ -108,16 +108,16 @@ class PathParserTest {
 
   @Test
   void testFilePaths() {
-    assertEquals(assertValidFilePath("p1/p2/p3/foobar.xml").path(), "p1/p2/p3/foobar.xml");
-    assertEquals(assertValidFilePath("p1/p2/../foobar.xml").path(), "p1/foobar.xml");
-    assertEquals(assertValidFilePath("p1/p2/./foobar.xml").path(), "foobar.xml");
-    assertEquals(assertValidFilePath("\"with a space\"/foobar.xml").path(), "\"with a space\"/foobar.xml");
+    assertEquals("p1/p2/p3/foobar.xml", assertValidFilePath("p1/p2/p3/foobar.xml").path());
+    assertEquals("p1/foobar.xml", assertValidFilePath("p1/p2/../foobar.xml").path());
+    assertEquals("foobar.xml", assertValidFilePath("p1/p2/./foobar.xml").path());
+    assertEquals("\"with a space\"/foobar.xml", assertValidFilePath("\"with a space\"/foobar.xml").path());
 
     ResourcePath path = assertValidFilePath("./filename.json", parser -> {
       parser.setCwd(ResourcePath.create("module").addElement("foo").addElement("bar"));
     });
 
-    assertEquals(path.path(), "foo/bar/filename.json");
+    assertEquals("foo/bar/filename.json", path.path());
   }
 
   @Test
