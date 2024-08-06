@@ -154,7 +154,6 @@ public class DocumentStyles {
 
     @Override
     public void onEvent(Event event) {
-      Loggers.getDocumentLogger().debug("style update listener called");
       DelphiNode node = (DelphiNode) event.getTarget();
       updateStyles(node);
     }
