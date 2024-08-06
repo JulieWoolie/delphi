@@ -5,24 +5,71 @@ import net.arcadiusmc.delphidom.selector.PseudoFunc.SelectorPseudoFunc;
 
 public interface PseudoFunctions {
 
-  PseudoFunc<Integer> NTH_CHILD = new PseudoFunc<>() {
+  IndexSelectorFunction NTH_CHILD = new IndexSelectorFunction() {
     @Override
-    public boolean test(DelphiElement root, DelphiElement el, Integer value) {
-      DelphiElement parent = el.getParent();
-      if (parent == null) {
-        return false;
-      }
-
-      if (value < 0) {
-        value = parent.getChildCount() + value;
-      }
-
-      return el.getSiblingIndex() == value;
+    public boolean test(DelphiElement root, DelphiElement el, IndexSelector value) {
+      return value.test(false, root, el);
     }
 
     @Override
     public void append(StringBuilder builder) {
       builder.append("nth-child");
+    }
+  };
+
+  IndexSelectorFunction NTH_LAST_CHILD = new IndexSelectorFunction() {
+    @Override
+    public boolean test(DelphiElement root, DelphiElement el, IndexSelector value) {
+      return value.test(true, root, el);
+    }
+
+    @Override
+    public void append(StringBuilder builder) {
+      builder.append("nth-last-child");
+    }
+  };
+
+  AnbFunction NTH_OF_TYPE = new AnbFunction() {
+    @Override
+    public boolean test(DelphiElement root, DelphiElement el, AnB value) {
+      IndexResult idx = IndexResult.indexMatching(
+          false,
+          el,
+          e -> e.getTagName().equals(el.getTagName())
+      );
+
+      if (idx.index() == -1) {
+        return false;
+      }
+
+      return value.indexMatches(idx.index());
+    }
+
+    @Override
+    public void append(StringBuilder builder) {
+      builder.append("nth-of-type");
+    }
+  };
+
+  AnbFunction NTH_LAST_OF_TYPE = new AnbFunction() {
+    @Override
+    public boolean test(DelphiElement root, DelphiElement el, AnB value) {
+      IndexResult idx = IndexResult.indexMatching(
+          true,
+          el,
+          e -> e.getTagName().equals(el.getTagName())
+      );
+
+      if (idx.index() == -1) {
+        return false;
+      }
+
+      return value.indexMatches(idx.index());
+    }
+
+    @Override
+    public void append(StringBuilder builder) {
+      builder.append("nth-last-of-type");
     }
   };
 
@@ -50,4 +97,19 @@ public interface PseudoFunctions {
     }
   };
 
+  interface IndexSelectorFunction extends PseudoFunc<IndexSelector> {
+
+    @Override
+    default void appendValue(StringBuilder builder, IndexSelector value) {
+      value.append(builder);
+    }
+  }
+
+  interface AnbFunction extends PseudoFunc<AnB> {
+
+    @Override
+    default void appendValue(StringBuilder builder, AnB value) {
+      value.append(builder);
+    }
+  }
 }

@@ -9,6 +9,7 @@ import static net.arcadiusmc.delphidom.parser.Token.DOT;
 import static net.arcadiusmc.delphidom.parser.Token.EQUALS;
 import static net.arcadiusmc.delphidom.parser.Token.HASHTAG;
 import static net.arcadiusmc.delphidom.parser.Token.ID;
+import static net.arcadiusmc.delphidom.parser.Token.MINUS;
 import static net.arcadiusmc.delphidom.parser.Token.NUMBER;
 import static net.arcadiusmc.delphidom.parser.Token.PLUS;
 import static net.arcadiusmc.delphidom.parser.Token.SQUARE_CLOSE;
@@ -20,22 +21,29 @@ import static net.arcadiusmc.delphidom.parser.Token.WHITESPACE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
 import lombok.Getter;
 import net.arcadiusmc.delphidom.parser.TokenStream.ParseMode;
+import net.arcadiusmc.delphidom.selector.AnB;
 import net.arcadiusmc.delphidom.selector.AttributedNode;
 import net.arcadiusmc.delphidom.selector.AttributedNode.AttributeTest;
 import net.arcadiusmc.delphidom.selector.AttributedNode.Operation;
 import net.arcadiusmc.delphidom.selector.ClassNameFunction;
 import net.arcadiusmc.delphidom.selector.Combinator;
+import net.arcadiusmc.delphidom.selector.GroupedIndexSelector;
 import net.arcadiusmc.delphidom.selector.IdFunction;
+import net.arcadiusmc.delphidom.selector.IndexSelector;
 import net.arcadiusmc.delphidom.selector.PseudoClass;
 import net.arcadiusmc.delphidom.selector.PseudoClassFunction;
+import net.arcadiusmc.delphidom.selector.PseudoFunc;
 import net.arcadiusmc.delphidom.selector.PseudoFuncFunction;
 import net.arcadiusmc.delphidom.selector.PseudoFunctions;
 import net.arcadiusmc.delphidom.selector.Selector;
 import net.arcadiusmc.delphidom.selector.SelectorFunction;
 import net.arcadiusmc.delphidom.selector.SelectorGroup;
 import net.arcadiusmc.delphidom.selector.SelectorNode;
+import net.arcadiusmc.delphidom.selector.SimpleIndexSelector;
 import net.arcadiusmc.delphidom.selector.TagNameFunction;
 
 public class Parser {
@@ -79,8 +87,33 @@ public class Parser {
     return stream.expect(tokenType);
   }
 
+  public Token expectId(String id) {
+    Token t = expect(ID);
+    if (t.value().equals(id)) {
+      return t;
+    }
+
+    errors.err(t.location(), "Expected keyword '%s', found '%s'", id, t.value());
+    return t;
+  }
+
+  public boolean matchesId(String id) {
+    Token peek = peek();
+
+    if (peek.type() != ID) {
+      return false;
+    }
+
+    return Objects.equals(id, peek.value());
+  }
+
   public Token softExpect(int tokenType) {
     return stream.expect(tokenType);
+  }
+
+  public float expectNumber() {
+    Token t = expect(NUMBER);
+    return Float.parseFloat(t.value());
   }
 
   public SelectorGroup selectorGroup() {
@@ -202,30 +235,28 @@ public class Parser {
       case "root" -> pseudoClass = PseudoClass.ROOT;
       case "first-child" -> pseudoClass = PseudoClass.FIRST_CHILD;
       case "last-child" -> pseudoClass = PseudoClass.LAST_CHILD;
+      case "only-child" -> pseudoClass = PseudoClass.ONLY_CHILD;
+      case "first-of-type" -> pseudoClass = PseudoClass.FIRST_OF_TYPE;
+      case "last-of-type" -> pseudoClass = PseudoClass.LAST_OF_TYPE;
+      case "only-of-type" -> pseudoClass = PseudoClass.ONLY_OF_TYPE;
 
       case "is" -> {
-        expect(BRACKET_OPEN);
-        SelectorGroup group = selectorGroup();
-        expect(BRACKET_CLOSE);
-
-        return new PseudoFuncFunction<>(PseudoFunctions.IS, group);
+        return pseudoFunc(PseudoFunctions.IS, this::selectorGroup);
       }
-
       case "not" -> {
-        expect(BRACKET_OPEN);
-        SelectorGroup group = selectorGroup();
-        expect(BRACKET_CLOSE);
-
-        return new PseudoFuncFunction<>(PseudoFunctions.NOT, group);
+        return pseudoFunc(PseudoFunctions.NOT, this::selectorGroup);
       }
-
       case "nth-child" -> {
-        expect(BRACKET_OPEN);
-        Token indexToken = expect(NUMBER);
-        float f = Float.parseFloat(indexToken.value());
-        expect(BRACKET_CLOSE);
-
-        return new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, (int) f);
+        return pseudoFunc(PseudoFunctions.NTH_CHILD, this::indexSelector);
+      }
+      case "nth-last-child" -> {
+        return pseudoFunc(PseudoFunctions.NTH_LAST_CHILD, this::indexSelector);
+      }
+      case "nth-of-type" -> {
+        return pseudoFunc(PseudoFunctions.NTH_OF_TYPE, this::anb);
+      }
+      case "nth-last-of-type" -> {
+        return pseudoFunc(PseudoFunctions.NTH_LAST_OF_TYPE, this::anb);
       }
 
       default -> {
@@ -235,6 +266,122 @@ public class Parser {
     };
 
     return new PseudoClassFunction(pseudoClass);
+  }
+
+  private <T> PseudoFuncFunction<T> pseudoFunc(PseudoFunc<T> func, Supplier<T> supplier) {
+    expect(BRACKET_OPEN);
+    skipWhitespace();
+    T value = supplier.get();
+    skipWhitespace();
+    expect(BRACKET_CLOSE);
+
+    return new PseudoFuncFunction<>(func, value);
+  }
+
+  private IndexSelector indexSelector() {
+    Token peek = peek();
+
+    if (peek.type() == ID) {
+      switch (peek.value().toLowerCase()) {
+        case "even" -> {
+          next();
+          return IndexSelector.EVEN;
+        }
+        case "odd" -> {
+          next();
+          return IndexSelector.ODD;
+        }
+        case "n" -> {
+          return anbIndexSelector();
+        }
+        default -> {
+          next();
+          errors.warn(peek.location(), "Expected either 'odd' or 'even'");
+          return null;
+        }
+      }
+    }
+
+    return anbIndexSelector();
+  }
+
+  private IndexSelector anbIndexSelector() {
+    AnB anb = anb();
+    skipWhitespace();
+
+    Token peek = peek();
+    if (peek.type() == ID && peek.value().equals("of")) {
+      next();
+      skipWhitespace();
+      SelectorGroup group = selectorGroup();
+      return new GroupedIndexSelector(anb, group);
+    }
+
+    return new SimpleIndexSelector(anb);
+  }
+
+  private AnB anb() {
+    Token peek = peek();
+    int a;
+    int b;
+
+    if (peek.type() == MINUS) {
+      next();
+      expectId("n");
+      a = -1;
+
+      if (peek().type() == PLUS) {
+        next();
+        b = (int) expectNumber();
+
+        if (b < 1) {
+          errors.err(peek.location(), "An+B B value must be greater than 0");
+        }
+      } else {
+        b = 0;
+      }
+    } else if (peek.type() == NUMBER) {
+      next();
+      int num = (int) Float.parseFloat(peek.value());
+
+      if (matchesId("n")) {
+        a = num;
+        next();
+
+        if (peek().type() == PLUS) {
+          next();
+          b = (int) expectNumber();
+
+          if (num < 1) {
+            errors.err(peek.location(), "An+B B value must be greater than 0");
+          }
+        } else {
+          b = 0;
+        }
+      } else {
+        a = 0;
+        b = num;
+
+        if (num < 1) {
+          errors.err(peek.location(), "n value must be greater than 0");
+        }
+      }
+    } else if (matchesId("n")) {
+      next();
+      a = 1;
+      expect(PLUS);
+      b = (int) expectNumber();
+
+      if (b < 1) {
+        errors.err(peek.location(), "An+B B value must be greater than 0");
+      }
+    } else {
+      errors.err(peek.location(), "Invalid An+B expression");
+      a = 0;
+      b = 0;
+    }
+
+    return new AnB(a, b);
   }
 
   private AttributedNode attributed() {

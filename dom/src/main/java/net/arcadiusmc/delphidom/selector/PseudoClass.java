@@ -8,5 +8,9 @@ public enum PseudoClass {
   ROOT,
   FIRST_CHILD,
   LAST_CHILD,
+  LAST_OF_TYPE,
+  FIRST_OF_TYPE,
+  ONLY_OF_TYPE,
+  ONLY_CHILD
   ;
 }

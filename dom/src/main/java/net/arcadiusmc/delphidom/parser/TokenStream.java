@@ -239,7 +239,6 @@ public class TokenStream {
       case '=' -> singleChar(Token.EQUALS);
       case '%' -> singleChar(Token.PERCENT);
       case '!' -> singleChar(Token.EXCLAMATION);
-      case '+' -> singleChar(Token.PLUS);
 
       case '#' -> {
         advance();
@@ -287,6 +286,12 @@ public class TokenStream {
         if (currentChar == '.') {
           yield singleChar(Token.DOT);
         }
+        if (currentChar == '+') {
+          yield singleChar(Token.PLUS);
+        }
+        if (currentChar == '-') {
+          yield singleChar(Token.MINUS);
+        }
 
         if (isIdStart(currentChar)) {
           String id = readId();
@@ -311,7 +316,7 @@ public class TokenStream {
     int ahead1 = charAt(cursor + 1);
     int ahead2 = charAt(cursor + 2);
 
-    if (currentChar == '+' || currentChar == '-') {
+    if (/*currentChar == '+' ||*/ currentChar == '-') {
       if (isNumber(ahead1)) {
         return true;
       }

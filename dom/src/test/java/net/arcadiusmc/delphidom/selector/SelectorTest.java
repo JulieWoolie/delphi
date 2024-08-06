@@ -100,17 +100,21 @@ class SelectorTest {
     body.appendChild(div2);
     body.appendChild(div3);
 
-    PseudoFuncFunction<Integer> func = new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, 0);
+    final var ix0 = new SimpleIndexSelector(new AnB(0, 1));
+    final var ix1 = new SimpleIndexSelector(new AnB(0, 2));
+    final var ix2 = new SimpleIndexSelector(new AnB(0, 3));
+
+    PseudoFuncFunction<IndexSelector> func = new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, ix0);
     assertTrue(func.test(null, div1));
     assertFalse(func.test(null, div2));
     assertFalse(func.test(null, div3));
 
-    func = new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, 1);
+    func = new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, ix1);
     assertFalse(func.test(null, div1));
     assertTrue(func.test(null, div2));
     assertFalse(func.test(null, div3));
 
-    func = new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, 2);
+    func = new PseudoFuncFunction<>(PseudoFunctions.NTH_CHILD, ix2);
     assertFalse(func.test(null, div1));
     assertFalse(func.test(null, div2));
     assertTrue(func.test(null, div3));
@@ -220,5 +224,179 @@ class SelectorTest {
 
     Element el = body.querySelector("div2 + div3");
     assertNull(el);
+  }
+
+  @Test
+  void testNthChild_parsed() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse(":nth-child(1)");
+    assertTrue(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertFalse(selector.test(body, div3));
+
+    selector = Selector.parse(":nth-child(1 of div)");
+    assertTrue(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertFalse(selector.test(body, div3));
+  }
+
+  @Test
+  void testNthChild_anb() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse(":nth-child(2n+1)");
+    assertTrue(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, div3));
+
+    selector = Selector.parse(":nth-child(2n)");
+    assertFalse(selector.test(body, div1));
+    assertTrue(selector.test(body, div2));
+    assertFalse(selector.test(body, div3));
+
+    selector = Selector.parse(":nth-last-child(2n+1)");
+    assertTrue(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, div3));
+
+    selector = Selector.parse(":nth-last-child(2n)");
+    assertFalse(selector.test(body, div1));
+    assertTrue(selector.test(body, div2));
+    assertFalse(selector.test(body, div3));
+  }
+
+  @Test
+  void simpleSelectorTest() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement body = doc.getBody();
+
+    SelectorGroup group = SelectorGroup.parse("div");
+    assertTrue(group.test(body, div1));
+    assertTrue(group.test(body, div2));
+    assertTrue(group.test(body, div3));
+  }
+
+  @Test
+  void testNthLastChild_parsed() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse(":nth-last-child(1 of div)");
+    assertFalse(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, div3));
+
+    selector = Selector.parse(":nth-last-child(1)");
+    assertFalse(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, div3));
+  }
+
+  @Test
+  void testNthOfType() {
+    DelphiDocument doc = createDoc();
+
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement span1 = doc.createElement("span");
+    DelphiElement span2 = doc.createElement("span");
+    DelphiElement span3 = doc.createElement("span");
+
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(span1);
+    body.appendChild(div3);
+    body.appendChild(span2);
+    body.appendChild(span3);
+
+    Selector selector = Selector.parse(":nth-of-type(1)");
+    assertTrue(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, span1));
+    assertFalse(selector.test(body, div3));
+    assertFalse(selector.test(body, span2));
+    assertFalse(selector.test(body, span3));
+  }
+
+  @Test
+  void testNthLastOfType() {
+    DelphiDocument doc = createDoc();
+
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement span1 = doc.createElement("span");
+    DelphiElement span2 = doc.createElement("span");
+    DelphiElement span3 = doc.createElement("span");
+
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(span1);
+    body.appendChild(div3);
+    body.appendChild(span2);
+    body.appendChild(span3);
+
+    Selector selector = Selector.parse(":nth-last-of-type(1)");
+    assertFalse(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertFalse(selector.test(body, span1));
+    assertTrue(selector.test(body, div3));
+    assertFalse(selector.test(body, span2));
+    assertTrue(selector.test(body, span3));
+  }
+
+  @Test
+  void testOnlyOfType() {
+    DelphiDocument doc = createDoc();
+
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement span1 = doc.createElement("span");
+
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(span1);
+    body.appendChild(div3);
+
+    Selector selector = Selector.parse(":only-of-type");
+    assertFalse(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, span1));
+    assertFalse(selector.test(body, div3));
   }
 }

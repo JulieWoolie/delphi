@@ -2,14 +2,20 @@ package net.arcadiusmc.delphidom.parser;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.parser.ParserErrors.ErrorLevel;
 import net.arcadiusmc.delphidom.selector.Combinator;
+import net.arcadiusmc.delphidom.selector.GroupedIndexSelector;
+import net.arcadiusmc.delphidom.selector.IndexSelector;
+import net.arcadiusmc.delphidom.selector.PseudoFuncFunction;
 import net.arcadiusmc.delphidom.selector.Selector;
 import net.arcadiusmc.delphidom.selector.SelectorNode;
+import net.arcadiusmc.delphidom.selector.SimpleIndexSelector;
 import net.arcadiusmc.dom.ParserException;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -49,6 +55,91 @@ class ParserTest {
     assertCombinator("node1 node2 node3", Combinator.DESCENDANT, Combinator.DESCENDANT);
     assertCombinator("node1 > node2 ~ node3", Combinator.PARENT, Combinator.SIBLING);
     assertCombinator("node1 + node2 ~ node3", Combinator.DIRECT_SIBLING, Combinator.SIBLING);
+  }
+
+  @Test
+  void testNth() {
+    Selector selector = Selector.parse(":nth-child(1)");
+    PseudoFuncFunction<IndexSelector> func = assertInstanceOf(
+        PseudoFuncFunction.class,
+        selector.getNodes()[0].getFunctions()[0]
+    );
+
+    IndexSelector idxSelector = func.argument();
+    SimpleIndexSelector simple = assertInstanceOf(SimpleIndexSelector.class, idxSelector);
+
+    assertEquals(0, simple.anb().a());
+    assertEquals(1, simple.anb().b());
+  }
+
+  @Test
+  void testAnb_simple() {
+    Selector selector = Selector.parse(":nth-child(2n+3)");
+    PseudoFuncFunction<IndexSelector> func = assertInstanceOf(
+        PseudoFuncFunction.class,
+        selector.getNodes()[0].getFunctions()[0]
+    );
+
+    IndexSelector idxSelector = func.argument();
+    SimpleIndexSelector simple = assertInstanceOf(SimpleIndexSelector.class, idxSelector);
+
+    assertEquals(2, simple.anb().a());
+    assertEquals(3, simple.anb().b());
+  }
+
+  @Test
+  void testAnb_negative() {
+    Selector selector = Selector.parse(":nth-child(-n+3)");
+    PseudoFuncFunction<IndexSelector> func = assertInstanceOf(
+        PseudoFuncFunction.class,
+        selector.getNodes()[0].getFunctions()[0]
+    );
+
+    IndexSelector idxSelector = func.argument();
+    SimpleIndexSelector simple = assertInstanceOf(SimpleIndexSelector.class, idxSelector);
+
+    assertEquals(-1, simple.anb().a());
+    assertEquals(3, simple.anb().b());
+  }
+
+  @Test
+  void testNth_odd() {
+    Selector selector = Selector.parse(":nth-child(odd)");
+    PseudoFuncFunction<IndexSelector> func = assertInstanceOf(
+        PseudoFuncFunction.class,
+        selector.getNodes()[0].getFunctions()[0]
+    );
+
+    IndexSelector idxSelector = func.argument();
+    assertSame(IndexSelector.ODD, idxSelector);
+  }
+
+  @Test
+  void testNth_even() {
+    Selector selector = Selector.parse(":nth-child(even)");
+    PseudoFuncFunction<IndexSelector> func = assertInstanceOf(
+        PseudoFuncFunction.class,
+        selector.getNodes()[0].getFunctions()[0]
+    );
+
+    IndexSelector idxSelector = func.argument();
+    assertSame(IndexSelector.EVEN, idxSelector);
+  }
+
+  @Test
+  void testNth_ofSelector() {
+    Selector selector = Selector.parse(":nth-child(3 of div)");
+    PseudoFuncFunction<IndexSelector> func = assertInstanceOf(
+        PseudoFuncFunction.class,
+        selector.getNodes()[0].getFunctions()[0]
+    );
+
+    IndexSelector idxSelector = func.argument();
+    GroupedIndexSelector grouped = assertInstanceOf(GroupedIndexSelector.class, idxSelector);
+
+    assertEquals(0, grouped.anb().a());
+    assertEquals(3, grouped.anb().b());
+    assertEquals("div", grouped.group().toString());
   }
 
   void assertCombinator(String str, Combinator... combinator) {
