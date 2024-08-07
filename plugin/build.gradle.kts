@@ -8,6 +8,7 @@ plugins {
 }
 
 val minecraftVersion = "1.21"
+val pluginBaseName = "delphi-papermc"
 
 version = "$minecraftVersion-1.0.0"
 
@@ -31,6 +32,9 @@ java {
 
 tasks {
   jar {
-    archiveBaseName.set("delphi-papermc")
+    archiveBaseName.set(pluginBaseName)
+  }
+  shadowJar {
+    archiveBaseName.set(pluginBaseName)
   }
 }
