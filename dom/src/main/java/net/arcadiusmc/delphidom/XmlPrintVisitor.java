@@ -30,8 +30,17 @@ public class XmlPrintVisitor implements Visitor {
     }
 
     builder.append('>');
-
     indent++;
+
+    if (element.getTooltip() != null) {
+      nlIndent().append("<tooltip>");
+      indent++;
+
+      Visitor.visit(element.getTooltip(), this);
+
+      indent--;
+      nlIndent().append("</tooltip>");
+    }
   }
 
   @Override
