@@ -66,6 +66,10 @@ public class DocumentStyles {
     applyCascading(newSet, node);
 
     if (node instanceof DelphiElement el) {
+      if (el.getTooltip() != null) {
+        updateStyles(el.getTooltip());
+      }
+
       for (Rule rule : rules) {
         if (!rule.getSelectorObj().test(null, el)) {
           continue;
