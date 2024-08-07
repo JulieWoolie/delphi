@@ -486,8 +486,11 @@ public class ScssParser extends Parser {
 
     Color c = NamedColor.named(val);
     if (c == null) {
-      errors.err(l, "Unknown color '%s'", val);
-      return NamedColor.BLACK;
+      if (Object.class != hint) {
+        errors.err(l, "Unknown value '%s'", val);
+      }
+
+      return NamedColor.TRANSPARENT;
     }
 
     return c;
