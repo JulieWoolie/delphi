@@ -26,30 +26,37 @@ $body-bg: darken(white, 45%);
 
 h1 {
   scale: 2;
+  display: block;
 }
 
 h2 {
   scale: 1.75;
+  display: block;
 }
 
 h3 {
   scale: 1.5;
+  display: block;
 }
 
 h3 {
   scale: 1.25;
+  display: block;
 }
 
 b {
   bold: true;
+  display: inline;
 }
 
 i {
   italic: true;
+  display: inline;
 }
 
 u {
   underlined: true;
+  display: inline;
 }
 
 /* Item */
