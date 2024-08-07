@@ -148,7 +148,7 @@ public class DelphiElement extends DelphiNode implements Element {
   }
 
   @Override
-  public @Nullable Node getTooltip() {
+  public DelphiNode getTooltip() {
     return titleNode;
   }
 
@@ -157,7 +157,13 @@ public class DelphiElement extends DelphiNode implements Element {
     DelphiNode old = this.titleNode;
     this.titleNode = (DelphiNode) title;
 
-    document.titleNodeChanged(this, old, this.titleNode);
+    if (titleNode != null) {
+      document.styles.updateStyles(titleNode);
+    }
+
+    if (document.view != null) {
+      document.view.titleChanged(this, old, titleNode);
+    }
   }
 
   @Override

@@ -19,6 +19,7 @@ import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.NodeFlag;
 import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.event.EventImpl;
@@ -34,6 +35,7 @@ import net.arcadiusmc.delphiplugin.render.StringContent;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;
@@ -51,8 +53,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
 
 public class PageView implements ExtendedView {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   public static boolean debugOutlines = false;
 
@@ -137,11 +142,16 @@ public class PageView implements ExtendedView {
 
     EventListenerList g = document.getGlobalTarget();
     MutationListener listener = new MutationListener();
+    TooltipListener tooltipListener = new TooltipListener();
 
     g.addEventListener(EventTypes.APPEND_CHILD, listener);
     g.addEventListener(EventTypes.REMOVE_CHILD, listener);
 
     g.addEventListener(EventTypes.MODIFY_OPTION, new ScreenDimensionListener());
+
+    g.addEventListener(EventTypes.MOUSE_ENTER, tooltipListener);
+    g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
+    g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
 
     if (document.getBody() != null) {
       renderRoot = initRenderTree(document.getBody());
@@ -293,13 +303,37 @@ public class PageView implements ExtendedView {
   }
 
   @Override
-  public void killElement(DelphiElement element) {
-    RenderObject obj = getRenderObject(element);
+  public void removeRenderElement(DelphiElement element) {
+    RenderObject obj = renderObjects.remove(element);
+
     if (obj == null) {
       return;
     }
 
     obj.kill();
+  }
+
+  @Override
+  public void titleChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
+    if (old != null) {
+      RenderObject oldRender = getRenderObject(old);
+      if (oldRender != null) {
+        oldRender.killRecursive();
+      }
+    }
+
+    if (element == null || !element.hasFlag(NodeFlag.HOVERED)) {
+      return;
+    }
+
+    RenderObject obj = getRenderObject(titleNode);
+    if (obj == null) {
+      obj = initRenderTree(titleNode);
+    }
+
+    obj.moveTo(cursorScreen);
+    obj.spawnRecursive();
+    obj.align();
   }
 
   @Override
@@ -544,7 +578,58 @@ public class PageView implements ExtendedView {
       return p;
     }
   }
+
   /* --------------------------- sub classes ---------------------------- */
+
+  class TooltipListener implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      final Element el = event.getTarget();
+
+      DelphiNode tooltip = (DelphiNode) el.getTooltip();
+
+      if (tooltip == null) {
+        return;
+      }
+
+      switch (event.getType()) {
+        case EventTypes.MOUSE_ENTER -> {
+          RenderObject obj = getRenderObject(tooltip);
+          if (obj == null) {
+            obj = initRenderTree(tooltip);
+          }
+
+          document.getStyles().updateStyles(tooltip);
+
+          obj.moveTo(event.getScreenPosition());
+          obj.spawnRecursive();
+          obj.align();
+        }
+
+        case EventTypes.MOUSE_LEAVE -> {
+          RenderObject obj = getRenderObject(tooltip);
+
+          LOGGER.debug("mouse-leave, obj={}", obj);
+
+          if (obj == null) {
+            return;
+          }
+
+          obj.killRecursive();
+        }
+
+        case EventTypes.MOUSE_MOVE -> {
+          RenderObject obj = getRenderObject(tooltip);
+          if (obj == null) {
+            return;
+          }
+
+          obj.moveTo(event.getScreenPosition());
+        }
+      }
+    }
+  }
 
   class MutationListener implements EventListener.Typed<MutationEvent> {
 

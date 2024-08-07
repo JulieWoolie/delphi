@@ -11,5 +11,7 @@ public interface ExtendedView extends DocumentView {
 
   Map<String, Object> getStyleVariables();
 
-  void killElement(DelphiElement element);
+  void removeRenderElement(DelphiElement element);
+
+  void titleChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode);
 }

@@ -5,9 +5,9 @@ import io.papermc.paper.inventory.tooltip.TooltipContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import lombok.Getter;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ItemElement;
-import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.TagNames;
 import net.kyori.adventure.text.Component;
@@ -17,6 +17,8 @@ import org.jetbrains.annotations.Nullable;
 public class DelphiItemElement extends DelphiElement implements ItemElement {
 
   private ItemStack item;
+
+  @Getter
   private DelphiElement itemTooltip;
 
   public DelphiItemElement(DelphiDocument document) {
@@ -56,7 +58,7 @@ public class DelphiItemElement extends DelphiElement implements ItemElement {
   }
 
   @Override
-  public @Nullable Node getTooltip() {
+  public @Nullable DelphiNode getTooltip() {
     if (getTooltipHidden() || itemTooltip == null) {
       return super.getTooltip();
     }
@@ -81,7 +83,7 @@ public class DelphiItemElement extends DelphiElement implements ItemElement {
 
   private void updateTooltip() {
     if (document.getView() != null && itemTooltip != null) {
-      document.getView().killElement(itemTooltip);
+      document.getView().removeRenderElement(itemTooltip);
     }
 
     if (item == null || item.getType().isAir() || item.getAmount() < 1) {
@@ -116,6 +118,8 @@ public class DelphiItemElement extends DelphiElement implements ItemElement {
     }
 
     container.setDepth(getDepth() + 1);
+    document.styles.updateStyles(container);
+
     this.itemTooltip = container;
   }
 }

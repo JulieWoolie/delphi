@@ -59,6 +59,7 @@ public class DelphiDocument implements Document {
   @Getter @Setter
   ExtendedView view;
 
+  @Getter
   final DocumentStyles styles;
 
   public DelphiDocument() {
