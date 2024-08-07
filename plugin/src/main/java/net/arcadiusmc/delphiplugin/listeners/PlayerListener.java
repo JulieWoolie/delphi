@@ -64,5 +64,6 @@ public class PlayerListener implements Listener {
     boolean shift = player.isSneaking();
 
     selected.onInteract(button, shift);
+    event.setCancelled(true);
   }
 }
