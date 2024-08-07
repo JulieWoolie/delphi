@@ -301,6 +301,7 @@ public final class Properties {
 
     register("border-color",     BORDER_COLOR);
     //register("align",            ALIGN_DIRECTION);
+    register("display",          DISPLAY);
     register("text-shadow",      TEXT_SHADOW);
     register("scale",            SCALE);
     register("z-index",          Z_INDEX);
