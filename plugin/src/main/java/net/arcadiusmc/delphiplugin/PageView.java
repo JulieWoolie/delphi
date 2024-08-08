@@ -47,7 +47,9 @@ import net.arcadiusmc.dom.event.MouseEvent;
 import net.arcadiusmc.dom.event.MutationEvent;
 import net.arcadiusmc.dom.event.ScrollDirection;
 import net.kyori.adventure.sound.Sound;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -155,6 +157,8 @@ public class PageView implements ExtendedView {
     g.addEventListener(EventTypes.MOUSE_ENTER, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
+
+    g.addEventListener(EventTypes.MOUSE_DOWN, new ButtonClickListener());
 
     if (document.getBody() != null) {
       renderRoot = initRenderTree(document.getBody());
@@ -596,6 +600,50 @@ public class PageView implements ExtendedView {
   }
 
   /* --------------------------- sub classes ---------------------------- */
+
+  class ButtonClickListener implements EventListener.Typed<MouseEvent> {
+
+    static final String CLOSE = "close";
+    static final String CMD = "cmd:";
+    static final String PLAYER_CMD = "player-cmd:";
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      Element target = event.getTarget();
+      if (!target.getTagName().equals(TagNames.BUTTON)) {
+        return;
+      }
+
+      String action = target.getAttribute(Attributes.BUTTON_ACTION);
+      if (Strings.isNullOrEmpty(action)) {
+        return;
+      }
+
+      if (action.equalsIgnoreCase(CLOSE)) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        close();
+
+        return;
+      }
+
+      if (action.startsWith(CMD)) {
+        runCommand(Bukkit.getConsoleSender(), CMD, action);
+        return;
+      }
+      if (action.startsWith(PLAYER_CMD)) {
+        runCommand(player, PLAYER_CMD, action);
+      }
+    }
+
+    private void runCommand(CommandSender sender, String prefix, String cmd) {
+      String formatted = cmd.substring(prefix.length()).trim()
+          .replace("%player%", player.getName());
+
+      Bukkit.dispatchCommand(sender, formatted);
+    }
+  }
 
   class TooltipListener implements EventListener.Typed<MouseEvent> {
 

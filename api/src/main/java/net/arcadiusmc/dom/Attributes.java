@@ -59,6 +59,36 @@ public interface Attributes {
   String ADVANCED_ITEM_TOOLTIPS = Options.ADVANCED_ITEM_TOOLTIPS;
 
   /**
+   * Button action, executed when a {@link TagNames#BUTTON} button element is clicked. Only
+   * works on button elements.
+   * <br>
+   * <table>
+   *   <caption>Valid value patterns</caption>
+   *   <tr>
+   *     <th>Pattern</th>
+   *     <th>Description</th>
+   *     <th>Example</th>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code close}</td>
+   *     <td>Closes the page</td>
+   *     <td>{@code "close"}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code cmd: <command>}</td>
+   *     <td>Runs a command as console. You can use {@code %player%} as a placeholder for the player's name</td>
+   *     <td>{@code "cmd: msg %player% Hello, world!}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code player-cmd: <command>}</td>
+   *     <td>Runs a command as the player. You can use {@code %player%} as a placeholder for the player's name</td>
+   *     <td>{@code "cmd: msg %player% Hello, me!}</td>
+   *   </tr>
+   * </table>
+   */
+  String BUTTON_ACTION = "action";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
