@@ -6,18 +6,13 @@ import java.util.Objects;
 import lombok.Getter;
 import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.math.Screen;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 @Getter
 public class PlayerSession {
-
-  public static final float MAX_USE_DIST = 10;
-  public static final float MAX_USE_DIST_SQ = MAX_USE_DIST * MAX_USE_DIST;
 
   private final Player player;
   private final List<PageView> views = new ArrayList<>();
@@ -72,14 +67,7 @@ public class PlayerSession {
     }
 
     World world = player.getWorld();
-    Location location = player.getEyeLocation();
-    Vector dir = location.getDirection();
-
-    RayScan scan = new RayScan(
-        new Vector3f((float) location.x(), (float) location.y(), (float) location.z()),
-        new Vector3f((float) dir.getX(), (float) dir.getY(), (float) dir.getZ()),
-        MAX_USE_DIST
-    );
+    RayScan scan = RayScan.ofPlayer(player);
 
     for (PageView view : views) {
       if (view.getWorld() == null || !Objects.equals(view.getWorld(), world)) {
@@ -97,7 +85,7 @@ public class PlayerSession {
       if (!wasHit) {
         continue;
       }
-      if (targetPos.distanceSquared(scan.getOrigin()) >= MAX_USE_DIST_SQ) {
+      if (targetPos.distanceSquared(scan.getOrigin()) >= scan.getMaxLengthSq()) {
         continue;
       }
 

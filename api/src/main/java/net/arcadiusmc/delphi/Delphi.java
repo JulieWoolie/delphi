@@ -119,13 +119,38 @@ public interface Delphi {
 
   /**
    * Get the view currently being looked at by the specified {@code player}.
-   *
    * @param player Player
    *
    * @return An optional containing the view the player is currently looking at, or an empty
    *         optional, if the {@code player} is not looking at any document views.
    *
    * @throws NullPointerException If {@code player} is {@code null}
+   *
+   * @apiNote This method will only return a selected view that belongs to the {@code player}
+   *          ({@link DocumentView#getPlayer()} is equal to the specified {@code player}).
+   *
+   * @see #getAnyTargetedView(Player) Accessing any view a player is looking at
    */
   Optional<DocumentView> getSelectedView(@NotNull Player player);
+
+  /**
+   * Get the view currently being looked at by the specified {@code player}, regardless of who that
+   * view belongs to.
+   * <p>
+   * Unlike {@link #getSelectedView(Player)} this method will ignore who a view belongs to, and will
+   * get the view closest to the player.
+   *
+   * @apiNote Iterates through all alive views and tests if their world matches the {@code player}'s
+   *          world, and then performs a ray scan on the view to test if it's being looked at. All
+   *          views that the player is looking at are placed into a list and sorted by distance, the
+   *          closest on to the player {@code player} is then returned.
+   *
+   * @param player Player
+   *
+   * @return An optional containing the closes the document view the player is looking at, or an
+   *         empty optional, if the player is not looking at any views.
+   *
+   * @throws NullPointerException If {@code player} is {@code null}
+   */
+  Optional<DocumentView> getAnyTargetedView(@NotNull Player player);
 }

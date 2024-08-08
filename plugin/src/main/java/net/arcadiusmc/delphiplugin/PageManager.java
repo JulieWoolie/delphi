@@ -3,6 +3,7 @@ package net.arcadiusmc.delphiplugin;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,11 +15,14 @@ import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphiplugin.command.PathParser;
+import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class PageManager implements Delphi {
@@ -108,9 +112,11 @@ public class PageManager implements Delphi {
     float width = screen.getWidth();
     float height = screen.getHeight();
 
+    float centerY = (float) ((player.getY() + player.getEyeHeight()) - (height * 0.5));
+
     Vector3f center = new Vector3f();
     center.x = (float) player.getX();
-    center.y = (float) player.getY();
+    center.y = centerY;
     center.z = (float) player.getZ();
 
     screen.set(center, width, height);
@@ -152,5 +158,55 @@ public class PageManager implements Delphi {
   public Optional<DocumentView> getSelectedView(@NotNull Player player) {
     Objects.requireNonNull(player, "Null player");
     return sessions.getSession(player.getUniqueId()).map(PlayerSession::getSelectedView);
+  }
+
+  @Override
+  public Optional<DocumentView> getAnyTargetedView(@NotNull Player player) {
+    Objects.requireNonNull(player, "Null player");
+
+    List<ViewDist> views = new ArrayList<>();
+    World world = player.getWorld();
+    RayScan ray = RayScan.ofPlayer(player);
+
+    Vector2f screenOut = new Vector2f();
+    Vector3f hitOut = new Vector3f();
+
+    for (PlayerSession session : sessions.getSessions()) {
+      for (PageView view : session.getViews()) {
+        if (!view.getWorld().equals(world)) {
+          continue;
+        }
+
+        if (!view.getScreen().castRay(ray, hitOut, screenOut)) {
+          continue;
+        }
+
+        double distSq = hitOut.distanceSquared(ray.getOrigin());
+        if (distSq >= ray.getMaxLengthSq()) {
+          continue;
+        }
+
+        views.add(new ViewDist(view, distSq));
+      }
+    }
+
+    if (views.isEmpty()) {
+      return Optional.empty();
+    }
+    if (views.size() == 1) {
+      return Optional.of(views.getFirst().view());
+    }
+
+    views.sort(Comparator.naturalOrder());
+    
+    return Optional.of(views.getFirst().view());
+  }
+
+  record ViewDist(PageView view, double distSq) implements Comparable<ViewDist> {
+
+    @Override
+    public int compareTo(@NotNull PageManager.ViewDist o) {
+      return Double.compare(distSq, o.distSq);
+    }
   }
 }
