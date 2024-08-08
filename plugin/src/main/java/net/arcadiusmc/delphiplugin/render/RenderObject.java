@@ -8,15 +8,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphi.Screen;
-import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
-import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.delphiplugin.HideUtil;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
@@ -26,7 +23,6 @@ import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.TextDisplay;
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -40,14 +36,13 @@ public class RenderObject {
   // Micro layer = A single layer of an element (eg: content, background, outline)
   public static final float MICRO_LAYER_DEPTH = 0.001f;
   public static final float MACRO_LAYER_DEPTH = MICRO_LAYER_DEPTH * LAYER_COUNT;
+  public static final float RAD90 = (float) Math.toRadians(90);
 
   public static final org.bukkit.Color NIL_COLOR = org.bukkit.Color.fromARGB(0, 0, 0, 0);
 
-  private final DelphiNode node;
   private final Screen screen;
   private final PageView view;
 
-  private final PropertySet styleProperties;
   private final ComputedStyle style;
 
   private final Vector2f position = new Vector2f(0);
@@ -69,14 +64,10 @@ public class RenderObject {
 
   private final Align align = Align.Y;
 
-  public RenderObject(PageView view, DelphiNode node, Screen screen) {
+  public RenderObject(PageView view, ComputedStyle style, Screen screen) {
     this.view = view;
-
-    this.node = node;
     this.screen = screen;
-
-    this.style = node.style;
-    this.styleProperties = node.styleSet;
+    this.style = style;
   }
 
   public static boolean isNotSpawned(Layer layer) {
@@ -227,27 +218,13 @@ public class RenderObject {
     renderObject.parent = this;
   }
 
-  public RenderObject removeChild(DelphiNode element) {
-    int idx = -1;
-
-    for (int i = 0; i < childObjects.size(); i++) {
-      RenderObject childObject = childObjects.get(i);
-
-      if (!Objects.equals(childObject.node, element)) {
-        continue;
-      }
-
-      idx = i;
-    }
-
-    if (idx == -1) {
+  public RenderObject removeChild(RenderObject element) {
+    if (!childObjects.remove(element)) {
       return null;
     }
 
-    RenderObject removed = childObjects.remove(idx);
-    removed.parent = null;
-
-    return this;
+    element.parent = null;
+    return element;
   }
 
   /* --------------------------- Alignment ---------------------------- */
@@ -400,15 +377,22 @@ public class RenderObject {
       content.translate.x += (content.size.x * 0.5f);
     }
 
-    // Step 2 - Spawn background
-    createLayerEntity(RenderLayer.BACKGROUND, location, style.backgroundColor, style.padding);
-
-    if (isNotZero(style.border)) {
-      createLayerEntity(RenderLayer.BORDER, location, style.borderColor, style.border);
+    if (style.backgroundColor.getAlpha() > 0) {
+      createLayerEntity(RenderLayer.BACKGROUND, location, style.backgroundColor, style.padding);
+    } else {
+      killLayerEntity(getLayer(RenderLayer.BACKGROUND));
     }
-    // Step 3 - Spawn outline
-    if (isNotZero(style.outline)) {
+
+    if (isNotZero(style.border) && style.borderColor.getAlpha() > 0) {
+      createLayerEntity(RenderLayer.BORDER, location, style.borderColor, style.border);
+    } else {
+      killLayerEntity(getLayer(RenderLayer.BORDER));
+    }
+
+    if (isNotZero(style.outline) && style.outlineColor.getAlpha() > 0) {
       createLayerEntity(RenderLayer.OUTLINE, location, style.outlineColor, style.outline);
+    } else {
+      killLayerEntity(getLayer(RenderLayer.OUTLINE));
     }
 
     // Step 4 - Set layer sizes
@@ -472,16 +456,32 @@ public class RenderObject {
   }
   
   private void applyScreenRotation(float yaw, float pitch) {
-    Quaternionf lrot = new Quaternionf();
-    lrot.rotateY((float) Math.toRadians(yaw));
-    lrot.rotateX((float) Math.toRadians(pitch));
+    //Quaternionf lrot = new Quaternionf();
+    //lrot.rotateY((float) Math.toRadians(yaw));
+    //lrot.rotateX((float) Math.toRadians(pitch));
+
+    Vector3f normal = screen.normal();
+    Vector3f left = new Vector3f(normal).rotateY(RAD90).normalize();
+    Vector3f up = new Vector3f(normal).rotateX(RAD90).normalize();
+
+    Vector3f rX = new Vector3f();
+    Vector3f rY = new Vector3f();
+    Vector3f rZ = new Vector3f();
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
       layer.translate.z -= layer.depth;
 
       // Perform rotation
-      layer.translate.rotate(lrot, layer.rotatedTranslate);
+      //layer.translate.rotate(lrot, layer.rotatedTranslate);
+
+      layer.rotatedTranslate.set(0);
+
+      left.mul(layer.translate.x, rX);
+      up.mul(layer.translate.y, rY);
+      normal.mul(layer.translate.z, rZ);
+
+      layer.rotatedTranslate.add(rX).add(rY).add(rZ);
     });
   }
 
@@ -528,9 +528,7 @@ public class RenderObject {
       float micro = iteratedCount * MICRO_LAYER_DEPTH;
       float macro = this.depth * MACRO_LAYER_DEPTH;
 
-      layer.depth = micro;
-      layer.depth += macro;
-      layer.depth += style.zindex * MACRO_LAYER_DEPTH;
+      layer.depth = micro + macro + (style.zindex * MACRO_LAYER_DEPTH);
     });
   }
   

@@ -9,6 +9,7 @@ import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Screen;
+import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import org.joml.Vector2f;
@@ -65,7 +66,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append(COMMENT_END);
   }
 
-  private void appendRenderObjectComment(RenderObject re) {
+  private void appendRenderObjectComment(DelphiNode node, RenderObject re) {
     nlIndent().append("render-element:");
     indent++;
 
@@ -120,7 +121,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
     indent--;
 
-    PropertySet set = re.getStyleProperties();
+    PropertySet set = node.styleSet;
     RuleIterator it = set.iterator();
 
     if (it.hasNext()) {
@@ -153,7 +154,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     if (obj == null) {
       nlIndent().append("Render object missing");
     } else {
-      appendRenderObjectComment(obj);
+      appendRenderObjectComment(node, obj);
     }
 
     indent--;
@@ -170,5 +171,11 @@ public class RenderTreePrint extends XmlPrintVisitor {
   public void enterText(TextNode text) {
     super.enterText(text);
     appendInfo((DelphiNode) text);
+  }
+
+  @Override
+  public void enterComponent(ComponentNode node) {
+    super.enterComponent(node);
+    appendInfo((DelphiNode) node);
   }
 }

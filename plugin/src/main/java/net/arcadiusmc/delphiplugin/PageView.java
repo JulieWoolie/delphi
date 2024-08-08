@@ -78,6 +78,7 @@ public class PageView implements ExtendedView {
 
   @Getter
   private boolean selected = false;
+  private boolean closed = false;
 
   @Getter @Setter
   private World world;
@@ -120,6 +121,8 @@ public class PageView implements ExtendedView {
 
     renderRoot.spawnRecursive();
     renderRoot.align();
+
+    closed = false;
   }
 
   public void kill() {
@@ -177,7 +180,7 @@ public class PageView implements ExtendedView {
   }
 
   private RenderObject initRenderTree(DelphiNode node) {
-    RenderObject obj = new RenderObject(this, node, screen);
+    RenderObject obj = new RenderObject(this, node.style, screen);
     obj.setDepth(node.getDepth());
 
     switch (node) {
@@ -207,7 +210,7 @@ public class PageView implements ExtendedView {
   }
 
   private void triggerRealign() {
-    if (renderRoot == null) {
+    if (renderRoot == null || closed) {
       return;
     }
 
@@ -215,7 +218,7 @@ public class PageView implements ExtendedView {
   }
 
   private void triggerUpdate() {
-    if (renderRoot == null) {
+    if (renderRoot == null || closed) {
       return;
     }
 
@@ -228,7 +231,7 @@ public class PageView implements ExtendedView {
 
   @Override
   public void styleUpdated(DelphiNode node, int changes) {
-    if (changes == 0) {
+    if (changes == 0 || closed) {
       return;
     }
 
@@ -257,6 +260,10 @@ public class PageView implements ExtendedView {
 
   @Override
   public void contentChanged(DelphiNode node) {
+    if (closed) {
+      return;
+    }
+
     RenderObject obj = getRenderObject(node);
     if (obj == null) {
       return;
@@ -315,6 +322,10 @@ public class PageView implements ExtendedView {
 
   @Override
   public void titleChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
+    if (closed) {
+      return;
+    }
+
     if (old != null) {
       RenderObject oldRender = getRenderObject(old);
       if (oldRender != null) {
@@ -354,6 +365,11 @@ public class PageView implements ExtendedView {
 
     kill();
     setSession(null);
+
+    renderObjects.clear();
+    renderRoot = null;
+
+    closed = true;
   }
 
   public void removeEntity(Display entity) {
@@ -644,7 +660,8 @@ public class PageView implements ExtendedView {
         RenderObject tree = initRenderTree((DelphiNode) event.getNode());
         parentObj.addChild(tree, event.getMutationIndex());
       } else {
-        RenderObject removed = parentObj.removeChild((DelphiNode) event.getNode());
+        RenderObject nodeObj = getRenderObject((DelphiNode) event.getNode());
+        RenderObject removed = parentObj.removeChild(nodeObj);
 
         if (removed != null) {
           removed.killRecursive();
