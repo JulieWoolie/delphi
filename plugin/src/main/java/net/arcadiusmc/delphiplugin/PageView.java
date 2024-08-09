@@ -101,6 +101,8 @@ public class PageView implements ExtendedView {
 
   @Getter
   private final Map<DelphiNode, RenderObject> renderObjects = new Object2ObjectOpenHashMap<>();
+
+  @Getter
   private RenderObject renderRoot;
 
   private final List<Display> entities = new ArrayList<>();
@@ -402,7 +404,13 @@ public class PageView implements ExtendedView {
   }
 
   private void drawSelected() {
-    if (hoveredNode == null || !debugOutlines) {
+    if (!debugOutlines) {
+      return;
+    }
+
+    Debug.drawScreen(this);
+
+    if (hoveredNode == null) {
       return;
     }
 
