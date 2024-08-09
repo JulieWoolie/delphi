@@ -69,6 +69,15 @@ public class PlayerSession {
     World world = player.getWorld();
     RayScan scan = RayScan.ofPlayer(player);
 
+    PageView closest = null;
+    float closestDistSq = Float.MAX_VALUE;
+
+    Vector2f closestScreenHit = new Vector2f(0);
+    Vector3f closestHit = new Vector3f(0);
+
+    Vector3f targetPos = new Vector3f();
+    Vector2f screenPos = new Vector2f();
+
     for (PageView view : views) {
       if (view.getWorld() == null || !Objects.equals(view.getWorld(), world)) {
         continue;
@@ -79,25 +88,25 @@ public class PlayerSession {
       if (bounds == null) {
         continue;
       }
-
-      boolean wasHit = bounds.castRay(scan, targetPos, screenPos);
-
-      if (!wasHit) {
-        continue;
-      }
-      if (targetPos.distanceSquared(scan.getOrigin()) >= scan.getMaxLengthSq()) {
+      if (!bounds.castRay(scan, targetPos, screenPos)) {
         continue;
       }
 
-      targetedView = view;
-      bounds.screenspaceToScreen(screenPos, screenPos);
+      float distSq = targetPos.distanceSquared(scan.getOrigin());
+      if (distSq >= scan.getMaxLengthSq() || distSq >= closestDistSq) {
+        continue;
+      }
 
-      return;
+      closestDistSq = distSq;
+      closest = view;
+
+      closestHit.set(targetPos);
+      bounds.screenspaceToScreen(screenPos, closestScreenHit);
     }
 
-    targetedView = null;
-    targetPos.set(0, 0, 0);
-    screenPos.set(0, 0);
+    this.targetedView = closest;
+    this.screenPos.set(closestScreenHit);
+    this.targetPos.set(closestHit);
   }
 
 
