@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <header>
+    <option name="title" value="Test page"/>
+    <option name="hide-topbar" value="true"/>
+
+    <style src="./style.scss" />
+  </header>
+  <body>
+    <h1 class="title shadowed">Hello, world!</h1>
+
+    <div class="shadowed" style="color: gold;">This basically works</div>
+
+    <button class="mt-2">
+      <item src="./item.json" />
+      I am a button :3
+    </button>
+
+    <button action="cmd: tellraw %player% &quot;Hello, %player%!&quot;" class="mt-2" id="btn-settings">Settings</button>
+    <button action="close" class="mt-2" id="btn-quit">Quit</button>
+  </body>
+</page>

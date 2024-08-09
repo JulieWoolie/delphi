@@ -15,6 +15,13 @@ public class DelphiPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
+    if (getSLF4JLogger().isDebugEnabled()) {
+      saveResource("modules/test/item.json", true);
+      saveResource("modules/test/index.xml", true);
+      saveResource("modules/test/style.scss", true);
+      getSLF4JLogger().debug("Saved test module");
+    }
+
     this.sessions = new SessionManager(this);
     this.modules = new Modules(getDataPath().resolve("modules"));
     this.manager = new PageManager(modules, sessions);
