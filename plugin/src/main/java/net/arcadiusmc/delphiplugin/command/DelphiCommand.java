@@ -25,12 +25,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
+import net.arcadiusmc.delphiplugin.PageManager;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
 import net.arcadiusmc.delphiplugin.resource.Modules;
@@ -46,11 +48,20 @@ import org.jetbrains.annotations.NotNull;
 public class DelphiCommand {
 
   static final CommandExceptionType NOP = new CommandExceptionType() {};
-  static PageView lastView;
+
+  static final TranslatableExceptionType ONLY_PLAYERS
+      = new TranslatableExceptionType("permissions.requires.player");
+
+  static final TranslatableExceptionType NONE_TARGETED
+      = new TranslatableExceptionType("delphi.error.noTarget");
+
+  static final TranslatableExceptionType DUMP_FAIL
+      = new TranslatableExceptionType("delphi.error.debugDumpFail");
 
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = Commands.literal("delphi");
     literal.then(open());
+    literal.then(close());
 
     literal.then(
         Commands.literal("debug")
@@ -62,16 +73,45 @@ public class DelphiCommand {
     return literal.build();
   }
 
+  private static PageView getAnyTargeted(CommandContext<CommandSourceStack> context)
+      throws CommandSyntaxException
+  {
+    if (!(context.getSource().getSender() instanceof Player player)) {
+      throw ONLY_PLAYERS.create();
+    }
+
+    PageManager pages = getPlugin().getManager();
+    Optional<DocumentView> opt = pages.getAnyTargetedView(player);
+
+    if (opt.isEmpty()) {
+      throw NONE_TARGETED.create();
+    }
+
+    return (PageView) opt.get();
+  }
+
+  private static LiteralCommandNode<CommandSourceStack> close() {
+    return Commands.literal("close")
+        .executes(context -> {
+          PageView view = getAnyTargeted(context);
+          view.close();
+
+          context.getSource().getSender().sendMessage(
+              Component.translatable("delphi.closed", NamedTextColor.GRAY)
+          );
+          return SINGLE_SUCCESS;
+        })
+        .build();
+  }
+
   private static LiteralCommandNode<CommandSourceStack> dumpInfo() {
     return Commands.literal("dump-xml-info")
         .executes(context -> {
-          if (lastView == null) {
-            throw new CommandSyntaxException(NOP, new LiteralMessage("Nothing opened"));
-          }
+          PageView view = getAnyTargeted(context);
 
-          RenderTreePrint print = new RenderTreePrint(lastView);
+          RenderTreePrint print = new RenderTreePrint(view);
           print.appendDocumentInfo();
-          Visitor.visit(lastView.getDocument().getBody(), print);
+          Visitor.visit(view.getDocument().getBody(), print);
 
           Path path = getPlugin().getDataPath().resolve("dump.xml");
           String string = print.toString();
@@ -80,10 +120,16 @@ public class DelphiCommand {
             Files.writeString(path, string, StandardCharsets.UTF_8);
           } catch (IOException exc) {
             Loggers.getDocumentLogger().error("Failed to dump XML info", exc);
-            throw new CommandSyntaxException(NOP, new LiteralMessage("Failed to dump, IO Error"));
+            throw DUMP_FAIL.create();
           }
 
-          context.getSource().getSender().sendMessage("Dumped XML info");
+          context.getSource().getSender().sendMessage(
+              Component.translatable(
+                  "delphi.debug.dumpedXml",
+                  NamedTextColor.GRAY,
+                  Component.text(path.toString())
+              )
+          );
           return SINGLE_SUCCESS;
         })
         .build();
@@ -122,7 +168,9 @@ public class DelphiCommand {
         .build();
   }
 
-  private static int openDocument(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+  private static int openDocument(CommandContext<CommandSourceStack> c)
+      throws CommandSyntaxException
+  {
     DelphiPlugin pl = getPlugin();
     ResourcePath path = getPath(c);
 
@@ -137,7 +185,6 @@ public class DelphiCommand {
           Component.translatable("delphi.docOpened", NamedTextColor.GRAY)
       );
 
-      lastView = result.map(v -> (PageView) v).getOrThrow();
       return SINGLE_SUCCESS;
     }
 
