@@ -404,7 +404,7 @@ public class RenderObject {
     applyScreenNormalOffsets();
 
     // Step 8 - Apply screen rotation and offset by height
-    applyScreenRotation();
+    applyScreenMetrics();
 
     // Step 9 - Apply transformations to entities
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
@@ -454,12 +454,17 @@ public class RenderObject {
     return display;
   }
   
-  private void applyScreenRotation() {
+  private void applyScreenMetrics() {
     Quaternionf lrot = screen.entityRotation;
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
       layer.translate.z += layer.depth;
+
+      layer.size.mul(screen.screenScale);
+      layer.scale.mul(screen.scale);
+      layer.translate.x *= screen.screenScale.x;
+      layer.translate.y *= screen.screenScale.y;
 
       // Perform rotation
       layer.translate.rotate(lrot, layer.rotatedTranslate);

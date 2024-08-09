@@ -18,7 +18,7 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   // The actual dimensions of the screen in world space
   final Vector2f worldDimensions = new Vector2f(0);
   // Scale of the screen relative to the dimensions field
-  final Vector2f screenScale = new Vector2f(1);
+  public final Vector2f screenScale = new Vector2f(1);
   // Points of the screen
   final Vector3f loRight = new Vector3f(0);
   final Vector3f hiRight = new Vector3f(0);
@@ -248,20 +248,24 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
 
   /* --------------------------- to string ---------------------------- */
 
-  public void append(StringBuilder builder) {
-    builder.append(getClass().getSimpleName()).append("{");
-    appendInfo(builder, 1);
-    builder.append("\n}");
-  }
-
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    append(builder);
+    builder
+        .append(getClass().getSimpleName())
+        .append('[');
+
+    appendInfo(builder, -1);
+
+    builder.append(']');
     return builder.toString();
   }
 
   private static StringBuilder nlIndent(StringBuilder builder, int in) {
+    if (in < 0) {
+      return builder.append(", ");
+    }
+
     return builder
         .append('\n')
         .append("  ".repeat(in));
@@ -278,9 +282,9 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     nlIndent(builder, indent).append("scale: ").append(scale);
     nlIndent(builder, indent).append("left-rotation: ").append(leftRotation);
     nlIndent(builder, indent).append("right-rotation: ").append(rightRotation);
-    nlIndent(builder, indent).append("point[lo-left]: ").append(loLeft);
-    nlIndent(builder, indent).append("point[hi-left]: ").append(hiLeft);
-    nlIndent(builder, indent).append("point[lo-right]: ").append(loRight);
-    nlIndent(builder, indent).append("point[hi-right]: ").append(hiRight);
+    nlIndent(builder, indent).append("lo-left: ").append(loLeft);
+    nlIndent(builder, indent).append("hi-left: ").append(hiLeft);
+    nlIndent(builder, indent).append("lo-right: ").append(loRight);
+    nlIndent(builder, indent).append("hi-right: ").append(hiRight);
   }
 }
