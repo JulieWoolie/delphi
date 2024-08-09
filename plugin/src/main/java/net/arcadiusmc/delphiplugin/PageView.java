@@ -48,11 +48,14 @@ import net.arcadiusmc.dom.event.MutationEvent;
 import net.arcadiusmc.dom.event.ScrollDirection;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Transformation;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -61,7 +64,7 @@ public class PageView implements ExtendedView {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  public static boolean debugOutlines = false;
+  public static boolean debugOutlines = LOGGER.isDebugEnabled();
 
   private static final Sound CLICK_SOUND = Sound.sound()
       .type(org.bukkit.Sound.UI_BUTTON_CLICK)
@@ -135,6 +138,61 @@ public class PageView implements ExtendedView {
     }
 
     entities.clear();
+  }
+
+  @Override
+  public void transform(@NotNull Transformation transformation) {
+    Objects.requireNonNull(transformation, "Null transformation");
+
+    kill();
+    screen.apply(transformation);
+    spawn();
+  }
+
+  @Override
+  public void moveTo(@NotNull Vector3f position) {
+    Objects.requireNonNull(position, "Null position");
+    moveTo(world, position.x, position.y, position.z);
+  }
+
+  @Override
+  public void moveTo(@NotNull Location location) {
+    Objects.requireNonNull(location, "Null location");
+    Objects.requireNonNull(location.getWorld(), "Null location world");
+
+    moveTo(
+        location.getWorld(),
+        (float) location.getX(),
+        (float) location.getY(),
+        (float) location.getZ()
+    );
+  }
+
+  @Override
+  public void moveTo(@NotNull World world, @NotNull Vector3f position) {
+    Objects.requireNonNull(world, "Null world");
+    Objects.requireNonNull(position, "Null position");
+
+    moveTo(world, position.x, position.y, position.z);
+  }
+
+  private void moveTo(World world, float x, float y, float z) {
+    float h = screen.getHeight() * 0.5f;
+    Vector3f off = new Vector3f(x, y + h, z);
+    off.sub(screen.center());
+
+    if (off.lengthSquared() <= 0) {
+      return;
+    }
+
+    kill();
+    screen.translate(off);
+
+    if (!Objects.equals(world, this.world)) {
+      setWorld(world);
+    }
+
+    spawn();
   }
 
   public void initializeDocument(DelphiDocument document) {

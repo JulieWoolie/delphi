@@ -3,8 +3,11 @@ package net.arcadiusmc.delphi;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.dom.Document;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Transformation;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -70,4 +73,19 @@ public interface DocumentView {
    *         {@code false} otherwise.
    */
   boolean isSelected();
+
+  /**
+   * Apply a transformation to the view's screen.
+   *
+   * @param transformation Transformation to apply to the screen
+   *
+   * @throws NullPointerException If {@code transformation} is {@code null}
+   */
+  void transform(@NotNull Transformation transformation);
+
+  void moveTo(@NotNull Location location);
+
+  void moveTo(@NotNull World world, @NotNull Vector3f position);
+
+  void moveTo(@NotNull Vector3f position);
 }
