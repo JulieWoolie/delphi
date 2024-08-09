@@ -62,7 +62,7 @@ public final class Properties {
 
   public static final Property<Boolean> BOLD = Property.builder(Boolean.class)
       .defaultValue(false)
-      .cascading(false)
+      .cascading(true)
       .layoutAffecting(true)
       .contentAffecting(true)
       .function((s, screen, b) -> s.bold = b)
@@ -70,7 +70,7 @@ public final class Properties {
 
   public static final Property<Boolean> ITALIC = Property.builder(Boolean.class)
       .defaultValue(false)
-      .cascading(false)
+      .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
       .function((s, screen, b) -> s.italic = b)
@@ -78,7 +78,7 @@ public final class Properties {
 
   public static final Property<Boolean> UNDERLINED = Property.builder(Boolean.class)
       .defaultValue(false)
-      .cascading(false)
+      .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
       .function((s, screen, b) -> s.underlined = b)
@@ -86,7 +86,7 @@ public final class Properties {
 
   public static final Property<Boolean> STRIKETHROUGH = Property.builder(Boolean.class)
       .defaultValue(false)
-      .cascading(false)
+      .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
       .function((s, screen, b) -> s.strikethrough = b)
@@ -94,7 +94,7 @@ public final class Properties {
 
   public static final Property<Boolean> OBFUSCATED = Property.builder(Boolean.class)
       .defaultValue(false)
-      .cascading(false)
+      .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
       .function((s, screen, b) -> s.obfuscated = b)
