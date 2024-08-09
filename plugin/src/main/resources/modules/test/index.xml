@@ -18,5 +18,9 @@
 
     <button action="cmd: tellraw %player% &quot;Hello, %player%!&quot;" class="mt-2" id="btn-settings">Settings</button>
     <button action="close" class="mt-2" id="btn-quit">Quit</button>
+
+    <i class="mt-2">This text is italic</i>
+    <u class="mt-2">This text is underlined</u>
+    <b class="mt-2">This text is bold</b>
   </body>
 </page>
