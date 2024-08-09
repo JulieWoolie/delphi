@@ -2,6 +2,7 @@ package net.arcadiusmc.dom;
 
 import com.google.common.base.Strings;
 import net.arcadiusmc.delphi.util.Result;
+import org.jetbrains.annotations.Nullable;
 
 public interface Attributes {
   /**
@@ -82,7 +83,7 @@ public interface Attributes {
    *   <tr>
    *     <td>{@code player-cmd: <command>}</td>
    *     <td>Runs a command as the player. You can use {@code %player%} as a placeholder for the player's name</td>
-   *     <td>{@code "cmd: msg %player% Hello, me!}</td>
+   *     <td>{@code "player-cmd: msg %player% Hello, me!}</td>
    *   </tr>
    * </table>
    */
@@ -122,7 +123,7 @@ public interface Attributes {
     return Result.ok(f);
   }
 
-  static boolean boolAttribute(String value, boolean fallback) {
+  static boolean boolAttribute(@Nullable String value, boolean fallback) {
     if (Strings.isNullOrEmpty(value)) {
       return fallback;
     }
