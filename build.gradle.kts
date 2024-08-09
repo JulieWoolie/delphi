@@ -38,6 +38,7 @@ subprojects {
     test {
       useJUnitPlatform()
       systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace")
+      systemProperty("joml.format", "false")
     }
     compileJava {
       options.release = 21
