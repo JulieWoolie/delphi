@@ -1,216 +1,178 @@
 package net.arcadiusmc.delphiplugin.math;
 
-import lombok.Getter;
+import org.bukkit.util.Transformation;
 import org.joml.Intersectionf;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Screen implements net.arcadiusmc.delphi.Screen {
 
-  private static final float EPSILON = 0.0000001f;
+  static final float EPSILON = 0.0000001f;
 
-  private final Vector3f lowerLeft = new Vector3f();
-  private final Vector3f lowerRight = new Vector3f();
-  private final Vector3f upperLeft = new Vector3f();
-  private final Vector3f upperRight = new Vector3f();
+  final Vector2f dimensions = new Vector2f(0);
+  final Vector3f normal = new Vector3f(0, 0, 1);
+  final Vector3f center = new Vector3f(0);
 
-  private final Vector3f normal = new Vector3f();
-  private final Vector3f center = new Vector3f();
+  // -- variables that are updated according to the above ones --
+  // The actual dimensions of the screen in world space
+  final Vector2f worldDimensions = new Vector2f(0);
+  // Scale of the screen relative to the dimensions field
+  final Vector2f screenScale = new Vector2f(1);
+  // Points of the screen
+  final Vector3f loRight = new Vector3f(0);
+  final Vector3f hiRight = new Vector3f(0);
+  final Vector3f loLeft = new Vector3f(0);
+  final Vector3f hiLeft = new Vector3f(0);
 
-  @Getter
-  private float width;
-  @Getter
-  private float height;
+  // Transformations
+  public final Vector3f scale = new Vector3f(1);
+  public final Quaternionf leftRotation = new Quaternionf();
+  public final Quaternionf rightRotation = new Quaternionf();
+  public final Quaternionf entityRotation = new Quaternionf();
 
-  public Screen() {
-    set(new Vector3f(), DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  /* --------------------------- mutation ---------------------------- */
+
+  public void apply(Transformation trans) {
+    translate(trans.getTranslation());
+    multiply(trans.getScale(), trans.getLeftRotation(), trans.getRightRotation());
+  }
+
+  public void translate(Vector3f offset) {
+    center.add(offset);
+  }
+
+  public void multiply(Vector3f scale, Quaternionf lrot, Quaternionf rrot) {
+    this.scale.mul(scale);
+    this.leftRotation.mul(lrot);
+    this.rightRotation.mul(rrot);
+
+    transformPoint(normal);
+    normal.normalize();
+
+    recalculate();
+  }
+
+  public void setCenter(Vector3f center) {
+    this.center.set(center);
+    recalculate();
+  }
+
+  public void setNormal(Vector3f normal) {
+    this.normal.set(normal).normalize();
+    recalculate();
   }
 
   public void setDimensions(float width, float height) {
-    set(center, width, height);
+    dimensions.x = Math.abs(width);
+    dimensions.y = Math.abs(height);
+    recalculate();
   }
 
-  @Override
-  public void set(Vector3f center, float width, float height) {
-    float halfWidth = width * 0.5f;
-
-    Vector3f bottomLeft = new Vector3f(center);
-    Vector3f topRight = new Vector3f(center);
-
-    bottomLeft.sub(0, 0, halfWidth);
-    topRight.add(0, height, halfWidth);
-
-    this.upperRight.set(bottomLeft.x, topRight.y, bottomLeft.z);
-    this.lowerLeft.set(topRight.x, bottomLeft.y, topRight.z);
-
-    this.upperLeft.set(lowerLeft.x, upperRight.y, lowerLeft.z);
-    this.lowerRight.set(upperRight.x, lowerLeft.y, upperRight.z);
-
+  public void set(Vector3f center, Vector3f normal, float w, float h) {
     this.center.set(center);
-    this.center.add(0, height * 0.5f, 0);
-
-    this.normal.set(1, 0, 0);
-
-    this.width = width;
-    this.height = height;
+    this.normal.set(normal).normalize();
+    this.dimensions.set(w, h).absolute();
+    recalculate();
   }
 
-  @Override
-  public Vector3f getLowerLeft() {
-    return new Vector3f(lowerLeft);
+  public void transformPoint(Vector3f point) {
+    entityRotation.transform(point);
+    leftRotation.transform(point);
+    point.mul(scale);
+    rightRotation.transform(point);
   }
 
-  @Override
-  public Vector3f getLowerRight() {
-    return new Vector3f(lowerRight);
+  public void recalculate() {
+    entityRotation.identity();
+    entityRotation.rotateTo(0, 0, 1, normal.x, normal.y, normal.z);
+
+    findPoints();
+
+    Vector3f lrDif = new Vector3f(); // Left-Right dif
+    Vector3f udDif = new Vector3f(); // Up-Down dif
+
+    loRight.sub(hiRight, udDif);
+    loRight.sub(loLeft, lrDif);
+
+    worldDimensions.x = lrDif.length();
+    worldDimensions.y = udDif.length();
+
+    worldDimensions.div(dimensions, screenScale);
   }
 
-  @Override
-  public Vector3f getUpperLeft() {
-    return new Vector3f(upperLeft);
+  void findPoints() {
+    Vector3f up = new Vector3f(0, 1, 0);
+
+    // Transform so it's screen's up direction
+    transformPoint(up);
+    up.normalize();
+
+    Vector3f right = new Vector3f();
+    normal.cross(up, right);
+
+    right.mul(dimensions.x * 0.5f);
+    up.mul(dimensions.y * 0.5f);
+
+    right.mul(scale);
+    up.mul(scale);
+
+    // This may seem to be the opposite of what it should be, left == center + right (???)
+    // But this is because the left and right are from the viewer's perspective, looking at
+    // the screen, not from the screen looking at the player's perspective, so left and
+    // right are flipped.
+    loLeft.set(center).add(right).sub(up);
+    loRight.set(center).sub(right).sub(up);
+    hiLeft.set(center).add(right).add(up);
+    hiRight.set(center).sub(right).add(up);
   }
 
-  @Override
-  public Vector3f getUpperRight() {
-    return new Vector3f(upperRight);
-  }
+  /* --------------------------- coordinate space conversion ---------------------------- */
 
-  public Quaternionf rotation() {
-    Quaternionf f = new Quaternionf();
-    f.rotateTo(0, 0, 0, normal.x, normal.y, normal.z);
-    return f;
-  }
-
-  public Vector2f getRotation() {
-    float yaw = toYaw();
-    float pitch = toPitch();
-    return new Vector2f(yaw, pitch);
-  }
-
-  private float toYaw() {
-    double t = Math.atan2(-normal.x, normal.z);
-    return (float) Math.toDegrees((t + Math.TAU) % Math.TAU);
-  }
-
-  private float toPitch() {
-    float x = normal.x;
-    float z = normal.z;
-    float y = normal.y;
-
-    if (x == 0 && z == 0) {
-      return y > 0 ? -90 : 90;
-    }
-
-    float xSq = x * x;
-    float zSq = z * z;
-    double zs = Math.sqrt(xSq + zSq);
-
-    return (float) Math.toDegrees(Math.atan(-y / zs));
-  }
-
-  @Override
-  public Vector2f getDimensions() {
-    return new Vector2f(width, height);
-  }
-
-  @Override
-  public Vector3f normal() {
-    return new Vector3f(normal);
-  }
-
-  @Override
-  public Vector3f center() {
-    return new Vector3f(center);
-  }
-
-  /**
-   * Applies a transformation to this screen
-   * @param matrix Matrix to apply
-   */
-  @Override
-  public void apply(Matrix4f matrix) {
-    lowerLeft.sub(center).mulPosition(matrix).add(center);
-    lowerRight.sub(center).mulPosition(matrix).add(center);
-    upperLeft.sub(center).mulPosition(matrix).add(center);
-    upperRight.sub(center).mulPosition(matrix).add(center);
-
-    calculateDerivedValues();
-  }
-
-  /**
-   * Translate screen coordinates in range [0...{@link #getDimensions()}] to a world position
-   * @param screenPoint Screen point, with axes in range [0..{@link #getDimensions()}]
-   * @param out Output value holder
-   */
-  @Override
   public void screenToWorld(Vector2f screenPoint, Vector3f out) {
     Vector2f in = new Vector2f();
     screenToScreenspace(screenPoint, in);
     screenspaceToWorld(in, out);
   }
 
-  /**
-   * Converts screen coordinates in range [0..{@link #getDimensions()}) to a screen
-   * space coordinate in range [0..1]
-   *
-   * @param in Screen input position
-   * @param out Vector to store the value in
-   */
-  @Override
   public void screenToScreenspace(Vector2f in, Vector2f out) {
-    out.set(in).div(width, height);
+    out.set(in).div(dimensions.x, dimensions.y);
   }
 
-  /**
-   * Converts screen space coordinates in range [0..1] to a screen coordinate in range
-   * [0..{@link #getDimensions()})
-   *
-   * @param in Screen space input position
-   * @param out Vector to store the value in
-   */
-  @Override
   public void screenspaceToScreen(Vector2f in, Vector2f out) {
-    out.set(in).mul(width, height);
+    out.set(in).mul(dimensions.x, dimensions.y);
   }
 
-  /**
-   * Translate screen space coordinates in range [0..1] to a world position.
-   * @param screenPoint Screen point, with axes in range [0..1]
-   * @param out Output value holder
-   */
-  @Override
   public void screenspaceToWorld(Vector2f screenPoint, Vector3f out) {
-    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
-    Vector3f width = new Vector3f(lowerRight).sub(lowerLeft);
+    Vector3f height = new Vector3f(hiLeft).sub(loLeft);
+    Vector3f width = new Vector3f(loRight).sub(loLeft);
 
     height.mul(screenPoint.y);
     width.mul(screenPoint.x);
 
-    out.set(lowerLeft);
+    out.set(loLeft);
     out.add(width);
     out.add(height);
   }
 
-  public boolean castRay(RayScan scan, Vector3f hitOut, Vector2f screenOut) {
-    boolean didHit = planeIntersection(scan, hitOut);
+  /* --------------------------- ray casting ---------------------------- */
 
-    if (!didHit) {
+  public boolean castRay(RayScan scan, Vector3f out, Vector2f screenOut) {
+    if (!planeIntersect(scan, out)) {
       return false;
     }
 
-    screenHitPoint(hitOut, screenOut);
+    screenHitPoint(out, screenOut);
 
     return (screenOut.x >= 0 && screenOut.x <= 1)
         && (screenOut.y >= 0 && screenOut.y <= 1);
   }
 
-  private void screenHitPoint(Vector3f hitPoint, Vector2f out) {
-    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
-    Vector3f width = new Vector3f(lowerRight).sub(lowerLeft);
+  public void screenHitPoint(Vector3f hitPoint, Vector2f out) {
+    Vector3f height = new Vector3f(hiLeft).sub(loLeft);
+    Vector3f width = new Vector3f(loRight).sub(loLeft);
 
-    Vector3f relativePoint = new Vector3f(hitPoint).sub(lowerLeft);
+    Vector3f relativePoint = new Vector3f(hitPoint).sub(loLeft);
 
     float x = relativePoint.dot(width) / width.lengthSquared();
     float y = relativePoint.dot(height) / height.lengthSquared();
@@ -218,7 +180,7 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     out.set(x, y);
   }
 
-  private boolean planeIntersection(RayScan scan, Vector3f out) {
+  public boolean planeIntersect(RayScan scan, Vector3f out) {
     float t = Intersectionf.intersectRayPlane(
         scan.getOrigin(),
         scan.getDirection(),
@@ -237,37 +199,88 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     return true;
   }
 
-  private void calculateDerivedValues() {
-    Vector3f v1 = new Vector3f();
-    Vector3f v2 = new Vector3f();
+  /* --------------------------- API impl ---------------------------- */
 
-    upperLeft.sub(lowerLeft, v1);
-    lowerRight.sub(lowerLeft, v2);
-
-    v2.cross(v1, normal);
-    normal.normalize();
-
-    Vector3f min = new Vector3f(lowerLeft);
-    Vector3f max = new Vector3f(lowerLeft);
-
-    min.min(lowerRight);
-    min.min(upperLeft);
-    min.min(upperRight);
-
-    max.max(lowerRight);
-    max.max(upperLeft);
-    max.max(upperRight);
-
-    center.set(min).add(max).mul(0.5f);
-
-    calculateDimensions();
+  @Override
+  public float getWidth() {
+    return dimensions.x;
   }
 
-  private void calculateDimensions() {
-    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
-    Vector3f width = new Vector3f(upperRight).sub(upperLeft);
-    this.width = width.length();
-    this.height = height.length();
+  @Override
+  public float getHeight() {
+    return dimensions.y;
   }
 
+  @Override
+  public Vector3f normal() {
+    return new Vector3f(normal);
+  }
+
+  @Override
+  public Vector3f center() {
+    return new Vector3f(center);
+  }
+
+  @Override
+  public Vector2f getDimensions() {
+    return new Vector2f(dimensions);
+  }
+
+  @Override
+  public Vector3f getLowerLeft() {
+    return new Vector3f(loLeft);
+  }
+
+  @Override
+  public Vector3f getLowerRight() {
+    return new Vector3f(loRight);
+  }
+
+  @Override
+  public Vector3f getUpperLeft() {
+    return new Vector3f(hiLeft);
+  }
+
+  @Override
+  public Vector3f getUpperRight() {
+    return new Vector3f(hiRight);
+  }
+
+  /* --------------------------- to string ---------------------------- */
+
+  public void append(StringBuilder builder) {
+    builder.append(getClass().getSimpleName()).append("{");
+    appendInfo(builder, 1);
+    builder.append("\n}");
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    append(builder);
+    return builder.toString();
+  }
+
+  private static StringBuilder nlIndent(StringBuilder builder, int in) {
+    return builder
+        .append('\n')
+        .append("  ".repeat(in));
+  }
+
+  public void appendInfo(StringBuilder builder, int indent) {
+    nlIndent(builder, indent).append("width: ").append(dimensions.x);
+    nlIndent(builder, indent).append("height: ").append(dimensions.y);
+    nlIndent(builder, indent).append("normal: ").append(normal);
+    nlIndent(builder, indent).append("center: ").append(center);
+    nlIndent(builder, indent).append("world-width: ").append(worldDimensions.x);
+    nlIndent(builder, indent).append("world-height: ").append(worldDimensions.y);
+    nlIndent(builder, indent).append("screen-scale: ").append(screenScale);
+    nlIndent(builder, indent).append("scale: ").append(scale);
+    nlIndent(builder, indent).append("left-rotation: ").append(leftRotation);
+    nlIndent(builder, indent).append("right-rotation: ").append(rightRotation);
+    nlIndent(builder, indent).append("point[lo-left]: ").append(loLeft);
+    nlIndent(builder, indent).append("point[hi-left]: ").append(hiLeft);
+    nlIndent(builder, indent).append("point[lo-right]: ").append(loRight);
+    nlIndent(builder, indent).append("point[hi-right]: ").append(hiRight);
+  }
 }

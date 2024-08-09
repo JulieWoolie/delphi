@@ -11,18 +11,19 @@ import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphiplugin.HideUtil;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
+import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.TextDisplay;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -331,10 +332,8 @@ public class RenderObject {
   
   private Location getSpawnLocation() {
     Vector3f pos = new Vector3f();
-    Vector2f rot = view.getScreen().getRotation();
-
     view.getScreen().screenToWorld(position, pos);
-    return new Location(view.getWorld(), pos.x, pos.y, pos.z, rot.x, rot.y);
+    return new Location(view.getWorld(), pos.x, pos.y, pos.z);
   }
 
   public void spawnRecursive() {
@@ -405,7 +404,7 @@ public class RenderObject {
     applyScreenNormalOffsets();
 
     // Step 8 - Apply screen rotation and offset by height
-    applyScreenRotation(location.getYaw(), location.getPitch());
+    applyScreenRotation();
 
     // Step 9 - Apply transformations to entities
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
@@ -455,33 +454,18 @@ public class RenderObject {
     return display;
   }
   
-  private void applyScreenRotation(float yaw, float pitch) {
-    //Quaternionf lrot = new Quaternionf();
-    //lrot.rotateY((float) Math.toRadians(yaw));
-    //lrot.rotateX((float) Math.toRadians(pitch));
-
-    Vector3f normal = screen.normal();
-    Vector3f left = new Vector3f(normal).rotateY(RAD90).normalize();
-    Vector3f up = new Vector3f(normal).rotateX(RAD90).normalize();
-
-    Vector3f rX = new Vector3f();
-    Vector3f rY = new Vector3f();
-    Vector3f rZ = new Vector3f();
+  private void applyScreenRotation() {
+    Quaternionf lrot = screen.entityRotation;
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
-      layer.translate.z -= layer.depth;
+      layer.translate.z += layer.depth;
 
       // Perform rotation
-      //layer.translate.rotate(lrot, layer.rotatedTranslate);
+      layer.translate.rotate(lrot, layer.rotatedTranslate);
+      //layer.rotatedTranslate.rotate(rrot, layer.rotatedTranslate);
 
-      layer.rotatedTranslate.set(0);
-
-      left.mul(layer.translate.x, rX);
-      up.mul(layer.translate.y, rY);
-      normal.mul(layer.translate.z, rZ);
-
-      layer.rotatedTranslate.add(rX).add(rY).add(rZ);
+      layer.leftRotation.set(lrot);
     });
   }
 

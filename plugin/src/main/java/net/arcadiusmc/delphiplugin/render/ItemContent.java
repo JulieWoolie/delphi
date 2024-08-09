@@ -69,7 +69,7 @@ public class ItemContent implements ElementContent {
 
     float transY = layer.size.y * Y_OFF_MODIFIER * element.getStyle().scale.y * GLOBAL_SCALAR;
     layer.translate.y += transY;
-    layer.translate.z -= Z_OFF;
+    layer.translate.z += Z_OFF;
     layer.leftRotation.rotateY(ROTATION);
   }
 }

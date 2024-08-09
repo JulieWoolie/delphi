@@ -38,11 +38,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     Screen screen = view.getScreen();
     nlIndent().append("screen:");
     indent++;
-    nlIndent().append("center: ").append(screen.center());
-    nlIndent().append("normal: ").append(screen.normal());
-    nlIndent().append("rotation: ").append(screen.getRotation());
-    nlIndent().append("width: ").append(screen.getWidth());
-    nlIndent().append("height: ").append(screen.getHeight());
+    screen.appendInfo(builder, indent);
     indent--;
 
     DelphiDocument doc = view.getDocument();

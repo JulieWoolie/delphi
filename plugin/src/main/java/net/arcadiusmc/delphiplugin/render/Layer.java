@@ -70,9 +70,9 @@ public class Layer {
     // Honestly, though, I don't know why this is like this, but it
     // ensures that the Z axes acts like a depth value while X and Y
     // are screen translation values.
-    tr.x = rotatedTranslate.z;
+    tr.x = rotatedTranslate.x;
     tr.y = rotatedTranslate.y;
-    tr.z = rotatedTranslate.x;
+    tr.z = rotatedTranslate.z;
 
     sc.x = scale.x;
     sc.y = scale.y;

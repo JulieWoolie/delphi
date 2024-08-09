@@ -18,8 +18,10 @@ import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -107,22 +109,41 @@ public class PageManager implements Delphi {
 
     view.initializeDocument(doc);
 
-    Screen screen = view.getScreen();
-    float width = screen.getWidth();
-    float height = screen.getHeight();
-
-    float centerY = (float) ((player.getY() + player.getEyeHeight()) - (height * 0.5));
-
-    Vector3f center = new Vector3f();
-    center.x = (float) player.getX();
-    center.y = centerY;
-    center.z = (float) player.getZ();
-
-    screen.set(center, width, height);
+    configureScreen(player, view.getScreen());
 
     view.spawn();
 
     return Result.ok(view);
+  }
+
+  private void configureScreen(Player player, Screen screen) {
+    Location location = player.getEyeLocation();
+    Vector direction = location.getDirection();
+
+    Vector3f pos = new Vector3f();
+    Vector3f dir = new Vector3f();
+
+    pos.x = (float) location.getX();
+    pos.y = (float) location.getY();
+    pos.z = (float) location.getZ();
+
+    dir.x = (float) direction.getX();
+    //dir.y = (float) direction.getY();
+    dir.z = (float) direction.getZ();
+
+    dir.normalize();
+
+    final float width = screen.getWidth();
+    final float height = screen.getHeight();
+    final float distanceFromPlayer = width * 0.5f;
+
+    pos.x += (dir.x * distanceFromPlayer);
+    pos.y += (dir.y * distanceFromPlayer);
+    pos.z += (dir.z * distanceFromPlayer);
+
+    dir.negate();
+
+    screen.set(pos, dir, width, height);
   }
 
   @Override

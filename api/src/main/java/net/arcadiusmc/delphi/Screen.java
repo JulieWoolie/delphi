@@ -1,6 +1,5 @@
 package net.arcadiusmc.delphi;
 
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -8,21 +7,6 @@ public interface Screen {
 
   int DEFAULT_WIDTH = 3;
   int DEFAULT_HEIGHT = 2;
-
-  /**
-   * Sets the screen's position and size.
-   *
-   * @param center Screen position
-   * @param width Screen width
-   * @param height Screen height
-   */
-  void set(Vector3f center, float width, float height);
-
-  /**
-   * Applies a transformation to this screen
-   * @param transform Transformation
-   */
-  void apply(Matrix4f transform);
 
   /**
    * Gets the width of the screen
@@ -47,12 +31,6 @@ public interface Screen {
    * @return Screen center
    */
   Vector3f center();
-
-  /**
-   * Gets the screen's yaw and pitch
-   * @return Screen rotation (yaw, pitch)
-   */
-  Vector2f getRotation();
 
   /**
    * Gets the width and height of the screen
