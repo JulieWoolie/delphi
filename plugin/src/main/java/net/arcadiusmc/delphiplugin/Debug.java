@@ -3,6 +3,7 @@ package net.arcadiusmc.delphiplugin;
 import com.destroystokyo.paper.ParticleBuilder;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
+import net.arcadiusmc.delphiplugin.render.RenderObject;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -15,9 +16,42 @@ public final class Debug {
   static final float POINT_DIST = 0.12f;
 
   public static void drawSelectionOutline(Rectangle rectangle, PageView view) {
-    Vector2f min = rectangle.getPosition();
-    Vector2f max = new Vector2f();
-    rectangle.getMax(max);
+    drawOutline(rectangle, view, Color.RED);
+  }
+
+  public static void drawScreen(PageView view) {
+    Rectangle rectangle = new Rectangle();
+    RenderObject renderRoot = view.getRenderRoot();
+
+    if (renderRoot == null) {
+      return;
+    }
+
+    renderRoot.getBounds(rectangle);
+    drawOutline(rectangle, view, Color.BLUE);
+
+    Screen screen = view.getScreen();
+    Vector3f center = screen.center();
+    Vector3f normal = screen.normal();
+
+    normal.add(center);
+
+    line(center, normal, particleBuilder(view, Color.BLUE), view.getWorld());
+  }
+
+  public static void drawOutline(Rectangle rectangle, PageView view, Color color) {
+    Vector2f screenLoLeft = rectangle.getPosition();
+    Vector2f screenHiRight = new Vector2f();
+    Vector2f screenLoRight = new Vector2f();
+    Vector2f screenHiLeft = new Vector2f();
+
+    rectangle.getMax(screenHiRight);
+
+    screenHiLeft.set(screenLoLeft);
+    screenHiLeft.y = screenHiRight.y;
+
+    screenLoRight.set(screenHiRight);
+    screenLoRight.y = screenLoLeft.y;
 
     Vector3f loLeft = new Vector3f();
     Vector3f hiLeft = new Vector3f();
@@ -25,25 +59,24 @@ public final class Debug {
     Vector3f hiRight = new Vector3f();
 
     Screen screen = view.getScreen();
-    screen.screenToWorld(min, loLeft);
-    screen.screenToWorld(max, hiRight);
+    screen.screenToWorld(screenLoLeft, loLeft);
+    screen.screenToWorld(screenHiLeft, hiLeft);
+    screen.screenToWorld(screenHiRight, hiRight);
+    screen.screenToWorld(screenLoRight, loRight);
 
-    loRight.set(hiRight);
-    loRight.y = loLeft.y;
-
-    hiLeft.set(loLeft);
-    hiLeft.y = hiRight.y;
-
-    ParticleBuilder builder = Particle.DUST.builder()
-        .color(Color.RED, 0.5f)
-        .receivers(view.getPlayer());
-
+    ParticleBuilder builder = particleBuilder(view, color);
     World w = view.getWorld();
 
     line(loLeft, hiLeft, builder, w);
     line(loLeft, loRight, builder, w);
     line(hiLeft, hiRight, builder, w);
     line(loRight, hiRight, builder, w);
+  }
+
+  private static ParticleBuilder particleBuilder(PageView view, Color color) {
+    return Particle.DUST.builder()
+        .color(color, 0.5f)
+        .receivers(view.getPlayer());
   }
 
   private static void line(Vector3f origin, Vector3f target, ParticleBuilder builder, World world) {
