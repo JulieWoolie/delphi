@@ -1,18 +1,14 @@
 package net.arcadiusmc.delphiplugin.render;
 
 import java.util.Stack;
-import net.arcadiusmc.delphidom.Loggers;
 import net.kyori.adventure.text.flattener.FlattenerListener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.map.MapFont.CharacterSprite;
 import org.bukkit.map.MinecraftFont;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 
 public class TextMeasure implements FlattenerListener {
-
-  private static final Logger LOGGER = Loggers.getLogger();
 
   private static final MinecraftFont FONT = MinecraftFont.Font;
 
