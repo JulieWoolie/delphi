@@ -3,7 +3,6 @@ package net.arcadiusmc.delphiplugin;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -164,12 +163,14 @@ public class PageManager implements Delphi {
   public Optional<DocumentView> getAnyTargetedView(@NotNull Player player) {
     Objects.requireNonNull(player, "Null player");
 
-    List<ViewDist> views = new ArrayList<>();
     World world = player.getWorld();
     RayScan ray = RayScan.ofPlayer(player);
 
     Vector2f screenOut = new Vector2f();
     Vector3f hitOut = new Vector3f();
+
+    float closestDistSq = Float.MAX_VALUE;
+    PageView closest = null;
 
     for (PlayerSession session : sessions.getSessions()) {
       for (PageView view : session.getViews()) {
@@ -181,32 +182,20 @@ public class PageManager implements Delphi {
           continue;
         }
 
-        double distSq = hitOut.distanceSquared(ray.getOrigin());
+        float distSq = hitOut.distanceSquared(ray.getOrigin());
         if (distSq >= ray.getMaxLengthSq()) {
           continue;
         }
 
-        views.add(new ViewDist(view, distSq));
+        if (distSq >= closestDistSq) {
+          continue;
+        }
+
+        closestDistSq = distSq;
+        closest = view;
       }
     }
 
-    if (views.isEmpty()) {
-      return Optional.empty();
-    }
-    if (views.size() == 1) {
-      return Optional.of(views.getFirst().view());
-    }
-
-    views.sort(Comparator.naturalOrder());
-    
-    return Optional.of(views.getFirst().view());
-  }
-
-  record ViewDist(PageView view, double distSq) implements Comparable<ViewDist> {
-
-    @Override
-    public int compareTo(@NotNull PageManager.ViewDist o) {
-      return Double.compare(distSq, o.distSq);
-    }
+    return Optional.ofNullable(closest);
   }
 }
