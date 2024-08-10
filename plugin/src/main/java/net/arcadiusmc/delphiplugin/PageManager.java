@@ -23,6 +23,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -116,7 +117,7 @@ public class PageManager implements Delphi {
     return Result.ok(view);
   }
 
-  private void configureScreen(Player player, Screen screen) {
+  public static void configureScreen(Player player, Screen screen) {
     Location location = player.getEyeLocation();
     Vector direction = location.getDirection();
 
@@ -141,9 +142,12 @@ public class PageManager implements Delphi {
     pos.y += (dir.y * distanceFromPlayer);
     pos.z += (dir.z * distanceFromPlayer);
 
-    dir.negate();
+    Quaternionf lrot = new Quaternionf();
+    lrot.rotateTo(0, 0, 1, -dir.x, -dir.y, -dir.z);
 
-    screen.set(pos, dir, width, height);
+    screen.set(pos, width, height);
+    screen.leftRotation.set(lrot);
+    screen.recalculate();
   }
 
   @Override

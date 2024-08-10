@@ -124,7 +124,7 @@ public class DelphiCommand {
   private static LiteralCommandNode<CommandSourceStack> toggleDebugLines() {
     return Commands.literal("toggle-debug-outlines")
         .executes(c -> {
-          boolean state = PageView.debugOutlines;
+          boolean state = Debug.debugOutlines;
           String msg;
           TextColor color;
 
@@ -137,7 +137,7 @@ public class DelphiCommand {
           }
 
           c.getSource().getSender().sendMessage(Component.translatable(msg, color));
-          PageView.debugOutlines = !state;
+          Debug.debugOutlines = !state;
 
           return SINGLE_SUCCESS;
         })

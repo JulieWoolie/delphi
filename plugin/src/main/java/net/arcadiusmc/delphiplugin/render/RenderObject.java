@@ -216,8 +216,8 @@ public abstract class RenderObject {
   }
   
   private void applyScreenMetrics() {
-    Quaternionf lrot = new Quaternionf(screen.entityRotation);
-    lrot.mul(screen.leftRotation);
+    Quaternionf lrot = screen.leftRotation;
+    Quaternionf rrot = screen.rightRotation;
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
@@ -229,10 +229,11 @@ public abstract class RenderObject {
       layer.translate.y *= screen.screenScale.y;
 
       // Perform rotation
-      layer.translate.rotate(lrot, layer.rotatedTranslate);
-      screen.rightRotation.transform(layer.rotatedTranslate);
+      lrot.transform(layer.translate, layer.rotatedTranslate);
+      rrot.transform(layer.rotatedTranslate);
+
       layer.leftRotation.set(lrot);
-      layer.rightRotation.set(screen.rightRotation);
+      layer.rightRotation.set(rrot);
     });
   }
 

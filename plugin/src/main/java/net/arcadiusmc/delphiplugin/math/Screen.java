@@ -11,14 +11,17 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   static final float EPSILON = 0.0000001f;
 
   final Vector2f dimensions = new Vector2f(0);
-  final Vector3f normal = new Vector3f(0, 0, 1);
   final Vector3f center = new Vector3f(0);
 
-  // -- variables that are updated according to the above ones --
   // The actual dimensions of the screen in world space
   final Vector2f worldDimensions = new Vector2f(0);
+
   // Scale of the screen relative to the dimensions field
   public final Vector2f screenScale = new Vector2f(1);
+
+  // Screen plane normal
+  final Vector3f normal = new Vector3f(0, 0, 1);
+
   // Points of the screen
   final Vector3f loRight = new Vector3f(0);
   final Vector3f hiRight = new Vector3f(0);
@@ -29,7 +32,6 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   public final Vector3f scale = new Vector3f(1);
   public final Quaternionf leftRotation = new Quaternionf();
   public final Quaternionf rightRotation = new Quaternionf();
-  public final Quaternionf entityRotation = new Quaternionf();
 
   /* --------------------------- mutation ---------------------------- */
 
@@ -47,19 +49,11 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     this.leftRotation.mul(lrot);
     this.rightRotation.mul(rrot);
 
-    transformPoint(normal);
-    normal.normalize();
-
     recalculate();
   }
 
   public void setCenter(Vector3f center) {
     this.center.set(center);
-    recalculate();
-  }
-
-  public void setNormal(Vector3f normal) {
-    this.normal.set(normal).normalize();
     recalculate();
   }
 
@@ -69,23 +63,22 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     recalculate();
   }
 
-  public void set(Vector3f center, Vector3f normal, float w, float h) {
+  public void set(Vector3f center, float w, float h) {
     this.center.set(center);
-    this.normal.set(normal).normalize();
     this.dimensions.set(w, h).absolute();
     recalculate();
   }
 
   public void transformPoint(Vector3f point) {
-    entityRotation.transform(point);
     leftRotation.transform(point);
     point.mul(scale);
     rightRotation.transform(point);
   }
 
   public void recalculate() {
-    entityRotation.identity();
-    entityRotation.rotateTo(0, 0, 1, normal.x, normal.y, normal.z);
+    normal.set(0, 0, 1);
+    transformPoint(normal);
+    normal.normalize();
 
     findPoints();
 

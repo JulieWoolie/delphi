@@ -6,15 +6,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
-import net.arcadiusmc.delphiplugin.render.RenderObject;
 import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
 import net.arcadiusmc.dom.Visitor;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.permissions.ServerOperator;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -23,8 +25,15 @@ public final class Debug {
   private Debug() {}
 
   private static final Logger LOGGER = Loggers.getLogger();
-
+  public static boolean debugOutlines = LOGGER.isDebugEnabled();
   static final float POINT_DIST = 0.12f;
+
+  static final Screen SCREEN;
+
+  static {
+    SCREEN = new Screen();
+    SCREEN.setDimensions(3, 2);
+  }
 
   public static Path dumpDebugTree(String fileName, PageView view) {
     Path dir;
@@ -67,24 +76,25 @@ public final class Debug {
     drawOutline(rectangle, view, Color.RED);
   }
 
-  public static void drawScreen(PageView view) {
-    Rectangle rectangle = new Rectangle();
-    RenderObject renderRoot = view.getRenderRoot();
+  public static void drawScreen(Screen screen, World world) {
+    Vector3f loRight = screen.getLowerRight();
+    Vector3f hiRight = screen.getUpperRight();
+    Vector3f loLeft = screen.getLowerLeft();
+    Vector3f hiLeft = screen.getUpperLeft();
 
-    if (renderRoot == null) {
-      return;
-    }
-
-    renderRoot.getBounds(rectangle);
-    drawOutline(rectangle, view, Color.BLUE);
-
-    Screen screen = view.getScreen();
     Vector3f center = screen.center();
     Vector3f normal = screen.normal();
 
     normal.add(center);
 
-    line(center, normal, particleBuilder(view, Color.BLUE), view.getWorld());
+    ParticleBuilder builder = particleBuilder(Color.BLUE);
+
+    line(center, normal, builder, world);
+
+    line(loRight, loLeft, builder, world);
+    line(loRight, hiRight, builder, world);
+    line(hiLeft, hiRight, builder, world);
+    line(loLeft, hiLeft, builder, world);
   }
 
   public static void drawOutline(Rectangle rectangle, PageView view, Color color) {
@@ -112,7 +122,7 @@ public final class Debug {
     screen.screenToWorld(screenHiRight, hiRight);
     screen.screenToWorld(screenLoRight, loRight);
 
-    ParticleBuilder builder = particleBuilder(view, color);
+    ParticleBuilder builder = particleBuilder(color);
     World w = view.getWorld();
 
     line(loLeft, hiLeft, builder, w);
@@ -121,10 +131,17 @@ public final class Debug {
     line(loRight, hiRight, builder, w);
   }
 
-  private static ParticleBuilder particleBuilder(PageView view, Color color) {
-    return Particle.DUST.builder()
-        .color(color, 0.5f)
-        .receivers(view.getPlayer());
+  private static ParticleBuilder particleBuilder(Color color) {
+    ParticleBuilder builder = Particle.DUST.builder()
+        .color(color, 0.33f);
+
+    builder.receivers(
+        Bukkit.getOnlinePlayers().stream()
+            .filter(ServerOperator::isOp)
+            .collect(Collectors.toSet())
+    );
+
+    return builder;
   }
 
   private static void line(Vector3f origin, Vector3f target, ParticleBuilder builder, World world) {

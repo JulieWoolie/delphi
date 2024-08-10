@@ -66,8 +66,6 @@ public class PageView implements ExtendedView {
 
   private static final Logger LOGGER = Loggers.getLogger("DocumentView");
 
-  public static boolean debugOutlines = LOGGER.isDebugEnabled();
-
   private static final Sound CLICK_SOUND = Sound.sound()
       .type(org.bukkit.Sound.UI_BUTTON_CLICK)
       .build();
@@ -489,11 +487,11 @@ public class PageView implements ExtendedView {
   }
 
   private void drawSelected() {
-    if (!debugOutlines) {
+    if (!Debug.debugOutlines) {
       return;
     }
 
-    Debug.drawScreen(this);
+    Debug.drawScreen(screen, world);
 
     if (hoveredNode == null) {
       return;
