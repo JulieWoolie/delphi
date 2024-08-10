@@ -29,6 +29,8 @@ import net.arcadiusmc.delphidom.scss.DirtyBit;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.render.ComponentContent;
+import net.arcadiusmc.delphiplugin.render.ContentRenderObject;
+import net.arcadiusmc.delphiplugin.render.ElementRenderObject;
 import net.arcadiusmc.delphiplugin.render.ItemContent;
 import net.arcadiusmc.delphiplugin.render.RenderObject;
 import net.arcadiusmc.delphiplugin.render.StringContent;
@@ -106,7 +108,7 @@ public class PageView implements ExtendedView {
   private final Map<DelphiNode, RenderObject> renderObjects = new Object2ObjectOpenHashMap<>();
 
   @Getter
-  private RenderObject renderRoot;
+  private ElementRenderObject renderRoot;
 
   private final List<Display> entities = new ArrayList<>();
 
@@ -221,7 +223,7 @@ public class PageView implements ExtendedView {
     g.addEventListener(EventTypes.MOUSE_DOWN, new ButtonClickListener());
 
     if (document.getBody() != null) {
-      renderRoot = initRenderTree(document.getBody());
+      renderRoot = (ElementRenderObject) initRenderTree(document.getBody());
     }
   }
 
@@ -244,26 +246,44 @@ public class PageView implements ExtendedView {
   }
 
   private RenderObject initRenderTree(DelphiNode node) {
-    RenderObject obj = new RenderObject(this, node.style, screen);
-    obj.setDepth(node.getDepth());
+    RenderObject obj;
 
     switch (node) {
-      case Text text -> obj.setContent(new StringContent(text.getTextContent()));
-      case ChatNode chat -> obj.setContent(new ComponentContent(chat.getContent()));
+      case Text text -> {
+        ContentRenderObject o = new ContentRenderObject(this, node.style, screen);
+        o.setContent(new StringContent(text.getTextContent()));
+        obj = o;
+      }
+      case ChatNode chat -> {
+        ContentRenderObject o = new ContentRenderObject(this, node.style, screen);
+        o.setContent(new ComponentContent(chat.getContent()));
+        obj = o;
+      }
       case DelphiItemElement item -> {
+        ContentRenderObject o = new ContentRenderObject(this, node.style, screen);
+
         if (ItemContent.isEmpty(item.getItemStack())) {
-          obj.setContent(null);
+          o.setContent(null);
         } else {
-          obj.setContent(new ItemContent(item.getItemStack()));
+          o.setContent(new ItemContent(item.getItemStack()));
         }
+
+        obj = o;
       }
       default -> {
+        ElementRenderObject o = new ElementRenderObject(this, node.style, screen);
         DelphiElement el = (DelphiElement) node;
+
         for (DelphiNode delphiNode : el.childList()) {
-          obj.addChild(initRenderTree(delphiNode));
+          o.addChild(initRenderTree(delphiNode));
         }
+
+        obj = o;
       }
     }
+
+    obj.domNode = node;
+    obj.setDepth(node.getDepth());
 
     renderObjects.put(node, obj);
     return obj;
@@ -307,8 +327,12 @@ public class PageView implements ExtendedView {
     boolean respawn;
 
     if (changed(changes, DirtyBit.CONTENT)) {
-      obj.setContentDirty(true);
-      respawn = true;
+      if (obj instanceof ContentRenderObject co) {
+        co.setContentDirty(true);
+        respawn = true;
+      } else {
+        respawn = false;
+      }
     } else {
       respawn = changed(changes, DirtyBit.VISUAL);
     }
@@ -328,7 +352,7 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    RenderObject obj = getRenderObject(node);
+    ContentRenderObject obj = (ContentRenderObject) getRenderObject(node);
     if (obj == null) {
       return;
     }
@@ -408,7 +432,10 @@ public class PageView implements ExtendedView {
 
     obj.moveTo(cursorScreen);
     obj.spawnRecursive();
-    obj.align();
+
+    if (obj instanceof ElementRenderObject el) {
+      el.align();
+    }
   }
 
   @Override
@@ -734,7 +761,10 @@ public class PageView implements ExtendedView {
 
           obj.moveTo(event.getScreenPosition());
           obj.spawnRecursive();
-          obj.align();
+
+          if (obj instanceof ElementRenderObject eObj) {
+            eObj.align();
+          }
         }
 
         case EventTypes.MOUSE_LEAVE -> {
@@ -763,7 +793,9 @@ public class PageView implements ExtendedView {
 
     @Override
     public void handleEvent(MutationEvent event) {
-      RenderObject parentObj = getRenderObject((DelphiNode) event.getTarget());
+      ElementRenderObject parentObj
+          = (ElementRenderObject) getRenderObject((DelphiNode) event.getTarget());
+
       if (parentObj == null) {
         return;
       }

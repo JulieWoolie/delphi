@@ -4,6 +4,7 @@ import java.util.Set;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.XmlPrintVisitor;
+import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphidom.scss.Property;
 import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
@@ -66,10 +67,17 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("render-element:");
     indent++;
 
-    var s = re.getStyle();
+    ComputedStyle s = re.getStyle();
     nlIndent().append("content-scale: ").append(s.scale);
-    nlIndent().append("content: ").append(re.getContent());
+    nlIndent().append("parent-set: ").append(re.parent != null);
 
+    if (re instanceof ContentRenderObject co) {
+      nlIndent().append("content: ").append(co.getContent());
+      nlIndent().append("content-dirty: ").append(co.isContentDirty());
+    } else if (re instanceof ElementRenderObject er) {
+      nlIndent().append("element-object-size: ").append(er.contentSize);
+      nlIndent().append("child-count: ").append(er.childObjects.size());
+    }
 
     Vector2f vector = new Vector2f();
 
@@ -79,16 +87,11 @@ public class RenderTreePrint extends XmlPrintVisitor {
     re.getContentStart(vector);
     nlIndent().append("content-start: ").append(vector);
 
-    re.getContentEnd(vector);
-    nlIndent().append("content-end: ").append(vector);
-
-    nlIndent().append("content-dirty: ").append(re.isContentDirty());
     nlIndent().append("position: ").append(re.getPosition());
     nlIndent().append("max-size: ").append(s.maxSize);
     nlIndent().append("min-size: ").append(s.minSize);
     nlIndent().append("padding: ").append(s.padding);
     nlIndent().append("outline-size: ").append(s.outline);
-    nlIndent().append("content-ext: ").append(re.getContentExtension());
     nlIndent().append("depth: ").append(re.getDepth());
 
     indent--;
@@ -111,6 +114,15 @@ public class RenderTreePrint extends XmlPrintVisitor {
       nlIndent().append("depth: ").append(layer.depth);
       nlIndent().append("scale: ").append(layer.scale);
       nlIndent().append("translate: ").append(layer.translate);
+
+      nlIndent().append("entity-position: ")
+          .append('(')
+          .append(layer.entity.getX())
+          .append(' ')
+          .append(layer.entity.getY())
+          .append(' ')
+          .append(layer.entity.getZ())
+          .append(')');
 
       indent--;
     }

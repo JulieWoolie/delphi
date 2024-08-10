@@ -4,13 +4,11 @@ import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE;
 import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphiplugin.render.RenderLayer.LAYER_COUNT;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphiplugin.HideUtil;
@@ -28,7 +26,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 @Getter
-public class RenderObject {
+public abstract class RenderObject {
 
   static final Brightness BRIGHTNESS = new Brightness(15, 15);
   public static final boolean SEE_THROUGH = false;
@@ -41,29 +39,22 @@ public class RenderObject {
 
   public static final org.bukkit.Color NIL_COLOR = org.bukkit.Color.fromARGB(0, 0, 0, 0);
 
-  private final Screen screen;
-  private final PageView view;
+  protected final Screen screen;
+  protected final PageView view;
 
-  private final ComputedStyle style;
+  protected final ComputedStyle style;
 
-  private final Vector2f position = new Vector2f(0);
-  private final Vector2f contentExtension = new Vector2f(0);
+  protected final Vector2f position = new Vector2f(0);
   private boolean spawned;
 
   @Setter
   private float depth;
-  
-  private RenderObject parent;
-  private final List<RenderObject> childObjects = new ArrayList<>();
 
-  private ElementContent content;
-
-  @Setter
-  private boolean contentDirty = false;
+  protected ElementRenderObject parent;
 
   private final Layer[] layers = new Layer[LAYER_COUNT];
 
-  private final Align align = Align.Y;
+  public DelphiNode domNode;
 
   public RenderObject(PageView view, ComputedStyle style, Screen screen) {
     this.view = view;
@@ -79,19 +70,11 @@ public class RenderObject {
     return !isNotSpawned(layers[layer.ordinal()]);
   }
 
-  public boolean isContentEmpty() {
-    return content == null || content.isEmpty();
-  }
-
   private static boolean isNotZero(Rect v) {
     return v.left > 0 || v.bottom > 0 || v.top > 0 || v.right > 0;
   }
 
   public void killRecursive() {
-    for (RenderObject childObject : childObjects) {
-      childObject.killRecursive();
-    }
-
     kill();
   }
 
@@ -118,21 +101,11 @@ public class RenderObject {
       layer.entity.teleport(loc);
     });
 
-    if (childObjects.isEmpty()) {
-      return;
-    }
+    postMove(screenPos, currentPos);
+  }
 
-    final Vector2f newChildPos = new Vector2f();
-    final Vector2f currentChildPos = new Vector2f();
-    final Vector2f dif = new Vector2f();
+  protected void postMove(Vector2f screenPos, Vector2f currentPos) {
 
-    for (RenderObject child : childObjects) {
-      currentChildPos.set(child.position);
-      dif.set(currentChildPos).sub(currentPos);
-
-      newChildPos.set(screenPos).add(dif);
-      child.moveTo(newChildPos);
-    }
   }
 
   public void getContentStart(Vector2f out) {
@@ -143,27 +116,7 @@ public class RenderObject {
     out.add(leftDif * GLOBAL_SCALAR, -topDif * GLOBAL_SCALAR);
   }
 
-  private Vector2f getContentSize() {
-    if (content == null) {
-      return new Vector2f();
-    }
-
-    Vector2f size = new Vector2f();
-    content.measureContent(size, style);
-
-    size.mul(GLOBAL_SCALAR).mul(style.scale);
-    return size;
-  }
-
-  public void getContentEnd(Vector2f out) {
-    getContentStart(out);
-
-    if (content == null) {
-      return;
-    }
-
-    out.add(getContentSize());
-  }
+  protected abstract void measureContent(Vector2f out);
 
   public void getElementSize(Vector2f out) {
     //
@@ -173,15 +126,8 @@ public class RenderObject {
     //              =========================================
     //
 
-    if (content != null) {
-      content.measureContent(out, style);
-    } else {
-      out.set(0);
-    }
+    measureContent(out);
 
-    out.mul(GLOBAL_SCALAR);
-    out.mul(style.scale);
-    out.add(contentExtension);
     out.max(style.minSize).min(style.maxSize);
 
     float xAdd
@@ -208,126 +154,6 @@ public class RenderObject {
     pos.y = position.y - size.y;
   }
 
-  /* --------------------------- Children ---------------------------- */
-
-  public void addChild(RenderObject renderObject) {
-    addChild(renderObject, childObjects.size());
-  }
-
-  public void addChild(RenderObject renderObject, int index) {
-    childObjects.add(index, renderObject);
-    renderObject.parent = this;
-  }
-
-  public RenderObject removeChild(RenderObject element) {
-    if (!childObjects.remove(element)) {
-      return null;
-    }
-
-    element.parent = null;
-    return element;
-  }
-
-  /* --------------------------- Alignment ---------------------------- */
-
-  public void getAlignmentPosition(Vector2f out) {
-    getContentStart(out);
-
-    if (content == null) {
-      return;
-    }
-
-    Vector2f size = getContentSize();
-
-    if (align == Align.X) {
-      out.x += size.x;
-    } else {
-      out.y -= size.y;
-    }
-  }
-
-  public void align() {
-    if (childObjects.isEmpty()) {
-      return;
-    }
-
-    for (RenderObject childObject : childObjects) {
-      childObject.align();
-    }
-
-    boolean aligningOnX = align == Align.X;
-
-    Vector2f alignPos = new Vector2f();
-    getAlignmentPosition(alignPos);
-
-    Vector2f pos = new Vector2f(alignPos);
-    Vector2f tempMargin = new Vector2f(0);
-    Vector2f elemSize = new Vector2f();
-
-    for (RenderObject child : childObjects) {
-      if (child.style.display == DisplayType.NONE) {
-        continue;
-      }
-
-      Rect margin = child.style.margin;
-
-      if (aligningOnX) {
-        pos.x += margin.left;
-
-        tempMargin.set(0, -margin.top);
-        pos.y -= margin.top;
-      } else {
-        pos.y -= margin.top;
-
-        tempMargin.set(margin.left, 0);
-        pos.x += margin.left;
-      }
-
-      child.moveTo(pos);
-      pos.sub(tempMargin);
-
-      child.getElementSize(elemSize);
-
-      if (aligningOnX) {
-        pos.x += margin.right + elemSize.x;
-      } else {
-        pos.y -= margin.bottom + elemSize.y;
-      }
-    }
-
-    postAlign();
-  }
-
-  private void postAlign() {
-    if (childObjects.isEmpty()) {
-      return;
-    }
-
-    Vector2f bottomRight = new Vector2f(Float.MIN_VALUE, Float.MAX_VALUE);
-    Vector2f childMax = new Vector2f();
-
-    Rectangle rectangle = new Rectangle();
-
-    for (RenderObject child : childObjects) {
-      child.getBounds(rectangle);
-
-      childMax.x = rectangle.getPosition().x + rectangle.getSize().x;
-      childMax.y = rectangle.getPosition().y;
-
-      bottomRight.x = Math.max(childMax.x, bottomRight.x);
-      bottomRight.y = Math.min(childMax.y, bottomRight.y);
-    }
-
-    Vector2f contentBottomRight = new Vector2f();
-    getContentEnd(contentBottomRight);
-
-    float difX = Math.max(bottomRight.x - contentBottomRight.x, 0);
-    float difY = Math.max(contentBottomRight.y - bottomRight.y, 0);
-
-    contentExtension.set(difX, difY);
-    spawn();
-  }
-
   /* --------------------------- Spawning ---------------------------- */
   
   private Location getSpawnLocation() {
@@ -337,12 +163,10 @@ public class RenderObject {
   }
 
   public void spawnRecursive() {
-    for (RenderObject childObject : childObjects) {
-      childObject.spawnRecursive();
-    }
-
     spawn();
   }
+
+  protected abstract void spawnContent(Location location);
 
   public void spawn() {
     if (style.display == DisplayType.NONE) {
@@ -351,30 +175,7 @@ public class RenderObject {
     }
 
     Location location = getSpawnLocation();
-    Layer content = getLayer(RenderLayer.CONTENT);
-    content.nullify();
-
-    // Step 1 - Spawn content
-    if (isContentEmpty()) {
-      killLayerEntity(content);
-    } else {
-      Display display = getOrCreateContentEntity(content, location);
-
-      if (display instanceof TextDisplay td) {
-        td.setShadowed(style.textShadowed);
-      }
-
-      content.size.mul(GLOBAL_SCALAR);
-      content.size.mul(style.scale);
-
-      content.scale.x = GLOBAL_SCALAR;
-      content.scale.y = GLOBAL_SCALAR;
-      content.scale.x *= style.scale.x;
-      content.scale.y *= style.scale.y;
-
-      // Early Step 6 - Offset content layer by half it's length
-      content.translate.x += (content.size.x * 0.5f);
-    }
+    spawnContent(location);
 
     if (style.backgroundColor.getAlpha() > 0) {
       createLayerEntity(RenderLayer.BACKGROUND, location, style.backgroundColor, style.padding);
@@ -413,49 +214,10 @@ public class RenderObject {
 
     this.spawned = true;
   }
-
-  private Display getOrCreateContentEntity(Layer content, Location location) {
-    boolean requiresRespawn;
-    ElementContent ec = this.content;
-
-    if (!content.isSpawned()) {
-      requiresRespawn = true;
-    } else if (ec != null && !ec.getEntityClass().isInstance(content.entity)) {
-      requiresRespawn = true;
-    } else {
-      requiresRespawn = false;
-    }
-
-    Display display;
-
-    if (requiresRespawn) {
-      killLayerEntity(content);
-
-      display = ec.createEntity(location.getWorld(), location);
-      ec.applyContentTo(display, style);
-
-      content.entity = display;
-      view.addEntity(display);
-    } else {
-      display = content.entity;
-
-      if (contentDirty && ec != null) {
-        ec.applyContentTo(display, style);
-      }
-    }
-
-    if (ec != null) {
-      ec.measureContent(content.size, style);
-      ec.configureInitial(content, this);
-    }
-
-    configureDisplay(display);
-
-    return display;
-  }
   
   private void applyScreenMetrics() {
-    Quaternionf lrot = screen.entityRotation;
+    Quaternionf lrot = new Quaternionf(screen.entityRotation);
+    lrot.mul(screen.leftRotation);
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
@@ -468,10 +230,14 @@ public class RenderObject {
 
       // Perform rotation
       layer.translate.rotate(lrot, layer.rotatedTranslate);
-      //layer.rotatedTranslate.rotate(rrot, layer.rotatedTranslate);
-
+      screen.rightRotation.transform(layer.rotatedTranslate);
       layer.leftRotation.set(lrot);
+      layer.rightRotation.set(screen.rightRotation);
     });
+  }
+
+  protected void applyContentExtension(Vector2f out) {
+
   }
 
   private void calculateLayerSizes() {
@@ -488,8 +254,7 @@ public class RenderObject {
         layer.size.y += increase.top + increase.bottom;
 
         if (!extensionApplied) {
-          layer.size.x += contentExtension.x;
-          layer.size.y += contentExtension.y;
+          applyContentExtension(layer.size);
 
           layer.size.max(style.minSize);
           layer.size.min(style.maxSize);
@@ -536,13 +301,6 @@ public class RenderObject {
     });
   }
 
-  /* --------------------------- Setters ---------------------------- */
-
-  public void setContent(ElementContent content) {
-    this.content = content;
-    this.contentDirty = true;
-  }
-
   /* --------------------------- Layers ---------------------------- */
 
   public final Layer getLayer(RenderLayer layer) {
@@ -556,7 +314,7 @@ public class RenderObject {
     return l;
   }
 
-  private void killLayerEntity(Layer layer) {
+  protected void killLayerEntity(Layer layer) {
     if (layer.entity == null) {
       return;
     }
@@ -602,7 +360,7 @@ public class RenderObject {
     return org.bukkit.Color.fromARGB(c.getAlpha(), c.getRed(), c.getGreen(), c.getBlue());
   }
 
-  private void configureDisplay(Display display) {
+  protected void configureDisplay(Display display) {
     display.setBrightness(BRIGHTNESS);
 
     if (display instanceof TextDisplay td) {
@@ -648,26 +406,6 @@ public class RenderObject {
       op.accept(layer, iterated);
       iterated++;
     }
-  }
-
-  private <S extends Display> void applyLayerAs(RenderLayer layer, Class<S> type, Consumer<S> op) {
-    applyLayer(layer, display -> {
-      if (!type.isInstance(display)) {
-        return;
-      }
-
-      op.accept((S) display);
-    });
-  }
-
-  private void applyLayer(RenderLayer layer, Consumer<Display> consumer) {
-    Layer l = layers[layer.ordinal()];
-
-    if (isNotSpawned(l)) {
-      return;
-    }
-
-    consumer.accept(l.entity);
   }
 
   LayerIterator layerIterator(LayerDirection direction) {

@@ -20,9 +20,6 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -30,13 +27,11 @@ import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
-import net.arcadiusmc.delphidom.Loggers;
+import net.arcadiusmc.delphiplugin.Debug;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
 import net.arcadiusmc.delphiplugin.PageManager;
 import net.arcadiusmc.delphiplugin.PageView;
-import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
 import net.arcadiusmc.delphiplugin.resource.Modules;
-import net.arcadiusmc.dom.Visitor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -108,18 +103,9 @@ public class DelphiCommand {
     return Commands.literal("dump-xml-info")
         .executes(context -> {
           PageView view = getAnyTargeted(context);
+          Path path = Debug.dumpDebugTree("target-view-dump", view);
 
-          RenderTreePrint print = new RenderTreePrint(view);
-          print.appendDocumentInfo();
-          Visitor.visit(view.getDocument().getBody(), print);
-
-          Path path = getPlugin().getDataPath().resolve("dump.xml");
-          String string = print.toString();
-
-          try {
-            Files.writeString(path, string, StandardCharsets.UTF_8);
-          } catch (IOException exc) {
-            Loggers.getDocumentLogger().error("Failed to dump XML info", exc);
+          if (path == null) {
             throw DUMP_FAIL.create();
           }
 

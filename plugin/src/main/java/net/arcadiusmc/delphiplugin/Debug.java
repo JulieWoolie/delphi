@@ -1,19 +1,67 @@
 package net.arcadiusmc.delphiplugin;
 
 import com.destroystokyo.paper.ParticleBuilder;
+import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.render.RenderObject;
+import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
+import net.arcadiusmc.dom.Visitor;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
 
 public final class Debug {
   private Debug() {}
 
+  private static final Logger LOGGER = Loggers.getLogger();
+
   static final float POINT_DIST = 0.12f;
+
+  public static Path dumpDebugTree(String fileName, PageView view) {
+    Path dir;
+    ClassLoader loader = Debug.class.getClassLoader();
+
+    if (loader instanceof ConfiguredPluginClassLoader l && l.getPlugin() != null) {
+      dir = l.getPlugin().getDataPath().resolve("debug");
+    } else {
+      dir = Path.of("debug");
+    }
+
+    if (!Files.isDirectory(dir)) {
+      try {
+        Files.createDirectories(dir);
+      } catch (IOException exc) {
+        LOGGER.error("Failed to create debug dump directory at {}", dir, exc);
+        return null;
+      }
+    }
+
+    Path dumpFile = dir.resolve(fileName + ".xml");
+
+    RenderTreePrint print = new RenderTreePrint(view);
+    print.appendDocumentInfo();
+    Visitor.visit(view.getDocument().getBody(), print);
+
+    String string = print.toString();
+
+    try {
+      Files.writeString(dumpFile, string, StandardCharsets.UTF_8);
+    } catch (IOException exc) {
+      Loggers.getDocumentLogger().error("Failed to dump XML info", exc);
+      return null;
+    }
+
+    return dumpFile;
+  }
 
   public static void drawSelectionOutline(Rectangle rectangle, PageView view) {
     drawOutline(rectangle, view, Color.RED);
