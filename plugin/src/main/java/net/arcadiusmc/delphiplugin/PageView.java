@@ -62,7 +62,7 @@ import org.slf4j.Logger;
 
 public class PageView implements ExtendedView {
 
-  private static final Logger LOGGER = Loggers.getLogger();
+  private static final Logger LOGGER = Loggers.getLogger("DocumentView");
 
   public static boolean debugOutlines = LOGGER.isDebugEnabled();
 
@@ -739,8 +739,6 @@ public class PageView implements ExtendedView {
 
         case EventTypes.MOUSE_LEAVE -> {
           RenderObject obj = getRenderObject(tooltip);
-
-          LOGGER.debug("mouse-leave, obj={}", obj);
 
           if (obj == null) {
             return;
