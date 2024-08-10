@@ -13,35 +13,35 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setMinHeight(@Nullable Primitive value);
 
   /**
-   * Sets the top padding.
+   * Set the {@code padding-top} property value.
    * @param value top padding
    * @return {@code this}
    */
   StyleProperties setPaddingTop(@Nullable Primitive value);
 
   /**
-   * Sets the right padding.
+   * Set the {@code padding-right} property value.
    * @param value right padding
    * @return {@code this}
    */
   StyleProperties setPaddingRight(@Nullable Primitive value);
 
   /**
-   * Sets the bottom padding.
+   * Set the {@code padding-bottom} property value.
    * @param value bottom padding
    * @return {@code this}
    */
   StyleProperties setPaddingBottom(@Nullable Primitive value);
 
   /**
-   * Sets the left padding.
+   * Set the {@code padding-left} property value.
    * @param value left padding
    * @return {@code this}
    */
   StyleProperties setPaddingLeft(@Nullable Primitive value);
 
   /**
-   * Sets the padding.
+   * Set the padding.
    *
    * @param value Padding, applied to all sides
    *
@@ -55,7 +55,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the padding.
+   * Set the padding.
    *
    * @param x left and right padding
    * @param y top and bottom padding
@@ -70,7 +70,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the padding.
+   * Set the padding.
    *
    * @param top top padding
    * @param x left and right padding
@@ -86,7 +86,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the padding.
+   * Set the padding.
    *
    * @param top top padding
    * @param right right side padding
@@ -103,35 +103,35 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the top border.
+   * Set the {@code border-top} property value.
    * @param value top border
    * @return {@code this}
    */
   StyleProperties setBorderTop(@Nullable Primitive value);
 
   /**
-   * Sets the right border.
+   * Set the {@code border-right} property value.
    * @param value right border
    * @return {@code this}
    */
   StyleProperties setBorderRight(@Nullable Primitive value);
 
   /**
-   * Sets the bottom border.
+   * Set the {@code border-bottom} property value.
    * @param value bottom border
    * @return {@code this}
    */
   StyleProperties setBorderBottom(@Nullable Primitive value);
 
   /**
-   * Sets the left border.
+   * Set the {@code border-left} property value.
    * @param value left border
    * @return {@code this}
    */
   StyleProperties setBorderLeft(@Nullable Primitive value);
 
   /**
-   * Sets the border.
+   * Set the border.
    *
    * @param value Border, applied to all sides
    *
@@ -145,7 +145,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the border.
+   * Set the border.
    *
    * @param x left and right border
    * @param y top and bottom border
@@ -160,7 +160,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the border.
+   * Set the border.
    *
    * @param top top border
    * @param x left and right border
@@ -176,7 +176,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the border.
+   * Set the border.
    *
    * @param top top border
    * @param right right side border
@@ -193,35 +193,35 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the top outline.
+   * Set the {@code outline-top} property value.
    * @param value top outline
    * @return {@code this}
    */
   StyleProperties setOutlineTop(@Nullable Primitive value);
 
   /**
-   * Sets the right outline.
+   * Set the {@code outline-right} property value.
    * @param value right outline
    * @return {@code this}
    */
   StyleProperties setOutlineRight(@Nullable Primitive value);
 
   /**
-   * Sets the bottom outline.
+   * Set the {@code outline-bottom} property value.
    * @param value bottom outline
    * @return {@code this}
    */
   StyleProperties setOutlineBottom(@Nullable Primitive value);
 
   /**
-   * Sets the left outline.
+   * Set the {@code outline-left} property value.
    * @param value left outline
    * @return {@code this}
    */
   StyleProperties setOutlineLeft(@Nullable Primitive value);
 
   /**
-   * Sets the outline.
+   * Set the outline.
    *
    * @param value Outline, applied to all sides
    *
@@ -235,7 +235,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the outline.
+   * Set the outline.
    *
    * @param x left and right outline
    * @param y top and bottom outline
@@ -250,7 +250,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the outline.
+   * Set the outline.
    *
    * @param top top outline
    * @param x left and right outline
@@ -266,7 +266,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the outline.
+   * Set the outline.
    *
    * @param top top outline
    * @param right right side outline
@@ -283,35 +283,35 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the top margin.
+   * Set the {@code margin-top} property value.
    * @param value top margin
    * @return {@code this}
    */
   StyleProperties setMarginTop(@Nullable Primitive value);
 
   /**
-   * Sets the right margin.
+   * Set the {@code margin-right} property value.
    * @param value right margin
    * @return {@code this}
    */
   StyleProperties setMarginRight(@Nullable Primitive value);
 
   /**
-   * Sets the bottom margin.
+   * Set the {@code margin-bottom} property value.
    * @param value bottom margin
    * @return {@code this}
    */
   StyleProperties setMarginBottom(@Nullable Primitive value);
 
   /**
-   * Sets the left margin.
+   * Set the {@code margin-left} property value.
    * @param value left margin
    * @return {@code this}
    */
   StyleProperties setMarginLeft(@Nullable Primitive value);
 
   /**
-   * Sets the margin.
+   * Set the margin.
    *
    * @param value Margin, applied to all sides
    *
@@ -325,7 +325,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the margin.
+   * Set the margin.
    *
    * @param x left and right margin
    * @param y top and bottom margin
@@ -340,7 +340,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the margin.
+   * Set the margin.
    *
    * @param top top margin
    * @param x left and right margin
@@ -356,7 +356,7 @@ public interface StyleProperties extends StylePropertiesReadonly {
   }
 
   /**
-   * Sets the margin.
+   * Set the margin.
    *
    * @param top top margin
    * @param right right side margin
@@ -397,4 +397,14 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setObfuscated(@Nullable Boolean value);
 
   StyleProperties setStrikethrough(@Nullable Boolean value);
+  
+  StyleProperties setFlexDirection(@Nullable FlexDirection value);
+  
+  StyleProperties setFlexWrap(@Nullable FlexWrap value);
+  
+  StyleProperties setJustifyContent(@Nullable JustifyContent value);
+  
+  StyleProperties setAlignItems(@Nullable AlignItems items);
+  
+  StyleProperties setOrder(@Nullable Integer order);
 }

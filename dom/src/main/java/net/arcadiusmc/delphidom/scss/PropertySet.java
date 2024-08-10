@@ -52,8 +52,16 @@ public final class PropertySet {
   }
 
   public <T> T get(Property<T> property) {
+    return orElse(property, property.getDefaultValue());
+  }
+
+  public <T> T orNull(Property<T> property) {
+    return orElse(property, null);
+  }
+
+  public <T> T orElse(Property<T> property, T fallback) {
     if (!has(property)) {
-      return property.getDefaultValue();
+      return fallback;
     }
 
     return (T) values[property.id];

@@ -1,5 +1,6 @@
 package net.arcadiusmc.dom.style;
 
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -10,15 +11,29 @@ public sealed interface Primitive permits PrimitiveImpl {
   /** Zero value constant */
   Primitive ZERO = new PrimitiveImpl(0, Unit.NONE);
 
+  /** One value constant */
+  Primitive ONE = new PrimitiveImpl(1, Unit.NONE);
+
   /**
    * Creates a new primitive value.
+   *
    * @param base Base value
    * @param unit Value unit
+   *
    * @return Created value
+   *
+   * @throws NullPointerException If {@code unit} is {@code null}
    */
-  static Primitive create(float base, Unit unit) {
-    if (base == 0.0f && unit == Unit.NONE) {
-      return ZERO;
+  static Primitive create(float base, @NotNull Unit unit) {
+    Objects.requireNonNull(unit, "Null unit");
+
+    if (unit == Unit.NONE) {
+      if (base == 0.0f) {
+        return ZERO;
+      }
+      if (base == 1.0f) {
+        return ONE;
+      }
     }
 
     return new PrimitiveImpl(base, unit);

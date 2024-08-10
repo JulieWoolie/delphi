@@ -69,4 +69,34 @@ public interface StylePropertiesReadonly {
   boolean getObfuscated();
 
   boolean getStrikethrough();
+
+  /**
+   * Get the {@code flex-direction} property value.
+   * @return Flex direction, or {@code null}, if not set.
+   */
+  @Nullable FlexDirection getFlexDirection();
+
+  /**
+   * Get the {@code flex-wrap} property value.
+   * @return Flex wrap, or {@code null}, if not set.
+   */
+  @Nullable FlexWrap getFlexWrap();
+
+  /**
+   * Get the {@code justify-content} property value.
+   * @return Justify content, or {@code null}, if not set.
+   */
+  @Nullable JustifyContent getJustifyContent();
+
+  /**
+   * Get the {@code align-items} property value.
+   * @return Item alignment, or {@code null}, if not set.
+   */
+  @Nullable AlignItems getAlignItems();
+
+  /**
+   * Get the {@code order} property value.
+   * @return Order, or {@code 0} if not set
+   */
+  int getOrder();
 }

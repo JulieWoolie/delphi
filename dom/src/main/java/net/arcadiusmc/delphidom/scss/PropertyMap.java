@@ -1,7 +1,11 @@
 package net.arcadiusmc.delphidom.scss;
 
+import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
+import net.arcadiusmc.dom.style.FlexDirection;
+import net.arcadiusmc.dom.style.FlexWrap;
+import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.StyleProperties;
 import org.jetbrains.annotations.Nullable;
@@ -9,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 public class PropertyMap extends ReadonlyMap implements StyleProperties {
 
   private boolean suppressSignals = false;
-  private int changes = 0;
 
   public PropertyMap(PropertySet backing) {
     super(backing);
@@ -29,12 +32,7 @@ public class PropertyMap extends ReadonlyMap implements StyleProperties {
   }
 
   private <T> void set(Property<T> property, T value) {
-    // If nothing changed
-    if (!backing.set(property, value)) {
-      return;
-    }
-
-    changes |= property.getDirtyBits();
+    backing.set(property, value);
   }
 
   @Override
@@ -376,6 +374,36 @@ public class PropertyMap extends ReadonlyMap implements StyleProperties {
   @Override
   public StyleProperties setStrikethrough(@Nullable Boolean value) {
     set(Properties.STRIKETHROUGH, value);
+    return signalChanged();
+  }
+
+  @Override
+  public StyleProperties setFlexDirection(@Nullable FlexDirection value) {
+    set(Properties.FLEX_DIRECTION, value);
+    return signalChanged();
+  }
+
+  @Override
+  public StyleProperties setFlexWrap(@Nullable FlexWrap value) {
+    set(Properties.FLEX_WRAP, value);
+    return signalChanged();
+  }
+
+  @Override
+  public StyleProperties setJustifyContent(@Nullable JustifyContent value) {
+    set(Properties.JUSTIFY_CONTENT, value);
+    return signalChanged();
+  }
+
+  @Override
+  public StyleProperties setAlignItems(@Nullable AlignItems items) {
+    set(Properties.ALIGN_ITEMS, items);
+    return signalChanged();
+  }
+
+  @Override
+  public StyleProperties setOrder(@Nullable Integer order) {
+    set(Properties.ORDER, order);
     return signalChanged();
   }
 }

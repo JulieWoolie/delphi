@@ -11,8 +11,12 @@ import java.util.function.BiConsumer;
 import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphidom.Consts;
 import net.arcadiusmc.delphidom.scss.Property.StyleFunction;
+import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
+import net.arcadiusmc.dom.style.FlexDirection;
+import net.arcadiusmc.dom.style.FlexWrap;
+import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.NamedColor;
 import net.arcadiusmc.dom.style.Primitive;
 
@@ -261,6 +265,42 @@ public final class Properties {
       .function((n, screen, integer) -> n.zindex = integer)
       .build();
 
+  public static final Property<AlignItems> ALIGN_ITEMS = Property.builder(AlignItems.class)
+      .defaultValue(AlignItems.DEFAULT)
+      .cascading(false)
+      .layoutAffecting(true)
+      .function((s, screen, alignItems) -> s.alignItems = alignItems)
+      .build();
+
+  public static final Property<FlexDirection> FLEX_DIRECTION = Property.builder(FlexDirection.class)
+      .defaultValue(FlexDirection.DEFAULT)
+      .cascading(false)
+      .layoutAffecting(true)
+      .function((s, screen, flexDirection) -> s.flexDirection = flexDirection)
+      .build();
+
+  public static final Property<FlexWrap> FLEX_WRAP = Property.builder(FlexWrap.class)
+      .defaultValue(FlexWrap.DEFAULT)
+      .cascading(false)
+      .layoutAffecting(true)
+      .function((s, screen, flexWrap) -> s.flexWrap = flexWrap)
+      .build();
+
+  public static final Property<JustifyContent> JUSTIFY_CONTENT
+      = Property.builder(JustifyContent.class)
+      .defaultValue(JustifyContent.DEFAULT)
+      .cascading(false)
+      .layoutAffecting(true)
+      .function((s, screen, justifyContent) -> s.justfiy = justifyContent)
+      .build();
+
+  public static final Property<Integer> ORDER = Property.builder(Integer.class)
+      .defaultValue(0)
+      .cascading(false)
+      .layoutAffecting(true)
+      .function((s, screen, integer) -> s.order = integer)
+      .build();
+
   static {
     registerAll();
   }
@@ -299,8 +339,13 @@ public final class Properties {
     register("background-color", BACKGROUND_COLOR);
     register("outline-color",    OUTLINE_COLOR);
 
+    register("align-items",      ALIGN_ITEMS);
+    register("flex-direction",   FLEX_DIRECTION);
+    register("flex-wrap",        FLEX_WRAP);
+    register("justify-content",  JUSTIFY_CONTENT);
+    register("order",            ORDER);
+
     register("border-color",     BORDER_COLOR);
-    //register("align",            ALIGN_DIRECTION);
     register("display",          DISPLAY);
     register("text-shadow",      TEXT_SHADOW);
     register("scale",            SCALE);

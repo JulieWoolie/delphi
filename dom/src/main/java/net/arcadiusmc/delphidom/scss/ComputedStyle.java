@@ -4,8 +4,12 @@ import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.scss.Property.StyleFunction;
 import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
+import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
+import net.arcadiusmc.dom.style.FlexDirection;
+import net.arcadiusmc.dom.style.FlexWrap;
+import net.arcadiusmc.dom.style.JustifyContent;
 import org.joml.Vector2f;
 
 public class ComputedStyle {
@@ -33,6 +37,12 @@ public class ComputedStyle {
   public final Vector2f maxSize = new Vector2f();
 
   public int zindex;
+
+  public AlignItems alignItems;
+  public FlexDirection flexDirection;
+  public FlexWrap flexWrap;
+  public JustifyContent justfiy;
+  public int order;
 
   public ComputedStyle() {
     clear(null);

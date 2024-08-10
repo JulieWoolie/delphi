@@ -1,8 +1,12 @@
 package net.arcadiusmc.delphidom.scss;
 
 import lombok.Getter;
+import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
+import net.arcadiusmc.dom.style.FlexDirection;
+import net.arcadiusmc.dom.style.FlexWrap;
+import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import org.jetbrains.annotations.Nullable;
@@ -18,107 +22,107 @@ public class ReadonlyMap implements StylePropertiesReadonly {
 
   @Override
   public @Nullable Primitive getMaxWidth() {
-    return backing.get(Properties.MAX_WIDTH);
+    return backing.orNull(Properties.MAX_WIDTH);
   }
 
   @Override
   public @Nullable Primitive getMaxHeight() {
-    return backing.get(Properties.MAX_HEIGHT);
+    return backing.orNull(Properties.MAX_HEIGHT);
   }
 
   @Override
   public @Nullable Primitive getMinWidth() {
-    return backing.get(Properties.MIN_WIDTH);
+    return backing.orNull(Properties.MIN_WIDTH);
   }
 
   @Override
   public @Nullable Primitive getMinHeight() {
-    return backing.get(Properties.MIN_HEIGHT);
+    return backing.orNull(Properties.MIN_HEIGHT);
   }
 
   @Override
   public @Nullable Primitive getPaddingLeft() {
-    return backing.get(Properties.PADDING_LEFT);
+    return backing.orNull(Properties.PADDING_LEFT);
   }
 
   @Override
   public @Nullable Primitive getPaddingRight() {
-    return backing.get(Properties.PADDING_RIGHT);
+    return backing.orNull(Properties.PADDING_RIGHT);
   }
 
   @Override
   public @Nullable Primitive getPaddingTop() {
-    return backing.get(Properties.PADDING_TOP);
+    return backing.orNull(Properties.PADDING_TOP);
   }
 
   @Override
   public @Nullable Primitive getPaddingBottom() {
-    return backing.get(Properties.PADDING_BOTTOM);
+    return backing.orNull(Properties.PADDING_BOTTOM);
   }
 
   @Override
   public @Nullable Primitive getBorderLeft() {
-    return backing.get(Properties.BORDER_LEFT);
+    return backing.orNull(Properties.BORDER_LEFT);
   }
 
   @Override
   public @Nullable Primitive getBorderRight() {
-    return backing.get(Properties.BORDER_RIGHT);
+    return backing.orNull(Properties.BORDER_RIGHT);
   }
 
   @Override
   public @Nullable Primitive getBorderTop() {
-    return backing.get(Properties.BORDER_TOP);
+    return backing.orNull(Properties.BORDER_TOP);
   }
 
   @Override
   public @Nullable Primitive getBorderBottom() {
-    return backing.get(Properties.BORDER_TOP);
+    return backing.orNull(Properties.BORDER_TOP);
   }
 
   @Override
   public @Nullable Primitive getOutlineLeft() {
-    return backing.get(Properties.OUTLINE_LEFT);
+    return backing.orNull(Properties.OUTLINE_LEFT);
   }
 
   @Override
   public @Nullable Primitive getOutlineRight() {
-    return backing.get(Properties.OUTLINE_RIGHT);
+    return backing.orNull(Properties.OUTLINE_RIGHT);
   }
 
   @Override
   public @Nullable Primitive getOutlineTop() {
-    return backing.get(Properties.OUTLINE_TOP);
+    return backing.orNull(Properties.OUTLINE_TOP);
   }
 
   @Override
   public @Nullable Primitive getOutlineBottom() {
-    return backing.get(Properties.OUTLINE_BOTTOM);
+    return backing.orNull(Properties.OUTLINE_BOTTOM);
   }
 
   @Override
   public @Nullable Primitive getMarginLeft() {
-    return backing.get(Properties.MARGIN_LEFT);
+    return backing.orNull(Properties.MARGIN_LEFT);
   }
 
   @Override
   public @Nullable Primitive getMarginRight() {
-    return backing.get(Properties.MARGIN_RIGHT);
+    return backing.orNull(Properties.MARGIN_RIGHT);
   }
 
   @Override
   public @Nullable Primitive getMarginTop() {
-    return backing.get(Properties.MARGIN_TOP);
+    return backing.orNull(Properties.MARGIN_TOP);
   }
 
   @Override
   public @Nullable Primitive getMarginBottom() {
-    return backing.get(Properties.MARGIN_BOTTOM);
+    return backing.orNull(Properties.MARGIN_BOTTOM);
   }
 
   @Override
   public @Nullable Primitive getScale() {
-    return backing.get(Properties.SCALE);
+    return backing.orNull(Properties.SCALE);
   }
 
   @Override
@@ -128,22 +132,22 @@ public class ReadonlyMap implements StylePropertiesReadonly {
 
   @Override
   public @Nullable Color getTextColor() {
-    return backing.get(Properties.TEXT_COLOR);
+    return backing.orNull(Properties.TEXT_COLOR);
   }
 
   @Override
   public @Nullable Color getBackgroundColor() {
-    return backing.get(Properties.BACKGROUND_COLOR);
+    return backing.orNull(Properties.BACKGROUND_COLOR);
   }
 
   @Override
   public @Nullable Color getBorderColor() {
-    return backing.get(Properties.BORDER_COLOR);
+    return backing.orNull(Properties.BORDER_COLOR);
   }
 
   @Override
   public @Nullable Color getOutlineColor() {
-    return backing.get(Properties.OUTLINE_COLOR);
+    return backing.orNull(Properties.OUTLINE_COLOR);
   }
 
   @Override
@@ -153,7 +157,7 @@ public class ReadonlyMap implements StylePropertiesReadonly {
 
   @Override
   public @Nullable DisplayType getDisplay() {
-    return backing.get(Properties.DISPLAY);
+    return backing.orNull(Properties.DISPLAY);
   }
 
   @Override
@@ -179,5 +183,30 @@ public class ReadonlyMap implements StylePropertiesReadonly {
   @Override
   public boolean getStrikethrough() {
     return backing.get(Properties.STRIKETHROUGH);
+  }
+
+  @Override
+  public @Nullable FlexDirection getFlexDirection() {
+    return backing.orNull(Properties.FLEX_DIRECTION);
+  }
+
+  @Override
+  public @Nullable FlexWrap getFlexWrap() {
+    return backing.orNull(Properties.FLEX_WRAP);
+  }
+
+  @Override
+  public @Nullable JustifyContent getJustifyContent() {
+    return backing.orNull(Properties.JUSTIFY_CONTENT);
+  }
+
+  @Override
+  public @Nullable AlignItems getAlignItems() {
+    return backing.orNull(Properties.ALIGN_ITEMS);
+  }
+
+  @Override
+  public int getOrder() {
+    return backing.get(Properties.ORDER);
   }
 }
