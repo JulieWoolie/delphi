@@ -2,6 +2,7 @@ package net.arcadiusmc.delphiplugin.command;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static io.papermc.paper.command.brigadier.Commands.argument;
+import static io.papermc.paper.command.brigadier.Commands.literal;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
@@ -31,10 +32,12 @@ import net.arcadiusmc.delphiplugin.Debug;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
 import net.arcadiusmc.delphiplugin.PageManager;
 import net.arcadiusmc.delphiplugin.PageView;
+import net.arcadiusmc.delphiplugin.SessionManager;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -54,12 +57,16 @@ public class DelphiCommand {
       = new TranslatableExceptionType("delphi.error.debugDumpFail");
 
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
-    LiteralArgumentBuilder<CommandSourceStack> literal = Commands.literal("delphi");
+    LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
+
+    literal.requires(stack -> stack.getSender().hasPermission(Permissions.COMMANDS));
+
     literal.then(open());
     literal.then(close());
 
     literal.then(
-        Commands.literal("debug")
+        literal("debug")
+            .requires(stack -> stack.getSender().hasPermission(Permissions.DEBUG))
             .then(dumpInfo())
             .then(toggleDebugLines())
             .build()
@@ -86,16 +93,71 @@ public class DelphiCommand {
   }
 
   private static LiteralCommandNode<CommandSourceStack> close() {
-    return Commands.literal("close")
-        .executes(context -> {
-          PageView view = getAnyTargeted(context);
-          view.close();
+    return literal("close")
+        .then(literal("target")
+            .executes(context -> {
+              PageView view = getAnyTargeted(context);
+              view.close();
 
-          context.getSource().getSender().sendMessage(
-              Component.translatable("delphi.closed", NamedTextColor.GRAY)
-          );
-          return SINGLE_SUCCESS;
-        })
+              context.getSource().getSender().sendMessage(
+                  Component.translatable("delphi.closed.targeted", NamedTextColor.GRAY)
+              );
+              return SINGLE_SUCCESS;
+            })
+        )
+        .then(literal("all")
+            .then(argument("players", ArgumentTypes.players())
+                .executes(c -> {
+                  PlayerSelectorArgumentResolver resolver
+                      = c.getArgument("players", PlayerSelectorArgumentResolver.class);
+
+                  List<Player> players = resolver.resolve(c.getSource());
+                  SessionManager manager = getPlugin().getSessions();
+
+                  int playerCount = 0;
+                  int closedCount = 0;
+
+                  for (Player player : players) {
+                    int closed = manager.endSession(player.getUniqueId());
+                    if (closed < 1) {
+                      continue;
+                    }
+
+                    playerCount++;
+                    closedCount += closed;
+                  }
+
+                  CommandSender sender = c.getSource().getSender();
+
+                  if (playerCount == 0) {
+                    sender.sendMessage(
+                        Component.translatable("delphi.closed.all.for.none", NamedTextColor.GRAY)
+                    );
+
+                    return SINGLE_SUCCESS;
+                  }
+
+                  sender.sendMessage(
+                      Component.translatable(
+                          "delphi.closed.all.for",
+                          NamedTextColor.GRAY,
+                          Component.text(playerCount),
+                          Component.text(closedCount)
+                      )
+                  );
+                  return SINGLE_SUCCESS;
+                })
+            )
+
+            .executes(c -> {
+              getPlugin().getSessions().closeAllSessions();
+
+              c.getSource().getSender().sendMessage(
+                  Component.translatable("delphi.closed.all", NamedTextColor.GRAY)
+              );
+              return SINGLE_SUCCESS;
+            })
+        )
         .build();
   }
 
@@ -125,18 +187,15 @@ public class DelphiCommand {
     return Commands.literal("toggle-debug-outlines")
         .executes(c -> {
           boolean state = Debug.debugOutlines;
-          String msg;
-          TextColor color;
+          TranslatableComponent text;
 
           if (state) {
-            msg = "delphi.debug.outlineToggle.off";
-            color = NamedTextColor.GRAY;
+            text = Component.translatable("delphi.debug.outlineToggle.off", NamedTextColor.GRAY);
           } else {
-            msg = "delphi.debug.outlineToggle.on";
-            color = NamedTextColor.YELLOW;
+            text = Component.translatable("delphi.debug.outlineToggle.on", NamedTextColor.YELLOW);
           }
 
-          c.getSource().getSender().sendMessage(Component.translatable(msg, color));
+          c.getSource().getSender().sendMessage(text);
           Debug.debugOutlines = !state;
 
           return SINGLE_SUCCESS;

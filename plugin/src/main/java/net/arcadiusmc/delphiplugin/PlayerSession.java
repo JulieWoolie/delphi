@@ -134,4 +134,11 @@ public class PlayerSession {
     targetedView.onSelect(screenPos, targetPos);
     selectedView = targetedView;
   }
+
+  public void close() {
+    List<PageView> cloned = new ArrayList<>(views);
+    for (PageView view : cloned) {
+      closeView(view);
+    }
+  }
 }

@@ -33,10 +33,9 @@ public class SessionManager {
     BukkitScheduler scheduler = Bukkit.getScheduler();
     task = scheduler.runTaskTimer(plugin, this::tick, 1, 1);
 
-    if (task == null || task.getTaskId() == FAILED_TO_REGISTER) {
+    if (task.getTaskId() == FAILED_TO_REGISTER) {
       LOGGER.error("Failed to schedule page view tick updates, pages will not function correctly.");
     }
-
   }
 
   public void stopTicking() {
@@ -66,18 +65,27 @@ public class SessionManager {
     }
   }
 
-  public void endSession(UUID playerId) {
+  public int endSession(UUID playerId) {
     PlayerSession removed = sessionMap.remove(playerId);
     if (removed == null) {
-      return;
+      return 0;
     }
 
-    for (PageView view : removed.getViews()) {
-      view.onClose();
-    }
+    int viewCount = removed.getViews().size();
+    removed.close();
+
+    return viewCount;
   }
 
   public Collection<PlayerSession> getSessions() {
     return sessionMap.values();
+  }
+
+  public void closeAllSessions() {
+    for (PlayerSession value : sessionMap.values()) {
+      value.close();
+    }
+
+    sessionMap.clear();
   }
 }
