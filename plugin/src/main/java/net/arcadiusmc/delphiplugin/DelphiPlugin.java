@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphiplugin;
 
 import lombok.Getter;
+import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.listeners.PlayerListener;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import org.bukkit.plugin.PluginManager;
@@ -30,6 +31,7 @@ public class DelphiPlugin extends JavaPlugin {
 
     reloadConfig();
     registerEvents();
+    Permissions.registerAll();
   }
 
   private void registerEvents() {

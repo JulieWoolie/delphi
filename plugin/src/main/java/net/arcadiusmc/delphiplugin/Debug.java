@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 import net.arcadiusmc.delphidom.Loggers;
+import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
@@ -16,7 +17,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
-import org.bukkit.permissions.ServerOperator;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -137,7 +137,7 @@ public final class Debug {
 
     builder.receivers(
         Bukkit.getOnlinePlayers().stream()
-            .filter(ServerOperator::isOp)
+            .filter(player -> player.hasPermission(Permissions.DEBUG))
             .collect(Collectors.toSet())
     );
 
