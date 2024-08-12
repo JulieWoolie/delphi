@@ -26,13 +26,13 @@ fun layout(el: ElementRenderObject) {
   if (el.style.display == DisplayType.FLEX) {
     layoutFlex(el)
   } else {
-    layoutRegular(el)
+    layoutFlow(el)
   }
 
   el.postAlign()
 }
 
-fun layoutRegular(el: ElementRenderObject) {
+fun layoutFlow(el: ElementRenderObject) {
   val lines: List<RenderLine> = splitIntoLines(el)
 
   val start: Vector2f = Vector2f()
@@ -105,7 +105,7 @@ fun splitIntoLines(el: ElementRenderObject): List<RenderLine> {
 
       line = RenderLine()
 
-      if (display == DisplayType.BLOCK) {
+      if (display == DisplayType.BLOCK || display == DisplayType.FLEX) {
         line.objects.add(child)
         line.size.set(childSize)
         line.bottomMargin = style.margin.bottom
@@ -129,7 +129,6 @@ fun splitIntoLines(el: ElementRenderObject): List<RenderLine> {
 
   return lines
 }
-
 
 fun maxSize(el: ElementRenderObject, out: Vector2f) {
   if (el.parent != null) {
