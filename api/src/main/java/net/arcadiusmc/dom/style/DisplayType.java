@@ -4,5 +4,7 @@ public enum DisplayType {
   NONE,
   INLINE,
   BLOCK,
+  INLINE_BLOCK,
+  FLEX,
 
 }
