@@ -28,4 +28,10 @@ public class Spec implements Comparable<Spec> {
     this.classColumn += specificity.classColumn;
     this.typeColumn += specificity.typeColumn;
   }
+
+  public void set(int i) {
+    this.idColumn = 0;
+    this.classColumn = 0;
+    this.typeColumn = 0;
+  }
 }
