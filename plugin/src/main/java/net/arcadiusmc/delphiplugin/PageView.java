@@ -32,6 +32,7 @@ import net.arcadiusmc.delphiplugin.render.ComponentContent;
 import net.arcadiusmc.delphiplugin.render.ContentRenderObject;
 import net.arcadiusmc.delphiplugin.render.ElementRenderObject;
 import net.arcadiusmc.delphiplugin.render.ItemContent;
+import net.arcadiusmc.delphiplugin.render.LayoutKt;
 import net.arcadiusmc.delphiplugin.render.RenderObject;
 import net.arcadiusmc.delphiplugin.render.StringContent;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
@@ -127,7 +128,7 @@ public class PageView implements ExtendedView {
     renderRoot.getPosition().set(0, screen.getHeight());
 
     renderRoot.spawnRecursive();
-    renderRoot.align();
+    LayoutKt.layout(renderRoot);
 
     closed = false;
   }
@@ -301,7 +302,7 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    renderRoot.align();
+    LayoutKt.layout(renderRoot);
   }
 
   private void triggerUpdate() {
@@ -441,7 +442,7 @@ public class PageView implements ExtendedView {
     obj.spawnRecursive();
 
     if (obj instanceof ElementRenderObject el) {
-      el.align();
+      LayoutKt.layout(el);
     }
   }
 
@@ -770,7 +771,7 @@ public class PageView implements ExtendedView {
           obj.spawnRecursive();
 
           if (obj instanceof ElementRenderObject eObj) {
-            eObj.align();
+            LayoutKt.layout(eObj);
           }
         }
 

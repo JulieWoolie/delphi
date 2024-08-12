@@ -1,8 +1,10 @@
 package net.arcadiusmc.delphiplugin.render
 
+import net.arcadiusmc.delphiplugin.math.Rectangle
 import net.arcadiusmc.dom.style.DisplayType
 import org.joml.Vector2f
 import kotlin.math.max
+import kotlin.math.min
 
 class RenderLine {
   val objects: MutableList<RenderObject> = ArrayList()
@@ -29,7 +31,37 @@ fun layout(el: ElementRenderObject) {
     layoutFlow(el)
   }
 
-  el.postAlign()
+  postAlign(el)
+}
+
+fun postAlign(el: ElementRenderObject) {
+  if (el.childObjects.isEmpty()) {
+    return
+  }
+
+  val bottomRight = Vector2f(Float.MIN_VALUE, Float.MAX_VALUE)
+  val childMax = Vector2f()
+
+  val rectangle = Rectangle()
+
+  for (child in el.childObjects) {
+    child.getBounds(rectangle)
+
+    childMax.x = rectangle.getPosition().x + rectangle.getSize().x
+    childMax.y = rectangle.getPosition().y
+
+    bottomRight.x = max(childMax.x, bottomRight.x)
+    bottomRight.y = min(childMax.y, bottomRight.y)
+  }
+
+  val contentStart = Vector2f()
+  el.getContentStart(contentStart)
+
+  val difX = max(bottomRight.x - contentStart.x, 0.0f)
+  val difY = max(contentStart.y - bottomRight.y, 0.0f)
+
+  el.contentSize.set(difX, difY)
+  el.spawn()
 }
 
 fun layoutFlow(el: ElementRenderObject) {

@@ -1,11 +1,10 @@
 package net.arcadiusmc.delphiplugin.render;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphiplugin.PageView;
-import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.style.DisplayType;
 import org.bukkit.Location;
@@ -13,7 +12,20 @@ import org.joml.Vector2f;
 
 public class ElementRenderObject extends RenderObject {
 
-  private final Align align = Align.Y;
+  static final Comparator<RenderObject> INDEX_COMPARATOR
+      = Comparator.comparingInt(RenderObject::getSourceIndex);
+
+  static final Comparator<RenderObject> ORDER_COMPARATOR = (o1, o2) -> {
+    int order1 = o1.style.order;
+    int order2 = o2.style.order;
+
+    if (order1 == order2) {
+      return Integer.compare(o1.getSourceIndex(), o2.getSourceIndex());
+    }
+
+    return Integer.compare(order1, order2);
+  };
+
   public final Vector2f contentSize = new Vector2f();
 
   protected final List<RenderObject> childObjects = new ArrayList<>();
@@ -115,98 +127,10 @@ public class ElementRenderObject extends RenderObject {
   }
 
   public void sortChildren() {
-    childObjects.sort(COMPARATOR);
-  }
-
-  /* --------------------------- Alignment ---------------------------- */
-
-  public void align() {
-    if (true) {
-      //Layout.layout(this);
-      LayoutKt.layout(this);
-      return;
+    if (style.display == DisplayType.FLEX) {
+      childObjects.sort(ORDER_COMPARATOR);
+    } else {
+      childObjects.sort(INDEX_COMPARATOR);
     }
-
-    if (childObjects.isEmpty()) {
-      return;
-    }
-
-    for (RenderObject childObject : childObjects) {
-      if (childObject instanceof ElementRenderObject el) {
-        el.align();
-      }
-    }
-
-    boolean aligningOnX = align == Align.X;
-
-    Vector2f alignPos = new Vector2f();
-    getContentStart(alignPos);
-
-    Vector2f pos = new Vector2f(alignPos);
-    Vector2f tempMargin = new Vector2f(0);
-    Vector2f elemSize = new Vector2f();
-
-    for (RenderObject child : childObjects) {
-      if (child.style.display == DisplayType.NONE) {
-        continue;
-      }
-
-      Rect margin = child.style.margin;
-
-      if (aligningOnX) {
-        pos.x += margin.left;
-
-        tempMargin.set(0, -margin.top);
-        pos.y -= margin.top;
-      } else {
-        pos.y -= margin.top;
-
-        tempMargin.set(margin.left, 0);
-        pos.x += margin.left;
-      }
-
-      child.moveTo(pos);
-      pos.sub(tempMargin);
-
-      child.getElementSize(elemSize);
-
-      if (aligningOnX) {
-        pos.x += margin.right + elemSize.x;
-      } else {
-        pos.y -= margin.bottom + elemSize.y;
-      }
-    }
-
-    postAlign();
-  }
-
-  void postAlign() {
-    if (childObjects.isEmpty()) {
-      return;
-    }
-
-    Vector2f bottomRight = new Vector2f(Float.MIN_VALUE, Float.MAX_VALUE);
-    Vector2f childMax = new Vector2f();
-
-    Rectangle rectangle = new Rectangle();
-
-    for (RenderObject child : childObjects) {
-      child.getBounds(rectangle);
-
-      childMax.x = rectangle.getPosition().x + rectangle.getSize().x;
-      childMax.y = rectangle.getPosition().y;
-
-      bottomRight.x = Math.max(childMax.x, bottomRight.x);
-      bottomRight.y = Math.min(childMax.y, bottomRight.y);
-    }
-
-    Vector2f contentStart = new Vector2f();
-    getContentStart(contentStart);
-
-    float difX = Math.max(bottomRight.x - contentStart.x, 0);
-    float difY = Math.max(contentStart.y - bottomRight.y, 0);
-
-    contentSize.set(difX, difY);
-    spawn();
   }
 }

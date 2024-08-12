@@ -4,7 +4,6 @@ import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE;
 import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphiplugin.render.RenderLayer.LAYER_COUNT;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import lombok.Getter;
@@ -27,8 +26,6 @@ import org.joml.Vector3f;
 
 @Getter
 public abstract class RenderObject {
-
-  static final Comparator<RenderObject> COMPARATOR;
 
   static final Brightness BRIGHTNESS = new Brightness(15, 15);
   public static final boolean SEE_THROUGH = false;
@@ -63,17 +60,6 @@ public abstract class RenderObject {
     this.view = view;
     this.screen = screen;
     this.style = style;
-  }
-
-  static {
-    Comparator<RenderObject> cmp = Comparator.comparingInt(value -> {
-      if (value.style.display == DisplayType.FLEX) {
-        return value.style.order;
-      }
-      return 0;
-    });
-
-    COMPARATOR = cmp.thenComparingInt(value -> value.sourceIndex);
   }
 
   public static boolean isNotSpawned(Layer layer) {
