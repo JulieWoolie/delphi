@@ -219,6 +219,10 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     return new Vector2f(dimensions);
   }
 
+  public void getDimensions(Vector2f out) {
+    out.set(dimensions);
+  }
+
   @Override
   public Vector3f getLowerLeft() {
     return new Vector3f(loLeft);
