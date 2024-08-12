@@ -155,15 +155,16 @@ public class RenderTreePrint extends XmlPrintVisitor {
   }
 
   private void appendInfo(DelphiNode node) {
+    RenderObject obj = view.getRenderObject(node);
+
+    if (obj == null) {
+      return;
+    }
+
     nlIndent().append(COMMENT_START);
     indent++;
 
-    RenderObject obj = view.getRenderObject(node);
-    if (obj == null) {
-      nlIndent().append("Render object missing");
-    } else {
-      appendRenderObjectComment(node, obj);
-    }
+    appendRenderObjectComment(node, obj);
 
     indent--;
     nlIndent().append(COMMENT_END);
