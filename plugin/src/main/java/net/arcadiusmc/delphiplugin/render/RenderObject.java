@@ -4,11 +4,11 @@ import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE;
 import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphiplugin.render.RenderLayer.LAYER_COUNT;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphiplugin.HideUtil;
@@ -27,6 +27,8 @@ import org.joml.Vector3f;
 
 @Getter
 public abstract class RenderObject {
+
+  static final Comparator<RenderObject> COMPARATOR;
 
   static final Brightness BRIGHTNESS = new Brightness(15, 15);
   public static final boolean SEE_THROUGH = false;
@@ -54,12 +56,24 @@ public abstract class RenderObject {
 
   private final Layer[] layers = new Layer[LAYER_COUNT];
 
-  public DelphiNode domNode;
+  @Setter
+  private int sourceIndex = 0;
 
   public RenderObject(PageView view, ComputedStyle style, Screen screen) {
     this.view = view;
     this.screen = screen;
     this.style = style;
+  }
+
+  static {
+    Comparator<RenderObject> cmp = Comparator.comparingInt(value -> {
+      if (value.style.display == DisplayType.FLEX) {
+        return value.style.order;
+      }
+      return 0;
+    });
+
+    COMPARATOR = cmp.thenComparingInt(value -> value.sourceIndex);
   }
 
   public static boolean isNotSpawned(Layer layer) {
@@ -113,10 +127,29 @@ public abstract class RenderObject {
     float leftDif = style.padding.left + style.outline.left + style.border.left;
 
     out.set(position);
-    out.add(leftDif * GLOBAL_SCALAR, -topDif * GLOBAL_SCALAR);
+
+    out.x += leftDif * GLOBAL_SCALAR;
+    out.y -= topDif * GLOBAL_SCALAR;
   }
 
   protected abstract void measureContent(Vector2f out);
+
+  protected void clamp(Vector2f vec) {
+    float minX = clampFallback(style.minSize.x, Float.MIN_VALUE);
+    float minY = clampFallback(style.minSize.y, Float.MIN_VALUE);
+    float maxX = clampFallback(style.maxSize.x, Float.MAX_VALUE);
+    float maxY = clampFallback(style.maxSize.y, Float.MAX_VALUE);
+
+    vec.x = Math.clamp(vec.x, minX, maxX);
+    vec.y = Math.clamp(vec.y, minY, maxY);
+  }
+
+  protected float clampFallback(float f, float def) {
+    if (f <= 0) {
+      return def;
+    }
+    return f;
+  }
 
   public void getElementSize(Vector2f out) {
     //
@@ -127,21 +160,28 @@ public abstract class RenderObject {
     //
 
     measureContent(out);
+    clamp(out);
 
-    out.max(style.minSize).min(style.maxSize);
+    out.x += boxWidthIncrease();
+    out.y += boxHeightIncrease();
+  }
 
-    float xAdd
-        = style.padding.left + style.padding.right
-        + style.outline.left + style.outline.right
-        + style.border.left + style.border.right;
-
-    float yAdd
+  public float boxHeightIncrease() {
+    float base
         = style.padding.top + style.padding.bottom
         + style.outline.top + style.outline.bottom
         + style.border.top + style.border.bottom;
 
-    out.x += xAdd * GLOBAL_SCALAR;
-    out.y += yAdd * GLOBAL_SCALAR;
+    return base * GLOBAL_SCALAR;
+  }
+
+  public float boxWidthIncrease() {
+    float base
+        = style.padding.left + style.padding.right
+        + style.outline.left + style.outline.right
+        + style.border.left + style.border.right;
+
+    return base * GLOBAL_SCALAR;
   }
 
   public void getBounds(Rectangle rectangle) {
@@ -168,9 +208,13 @@ public abstract class RenderObject {
 
   protected abstract void spawnContent(Location location);
 
+  protected boolean isHidden() {
+    return style.display == DisplayType.NONE;
+  }
+
   public void spawn() {
-    if (style.display == DisplayType.NONE) {
-      kill();
+    if (isHidden()) {
+      killRecursive();
       return;
     }
 
@@ -256,10 +300,7 @@ public abstract class RenderObject {
 
         if (!extensionApplied) {
           applyContentExtension(layer.size);
-
-          layer.size.max(style.minSize);
-          layer.size.min(style.maxSize);
-
+          clamp(layer.size);
           extensionApplied = true;
         }
 
@@ -411,6 +452,10 @@ public abstract class RenderObject {
 
   LayerIterator layerIterator(LayerDirection direction) {
     return new LayerIterator(direction.modifier, direction.start);
+  }
+
+  public boolean ignoreDisplay() {
+    return false;
   }
 
   public interface LayerOp {

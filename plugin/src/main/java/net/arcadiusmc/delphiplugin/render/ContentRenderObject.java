@@ -29,6 +29,16 @@ public class ContentRenderObject extends RenderObject {
   }
 
   @Override
+  protected boolean isHidden() {
+    return super.isHidden() || isContentEmpty();
+  }
+
+  @Override
+  public boolean ignoreDisplay() {
+    return content instanceof StringContent;
+  }
+
+  @Override
   protected void measureContent(Vector2f out) {
     if (isContentEmpty()) {
       out.set(0);

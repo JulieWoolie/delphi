@@ -23,6 +23,25 @@ public class ElementRenderObject extends RenderObject {
   }
 
   @Override
+  protected boolean isHidden() {
+    return super.isHidden() || childrenAreHidden();
+  }
+
+  public boolean childrenAreHidden() {
+    if (childObjects.isEmpty()) {
+      return true;
+    }
+
+    for (RenderObject childObject : childObjects) {
+      if (!childObject.isHidden()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  @Override
   protected void measureContent(Vector2f out) {
     out.set(contentSize);
   }
@@ -83,6 +102,7 @@ public class ElementRenderObject extends RenderObject {
   public void addChild(RenderObject renderObject, int index) {
     childObjects.add(index, renderObject);
     renderObject.parent = this;
+    sortChildren();
   }
 
   public RenderObject removeChild(RenderObject element) {
@@ -94,9 +114,19 @@ public class ElementRenderObject extends RenderObject {
     return element;
   }
 
+  public void sortChildren() {
+    childObjects.sort(COMPARATOR);
+  }
+
   /* --------------------------- Alignment ---------------------------- */
 
   public void align() {
+    if (true) {
+      //Layout.layout(this);
+      LayoutKt.layout(this);
+      return;
+    }
+
     if (childObjects.isEmpty()) {
       return;
     }
@@ -150,7 +180,7 @@ public class ElementRenderObject extends RenderObject {
     postAlign();
   }
 
-  private void postAlign() {
+  void postAlign() {
     if (childObjects.isEmpty()) {
       return;
     }

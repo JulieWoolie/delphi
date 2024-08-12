@@ -280,7 +280,12 @@ public class PageView implements ExtendedView {
       }
     }
 
-    obj.domNode = node;
+    if (node.getParent() == null) {
+      obj.setSourceIndex(0);
+    } else {
+      obj.setSourceIndex(node.getSiblingIndex());
+    }
+
     obj.setDepth(node.getDepth());
 
     renderObjects.put(node, obj);
@@ -340,6 +345,10 @@ public class PageView implements ExtendedView {
     }
 
     if (changed(changes, DirtyBit.LAYOUT)) {
+      if (obj instanceof ElementRenderObject el) {
+        el.sortChildren();
+      }
+
       triggerRealign();
     }
   }
