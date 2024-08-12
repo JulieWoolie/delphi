@@ -44,36 +44,53 @@ h3 {
   display: block;
 }
 
-b {
+b, bold {
   bold: true;
   display: inline;
 }
 
-i {
+i, italic, em {
   italic: true;
   display: inline;
 }
 
-u {
+u, underlined {
   underlined: true;
   display: inline;
+}
+st, strikethrough {
+  display: inline;
+  strikethrough: true;
+}
+obf, obfuscated {
+  display: inline;
+  obfuscated: true;
+}
+
+/* New line tag */
+
+br, nl, newline {
+  display: inline-block;
 }
 
 /* Item */
 
 item {
   scale: 0.5;
+  display: inline;
 }
 
 /* Item tooltip stuff */
 
 item-tooltip-name {
   margin-bottom: 1px;
+  display: block;
 }
 
 item-tooltip {
   scale: 0.5;
   z-index: 10;
+  display: block;
 
   padding: 1px;
   background-color: #170817;
@@ -88,6 +105,7 @@ item-tooltip {
 tooltip {
   scale: 0.5;
   z-index: 10;
+  display: block;
 
   padding: 1px;
   background-color: #170817;
@@ -100,6 +118,7 @@ tooltip {
 /* Buttons */
 
 button {
+  display: inline;
   color: $button-color;
   background-color: $button-bg;
   border-color: $button-outline;
@@ -113,4 +132,80 @@ button:hover {
 
 button:active {
   background-color: $button-bg-active;
+}
+
+/*
+ * Color tags
+ *
+ * These don't use CSS colors because these colors are meant to be
+ * minimessage tags, as such, they use minecraft colors. Both tags
+ * with underscores and dashes are supported. Underscores are for
+ * minimessage, dashes are prettier.
+ *
+ * :3
+ */
+
+black {
+  display: inline;
+  color: black;
+}
+dark_blue, dark-blue {
+  display: inline;
+  color: #0000AA;
+}
+dark_green, dark-green {
+  display: inline;
+  color: #00AA00;
+}
+dark_aqua, dark-aqua {
+  display: inline;
+  color: #00AAAA;
+}
+dark_red, dark-red {
+  display: inline;
+  color: #AA0000;
+}
+dark_purple, dark-purple {
+  display: inline;
+  color: #AA00AA;
+}
+gold {
+  display: inline;
+  color: #FFAA00;
+}
+gray {
+  display: inline;
+  color: #AAAAAA;
+}
+dark_gray, dark_grey, dark-gray, dark-grey {
+  display: inline;
+  color: #555555;
+}
+blue {
+  display: inline;
+  color: #5555FF;
+}
+green {
+  display: inline;
+  color: #55FF55;
+}
+aqua {
+  display: inline;
+  color: #55FFFF;
+}
+red {
+  display: inline;
+  color: #FF5555;
+}
+light_purple, light-purple, purple {
+  display: inline;
+  color: #FF55FF;
+}
+yellow {
+  display: inline;
+  color: #FFFF55;
+}
+white {
+  display: inline;
+  color: white;
 }
