@@ -105,7 +105,7 @@ public final class Properties {
       .build();
 
   public static final Property<DisplayType> DISPLAY = Property.builder(DisplayType.class)
-      .defaultValue(DisplayType.INLINE)
+      .defaultValue(DisplayType.BLOCK)
       .cascading(true)
       .layoutAffecting(true)
       .function((s, screen, d) -> s.display = d)
