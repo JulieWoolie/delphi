@@ -27,6 +27,7 @@ import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
+import net.arcadiusmc.delphidom.scss.Rule;
 import net.arcadiusmc.delphidom.scss.ScssParser;
 import net.arcadiusmc.delphidom.scss.Sheet;
 import net.arcadiusmc.dom.ParserException;
@@ -102,6 +103,11 @@ public class Modules implements DelphiResources {
     }
 
     defaultStyle = sheet;
+
+    for (int i = 0; i < defaultStyle.getLength(); i++) {
+      Rule rule = defaultStyle.getRule(i);
+      rule.getSelectorObj().getSpec().set(0);
+    }
   }
 
   @Override
