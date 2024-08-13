@@ -28,13 +28,6 @@ public final class Debug {
   public static boolean debugOutlines = LOGGER.isDebugEnabled();
   static final float POINT_DIST = 0.12f;
 
-  static final Screen SCREEN;
-
-  static {
-    SCREEN = new Screen();
-    SCREEN.setDimensions(3, 2);
-  }
-
   public static Path dumpDebugTree(String fileName, PageView view) {
     Path dir;
     ClassLoader loader = Debug.class.getClassLoader();
