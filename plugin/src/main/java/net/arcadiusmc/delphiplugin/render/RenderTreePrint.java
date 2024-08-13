@@ -1,6 +1,10 @@
 package net.arcadiusmc.delphiplugin.render;
 
 import java.util.Set;
+import net.arcadiusmc.delphi.resource.ApiModule;
+import net.arcadiusmc.delphi.resource.DirectoryModule;
+import net.arcadiusmc.delphi.resource.ResourceModule;
+import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.XmlPrintVisitor;
@@ -34,6 +38,18 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("world: ").append(view.getWorld().getName());
     nlIndent().append("render-object-count: ").append(view.getRenderObjects().size());
     nlIndent().append("module-name: ").append(view.getResources().getModuleName());
+
+    String moduleType;
+    ResourceModule module = view.getResources().getModule();
+
+    moduleType = switch (module) {
+      case ApiModule apiModule -> "api-module";
+      case ZipModule zipModule -> "zip";
+      case DirectoryModule directoryModule -> "directory";
+      case null, default -> "unknown";
+    };
+
+    nlIndent().append("module-type: ").append(moduleType);
     nlIndent().append("resource-path: ").append(view.getPath());
 
     Screen screen = view.getScreen();
