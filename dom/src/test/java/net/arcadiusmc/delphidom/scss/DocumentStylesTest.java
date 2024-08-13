@@ -86,6 +86,6 @@ class DocumentStylesTest {
     assertTrue(r.getSelectorObj().test(null, body));
 
     assertEquals(v, map.getPaddingLeft());
-    assertEquals(Properties.PADDING_LEFT.getDefaultValue(), inline.getPaddingLeft());
+    assertEquals(null , inline.getPaddingLeft());
   }
 }

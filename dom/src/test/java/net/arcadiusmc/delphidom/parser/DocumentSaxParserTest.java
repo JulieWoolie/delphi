@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom.parser;
 
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,6 +12,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphi.util.Result;
@@ -42,18 +44,18 @@ class DocumentSaxParserTest {
     }
 
     @Override
-    public Result<ItemStack, String> loadItemStack(String uri) {
-      return Result.err("NOP");
+    public Result<ItemStack, DelphiException> loadItemStack(String uri) {
+      return Result.err(new DelphiException(ERR_UNKNOWN, "NOP"));
     }
 
     @Override
-    public Result<Document, String> loadDocument(String uri) {
-      return Result.err("NOP");
+    public Result<Document, DelphiException> loadDocument(String uri) {
+      return Result.err(new DelphiException(ERR_UNKNOWN, "NOP"));
     }
 
     @Override
-    public Result<Stylesheet, String> loadStylesheet(String uri) {
-      return Result.err("NOP");
+    public Result<Stylesheet, DelphiException> loadStylesheet(String uri) {
+      return Result.err(new DelphiException(ERR_UNKNOWN, "NOP"));
     }
   };
 

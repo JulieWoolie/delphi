@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
 import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.delphi.resource.ResourceModule;
@@ -30,7 +31,7 @@ class ModulesTest {
 
   @Test
   void testModulePathList() {
-    Result<ResourceModule, String> opt = modules.findModule("module");
+    Result<ResourceModule, DelphiException> opt = modules.findModule("module");
     assertTrue(opt.isSuccess());
 
     DirectoryModule module = assertInstanceOf(DirectoryModule.class, opt.getOrThrow());
@@ -56,7 +57,7 @@ class ModulesTest {
 
   @Test
   void testZipModule() {
-    Result<ResourceModule, String> opt = modules.findModule("zipped");
+    Result<ResourceModule, DelphiException> opt = modules.findModule("zipped");
     assertTrue(opt.isSuccess());
 
     ZipModule module = assertInstanceOf(ZipModule.class, opt.getOrThrow());
@@ -67,7 +68,7 @@ class ModulesTest {
 
   @Test
   void testRegularModule() {
-    Result<ResourceModule, String> opt = modules.findModule("module");
+    Result<ResourceModule, DelphiException> opt = modules.findModule("module");
     assertTrue(opt.isSuccess());
 
     DirectoryModule val = assertInstanceOf(DirectoryModule.class, opt.getOrThrow());
