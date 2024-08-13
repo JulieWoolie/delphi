@@ -8,16 +8,19 @@ import java.util.Objects;
 import java.util.Optional;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
+import net.arcadiusmc.delphidom.scss.SheetBuilder;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
+import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -38,13 +41,13 @@ public class PageManager implements Delphi {
   }
 
   @Override
-  public Result<ResourcePath, String> parsePath(String string) {
+  public Result<ResourcePath, DelphiException> parsePath(String string) {
     PathParser<?> parser = new PathParser<>(modules, new StringReader(string));
 
     try {
       parser.parse();
     } catch (CommandSyntaxException exc) {
-      return Result.err("Invalid path");
+      return Result.err(new DelphiException(DelphiException.ERR_INVALID_PATH, exc.getMessage()));
     }
 
     return Result.ok(parser.getPath());
@@ -56,7 +59,7 @@ public class PageManager implements Delphi {
   }
 
   @Override
-  public Result<DocumentView, String> openDocument(
+  public Result<DocumentView, DelphiException> openDocument(
       @NotNull ResourcePath path,
       @NotNull Player player
   ) {
@@ -65,8 +68,7 @@ public class PageManager implements Delphi {
 
     String moduleName = path.getModuleName();
 
-    Result<ResourceModule, String> moduleResult = modules.findModule(moduleName)
-        .mapError(string -> "Failed to get module '" + moduleName + "': " + string);
+    Result<ResourceModule, DelphiException> moduleResult = modules.findModule(moduleName);
 
     if (moduleResult.isError()) {
       return Result.err(moduleResult);
@@ -94,8 +96,7 @@ public class PageManager implements Delphi {
     PlayerSession session = sessions.getOrCreateSession(player);
     session.addView(view);
 
-    Result<DelphiDocument, String> res = resources.loadDocument(path, path.elements())
-        .mapError(string -> "Failed to load document: " + string);
+    Result<DelphiDocument, DelphiException> res = resources.loadDocument(path, path.elements());
 
     if (res.isError()) {
       session.closeView(view);
@@ -151,7 +152,7 @@ public class PageManager implements Delphi {
   }
 
   @Override
-  public Result<DocumentView, String> openDocument(@NotNull String path, @NotNull Player player) {
+  public Result<DocumentView, DelphiException> openDocument(@NotNull String path, @NotNull Player player) {
     Objects.requireNonNull(path, "Null path");
     Objects.requireNonNull(player, "Null player");
 
@@ -222,5 +223,10 @@ public class PageManager implements Delphi {
     }
 
     return Optional.ofNullable(closest);
+  }
+
+  @Override
+  public @NotNull StylesheetBuilder newStylesheetBuilder() {
+    return new SheetBuilder();
   }
 }

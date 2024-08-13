@@ -190,7 +190,7 @@ public class DocumentSaxParser extends DefaultHandler {
 
           if (!Strings.isNullOrEmpty(src)) {
             resources.loadItemStack(src)
-                .mapError(string -> "Failed to load item stack from " + src + ": " + string)
+                .mapError(exc -> "Failed to load item stack from " + src + ": " + exc.getMessage())
                 .ifError(this::warn)
                 .ifSuccess(item::setItemStack);
           }
@@ -331,7 +331,7 @@ public class DocumentSaxParser extends DefaultHandler {
         }
 
         resources.loadStylesheet(src)
-            .mapError(string -> "Failed to load stylesheet from " + string + ": " + string)
+            .mapError(exc -> "Failed to load stylesheet from " + src + ": " + exc.getMessage())
             .ifSuccess(stylesheet -> document.addStylesheet(stylesheet))
             .ifError(this::error);
       }

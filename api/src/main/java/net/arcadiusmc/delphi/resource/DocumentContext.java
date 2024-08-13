@@ -2,6 +2,7 @@ package net.arcadiusmc.delphi.resource;
 
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public interface DocumentContext {
 
   /**
-   * Creates a new document.
+   * Create a new document.
    * <p>
    * The returned document's view will be set to {@link #getView()}, but the result of
    * {@link DocumentView#getDocument()} will remain null until after the module has returned
@@ -24,6 +25,12 @@ public interface DocumentContext {
    * @return Created document
    */
   @NotNull Document newDocument();
+
+  /**
+   * Create a new style sheet builder that can be added to any document.
+   * @return New style sheet builder
+   */
+  @NotNull StylesheetBuilder newStylesheet();
 
   /**
    * Get the player the document is being opened for.

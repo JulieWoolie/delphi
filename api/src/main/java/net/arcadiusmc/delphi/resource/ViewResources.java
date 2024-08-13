@@ -55,35 +55,35 @@ public interface ViewResources {
    * <table>
    *   <caption>Result errors</caption>
    *   <tr>
-   *     <th>Message format</th>
+   *     <th>Error code</th>
    *     <th>Description</th>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Invalid Path"}</td>
+   *     <td>{@code ERR_INVALID_PATH}</td>
    *     <td>The {@code uri} could not be parsed into a resource path.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "API-MODULE}</td>
+   *     <td>{@code ERR_API_MODULE}</td>
    *     <td>If the module is not an {@link IoModule}.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "No Such File"}</td>
+   *     <td>{@code ERR_NO_FILE}</td>
    *     <td>Module threw a {@link NoSuchFileException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Access Denied: %reason%"}</td>
+   *     <td>{@code ERR_ACCESS_DENIED}</td>
    *     <td>Module threw a {@link AccessDeniedException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "IO Error: %message%"}</td>
+   *     <td>{@code ERR_IO_ERROR}</td>
    *     <td>Module threw an {@link IOException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Failed to parse JSON"}</td>
+   *     <td>{@code ERR_SYNTAX}</td>
    *     <td>Failed to parse JSON from file contents</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Codec error: %message%}</td>
+   *     <td>{@code ERR_SCHEMA_ERROR}</td>
    *     <td>If the item fails to load from the loaded JSON</td>
    *   </tr>
    * </table>
@@ -91,7 +91,7 @@ public interface ViewResources {
    * @param uri file path
    * @return Loaded item, or an erroneous result, if the item cannot be loaded for any reason
    */
-  Result<ItemStack, String> loadItemStack(String uri);
+  Result<ItemStack, DelphiException> loadItemStack(String uri);
 
   /**
    * Attempts to load a document from the specified resource path.
@@ -107,43 +107,46 @@ public interface ViewResources {
    * <table>
    *   <caption>Result errors</caption>
    *   <tr>
-   *     <th>Message format</th>
+   *     <th>Error code</th>
    *     <th>Description</th>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Invalid Path"}</td>
+   *     <td>{@code ERR_INVALID_PATH}</td>
    *     <td>The {@code uri} could not be parsed into a resource path.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Module error: %message%"}</td>
-   *     <td>If {@link #getModule()} is an {@link ApiModule} and it returned an nonuser result.</td>
+   *     <td>{@code ERR_MODULE_ERROR}</td>
+   *     <td>If {@link #getModule()} is an {@link ApiModule} and it returned an erroneous result.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "No Such File"}</td>
+   *     <td>{@code ERR_NO_FILE}</td>
    *     <td>Module threw a {@link NoSuchFileException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Access Denied: %reason%"}</td>
+   *     <td>{@code ERR_ACCESS_DENIED}</td>
    *     <td>Module threw a {@link AccessDeniedException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "IO Error: %message%"}</td>
+   *     <td>{@code ERR_IO_ERROR}</td>
    *     <td>Module threw an {@link IOException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Internal error creating parser"}</td>
+   *     <td style="width: 25%;">{@code ERR_SAX_PARSER_INIT}</td>
    *     <td>Failed to instantiate SAX parser to parse the XML document.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Failed to parse document"}</td>
+   *     <td>{@code ERR_DOC_PARSE}</td>
    *     <td>Unrecoverable failure trying to parse the XML data</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Missing plugins: %plugin-list%"}</td>
-   *     <td>One or more of the document's required plugins are missing. {@code %plugin-list%} is a comma separated list of plugin names</td>
+   *     <td>{@code ERR_MISSING_PLUGINS}</td>
+   *     <td>
+   *       One or more of the document's required plugins are missing.The returned exception's
+   *       message will contain a comma separated list of plugins that it failed to find.
+   *     </td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Unknown"}</td>
+   *     <td>{@code ERR_UNKNOWN}</td>
    *     <td>An unknown error caused the document parser to return a {@code null} document</td>
    *   </tr>
    * </table>
@@ -153,7 +156,7 @@ public interface ViewResources {
    * @return Loaded document, or an erroneous result if the document cannot be loaded for
    *         any reason.
    */
-  Result<Document, String> loadDocument(String uri);
+  Result<Document, DelphiException> loadDocument(String uri);
 
   /**
    * Attempts to load a stylesheet from the specified resource path.
@@ -168,31 +171,31 @@ public interface ViewResources {
    * <table>
    *   <caption>Result errors</caption>
    *   <tr>
-   *     <th>Message format</th>
+   *     <th>Error code</th>
    *     <th>Description</th>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Invalid Path"}</td>
+   *     <td>{@code ERR_INVALID_PATH}</td>
    *     <td>The {@code uri} could not be parsed into a resource path.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "API-MODULE"}</td>
+   *     <td>{@code ERR_API_MODULE}</td>
    *     <td>The underlying module is an {@link ApiModule}, stylesheet loading not supported.</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "No Such File"}</td>
+   *     <td>{@code ERR_NO_FILE}</td>
    *     <td>Module threw a {@link NoSuchFileException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Access Denied: %reason%"}</td>
+   *     <td>{@code ERR_ACCESS_DENIED}</td>
    *     <td>Module threw a {@link AccessDeniedException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "IO Error: %message%"}</td>
+   *     <td>{@code ERR_IO_ERROR}</td>
    *     <td>Module threw an {@link IOException}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Fatal parser error: %message%"}</td>
+   *     <td>{@code ERR_SYNTAX}</td>
    *     <td>Unrecoverable failure trying to parse the stylesheet data.</td>
    *   </tr>
    * </table>
@@ -200,6 +203,8 @@ public interface ViewResources {
    * @param uri file path
    *
    * @return Loaded stylesheet, or an empty result if the stylesheet could not be loaded for any reason
+   *
+   * @see DelphiException
    */
-  Result<Stylesheet, String> loadStylesheet(String uri);
+  Result<Stylesheet, DelphiException> loadStylesheet(String uri);
 }

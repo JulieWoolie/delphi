@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -105,15 +106,15 @@ public sealed interface Result<T, E> permits Err, Ok {
    * @param exc Exception to wrap
    * @return Error result
    */
-  static <T> Result<T, String> ioError(IOException exc) {
-    if (exc instanceof NoSuchFileException || exc instanceof FileNotFoundException) {
-      return Result.formatted("No such file");
+  static <T> Result<T, DelphiException> ioError(IOException exc) {
+    if (exc instanceof NoSuchFileException no) {
+      return err(new DelphiException(DelphiException.ERR_NO_FILE, no.getFile(), no));
     }
     if (exc instanceof AccessDeniedException acc) {
-      return Result.formatted("Access Denied: %s", acc.getReason());
+      return err(new DelphiException(DelphiException.ERR_ACCESS_DENIED, acc));
     }
 
-    return Result.formatted("IO Error: %s", exc.getMessage());
+    return err(new DelphiException(DelphiException.ERR_IO_ERROR, exc));
   }
 
   /**

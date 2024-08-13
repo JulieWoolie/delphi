@@ -2,10 +2,12 @@ package net.arcadiusmc.delphi;
 
 import java.util.List;
 import java.util.Optional;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphi.util.Result;
+import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,10 +22,11 @@ public interface Delphi {
   /**
    * Attempts to parse a path
    * @param string Parse string
-   * @return Parse result, either successful, or an error with the message "Invalid path"
+   * @return Parse result, either successful, or an error with the error code
+   *         {@code ERR_INVALID_PATH}
    * @see ResourcePath
    */
-  Result<ResourcePath, String> parsePath(String string);
+  Result<ResourcePath, DelphiException> parsePath(String string);
 
   /**
    * Attempts to open the document specified by the {@code path} and show it to player.
@@ -59,7 +62,7 @@ public interface Delphi {
    *
    * @throws NullPointerException If {@code path} or {@code player} are {@code null}
    */
-  Result<DocumentView, String> openDocument(@NotNull ResourcePath path, @NotNull Player player);
+  Result<DocumentView, DelphiException> openDocument(@NotNull ResourcePath path, @NotNull Player player);
 
   /**
    * Attempts to open the document specified by the {@code path} and show it to player.
@@ -99,7 +102,7 @@ public interface Delphi {
    *
    * @throws NullPointerException If {@code path} or {@code player} are {@code null}
    */
-  Result<DocumentView, String> openDocument(@NotNull String path, @NotNull Player player);
+  Result<DocumentView, DelphiException> openDocument(@NotNull String path, @NotNull Player player);
 
   /**
    * Gets all the document views a player has open
@@ -153,4 +156,10 @@ public interface Delphi {
    * @throws NullPointerException If {@code player} is {@code null}
    */
   Optional<DocumentView> getAnyTargetedView(@NotNull Player player);
+
+  /**
+   * Create a new stylesheet builder.
+   * @return New stylesheet builder
+   */
+  @NotNull StylesheetBuilder newStylesheetBuilder();
 }

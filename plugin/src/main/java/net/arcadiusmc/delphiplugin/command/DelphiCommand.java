@@ -3,6 +3,17 @@ package net.arcadiusmc.delphiplugin.command;
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_ACCESS_DENIED;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_DOC_PARSE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_IO_ERROR;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MISSING_PLUGINS;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_DIRECTORY_NOT_FOUND;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ERROR;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_UNKNOWN;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ZIP_ACCESS_DENIED;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_NO_FILE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SAX_PARSER_INIT;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
@@ -26,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphiplugin.Debug;
@@ -55,6 +67,36 @@ public class DelphiCommand {
 
   static final TranslatableExceptionType DUMP_FAIL
       = new TranslatableExceptionType("delphi.error.debugDumpFail");
+
+  static final TranslatableExceptionType NO_FILE
+      = new TranslatableExceptionType("delphi.error.noSuchFile");
+
+  static final TranslatableExceptionType ACCESS_DENIED
+      = new TranslatableExceptionType("delphi.error.accessDenied");
+
+  static final TranslatableExceptionType IO_ERROR
+      = new TranslatableExceptionType("delphi.error.ioError");
+
+  static final TranslatableExceptionType MODULE_ERROR
+      = new TranslatableExceptionType("delphi.error.moduleError");
+
+  static final TranslatableExceptionType SAX_PARSER
+      = new TranslatableExceptionType("delphi.error.saxParser");
+
+  static final TranslatableExceptionType DOC_PARSE
+      = new TranslatableExceptionType("delphi.error.docParseFail");
+
+  static final TranslatableExceptionType MISSING_PLUGINS
+      = new TranslatableExceptionType("delphi.error.missingPlugins");
+
+  static final TranslatableExceptionType UNKNOWN
+      = new TranslatableExceptionType("delphi.error.unknown");
+
+  static final TranslatableExceptionType NO_MODULE_DIR
+      = new TranslatableExceptionType("delphi.error.noModuleDir");
+
+  static final TranslatableExceptionType MODULE_ACCESS_DENIED
+      = new TranslatableExceptionType("delphi.error.moduleAccess");
 
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
@@ -223,7 +265,8 @@ public class DelphiCommand {
         = c.getArgument("player", PlayerSelectorArgumentResolver.class);
 
     List<Player> player = resolver.resolve(c.getSource());
-    Result<DocumentView, String> result = pl.getManager().openDocument(path, player.getFirst());
+    Result<DocumentView, DelphiException> result
+        = pl.getManager().openDocument(path, player.getFirst());
 
     if (result.isSuccess()) {
       c.getSource().getSender().sendMessage(
@@ -233,7 +276,24 @@ public class DelphiCommand {
       return SINGLE_SUCCESS;
     }
 
-    throw new CommandSyntaxException(NOP, new LiteralMessage(result.error().orElse("")));
+    throw toCommandError(result.error().get());
+  }
+
+  private static CommandSyntaxException toCommandError(DelphiException exc) {
+    return switch (exc.getCode()) {
+      case ERR_NO_FILE -> NO_FILE.create();
+      case ERR_ACCESS_DENIED -> ACCESS_DENIED.create();
+      case ERR_IO_ERROR -> IO_ERROR.create();
+      case ERR_MODULE_ERROR -> MODULE_ERROR.create();
+      case ERR_SAX_PARSER_INIT -> SAX_PARSER.create();
+      case ERR_DOC_PARSE -> DOC_PARSE.create();
+      case ERR_MISSING_PLUGINS -> MISSING_PLUGINS.create(exc.getBaseMessage());
+      case ERR_UNKNOWN -> UNKNOWN.create();
+      case ERR_MODULE_UNKNOWN -> PathParser.UNKNOWN_MODULE.create(exc.getBaseMessage());
+      case ERR_MODULE_DIRECTORY_NOT_FOUND -> NO_MODULE_DIR.create();
+      case ERR_MODULE_ZIP_ACCESS_DENIED -> MODULE_ACCESS_DENIED.create();
+      default -> new CommandSyntaxException(NOP, new LiteralMessage(exc.getMessage()));
+    };
   }
 
   private static DelphiPlugin getPlugin() {
@@ -263,8 +323,6 @@ public class DelphiCommand {
 
     @Override
     public @NotNull ResourcePath parse(@NotNull StringReader reader) throws CommandSyntaxException {
-      DelphiPlugin plugin = DelphiPlugin.getPlugin(DelphiPlugin.class);
-
       PathParser<?> parser = new PathParser<>(getModules(), reader);
       parser.parse();
       return parser.getPath();

@@ -1,5 +1,11 @@
 package net.arcadiusmc.delphiplugin.resource;
 
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_EMPTY_MODULE_NAME;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_IO_ERROR;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_DIRECTORY_NOT_FOUND;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_UNKNOWN;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ZIP_ACCESS_DENIED;
+
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
 import net.arcadiusmc.delphi.resource.ResourceModule;
@@ -135,9 +142,9 @@ public class Modules implements DelphiResources {
   }
 
   @Override
-  public Result<ResourceModule, String> findModule(String moduleName) {
+  public Result<ResourceModule, DelphiException> findModule(String moduleName) {
     if (Strings.isNullOrEmpty(moduleName)) {
-      return Result.err("Null/empty module name");
+      return Result.err(new DelphiException(ERR_EMPTY_MODULE_NAME, "Empty/null module name"));
     }
 
     String lower = moduleName.toLowerCase();
@@ -148,7 +155,9 @@ public class Modules implements DelphiResources {
     }
 
     if (!Files.isDirectory(directory)) {
-      return Result.err("Module directory doesn't exist");
+      return Result.err(
+          new DelphiException(ERR_MODULE_DIRECTORY_NOT_FOUND, "Module directory doesn't exist")
+      );
     }
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
@@ -173,9 +182,15 @@ public class Modules implements DelphiResources {
           try {
             return Result.ok(getZipModule(path));
           } catch (AccessDeniedException acc) {
-            return Result.formatted("Zip access denied: %s", acc.getReason());
+            return Result.err(
+                new DelphiException(
+                    ERR_MODULE_ZIP_ACCESS_DENIED,
+                    "Zip access denied: " + acc.getReason(),
+                    acc
+                )
+            );
           } catch (IOException exc) {
-            return Result.formatted("IO error: %s", exc.getMessage());
+            return Result.err(new DelphiException(ERR_IO_ERROR, exc));
           }
         }
       }
@@ -183,7 +198,7 @@ public class Modules implements DelphiResources {
       LOGGER.error("Error attempting to iterate module directory", e);
     }
 
-    return Result.err("Unknown module");
+    return Result.err(new DelphiException(ERR_MODULE_UNKNOWN, moduleName));
   }
 
   ZipModule getZipModule(Path path) throws IOException {
@@ -211,7 +226,7 @@ public class Modules implements DelphiResources {
   }
 
   @Override
-  public Result<ZipModule, String> createZipModule(@NotNull Path zipPath) {
+  public Result<ZipModule, DelphiException> createZipModule(@NotNull Path zipPath) {
     Objects.requireNonNull(zipPath, "Null zip path");
 
     try {

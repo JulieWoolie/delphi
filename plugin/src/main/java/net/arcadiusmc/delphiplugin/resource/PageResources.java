@@ -1,5 +1,18 @@
 package net.arcadiusmc.delphiplugin.resource;
 
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_ACCESS_DENIED;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_API_MODULE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_DOC_PARSE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_INVALID_PATH;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_IO_ERROR;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MISSING_PLUGINS;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ERROR;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_NO_FILE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SAX_PARSER_INIT;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SCHEMA_ERROR;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SYNTAX;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -17,6 +30,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ApiModule;
+import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DocumentContext;
 import net.arcadiusmc.delphi.resource.IoModule;
 import net.arcadiusmc.delphi.resource.ResourceModule;
@@ -30,6 +44,7 @@ import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.parser.PluginMissingException;
 import net.arcadiusmc.delphidom.scss.ScssParser;
 import net.arcadiusmc.delphidom.scss.Sheet;
+import net.arcadiusmc.delphidom.scss.SheetBuilder;
 import net.arcadiusmc.delphiplugin.ItemCodec;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.command.PathParser;
@@ -37,6 +52,8 @@ import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.style.Stylesheet;
+import net.arcadiusmc.dom.style.StylesheetBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -79,7 +96,7 @@ public class PageResources implements ViewResources {
     this.module = module;
   }
 
-  public Result<ResourcePath, String> resourcePath(String uri) {
+  public Result<ResourcePath, DelphiException> resourcePath(String uri) {
     ResourcePath path;
 
     try {
@@ -93,20 +110,20 @@ public class PageResources implements ViewResources {
       parser.parsePath();
       path = parser.getPath();
     } catch (CommandSyntaxException exc) {
-      return Result.err("Invalid path");
+      return Result.err(new DelphiException(ERR_INVALID_PATH, exc.getMessage()));
     }
 
     return Result.ok(path);
   }
 
   @Override
-  public Result<ItemStack, String> loadItemStack(String uri) {
+  public Result<ItemStack, DelphiException> loadItemStack(String uri) {
     return resourcePath(uri).flatMap(this::loadItemStack);
   }
 
-  private Result<ItemStack, String> loadItemStack(ResourcePath path) {
+  private Result<ItemStack, DelphiException> loadItemStack(ResourcePath path) {
     if (module instanceof ApiModule) {
-      return Result.err("API-MODULE");
+      return Result.err(new DelphiException(ERR_API_MODULE));
     }
 
     StringBuffer buf;
@@ -122,40 +139,56 @@ public class PageResources implements ViewResources {
     try {
       element = JsonParser.parseString(buf.toString());
     } catch (JsonSyntaxException exc) {
-      return Result.err("Failed to parse JSON");
+      return Result.err(new DelphiException(ERR_SYNTAX, exc));
     }
 
     DataResult<ItemStack> dataResult = ItemCodec.NMS_CODEC.parse(JsonOps.INSTANCE, element);
 
     if (dataResult.hasResultOrPartial()) {
-      return dataResult.resultOrPartial().map(Result::<ItemStack, String>ok).get();
+      return dataResult.resultOrPartial().map(Result::<ItemStack, DelphiException>ok).get();
     }
 
-    return Result.formatted("Codec error: %s", dataResult.error().get().message());
+    return Result.err(new DelphiException(ERR_SCHEMA_ERROR, dataResult.error().get().message()));
   }
 
   @Override
-  public Result<Document, String> loadDocument(String uri) {
+  public Result<Document, DelphiException> loadDocument(String uri) {
     return resourcePath(uri)
         .flatMap(path -> loadDocument(path, uri))
         .map(delphiDocument -> delphiDocument);
   }
 
-  public Result<DelphiDocument, String> loadDocument(ResourcePath path, String uri) {
+  public Result<DelphiDocument, DelphiException> loadDocument(ResourcePath path, String uri) {
     if (module instanceof ApiModule api) {
-      return api.loadDocument(path, new ContextImpl(view.getPlayer(), view))
+      Result<Document, String> result;
+
+      try {
+        result = api.loadDocument(path, new ContextImpl(view.getPlayer(), view));
+      } catch (Exception t) {
+        LOGGER.error("Module {} threw an error when attempting to load document",
+            path.getModuleName(), t
+        );
+
+        return Result.err(new DelphiException(ERR_MODULE_ERROR, t));
+      }
+      
+      return result
           .mapError(string -> {
             if (string.equalsIgnoreCase("No such file")) {
-              return "No such file";
+              return new DelphiException(ERR_NO_FILE, path.toString());
             }
-            if (string.startsWith("Access denied: ") || string.startsWith("IO Error: ")) {
-              return string;
+            if (string.startsWith("Access denied: ")) {
+              return new DelphiException(ERR_ACCESS_DENIED, string);
+            }
+            if (string.startsWith("IO Error: ")) {
+              return new DelphiException(ERR_IO_ERROR, string);
             }
             if (string.startsWith("Missing plugins: ")) {
-              return string;
+              String pluginList = string.substring("Missing plugins: ".length());
+              return new DelphiException(ERR_MISSING_PLUGINS, pluginList);
             }
 
-            return "Module error: " + string;
+            return new DelphiException(ERR_MODULE_ERROR, string);
           })
           .map(document -> (DelphiDocument) document);
     }
@@ -173,7 +206,7 @@ public class PageResources implements ViewResources {
     try {
       parser = DocumentSaxParser.PARSER_FACTORY.newSAXParser();
     } catch (ParserConfigurationException | SAXException e) {
-      return Result.formatted("Internal error creating parser", path);
+      return Result.err(new DelphiException(ERR_SAX_PARSER_INIT, e));
     }
 
     InputSource source = new InputSource(new java.io.StringReader(buf.toString()));
@@ -183,15 +216,16 @@ public class PageResources implements ViewResources {
     DocumentSaxParser handler = new DocumentSaxParser(this);
     handler.setListener(DelphiDocument.ERROR_LISTENER);
     handler.setView(view);
+    handler.setCallbacks(pluginName -> Bukkit.getPluginManager().isPluginEnabled(pluginName));
 
     try {
       parser.parse(source, handler);
     } catch (SAXException e) {
-      return Result.formatted("Failed to parse document");
+      return Result.err(new DelphiException(ERR_DOC_PARSE, e));
     } catch (IOException ioErr) {
       return Result.ioError(ioErr);
     } catch (PluginMissingException miss) {
-      StringBuilder builder = new StringBuilder("Missing plugins: ");
+      StringBuilder builder = new StringBuilder();
       Iterator<String> it = miss.getPluginNames().iterator();
 
       while (it.hasNext()) {
@@ -202,27 +236,26 @@ public class PageResources implements ViewResources {
         }
       }
 
-      return Result.err(builder.toString());
+      return Result.err(new DelphiException(ERR_MISSING_PLUGINS, builder.toString()));
     } catch (Exception exc) {
-      LOGGER.error("Error reading document", exc);
-      return Result.err("Unknown");
+      return Result.err(new DelphiException(ERR_UNKNOWN, exc));
     }
 
     if (handler.getDocument() == null) {
-      return Result.err("Unknown");
+      return Result.err(new DelphiException(ERR_UNKNOWN));
     }
 
     return Result.ok(handler.getDocument());
   }
 
   @Override
-  public Result<Stylesheet, String> loadStylesheet(String uri) {
+  public Result<Stylesheet, DelphiException> loadStylesheet(String uri) {
     return resourcePath(uri).flatMap(this::loadStylesheet);
   }
 
-  public Result<Stylesheet, String> loadStylesheet(ResourcePath path) {
+  public Result<Stylesheet, DelphiException> loadStylesheet(ResourcePath path) {
     if (module instanceof ApiModule) {
-      return Result.err("API-MODULE");
+      return Result.err(new DelphiException(ERR_API_MODULE));
     }
 
     IoModule io = (IoModule) module;
@@ -244,7 +277,7 @@ public class PageResources implements ViewResources {
       sheet = parser.stylesheet();
     } catch (ParserException exc) {
       // Ignored, the error has already been logged by setListener
-      return Result.formatted("Fatal parser error: %s", exc.getMessage());
+      return Result.err(new DelphiException(ERR_SYNTAX, exc.getMessage(), exc));
     }
 
     return Result.ok(sheet);
@@ -258,6 +291,11 @@ public class PageResources implements ViewResources {
       document.setView(view);
       document.setBody(document.createElement(TagNames.BODY));
       return document;
+    }
+
+    @Override
+    public @NotNull StylesheetBuilder newStylesheet() {
+      return new SheetBuilder();
     }
 
     @Override

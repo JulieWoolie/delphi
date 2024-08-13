@@ -58,7 +58,7 @@ public interface DelphiResources {
    *
    * @throws NullPointerException If {@code zipPath} is {@code null}
    */
-  Result<ZipModule, String> createZipModule(@NotNull Path zipPath);
+  Result<ZipModule, DelphiException> createZipModule(@NotNull Path zipPath);
 
   /**
    * Registers a module.
@@ -89,27 +89,27 @@ public interface DelphiResources {
    * <table>
    *   <caption>Result errors</caption>
    *   <tr>
-   *     <th>Message format</th>
+   *     <th>Error code</th>
    *     <th>Description</th>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Null/empty module name"}</td>
+   *     <td>{@code ERR_EMPTY_MODULE_NAME}</td>
    *     <td>The module name was empty or {@code null}</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Module directory doesn't exist"}</td>
+   *     <td>{@code ERR_MODULE_DIRECTORY_NOT_FOUND}</td>
    *     <td>Couldn't find any registered modules matching the name, and the module directory doesn't exist</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Zip access denied: %reason%"}</td>
+   *     <td>{@code ERR_MODULE_ZIP_ACCESS_DENIED}</td>
    *     <td>Attempted to open a {@code .zip} module file, but access was denied</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "IO Error: %message%"}</td>
+   *     <td>{@code ERR_IO_ERROR}</td>
    *     <td>An IO error occurred while trying to read a {@code .zip} module file</td>
    *   </tr>
    *   <tr>
-   *     <td>{@code "Unknown Module"}</td>
+   *     <td>{@code ERR_MODULE_UNKNOWN}</td>
    *     <td>No registered module, directory or {@code .zip} module was found that matched the specified {@code moduleName}</td>
    *   </tr>
    * </table>
@@ -117,7 +117,7 @@ public interface DelphiResources {
    * @param moduleName Name of the module
    * @return Found module, or an erroneous result if no module was found.
    */
-  Result<ResourceModule, String> findModule(String moduleName);
+  Result<ResourceModule, DelphiException> findModule(String moduleName);
 
   /**
    * Gets an array list of all module names. This list inclues all registered modules
