@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphiplugin.resource;
 
+import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import lombok.Getter;
@@ -18,5 +19,10 @@ public class ZipModuleImpl extends FileSystemModule implements ZipModule {
   @Override
   public FileSystem getFileSystem() {
     return system;
+  }
+
+  @Override
+  public void close() throws IOException {
+    system.close();
   }
 }

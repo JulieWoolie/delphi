@@ -1,9 +1,10 @@
 package net.arcadiusmc.delphi.resource;
 
+import java.io.Closeable;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 
-public interface ZipModule extends IoModule {
+public interface ZipModule extends IoModule, Closeable {
 
   /**
    * Gets the underlying ZIP file system
