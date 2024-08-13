@@ -1,4 +1,4 @@
-rootProject.name = "arcadius-display-entity-menus"
+rootProject.name = "delphi"
 
 include("api")
 include("plugin")
