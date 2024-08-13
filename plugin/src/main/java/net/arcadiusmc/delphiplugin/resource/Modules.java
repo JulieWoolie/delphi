@@ -201,11 +201,25 @@ public class Modules implements DelphiResources {
     return module;
   }
 
-  DirectoryModule createDirectoryModule(Path path) {
+  public DirectoryModule createDirectoryModule(@NotNull Path path) {
+    Objects.requireNonNull(path, "Null directory path");
+
     return (DirectoryModule) cachedFileModules.computeIfAbsent(
         path,
         p -> new DirectoryModuleImpl(p, p.getFileSystem())
     );
+  }
+
+  @Override
+  public Result<ZipModule, String> createZipModule(@NotNull Path zipPath) {
+    Objects.requireNonNull(zipPath, "Null zip path");
+
+    try {
+      ZipModule mod = getZipModule(zipPath);
+      return Result.ok(mod);
+    } catch (IOException exc) {
+      return Result.ioError(exc);
+    }
   }
 
   private FileSystemProvider getZipProvider() {

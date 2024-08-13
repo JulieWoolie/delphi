@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphi.resource;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import net.arcadiusmc.delphi.util.Result;
@@ -15,6 +16,49 @@ public interface DelphiResources {
    * @return Module directory
    */
   Path getModuleDirectory();
+
+  /**
+   * Create a directory module with the specified {@code path} as the directory.
+   *
+   * @param path Directory path
+   * @return Created module.
+   *
+   * @throws NullPointerException If {@code path} is {@code null}
+   */
+  DirectoryModule createDirectoryModule(@NotNull Path path);
+
+  /**
+   * Create a zip module from the specified {@code zipPath}.
+   * <p>
+   * This method will attempt to immediately open and read the zip file into memory, and will return
+   * an erroneous result if it fails to do so for any reason.
+   *
+   * <table>
+   *   <caption>Error messages</caption>
+   *   <tr>
+   *     <th>Format</th>
+   *     <th>Description</th>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code "No Such File"}</td>
+   *     <td>{@code zipPath} file doesn't exist</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code "Access Denied: %reason%"}</td>
+   *     <td>Read access was denied to the zip file</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code "IO Error: %message%"}</td>
+   *     <td>Threw an {@link IOException}</td>
+   *   </tr>
+   * </table>
+   *
+   * @param zipPath Zip file path
+   * @return A successful result if the zip archive was opened, otherwise an erroneous result.
+   *
+   * @throws NullPointerException If {@code zipPath} is {@code null}
+   */
+  Result<ZipModule, String> createZipModule(@NotNull Path zipPath);
 
   /**
    * Registers a module.
