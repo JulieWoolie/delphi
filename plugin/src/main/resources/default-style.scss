@@ -12,14 +12,14 @@ $body-bg: darken(white, 45%);
 
 :root {
   background-color: $body-bg;
-  padding-top: 1vh;
-  padding-bottom: 1vh;
-  padding-left: 1vw;
-  padding-right: 1vw;
-  min-width: 98vw;
-  min-height: 98vh;
+  min-width: 100vw;
+  min-height: 100vh;
   max-width: 100vw;
   max-height: 100vh;
+
+  outline: 1px;
+  padding: 1.5px;
+  outline-color: darken($body-bg);
 }
 
 /* Text elements */
