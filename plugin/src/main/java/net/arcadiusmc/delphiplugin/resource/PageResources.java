@@ -15,8 +15,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ApiModule;
-import net.arcadiusmc.delphi.resource.DocumentFactory;
+import net.arcadiusmc.delphi.resource.DocumentContext;
 import net.arcadiusmc.delphi.resource.IoModule;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
@@ -36,18 +37,14 @@ import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.style.Stylesheet;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class PageResources implements ViewResources {
-
-  static final DocumentFactory FACTORY = () -> {
-    DelphiDocument doc = new DelphiDocument();
-    doc.setBody(doc.createElement(TagNames.BODY));
-    return doc;
-  };
 
   private static final Logger LOGGER = Loggers.getDocumentLogger();
 
@@ -146,7 +143,7 @@ public class PageResources implements ViewResources {
 
   public Result<DelphiDocument, String> loadDocument(ResourcePath path, String uri) {
     if (module instanceof ApiModule api) {
-      return api.loadDocument(path, FACTORY)
+      return api.loadDocument(path, new ContextImpl(view.getPlayer(), view))
           .mapError(string -> {
             if (string.equalsIgnoreCase("No such file")) {
               return "No such file";
@@ -251,5 +248,26 @@ public class PageResources implements ViewResources {
     }
 
     return Result.ok(sheet);
+  }
+
+  record ContextImpl(Player player, PageView view) implements DocumentContext {
+
+    @Override
+    public @NotNull Document newDocument() {
+      DelphiDocument document = new DelphiDocument();
+      document.setView(view);
+      document.setBody(document.createElement(TagNames.BODY));
+      return document;
+    }
+
+    @Override
+    public @NotNull Player getPlayer() {
+      return player;
+    }
+
+    @Override
+    public @NotNull DocumentView getView() {
+      return view;
+    }
   }
 }

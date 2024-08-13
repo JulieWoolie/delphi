@@ -9,13 +9,13 @@ public non-sealed interface ApiModule extends ResourceModule {
   /**
    * Loads a document at the specified path.
    * <p>
-   * While this function is allowed to return any kind of error, the following errors are officially
-   * supported, meaning that when this method is called through {@link ViewResources#loadDocument(String)}
-   * they will not be prefixed with {@code "Module error: %reason%"}.
-   * <p>
    * The path given to this method will never have an empty file path. If a user asks for a page
    * with only a module name given, then the system will automatically add the {@code index.xml}
    * file to that path.
+   * <p>
+   * While this function is allowed to return any kind of error, the following errors are officially
+   * supported, meaning that when this method is called through {@link ViewResources#loadDocument(String)}
+   * they will not be prefixed with {@code "Module error: %reason%"}.
    *
    * <table>
    *   <caption>Supported errors</caption>
@@ -44,9 +44,9 @@ public non-sealed interface ApiModule extends ResourceModule {
    *   </tr>
    * </table>
    * @param path Document path
-   * @param factory Document factory
+   * @param context Document opening context
    *
    * @return Created document, or an erroneous result.
    */
-  Result<Document, String> loadDocument(@NotNull ResourcePath path, @NotNull DocumentFactory factory);
+  Result<Document, String> loadDocument(@NotNull ResourcePath path, @NotNull DocumentContext context);
 }

@@ -101,7 +101,7 @@ public interface ViewResources {
    * <p>
    * If {@link #getModule()} is a {@link IoModule} then this method attempts to use the
    * {@link IoModule#loadString(ResourcePath)} to load the document's XML content. If the
-   * underlying module is a {@link ApiModule}, then {@link ApiModule#loadDocument(ResourcePath, DocumentFactory)}
+   * underlying module is a {@link ApiModule}, then {@link ApiModule#loadDocument(ResourcePath, DocumentContext)}
    * is called.
    *
    * <table>
