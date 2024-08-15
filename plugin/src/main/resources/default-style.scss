@@ -67,6 +67,18 @@ obf, obfuscated {
   obfuscated: true;
 }
 
+/* HTML tags */
+
+div {
+  display: block;
+}
+span {
+  display: inline;
+}
+p {
+  display: block;
+}
+
 /* New line tag */
 
 br, nl, newline {
