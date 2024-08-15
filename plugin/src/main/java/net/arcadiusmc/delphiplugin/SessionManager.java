@@ -88,4 +88,10 @@ public class SessionManager {
 
     sessionMap.clear();
   }
+
+  public void closeAllWith(String moduleName) {
+    for (PlayerSession value : sessionMap.values()) {
+      value.closeAllWith(moduleName);
+    }
+  }
 }

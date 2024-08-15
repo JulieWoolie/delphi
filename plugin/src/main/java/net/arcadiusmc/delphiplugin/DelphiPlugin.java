@@ -5,6 +5,7 @@ import lombok.Getter;
 import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.listeners.PlayerListener;
+import net.arcadiusmc.delphiplugin.listeners.PluginDisableListener;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,6 +39,7 @@ public class DelphiPlugin extends JavaPlugin {
   private void registerEvents() {
     PluginManager pl = getServer().getPluginManager();
     pl.registerEvents(new PlayerListener(this), this);
+    pl.registerEvents(new PluginDisableListener(this), this);
   }
 
   @Override

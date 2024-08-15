@@ -37,8 +37,8 @@ public class PlayerSession {
       return;
     }
 
-    view.setSession(null);
     view.onClose();
+    view.setSession(null);
   }
 
   public void tick() {
@@ -138,6 +138,25 @@ public class PlayerSession {
   public void close() {
     List<PageView> cloned = new ArrayList<>(views);
     for (PageView view : cloned) {
+      closeView(view);
+    }
+  }
+
+  public void closeAllWith(String moduleName) {
+    List<PageView> toRemove = new ArrayList<>();
+    for (PageView view : views) {
+      if (!view.getPath().getModuleName().equals(moduleName)) {
+        continue;
+      }
+
+      toRemove.add(view);
+    }
+
+    if (toRemove.isEmpty()) {
+      return;
+    }
+
+    for (PageView view : toRemove) {
       closeView(view);
     }
   }

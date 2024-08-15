@@ -7,10 +7,12 @@ import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_UNKNOWN;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ZIP_ACCESS_DENIED;
 
 import com.google.common.base.Strings;
+import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.lang.StackWalker.Option;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
@@ -37,7 +39,9 @@ import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.scss.Rule;
 import net.arcadiusmc.delphidom.scss.ScssParser;
 import net.arcadiusmc.delphidom.scss.Sheet;
+import net.arcadiusmc.delphiplugin.DelphiPlugin;
 import net.arcadiusmc.dom.ParserException;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -49,6 +53,7 @@ public class Modules implements DelphiResources {
 
   static final String ZIP_EXT = ".zip";
 
+  @Getter
   private final Map<String, RegisteredModule> registered = new HashMap<>();
   private final Map<Path, FileSystemModule> cachedFileModules = new HashMap<>();
 
@@ -57,6 +62,8 @@ public class Modules implements DelphiResources {
 
   @Getter
   private Sheet defaultStyle;
+
+  public DelphiPlugin plugin;
 
   public Modules(Path directory) {
     this.directory = directory;
@@ -136,7 +143,16 @@ public class Modules implements DelphiResources {
       return false;
     }
 
-    RegisteredModule registeredModule = new RegisteredModule(moduleName, module);
+    Class<?> callerClass = StackWalker.getInstance(Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+    Plugin plugin;
+
+    if (callerClass.getClassLoader() instanceof ConfiguredPluginClassLoader loader) {
+      plugin = loader.getPlugin();
+    } else {
+      plugin = null;
+    }
+
+    RegisteredModule registeredModule = new RegisteredModule(moduleName, module, plugin);
     registered.put(key, registeredModule);
 
     return true;
@@ -279,7 +295,26 @@ public class Modules implements DelphiResources {
     return result;
   }
 
-  record RegisteredModule(String name, ResourceModule module) {
+  @Override
+  public boolean unregisterModule(String moduleName) {
+    if (Strings.isNullOrEmpty(moduleName)) {
+      return false;
+    }
+
+    RegisteredModule found = registered.get(moduleName);
+    if (found == null) {
+      return false;
+    }
+
+    if (plugin != null) {
+      plugin.getSessions().closeAllWith(moduleName);
+    }
+
+    registered.remove(moduleName);
+    return true;
+  }
+
+  public record RegisteredModule(String name, ResourceModule module, Plugin plugin) {
 
   }
 }
