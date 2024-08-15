@@ -228,7 +228,7 @@ public class PageView implements ExtendedView {
 
   private void parseScreenDimensions() {
     String screenWidth = document.getOption(Options.SCREEN_WIDTH);
-    String screenHeight = document.getOption(Options.SCREEN_WIDTH);
+    String screenHeight = document.getOption(Options.SCREEN_HEIGHT);
 
     float width = parseScreenDimension(screenWidth, Screen.DEFAULT_WIDTH);
     float height = parseScreenDimension(screenHeight, Screen.DEFAULT_HEIGHT);
