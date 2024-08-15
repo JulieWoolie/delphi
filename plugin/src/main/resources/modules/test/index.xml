@@ -8,16 +8,15 @@
   </header>
   <body>
     <h1 class="title shadowed">Hello, world!</h1>
+    <div class="shadowed mt-2" style="color: gold;">This basically works</div>
 
-    <div class="shadowed" style="color: gold;">This basically works</div>
-
-    <button class="mt-2">
+    <button class="mt-2 mr-2">
       <item src="./item.json" />
       I am a button :3
     </button>
 
-    <button action="cmd: tellraw %player% &quot;Hello, %player%!&quot;" class="mt-2" id="btn-settings">Settings</button>
-    <button action="close" class="mt-2" id="btn-quit">Quit</button>
+    <button action="cmd: tellraw %player% &quot;Hello, %player%!&quot;" class="mr-2" id="btn-settings">Settings</button>
+    <button action="close" class="mr-2" id="btn-quit">Quit</button>
 
     <i class="mt-2 block">This text is italic</i>
     <u class="mt-2 block">This text is underlined</u>
