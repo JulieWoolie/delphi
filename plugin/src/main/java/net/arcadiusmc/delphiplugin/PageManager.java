@@ -14,12 +14,14 @@ import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
+import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.scss.SheetBuilder;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
+import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -113,7 +115,15 @@ public class PageManager implements Delphi {
 
     configureScreen(player, view.getScreen());
 
+    EventImpl loaded = new EventImpl(EventTypes.DOM_LOADED, doc);
+    loaded.initEvent(null, false, false);
+    doc.dispatchEvent(loaded);
+
     view.spawn();
+
+    EventImpl event = new EventImpl(EventTypes.DOM_SPAWNED, doc);
+    event.initEvent(null, false, false);
+    doc.dispatchEvent(event);
 
     return Result.ok(view);
   }
