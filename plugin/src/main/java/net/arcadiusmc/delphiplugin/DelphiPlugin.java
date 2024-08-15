@@ -1,6 +1,8 @@
 package net.arcadiusmc.delphiplugin;
 
+import java.util.List;
 import lombok.Getter;
+import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.listeners.PlayerListener;
 import net.arcadiusmc.delphiplugin.resource.Modules;
@@ -16,16 +18,15 @@ public class DelphiPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    if (getSLF4JLogger().isDebugEnabled()) {
-      saveResource("modules/test/item.json", true);
-      saveResource("modules/test/index.xml", true);
-      saveResource("modules/test/style.scss", true);
-      getSLF4JLogger().debug("Saved test module");
-    }
-
     this.sessions = new SessionManager(this);
     this.modules = new Modules(getDataPath().resolve("modules"));
     this.manager = new PageManager(modules, sessions);
+
+    if (getSLF4JLogger().isDebugEnabled()) {
+      JarResourceModule jarResource = new JarResourceModule(getClassLoader(), "modules/test");
+      jarResource.setFilePaths(List.of("index.xml", "item.json", "style.scss"));
+      modules.registerModule("resource-test", jarResource);
+    }
 
     sessions.startTicking();
 
