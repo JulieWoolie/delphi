@@ -6,11 +6,7 @@ public enum JustifyContent {
   CENTER,
   SPACE_BETWEEN,
   SPACE_AROUND,
-  SPACE_EVENLY,
-  START,
-  END,
-  LEFT,
-  RIGHT,
+  SPACE_EVENLY
   ;
 
   public static final JustifyContent DEFAULT = FLEX_START;
