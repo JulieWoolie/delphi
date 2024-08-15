@@ -8,10 +8,10 @@ import net.arcadiusmc.dom.Visitor;
 
 public class XmlPrintVisitor implements Visitor {
 
-  protected int indent = 0;
+  public int indent = 0;
   protected StringBuilder builder = new StringBuilder();
 
-  protected StringBuilder nlIndent() {
+  public StringBuilder nlIndent() {
     return builder.append("\n")
         .append("  ".repeat(indent));
   }
