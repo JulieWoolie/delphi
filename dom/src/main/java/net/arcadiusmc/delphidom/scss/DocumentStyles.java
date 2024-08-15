@@ -7,18 +7,14 @@ import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
-import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.scss.Property.StyleFunction;
 import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
-import org.slf4j.Logger;
 
 public class DocumentStyles {
-
-  private static final Logger LOGGER = Loggers.getLogger();
 
   public final List<Sheet> stylesheets = new ArrayList<>();
   private final List<Rule> rules = new ArrayList<>();
@@ -51,10 +47,8 @@ public class DocumentStyles {
     target.addEventListener(EventTypes.MODIFY_ATTR, listener);
     target.addEventListener(EventTypes.APPEND_CHILD, listener);
 
-    target.addEventListener(EventTypes.MOUSE_DOWN, listener);
+    target.addEventListener(EventTypes.CLICK, listener);
     target.addEventListener(EventTypes.CLICK_EXPIRE, listener);
-    target.addEventListener(EventTypes.MOUSE_ENTER, listener);
-    target.addEventListener(EventTypes.MOUSE_LEAVE, listener);
   }
 
   public void updateStyles(DelphiNode node) {
