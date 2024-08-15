@@ -1,22 +1,29 @@
 package net.arcadiusmc.delphiplugin.render;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 import net.arcadiusmc.delphi.resource.ApiModule;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphidom.DelphiDocument;
+import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.XmlPrintVisitor;
+import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.scss.ComputedStyle;
+import net.arcadiusmc.delphidom.scss.DocumentStyles;
 import net.arcadiusmc.delphidom.scss.Property;
 import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
+import net.arcadiusmc.delphidom.scss.Rule;
+import net.arcadiusmc.delphidom.scss.Sheet;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
+import net.arcadiusmc.dom.event.EventListener;
 import org.joml.Vector2f;
 
 public class RenderTreePrint extends XmlPrintVisitor {
@@ -30,7 +37,62 @@ public class RenderTreePrint extends XmlPrintVisitor {
     this.view = view;
   }
 
-  public void appendDocumentInfo() {
+  public void appendHeader() {
+    DelphiDocument doc = view.getDocument();
+    DocumentStyles styles = doc.getStyles();
+
+    nlIndent().append("<header>");
+    indent++;
+
+    for (String optionKey : doc.getOptionKeys()) {
+      nlIndent().append("<option name=")
+          .append('"')
+          .append(optionKey)
+          .append('"')
+          .append(" value=")
+          .append('"')
+          .append(doc.getOption(optionKey))
+          .append('"')
+          .append(" />");
+    }
+
+    for (Sheet stylesheet : styles.stylesheets) {
+      if ((stylesheet.getFlags() & Sheet.FLAG_DEFAULT) == Sheet.FLAG_DEFAULT) {
+        continue;
+      }
+
+      nlIndent().append("<style>");
+      indent++;
+
+      for (int i = 0; i < stylesheet.getLength(); i++) {
+        Rule rule = stylesheet.getRule(i);
+
+        nlIndent().append(rule.getSelector()).append(" {");
+        indent++;
+
+        RuleIterator it = rule.getPropertySet().iterator();
+        while (it.hasNext()) {
+          it.next();
+
+          nlIndent().append(it.property().getKey()).append(": ");
+
+          Object val = it.value();
+
+          if (val instanceof Enum<?> e) {
+            builder.append(e.name().toLowerCase().replace("_", "-"));
+          } else {
+            builder.append(val);
+          }
+        }
+
+        indent--;
+        nlIndent().append("}");
+      }
+
+      indent--;
+      nlIndent().append("</style>");
+    }
+
     nlIndent().append(COMMENT_START);
     indent++;
 
@@ -58,25 +120,14 @@ public class RenderTreePrint extends XmlPrintVisitor {
     screen.appendInfo(builder, indent);
     indent--;
 
-    DelphiDocument doc = view.getDocument();
-    final Set<String> optionKeys = doc.getOptionKeys();
-    if (!optionKeys.isEmpty()) {
-      nlIndent().append("document-options:");
-      indent++;
-
-      for (String optionKey : optionKeys) {
-        String value = doc.getOption(optionKey);
-        nlIndent().append(optionKey).append(": ")
-            .append('"')
-            .append(value)
-            .append('"');
-      }
-
-      indent--;
-    }
+    appendListeners("document-", doc.getDocumentListeners());
+    appendListeners("global-", doc.getGlobalTarget());
 
     indent--;
     nlIndent().append(COMMENT_END);
+
+    indent--;
+    nlIndent().append("</header>");
   }
 
   private void appendRenderObjectComment(DelphiNode node, RenderObject re) {
@@ -168,6 +219,35 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
       indent--;
     }
+
+    if (node instanceof DelphiElement el) {
+      appendListeners("", el.getListenerList());
+    }
+  }
+
+  private void appendListeners(String name, EventListenerList listenerList) {
+    Map<String, List<EventListener>> listenerMap = listenerList.getListenerMap();
+
+    if (listenerMap.isEmpty()) {
+      return;
+    }
+
+    nlIndent().append(name).append("event-listeners:");
+    indent++;
+
+    listenerMap.forEach((eventType, eventListeners) -> {
+      nlIndent().append("event-type[").append(eventType).append("]: ");
+      indent++;
+
+      for (int i = 0; i < eventListeners.size(); i++) {
+        EventListener l = eventListeners.get(i);
+        nlIndent().append("- ").append(i).append(": ").append(l);
+      }
+
+      indent--;
+    });
+
+    indent--;
   }
 
   private void appendInfo(DelphiNode node) {

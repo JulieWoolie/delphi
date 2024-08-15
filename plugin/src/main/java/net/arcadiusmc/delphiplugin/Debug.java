@@ -50,8 +50,15 @@ public final class Debug {
     Path dumpFile = dir.resolve(fileName + ".xml");
 
     RenderTreePrint print = new RenderTreePrint(view);
-    print.appendDocumentInfo();
+
+    print.nlIndent().append("<page>");
+    print.indent++;
+
+    print.appendHeader();
     Visitor.visit(view.getDocument().getBody(), print);
+
+    print.indent--;
+    print.nlIndent().append("</page>");
 
     String string = print.toString();
 
