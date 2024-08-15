@@ -39,6 +39,7 @@ public class DelphiElement extends DelphiNode implements Element {
 
   final Map<String, String> attributes = new HashMap<>();
 
+  @Getter
   final EventListenerList listenerList;
 
   public final ReadonlyMap styleApi;

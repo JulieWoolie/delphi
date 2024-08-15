@@ -48,6 +48,8 @@ public class DelphiDocument implements Document {
 
   @Getter
   final EventListenerList globalTarget;
+
+  @Getter
   final EventListenerList documentListeners;
 
   @Getter

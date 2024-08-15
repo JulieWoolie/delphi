@@ -1,13 +1,24 @@
 package net.arcadiusmc.delphidom.scss;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.dom.style.Stylesheet;
 
 public class Sheet implements Stylesheet {
 
+  public static final int FLAG_DEFAULT = 0x1;
+
   private final Rule[] rules;
+
+  @Getter @Setter
+  private int flags = 0;
 
   public Sheet(Rule[] rules) {
     this.rules = rules;
+  }
+
+  public void addFlag(int flag) {
+    this.flags |= flag;
   }
 
   @Override

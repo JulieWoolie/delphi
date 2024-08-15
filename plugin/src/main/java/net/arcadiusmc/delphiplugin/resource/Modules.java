@@ -110,6 +110,7 @@ public class Modules implements DelphiResources {
     }
 
     defaultStyle = sheet;
+    defaultStyle.addFlag(Sheet.FLAG_DEFAULT);
 
     for (int i = 0; i < defaultStyle.getLength(); i++) {
       Rule rule = defaultStyle.getRule(i);
