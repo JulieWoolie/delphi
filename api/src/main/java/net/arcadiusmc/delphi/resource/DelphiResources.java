@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import net.arcadiusmc.delphi.util.Result;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface DelphiResources {
 
@@ -76,6 +78,22 @@ public interface DelphiResources {
    * @throws IllegalArgumentException If the module name doesn't pass the {@link ResourcePath#validateQuery(String)} check.
    */
   boolean registerModule(@NotNull String moduleName, @NotNull ResourceModule module);
+
+  /**
+   * Unregisters a module
+   * <p>
+   * When a module is unregistered, all pages open to the specified module are closed as well.
+   * <p>
+   * This method only unregisters modules that were registered with the {@link #registerModule(String, ResourceModule)}
+   * method. Any modules inside the {@link #getModuleDirectory()} cannot be unregistered.
+   *
+   * @param moduleName Module name
+   *
+   * @return {@code true} if a module with the {@code moduleName} was found and was removed,
+   *         {@code false} otherwise.
+   */
+  @Contract("null -> false")
+  boolean unregisterModule(@Nullable String moduleName);
 
   /**
    * Attempts to locate a module.
