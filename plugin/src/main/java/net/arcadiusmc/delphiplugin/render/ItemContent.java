@@ -50,11 +50,6 @@ public class ItemContent implements ElementContent {
 
   @Override
   public void measureContent(Vector2f out, ComputedStyle set) {
-    if (isEmpty(item)) {
-      out.set(0);
-      return;
-    }
-
     out.set(ITEM_SPRITE_SIZE);
   }
 
