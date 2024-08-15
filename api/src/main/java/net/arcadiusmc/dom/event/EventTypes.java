@@ -3,6 +3,7 @@ package net.arcadiusmc.dom.event;
 import net.arcadiusmc.dom.Document;
 
 public interface EventTypes {
+
   /**
    * Called when a cursor enter an element's bounds.
    *
@@ -10,7 +11,7 @@ public interface EventTypes {
    *   <caption>Details</caption>
    *   <tr>
    *     <td>Bubbles</td>
-   *     <td>{@code false}</td>
+   *     <td>{@code true}</td>
    *   </tr>
    *   <tr>
    *     <td>Cancellable</td>
@@ -35,7 +36,7 @@ public interface EventTypes {
    *   <caption>Details</caption>
    *   <tr>
    *     <td>Bubbles</td>
-   *     <td>{@code false}</td>
+   *     <td>{@code true}</td>
    *   </tr>
    *   <tr>
    *     <td>Cancellable</td>
@@ -130,7 +131,7 @@ public interface EventTypes {
    *   </tr>
    * </table>
    */
-  String MOUSE_DOWN = "mouse-down";
+  String CLICK = "click";
 
   /**
    * Called when an element stops being active after being clicked.
