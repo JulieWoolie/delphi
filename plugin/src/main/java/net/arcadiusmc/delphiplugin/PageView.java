@@ -55,6 +55,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
@@ -110,6 +111,7 @@ public class PageView implements ExtendedView {
   private ElementRenderObject renderRoot;
 
   private final List<Display> entities = new ArrayList<>();
+  private Interaction interaction;
 
   public PageView(Player player, ResourcePath path) {
     Objects.requireNonNull(player, "Null player");
@@ -131,6 +133,43 @@ public class PageView implements ExtendedView {
     LayoutKt.layout(renderRoot);
 
     closed = false;
+
+    spawnScreenInteraction();
+  }
+
+  private void spawnScreenInteraction() {
+    killScreenInteraction();
+
+    Vector3f bl = screen.getLowerLeft();
+    Vector3f br = screen.getLowerRight();
+    Vector3f ul = screen.getUpperLeft();
+    Vector3f ur = screen.getUpperRight();
+
+    Vector3f min = new Vector3f(bl);
+    Vector3f max = new Vector3f(bl);
+    Vector3f center = screen.center();
+
+    min.min(br).min(ul).min(ur);
+    max.max(br).max(ul).max(ur);
+
+    float height = max.y - min.y;
+    float width = Math.max(max.x - min.x, max.z - min.z);
+
+    Location loc = new Location(world, center.x, min.y, center.z);
+
+    interaction = world.spawn(loc, Interaction.class);
+    interaction.setPersistent(false);
+    interaction.setInteractionWidth(width);
+    interaction.setInteractionHeight(height);
+  }
+
+  private void killScreenInteraction() {
+    if (interaction == null || interaction.isDead()) {
+      return;
+    }
+
+    interaction.remove();
+    interaction = null;
   }
 
   public void kill() {
@@ -139,6 +178,7 @@ public class PageView implements ExtendedView {
     }
 
     entities.clear();
+    killScreenInteraction();
   }
 
   @Override
@@ -219,7 +259,7 @@ public class PageView implements ExtendedView {
     g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
 
-    g.addEventListener(EventTypes.MOUSE_DOWN, new ButtonClickListener());
+    g.addEventListener(EventTypes.CLICK, new ButtonClickListener());
 
     if (document.getBody() != null) {
       renderRoot = (ElementRenderObject) initRenderTree(document.getBody());
@@ -592,7 +632,7 @@ public class PageView implements ExtendedView {
     hoveredNode.addFlag(NodeFlag.CLICKED);
 
     MouseEvent event = fireMouseEvent(
-        EventTypes.MOUSE_DOWN,
+        EventTypes.CLICK,
         shift,
         button,
         clickedNode,
@@ -630,14 +670,34 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    this.hoveredNode.removeFlag(NodeFlag.HOVERED);
-    fireMouseEvent(EventTypes.MOUSE_LEAVE, false, MouseButton.NONE, this.hoveredNode, false, false);
+    propagateHoverState(false, hoveredNode);
+    fireMouseEvent(EventTypes.MOUSE_LEAVE, false, MouseButton.NONE, this.hoveredNode, true, false);
     this.hoveredNode = null;
     document.hovered = null;
   }
 
+  private void propagateHoverState(boolean state, DelphiNode node) {
+    DelphiNode p = node;
+
+    while (p != null) {
+      if (state) {
+        p.addFlag(NodeFlag.HOVERED);
+      } else {
+        p.removeFlag(NodeFlag.HOVERED);
+      }
+
+      DelphiElement parent = p.getParent();
+
+      if (parent == null) {
+        document.getStyles().updateStyles(p);
+      }
+
+      p = parent;
+    }
+  }
+
   private void updateSelectedNode() {
-    DelphiElement contained = findContainingNode();
+    DelphiElement contained = findCursorContainingNode();
 
     if (contained == null) {
       if (this.hoveredNode == null) {
@@ -657,12 +717,12 @@ public class PageView implements ExtendedView {
 
     this.hoveredNode = contained;
     document.hovered = hoveredNode;
-    contained.addFlag(NodeFlag.HOVERED);
+    propagateHoverState(true, contained);
 
-    fireMouseEvent(EventTypes.MOUSE_ENTER, false, MouseButton.NONE, contained, false, false);
+    fireMouseEvent(EventTypes.MOUSE_ENTER, false, MouseButton.NONE, contained, true, false);
   }
 
-  private DelphiElement findContainingNode() {
+  private DelphiElement findCursorContainingNode() {
     DelphiElement p = document.getBody();
 
     if (p == null) {
