@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphidom;
 
 import com.google.common.base.Strings;
+import com.google.common.xml.XmlEscapers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -476,7 +477,7 @@ public class DelphiElement extends DelphiNode implements Element {
           .append(s)
           .append('=')
           .append('"')
-          .append(s2)
+          .append(XmlEscapers.xmlAttributeEscaper().escape(s2))
           .append('"');
     });
 
