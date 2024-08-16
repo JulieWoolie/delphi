@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
 import net.arcadiusmc.delphidom.event.EventImpl;
@@ -330,6 +331,22 @@ public class DelphiElement extends DelphiNode implements Element {
   @Override
   public @Nullable Node lastChild() {
     return children.isEmpty() ? null : children.getLast();
+  }
+
+  @Override
+  public void forEachDescendant(@NotNull Consumer<Node> consumer) {
+    Objects.requireNonNull(consumer, "Null consumer");
+    if (children.isEmpty()) {
+      return;
+    }
+
+    for (DelphiNode node : children) {
+      consumer.accept(node);
+
+      if (node instanceof DelphiElement el) {
+        el.forEachDescendant(consumer);
+      }
+    }
   }
 
   @Override

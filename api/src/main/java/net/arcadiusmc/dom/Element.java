@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StyleProperties;
@@ -390,4 +391,14 @@ public interface Element extends Node, EventTarget, ParentNode {
     appendChild(node);
     return node;
   }
+
+  /**
+   * Applies a consumer to all descendant nodes of this element.
+   * <p>
+   * The specified {@code consumer} is applied to elements in a depth-first traversal.
+   *
+   * @param consumer Node consumer
+   * @throws NullPointerException If {@code consumer} is {@code null}
+   */
+  void forEachDescendant(@NotNull Consumer<Node> consumer);
 }
