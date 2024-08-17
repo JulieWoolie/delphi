@@ -3,6 +3,7 @@ package net.arcadiusmc.dom;
 import java.util.List;
 import java.util.Set;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.Stylesheet;
@@ -71,6 +72,13 @@ public interface Document extends EventTarget, ParentNode {
    * @throws NullPointerException if {@code tagName} is {@code null}
    */
   Element createElement(@NotNull String tagName);
+
+  /**
+   * Create an {@code <item>} element.
+   * @return Created item element.
+   * @apiNote Shorthand for {@link #createElement(String)} with the {@link TagNames#ITEM} as input.
+   */
+  ItemElement createItemElement();
 
   /**
    * Creates an empty text node
@@ -155,10 +163,13 @@ public interface Document extends EventTarget, ParentNode {
    * unless the event has been cancelled.
    * <p>
    * This target will be invoked after ALL events.
+   * <p>
+   * Note that, calling the document's {@link #addEventListener(String, EventListener)} is not the
+   * same as calling the add event listener on the returned event target.
    *
    * @return Global event target
    */
-  EventTarget getGlobalTarget();
+  @NotNull EventTarget getGlobalTarget();
 
   /**
    * Adopts a node if it belongs to another document instance.
