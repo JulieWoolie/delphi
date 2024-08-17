@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+/**
+ * An active view of a document that's been spawned in the world.
+ */
 public interface DocumentView {
 
   /**
@@ -83,9 +86,37 @@ public interface DocumentView {
    */
   void transform(@NotNull Transformation transformation);
 
+  /**
+   * Moves the page to the specified {@code location}.
+   * <p>
+   * The view will be moved so the bottom middle is at the {@code location}.
+   * The specified {@code location}'s yaw and pitch become the screen's rotation.
+   *
+   * @param location New location
+   * @throws NullPointerException If {@code location} is {@code null}
+   */
   void moveTo(@NotNull Location location);
 
+  /**
+   * Moves the page to the specified {@code position} in the specified {@code world}.
+   * <p>
+   * The view will be moved so the bottom middle as the specified {@code position}
+   *
+   * @param world New world
+   * @param position New position
+   *
+   * @throws NullPointerException If {@code world} or {@code position} is {@code null}
+   */
   void moveTo(@NotNull World world, @NotNull Vector3f position);
 
+  /**
+   * Moves the page to the specified {@code position}.
+   * <p>
+   * The view will be moved so the bottom middle as the specified {@code position}
+   *
+   * @param position New position
+   *
+   * @throws NullPointerException If {@code position} is {@code null}
+   */
   void moveTo(@NotNull Vector3f position);
 }
