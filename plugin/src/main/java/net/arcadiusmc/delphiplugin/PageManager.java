@@ -18,17 +18,13 @@ import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.scss.SheetBuilder;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
-import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -113,8 +109,6 @@ public class PageManager implements Delphi {
 
     view.initializeDocument(doc);
 
-    configureScreen(player, view.getScreen());
-
     EventImpl loaded = new EventImpl(EventTypes.DOM_LOADED, doc);
     loaded.initEvent(null, false, false);
     doc.dispatchEvent(loaded);
@@ -126,39 +120,6 @@ public class PageManager implements Delphi {
     doc.dispatchEvent(event);
 
     return Result.ok(view);
-  }
-
-  public static void configureScreen(Player player, Screen screen) {
-    Location location = player.getEyeLocation();
-    Vector direction = location.getDirection();
-
-    Vector3f pos = new Vector3f();
-    Vector3f dir = new Vector3f();
-
-    pos.x = (float) location.getX();
-    pos.y = (float) location.getY();
-    pos.z = (float) location.getZ();
-
-    dir.x = (float) direction.getX();
-    //dir.y = (float) direction.getY();
-    dir.z = (float) direction.getZ();
-
-    dir.normalize();
-
-    final float width = screen.getWidth();
-    final float height = screen.getHeight();
-    final float distanceFromPlayer = width * 0.5f;
-
-    pos.x += (dir.x * distanceFromPlayer);
-    pos.y += (dir.y * distanceFromPlayer);
-    pos.z += (dir.z * distanceFromPlayer);
-
-    Quaternionf lrot = new Quaternionf();
-    lrot.rotateTo(0, 0, 1, -dir.x, -dir.y, -dir.z);
-
-    screen.set(pos, width, height);
-    screen.leftRotation.set(lrot);
-    screen.recalculate();
   }
 
   @Override

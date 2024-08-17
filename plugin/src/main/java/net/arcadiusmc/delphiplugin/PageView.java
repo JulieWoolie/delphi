@@ -59,7 +59,9 @@ import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -193,7 +195,7 @@ public class PageView implements ExtendedView {
   @Override
   public void moveTo(@NotNull Vector3f position) {
     Objects.requireNonNull(position, "Null position");
-    moveTo(world, position.x, position.y, position.z);
+    moveTo(world, position.x, position.y, position.z, null);
   }
 
   @Override
@@ -205,7 +207,8 @@ public class PageView implements ExtendedView {
         location.getWorld(),
         (float) location.getX(),
         (float) location.getY(),
-        (float) location.getZ()
+        (float) location.getZ(),
+        location
     );
   }
 
@@ -214,10 +217,10 @@ public class PageView implements ExtendedView {
     Objects.requireNonNull(world, "Null world");
     Objects.requireNonNull(position, "Null position");
 
-    moveTo(world, position.x, position.y, position.z);
+    moveTo(world, position.x, position.y, position.z, null);
   }
 
-  private void moveTo(World world, float x, float y, float z) {
+  private void moveTo(World world, float x, float y, float z, Location l) {
     float h = screen.getHeight() * 0.5f;
     Vector3f off = new Vector3f(x, y + h, z);
     off.sub(screen.center());
@@ -228,6 +231,23 @@ public class PageView implements ExtendedView {
 
     kill();
     screen.translate(off);
+
+    if (l != null) {
+      Quaternionf quaternion = new Quaternionf();
+
+      Vector direction = l.getDirection();
+      Vector3f dir = new Vector3f(
+          (float) direction.getX(),
+          (float) direction.getY(),
+          (float) direction.getZ()
+      );
+
+      Screen.lookInDirection(quaternion, dir);
+
+      screen.leftRotation.set(quaternion);
+
+      screen.recalculate();
+    }
 
     if (!Objects.equals(world, this.world)) {
       setWorld(world);
@@ -245,6 +265,7 @@ public class PageView implements ExtendedView {
 
     document.setView(this);
     parseScreenDimensions();
+    configureScreen();
 
     EventListenerList g = document.getGlobalTarget();
     MutationListener listener = new MutationListener();
@@ -266,6 +287,47 @@ public class PageView implements ExtendedView {
     }
   }
 
+  private void configureScreen() {
+    Location location = player.getEyeLocation();
+    Vector direction = location.getDirection();
+
+    Vector3f pos = new Vector3f();
+    Vector3f dir = new Vector3f();
+
+    pos.x = (float) location.getX();
+    pos.y = (float) location.getY();
+    pos.z = (float) location.getZ();
+
+    dir.x = (float) direction.getX();
+    dir.y = (float) direction.getY();
+    dir.z = (float) direction.getZ();
+
+    boolean ignoreYDir = Attributes.boolAttribute(
+        document.getOption(Options.IGNORE_PLAYER_PITCH),
+        true
+    );
+
+    if (ignoreYDir) {
+      dir.y = 0;
+      dir.normalize();
+    }
+
+    final float width = screen.getWidth();
+    final float height = screen.getHeight();
+    final float distanceFromPlayer = width * 0.5f;
+
+    pos.x += (dir.x * distanceFromPlayer);
+    pos.y += (dir.y * distanceFromPlayer);
+    pos.z += (dir.z * distanceFromPlayer);
+
+    Quaternionf lrot = new Quaternionf();
+    Screen.lookInDirection(lrot, dir);
+
+    screen.set(pos, width, height);
+    screen.leftRotation.set(lrot);
+    screen.recalculate();
+  }
+
   private void parseScreenDimensions() {
     String screenWidth = document.getOption(Options.SCREEN_WIDTH);
     String screenHeight = document.getOption(Options.SCREEN_HEIGHT);
@@ -278,6 +340,9 @@ public class PageView implements ExtendedView {
 
   static float parseScreenDimension(String value, float def) {
     if (Strings.isNullOrEmpty(value)) {
+      return def;
+    }
+    if ("default".equalsIgnoreCase(value)) {
       return def;
     }
 
@@ -428,11 +493,18 @@ public class PageView implements ExtendedView {
 
   @Override
   public Vector2f getCursorScreenPosition() {
+    if (!selected) {
+      return null;
+    }
+
     return new Vector2f(cursorScreen);
   }
 
   @Override
   public Vector3f getCursorWorldPosition() {
+    if (!selected) {
+      return null;
+    }
     return new Vector3f(cursorWorld);
   }
 
@@ -480,10 +552,6 @@ public class PageView implements ExtendedView {
 
     obj.moveTo(cursorScreen);
     obj.spawnRecursive();
-
-    if (obj instanceof ElementRenderObject el) {
-      LayoutKt.layout(el);
-    }
   }
 
   @Override

@@ -33,6 +33,20 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   public final Quaternionf leftRotation = new Quaternionf();
   public final Quaternionf rightRotation = new Quaternionf();
 
+  public static void lookInDirection(Quaternionf lrot, Vector3f dir) {
+    Vector3f globalUp = new Vector3f(0, -1, 0);
+    Vector3f right = new Vector3f();
+    Vector3f up = new Vector3f();
+
+    dir.cross(globalUp, right);
+    right.normalize();
+    dir.cross(right, up);
+    up.normalize();
+
+    lrot.lookAlong(dir, up);
+    lrot.invert();
+  }
+
   /* --------------------------- mutation ---------------------------- */
 
   public void apply(Transformation trans) {
