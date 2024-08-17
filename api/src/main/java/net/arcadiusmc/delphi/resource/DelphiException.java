@@ -145,21 +145,21 @@ public class DelphiException extends RuntimeException {
 
   public static String codeToString(int code) {
     return switch (code) {
-      case ERR_NO_FILE -> "NO_SUCH_FILE";
-      case ERR_ACCESS_DENIED -> "ACCESS_DENIED";
-      case ERR_IO_ERROR -> "IO_ERROR";
-      case ERR_INVALID_PATH -> "INVALID_PATH";
-      case ERR_API_MODULE -> "API_MODULE";
-      case ERR_SYNTAX -> "SYNTAX";
-      case ERR_SCHEMA_ERROR -> "SCHEMA_ERROR";
-      case ERR_SAX_PARSER_INIT -> "SAX_PARSER_INIT_FAILED";
-      case ERR_DOC_PARSE -> "DOC_PARSE";
-      case ERR_MISSING_PLUGINS -> "MISSING_PLUGINS";
-      case ERR_MODULE_UNKNOWN -> "MODULE_UNKNOWN";
-      case ERR_MODULE_DIRECTORY_NOT_FOUND -> "MODULE_DIRECTORY_NOT_FOUND";
-      case ERR_MODULE_ZIP_ACCESS_DENIED -> "MODULE_ZIP_ACCESS_DENIED";
-      case ERR_MODULE_ERROR -> "MODULE_ERROR";
-      case ERR_EMPTY_MODULE_NAME -> "EMPTY_MODULE_NAME";
+      case ERR_NO_FILE -> "ERR_NO_SUCH_FILE";
+      case ERR_ACCESS_DENIED -> "ERR_ACCESS_DENIED";
+      case ERR_IO_ERROR -> "ERR_IO_ERROR";
+      case ERR_INVALID_PATH -> "ERR_INVALID_PATH";
+      case ERR_API_MODULE -> "ERR_API_MODULE";
+      case ERR_SYNTAX -> "ERR_SYNTAX";
+      case ERR_SCHEMA_ERROR -> "ERR_SCHEMA_ERROR";
+      case ERR_SAX_PARSER_INIT -> "ERR_SAX_PARSER_INIT_FAILED";
+      case ERR_DOC_PARSE -> "ERR_DOC_PARSE";
+      case ERR_MISSING_PLUGINS -> "ERR_MISSING_PLUGINS";
+      case ERR_MODULE_UNKNOWN -> "ERR_MODULE_UNKNOWN";
+      case ERR_MODULE_DIRECTORY_NOT_FOUND -> "ERR_MODULE_DIRECTORY_NOT_FOUND";
+      case ERR_MODULE_ZIP_ACCESS_DENIED -> "ERR_MODULE_ZIP_ACCESS_DENIED";
+      case ERR_MODULE_ERROR -> "ERR_MODULE_ERROR";
+      case ERR_EMPTY_MODULE_NAME -> "ERR_EMPTY_MODULE_NAME";
       default -> "ERR_UNKNOWN";
     };
   }
