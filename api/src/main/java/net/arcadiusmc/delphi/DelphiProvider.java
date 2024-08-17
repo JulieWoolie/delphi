@@ -4,8 +4,8 @@ import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
-public final class DelphiService {
-  private DelphiService() {}
+public final class DelphiProvider {
+  private DelphiProvider() {}
 
   /**
    * Get the delphi service
