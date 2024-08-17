@@ -22,6 +22,7 @@ import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.ItemElement;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
@@ -146,6 +147,11 @@ public class DelphiDocument implements Document {
       case TagNames.ITEM -> new DelphiItemElement(this);
       default -> new DelphiElement(this, tagName);
     };
+  }
+
+  @Override
+  public ItemElement createItemElement() {
+    return new DelphiItemElement(this);
   }
 
   @Override
