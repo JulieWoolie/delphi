@@ -25,7 +25,7 @@ public abstract class FileSystemModule implements IoModule {
   }
 
   @Override
-  public StringBuffer loadString(ResourcePath path) throws IOException {
+  public @NotNull StringBuffer loadString(@NotNull ResourcePath path) throws IOException {
     String elements = path.path();
     Path p = sourcePath.resolve(elements);
 
@@ -39,7 +39,7 @@ public abstract class FileSystemModule implements IoModule {
   }
 
   @Override
-  public @NotNull Collection<String> getModulePaths(ResourcePath pathSoFar) {
+  public @NotNull Collection<String> getModulePaths(@NotNull ResourcePath pathSoFar) {
     Path path = sourcePath.resolve(pathSoFar.path());
 
     if (!Files.isDirectory(path)) {

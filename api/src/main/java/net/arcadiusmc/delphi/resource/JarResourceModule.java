@@ -89,7 +89,7 @@ public class JarResourceModule implements IoModule {
   }
 
   @Override
-  public StringBuffer loadString(ResourcePath path) throws IOException {
+  public @NotNull StringBuffer loadString(@NotNull ResourcePath path) throws IOException {
     String fqPath = fqPath(path);
     URL url = loader.getResource(fqPath);
 
@@ -107,7 +107,7 @@ public class JarResourceModule implements IoModule {
   }
 
   @Override
-  public @NotNull Collection<String> getModulePaths(ResourcePath pathSoFar) {
+  public @NotNull Collection<String> getModulePaths(@NotNull ResourcePath pathSoFar) {
     if (filePaths == null || filePaths.isEmpty()) {
       return List.of();
     }

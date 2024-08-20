@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphi.resource;
 
 import java.io.IOException;
+import org.jetbrains.annotations.NotNull;
 
 public non-sealed interface IoModule extends ResourceModule {
 
@@ -12,5 +13,5 @@ public non-sealed interface IoModule extends ResourceModule {
    *
    * @throws IOException If an IO exception ocurred while reading the file
    */
-  StringBuffer loadString(ResourcePath path) throws IOException;
+  @NotNull StringBuffer loadString(@NotNull ResourcePath path) throws IOException;
 }
