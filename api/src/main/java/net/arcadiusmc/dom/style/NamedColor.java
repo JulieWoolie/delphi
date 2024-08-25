@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -10,6 +13,7 @@ public final class NamedColor {
   private NamedColor() {}
 
   public static final Map<String, Color> NAMES;
+  public static final Int2ObjectMap<String> VALUE_TO_NAME;
 
   /** AliceBlue. */
   public static final Color ALICE_BLUE = Color.rgb(0xf0f8ff);
@@ -629,6 +633,10 @@ public final class NamedColor {
     map.put("yellowgreen", YELLOW_GREEN);
     map.put("transparent", TRANSPARENT);
 
+    Int2ObjectMap<String> nameLookup = new Int2ObjectOpenHashMap<>();
+    map.forEach((s, color) -> nameLookup.put(color.argb(), s));
+
     NAMES = Object2ObjectMaps.unmodifiable(map);
+    VALUE_TO_NAME = Int2ObjectMaps.unmodifiable(nameLookup);
   }
 }
