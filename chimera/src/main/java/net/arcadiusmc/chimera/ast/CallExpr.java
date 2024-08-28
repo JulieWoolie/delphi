@@ -8,6 +8,7 @@ import net.arcadiusmc.chimera.ChimeraContext;
 import net.arcadiusmc.chimera.function.Argument;
 import net.arcadiusmc.chimera.function.ScssFunction;
 import net.arcadiusmc.chimera.function.ScssInvocationException;
+import org.apache.commons.lang3.Range;
 
 @Getter @Setter
 public class CallExpr extends Expression {
@@ -41,6 +42,23 @@ public class CallExpr extends Expression {
       arg.setErrors(ctx.getErrors());
 
       arguments[i] = arg;
+    }
+
+    // Test argument counts
+    Range<Integer> argCount = func.argumentCount();
+    if (arguments.length < argCount.getMinimum()) {
+      ctx.getErrors().error(getStart(),
+          "Too few arguments! Expected at least %s arguments, found %s",
+          argCount.getMinimum(), arguments.length
+      );
+      return null;
+    }
+    if (arguments.length > argCount.getMaximum()) {
+      ctx.getErrors().error(getStart(),
+          "Too many arguments! Expected at most %s arguments, found %s",
+          argCount.getMaximum(), arguments.length
+      );
+      return null;
     }
 
     try {
