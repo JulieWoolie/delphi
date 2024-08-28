@@ -38,27 +38,18 @@ public interface Delphi {
    * <p>
    * If the document is successfully loaded and initialized, it is spawned and then shown to
    * the player, and the created document view is returned.
-   * <br>
-   * <table>
-   *   <caption>Result errors</caption>
-   *   <tr>
-   *     <th>Error format</th>
-   *     <th>Description</th>
-   *   </tr>
-   *   <tr>
-   *     <td>{@code "Failed to get module %module-name%: %reason%"}</td>
-   *     <td>Means {@link DelphiResources#findModule(String)} failed, {@code %reason%} contains the error output of the module finding result</td>
-   *   </tr>
-   *   <tr>
-   *     <td>{@code "Failed to load document: %reason%"}</td>
-   *     <td>Means {@link ViewResources#loadDocument(String)} failed, {@code %reason%} contains error output of the load result</td>
-   *   </tr>
-   * </table>
+   * <p>
+   * Any erroneous result returned by this method will have an error code dictated by either
+   * the {@link DelphiResources#findModule(String)} or {@link ViewResources#loadDocument(String)}
+   * methods.
    *
    * @param path Document path
    * @param player Player to show the document to
    *
    * @return The opened view, or an error result explaining why the document couldn't be opened.
+   *
+   * @see DelphiResources#findModule(String)
+   * @see ViewResources#loadDocument(String)
    *
    * @throws NullPointerException If {@code path} or {@code player} are {@code null}
    */
@@ -74,31 +65,19 @@ public interface Delphi {
    * <p>
    * If the document is successfully loaded and initialized, it is spawned and then shown to
    * the player, and the created document view is returned.
-   * <br>
-   * <table>
-   *   <caption>Result errors</caption>
-   *   <tr>
-   *     <th>Error format</th>
-   *     <th>Description</th>
-   *   </tr>
-   *   <tr>
-   *     <td>{@code "Invalid path"}</td>
-   *     <td>If the specified {@code path} couldn't be parsed into a {@link ResourcePath}</td>
-   *   </tr>
-   *   <tr>
-   *     <td>{@code "Failed to get module %module-name%: %reason%"}</td>
-   *     <td>Means {@link DelphiResources#findModule(String)} failed, {@code %reason%} contains the error output of the module finding result</td>
-   *   </tr>
-   *   <tr>
-   *     <td>{@code "Failed to load document: %reason%"}</td>
-   *     <td>Means {@link ViewResources#loadDocument(String)} failed, {@code %reason%} contains error output of the load result</td>
-   *   </tr>
-   * </table>
+   * <p>
+   * Any erroneous result returned by this method will have an error code dictated by either
+   * the {@link DelphiResources#findModule(String)}, {@link #parsePath(String)} or
+   * {@link ViewResources#loadDocument(String)} methods.
    *
    * @param path Document path
    * @param player Player to show the document to
    *
    * @return The opened view, or an error result explaining why the document couldn't be opened.
+   *
+   * @see DelphiResources#findModule(String)
+   * @see ViewResources#loadDocument(String)
+   * @see #parsePath(String)
    *
    * @throws NullPointerException If {@code path} or {@code player} are {@code null}
    */
@@ -141,16 +120,14 @@ public interface Delphi {
    * view belongs to.
    * <p>
    * Unlike {@link #getSelectedView(Player)} this method will ignore who a view belongs to, and will
-   * get the view closest to the player.
+   * get the closest view the player is looking at.
    *
    * @apiNote Iterates through all alive views and tests if their world matches the {@code player}'s
-   *          world, and then performs a ray scan on the view to test if it's being looked at. All
-   *          views that the player is looking at are placed into a list and sorted by distance, the
-   *          closest on to the player {@code player} is then returned.
+   *          world, and then performs a ray scan on the view to test if it's being looked at.
    *
    * @param player Player
    *
-   * @return An optional containing the closes the document view the player is looking at, or an
+   * @return An optional containing the closest the document view the player is looking at, or an
    *         empty optional, if the player is not looking at any views.
    *
    * @throws NullPointerException If {@code player} is {@code null}
