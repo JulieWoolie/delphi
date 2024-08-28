@@ -43,8 +43,8 @@ import net.arcadiusmc.chimera.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.ast.Expression;
 import net.arcadiusmc.chimera.ast.Identifier;
 import net.arcadiusmc.chimera.ast.InlineStyleStatement;
+import net.arcadiusmc.chimera.ast.Keyword;
 import net.arcadiusmc.chimera.ast.KeywordLiteral;
-import net.arcadiusmc.chimera.ast.KeywordLiteral.Keyword;
 import net.arcadiusmc.chimera.ast.NumberLiteral;
 import net.arcadiusmc.chimera.ast.NumberUnitLiteral;
 import net.arcadiusmc.chimera.ast.PropertyStatement;
@@ -875,6 +875,12 @@ public class ChimeraParser {
         break;
       case "space-evenly":
         keyword = Keyword.SPACE_EVENLY;
+        break;
+      case "true":
+        keyword = Keyword.TRUE;
+        break;
+      case "false":
+        keyword = Keyword.FALSE;
         break;
 
       default:
