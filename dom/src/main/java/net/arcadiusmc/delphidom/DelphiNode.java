@@ -6,6 +6,7 @@ import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Node;
+import net.arcadiusmc.dom.NodeFlag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

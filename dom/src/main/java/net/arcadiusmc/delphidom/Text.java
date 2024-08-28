@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphidom;
 
 import lombok.Getter;
+import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.Visitor;
 import org.jetbrains.annotations.Nullable;

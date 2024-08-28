@@ -1,5 +1,6 @@
 package net.arcadiusmc.dom;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,6 +48,15 @@ public interface Node {
    * @return Node depth
    */
   int getDepth();
+
+  /**
+   * Test if the node has the specified {@code flag} set.
+   *
+   * @param flag Flag to test
+   * @return {@code true}, if the specified flag was set, {@code false} otherwise
+   */
+  @Contract("null -> false")
+  boolean hasFlag(NodeFlag flag);
 
   void enterVisitor(Visitor visitor);
 

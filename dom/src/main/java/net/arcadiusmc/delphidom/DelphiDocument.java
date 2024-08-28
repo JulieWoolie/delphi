@@ -24,6 +24,7 @@ import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.ItemElement;
 import net.arcadiusmc.dom.Node;
+import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;

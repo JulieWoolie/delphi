@@ -24,6 +24,7 @@ import net.arcadiusmc.delphidom.selector.SelectorGroup;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Node;
+import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.Visitor;
 import net.arcadiusmc.dom.event.Event;

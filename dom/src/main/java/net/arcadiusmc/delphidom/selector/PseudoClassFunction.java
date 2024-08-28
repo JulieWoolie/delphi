@@ -2,8 +2,8 @@ package net.arcadiusmc.delphidom.selector;
 
 import com.google.common.base.Strings;
 import net.arcadiusmc.delphidom.DelphiElement;
-import net.arcadiusmc.delphidom.NodeFlag;
 import net.arcadiusmc.dom.Attributes;
+import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.TagNames;
 import net.kyori.adventure.util.TriState;
 
