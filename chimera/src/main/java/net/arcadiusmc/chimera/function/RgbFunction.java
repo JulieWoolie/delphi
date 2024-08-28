@@ -38,7 +38,7 @@ public class RgbFunction implements ScssFunction {
           mod = 1.0f;
         }
 
-        alpha = (int) (MAX_VALUE * a.getValue());
+        alpha = (int) (MAX_VALUE * mod);
       }
     } else {
       alpha = MAX_VALUE;
