@@ -129,12 +129,22 @@ final class DelphiColor implements Color {
     String hex;
 
     if (getAlpha() == MAX_VALUE) {
-      hex = Integer.toUnsignedString(rgb(), 16);
+      hex = toHex(rgb(), 6);
     } else {
-      hex = Integer.toUnsignedString(argb, 16);
+      hex = toHex(argb, 8);
     }
 
     return "#" + hex;
+  }
+
+  private String toHex(int v, int chars) {
+    String hex = Integer.toUnsignedString(v, 16);
+
+    if (hex.length() < chars) {
+      return "0".repeat(chars - hex.length()) + hex;
+    }
+
+    return hex;
   }
 
   @Override
