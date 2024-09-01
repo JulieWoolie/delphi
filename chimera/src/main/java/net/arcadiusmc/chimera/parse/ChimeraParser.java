@@ -35,6 +35,7 @@ import static net.arcadiusmc.chimera.parse.Token.WALL_EQ;
 import static net.arcadiusmc.chimera.parse.Token.WHITESPACE;
 
 import java.util.Objects;
+import java.util.Stack;
 import lombok.Getter;
 import net.arcadiusmc.chimera.parse.TokenStream.ParseMode;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
@@ -82,6 +83,8 @@ public class ChimeraParser {
   @Getter
   private final CompilerErrors errors;
 
+  private final Stack<ParserScope> scopeStack = new Stack<>();
+
   public ChimeraParser(String buffer) {
     this(new StringBuffer(buffer));
   }
@@ -89,6 +92,22 @@ public class ChimeraParser {
   public ChimeraParser(StringBuffer buffer) {
     this.errors = new CompilerErrors(buffer);
     this.stream = new TokenStream(buffer, errors);
+  }
+
+  public ParserScope scope() {
+    if (scopeStack.isEmpty()) {
+      return ParserScope.REGULAR;
+    }
+
+    return scopeStack.peek();
+  }
+
+  public void pushScope(ParserScope scope) {
+    scopeStack.push(scope);
+  }
+
+  public void popScope() {
+    scopeStack.pop();
   }
 
   public void warn(Location location, String format, Object... args) {
@@ -655,10 +674,24 @@ public class ChimeraParser {
     return null;
   }
 
+  private boolean isRectangleStart(Expression expr) {
+    if (expr.getStart().line() != peek().location().line()) {
+      return false;
+    }
+    if (matches(SEMICOLON)) {
+      return false;
+    }
+    if (!hasNext()) {
+      return false;
+    }
+
+    return scope() == ParserScope.REGULAR;
+  }
+
   public Expression expr() {
     Expression expr = primaryExpr();
 
-    if (peek().location().line() != expr.getStart().line() || matches(SEMICOLON) || !hasNext()) {
+    if (!isRectangleStart(expr)) {
       return expr;
     }
 
@@ -1021,7 +1054,9 @@ public class ChimeraParser {
       next();
     }
 
-    while (!matches(BRACKET_CLOSE)) {
+    pushScope(ParserScope.FUNCTION);
+
+    while (!matches(BRACKET_CLOSE) && hasNext()) {
       Expression argExpr = expr();
 
       if (argExpr != null) {
@@ -1036,6 +1071,13 @@ public class ChimeraParser {
     Location l = expect(BRACKET_CLOSE).location();
     expr.setEnd(l);
 
+    popScope();
+
     return expr;
+  }
+
+  enum ParserScope {
+    REGULAR,
+    FUNCTION
   }
 }
