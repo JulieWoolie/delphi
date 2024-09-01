@@ -12,10 +12,10 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   private <T> String get(Property<T> prop) {
-    Value<T> value = set.get(prop);
+    Value<T> value = set.orNull(prop);
 
     if (value == null) {
-      return "";
+      return null;
     }
 
     return value.getTextValue();

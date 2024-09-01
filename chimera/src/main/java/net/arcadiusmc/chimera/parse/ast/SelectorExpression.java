@@ -241,12 +241,11 @@ public abstract class SelectorExpression extends Node {
       int aVal = a == null ? 0 : a.getValue().intValue();
       int bVal = b == null ? 0 : b.getValue().intValue();
 
-      if (aVal != -1 && bVal < 1) {
-        if (aVal == 0) {
-          errors.error(getStart(), "n value must be greater than 0");
-        } else {
-          errors.error(getStart(), "An+B B value bust be greater than 0");
-        }
+      if (aVal == 0 && bVal < 0) {
+        errors.error(getStart(), "n value must be greater than 0");
+      }
+      if (aVal != 0 && bVal < 0) {
+        errors.error(getStart(), "An+B B value bust be greater than 0");
       }
 
       return new AnB(aVal, bVal);

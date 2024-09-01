@@ -13,23 +13,21 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
+import net.arcadiusmc.chimera.StringUtil;
+import net.arcadiusmc.chimera.parse.Chimera;
+import net.arcadiusmc.chimera.selector.Selector;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
-import net.arcadiusmc.delphidom.parser.StringUtil;
-import net.arcadiusmc.delphidom.scss.InlineStyle;
-import net.arcadiusmc.delphidom.scss.PropertySet;
-import net.arcadiusmc.delphidom.scss.ReadonlyMap;
-import net.arcadiusmc.delphidom.scss.ScssParser;
-import net.arcadiusmc.delphidom.selector.SelectorGroup;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
-import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.Visitor;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventPhase;
+import net.arcadiusmc.dom.style.StyleProperties;
+import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,12 +42,6 @@ public class DelphiElement extends DelphiNode implements Element {
   @Getter
   final EventListenerList listenerList;
 
-  public final ReadonlyMap styleApi;
-
-  @Getter
-  public final InlineStyle inlineStyle;
-  public boolean inlineUpdatesSuppressed = false;
-
   @Getter
   DelphiNode titleNode;
 
@@ -61,14 +53,16 @@ public class DelphiElement extends DelphiNode implements Element {
     this.listenerList.setIgnoreCancelled(true);
     this.listenerList.setIgnorePropagationStops(false);
     this.listenerList.setRealTarget(this);
-
-    this.styleApi = new ReadonlyMap(styleSet);
-    this.inlineStyle = new InlineStyle(new PropertySet(), this);
   }
 
   @Override
-  public ReadonlyMap getCurrentStyle() {
-    return styleApi;
+  public StylePropertiesReadonly getCurrentStyle() {
+    return document.getCurrentStyle(this);
+  }
+
+  @Override
+  public StyleProperties getInlineStyle() {
+    return document.getInlineStyle(this);
   }
 
   @Override
@@ -112,33 +106,7 @@ public class DelphiElement extends DelphiNode implements Element {
       attributes.put(key, value);
     }
 
-    if (key.equals(Attributes.STYLE) && !inlineUpdatesSuppressed) {
-      updateInlineStyle(value);
-    }
-
     document.attributeChanged(this, key, previousValue, value);
-  }
-
-  void updateInlineStyle(String str) {
-    inlineStyle.getBacking().clear();
-
-    if (Strings.isNullOrEmpty(str)) {
-      return;
-    }
-
-    ScssParser parser = new ScssParser(new StringBuffer(str));
-
-    if (document.getView() != null) {
-      parser.setVariables(document.getView().getStyleVariables());
-    }
-
-    parser.getErrors().setListener(document.getErrorListener());
-
-    try {
-      parser.inlineRules(inlineStyle.getBacking());
-    } catch (ParserException exc) {
-      document.inlineStyleError(exc);
-    }
   }
 
   @Override
@@ -162,7 +130,7 @@ public class DelphiElement extends DelphiNode implements Element {
     this.titleNode = (DelphiNode) title;
 
     if (titleNode != null) {
-      document.styles.updateStyles(titleNode);
+      document.styles.updateDomStyle(titleNode);
     }
 
     if (document.view != null) {
@@ -400,7 +368,7 @@ public class DelphiElement extends DelphiNode implements Element {
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
   public @NotNull List<Element> querySelectorAll(@NotNull String query) {
-    SelectorGroup selector = SelectorGroup.parse(query);
+    Selector selector = Chimera.parseSelector(query);
     List<Element> elementList = new ArrayList<>();
 
     collectDescendants(elementList, element -> selector.test(this, element));
@@ -410,11 +378,11 @@ public class DelphiElement extends DelphiNode implements Element {
 
   @Override
   public @Nullable Element querySelector(@NotNull String query) {
-    SelectorGroup selector = SelectorGroup.parse(query);
+    Selector selector = Chimera.parseSelector(query);
     return matchFirst(this, selector);
   }
 
-  private DelphiElement matchFirst(DelphiElement root, SelectorGroup group) {
+  private DelphiElement matchFirst(DelphiElement root, Selector group) {
     if (group.test(root, this)) {
       return this;
     }

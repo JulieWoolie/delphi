@@ -118,7 +118,7 @@ public class DelphiItemElement extends DelphiElement implements ItemElement {
     }
 
     container.setDepth(getDepth() + 1);
-    document.styles.updateStyles(container);
+    document.styles.updateDomStyle(container);
 
     this.itemTooltip = container;
   }

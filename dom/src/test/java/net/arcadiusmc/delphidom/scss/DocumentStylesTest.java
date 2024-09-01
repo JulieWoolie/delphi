@@ -3,13 +3,16 @@ package net.arcadiusmc.delphidom.scss;
 import static net.arcadiusmc.delphidom.TestUtil.createDoc;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.Rule;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.dom.Attributes;
-import net.arcadiusmc.dom.style.Primitive;
-import net.arcadiusmc.dom.style.Primitive.Unit;
+import net.arcadiusmc.dom.style.StyleProperties;
+import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import net.arcadiusmc.dom.style.Stylesheet;
 import org.junit.jupiter.api.Test;
 
@@ -21,12 +24,11 @@ class DocumentStylesTest {
     DelphiElement body = doc.getBody();
 
     body.setAttribute(Attributes.STYLE, "padding-left: 4px;");
-    ReadonlyMap map = body.getCurrentStyle();
-    InlineStyle inline = body.getInlineStyle();
+    StylePropertiesReadonly map = body.getCurrentStyle();
+    StyleProperties inline = body.getInlineStyle();
 
-    Primitive prim = Primitive.create(4, Unit.PX);
-    assertEquals(prim, map.getPaddingLeft());
-    assertEquals(prim, inline.getPaddingLeft());
+    assertEquals("4px", map.getPaddingLeft());
+    assertEquals("4px", inline.getPaddingLeft());
   }
 
   @Test
@@ -46,7 +48,7 @@ class DocumentStylesTest {
   @Test
   void testSheetBuilder() {
     DelphiDocument doc = createDoc();
-    Primitive v = Primitive.create(4, Unit.PX);
+    String v = "4px";
 
     Stylesheet sheet = doc.createStylesheet()
         .addRule(".test", prop -> prop.setPaddingLeft(v))
@@ -70,12 +72,12 @@ class DocumentStylesTest {
 
     assertEquals("test", body.getAttribute(Attributes.CLASS));
 
-    ReadonlyMap map = body.getCurrentStyle();
-    InlineStyle inline = body.getInlineStyle();
+    StylePropertiesReadonly map = body.getCurrentStyle();
+    StyleProperties inline = body.getInlineStyle();
 
-    Primitive v = Primitive.create(4, Unit.PX);
+    String v = "4px";
 
-    Sheet sheet = doc.createStylesheet()
+    ChimeraStylesheet sheet = doc.createStylesheet()
         .addRule(".test", prop -> prop.setPaddingLeft(v))
         .build();
 
@@ -83,9 +85,9 @@ class DocumentStylesTest {
 
     Rule r = sheet.getRule(0);
     assertEquals(v, r.getProperties().getPaddingLeft());
-    assertTrue(r.getSelectorObj().test(null, body));
+    assertTrue(r.getSelectorObject().test(null, body));
 
     assertEquals(v, map.getPaddingLeft());
-    assertEquals(null , inline.getPaddingLeft());
+    assertNull(inline.getPaddingLeft());
   }
 }

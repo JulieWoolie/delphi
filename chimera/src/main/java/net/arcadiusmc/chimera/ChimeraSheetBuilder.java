@@ -48,6 +48,12 @@ public class ChimeraSheetBuilder implements StylesheetBuilder {
 
   @Override
   public ChimeraStylesheet build() {
-    return new ChimeraStylesheet(rules.toArray(Rule[]::new));
+    ChimeraStylesheet sheet = new ChimeraStylesheet(rules.toArray(Rule[]::new));
+
+    if (system != null) {
+      system.addStylesheet(sheet);
+    }
+
+    return sheet;
   }
 }

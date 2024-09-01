@@ -10,14 +10,14 @@ import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.chimera.ChimeraSheetBuilder;
+import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.system.StyleSystem;
 import net.arcadiusmc.delphidom.event.AttributeMutation;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
-import net.arcadiusmc.delphidom.scss.DocumentSheetBuilder;
-import net.arcadiusmc.delphidom.scss.DocumentStyles;
-import net.arcadiusmc.delphidom.scss.Sheet;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Document;
@@ -34,6 +34,8 @@ import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventPhase;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.event.MutationEvent;
+import net.arcadiusmc.dom.style.StyleProperties;
+import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -63,8 +65,8 @@ public class DelphiDocument implements Document {
   @Getter @Setter
   ExtendedView view;
 
-  @Getter
-  final DocumentStyles styles;
+  @Getter @Setter
+  StyleSystem styles;
 
   public DelphiDocument() {
     this.globalTarget = new EventListenerList();
@@ -82,9 +84,6 @@ public class DelphiDocument implements Document {
     globalTarget.addEventListener(EventTypes.MODIFY_ATTR, attrListener);
     globalTarget.addEventListener(EventTypes.APPEND_CHILD, mutationListener);
     globalTarget.addEventListener(EventTypes.REMOVE_CHILD, mutationListener);
-
-    this.styles = new DocumentStyles(this);
-    this.styles.init();
   }
 
   public void setBody(DelphiElement body) {
@@ -327,17 +326,21 @@ public class DelphiDocument implements Document {
   @Override
   public void addStylesheet(@NotNull Stylesheet stylesheet) {
     Objects.requireNonNull(stylesheet, "Null style sheet");
-    styles.addSheet((Sheet) stylesheet);
+    styles.addStylesheet((ChimeraStylesheet) stylesheet);
   }
 
   @Override
   public @NotNull List<Stylesheet> getStylesheets() {
-    return Collections.unmodifiableList(styles.stylesheets);
+    return Collections.unmodifiableList(styles.getSheets());
   }
 
   @Override
-  public @NotNull DocumentSheetBuilder createStylesheet() {
-    return new DocumentSheetBuilder(this);
+  public @NotNull ChimeraSheetBuilder createStylesheet() {
+    if (styles == null) {
+      return new ChimeraSheetBuilder(null);
+    }
+
+    return styles.newBuilder();
   }
 
   void updateId(DelphiElement element, String previousId, String newId) {
@@ -360,6 +363,22 @@ public class DelphiDocument implements Document {
     }
 
     idLookup.put(newId, element);
+  }
+
+  public StyleProperties getInlineStyle(DelphiElement el) {
+    if (styles == null) {
+      return null;
+    }
+
+    return styles.getInlineStyle(el);
+  }
+
+  public StylePropertiesReadonly getCurrentStyle(DelphiElement el) {
+    if (styles == null) {
+      return null;
+    }
+
+    return styles.getCurrentStyle(el);
   }
 
   class IdMutationListener implements EventListener.Typed<MutationEvent> {

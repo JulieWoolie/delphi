@@ -84,6 +84,10 @@ public final class PropertySet {
 
   public <T> Value<T> orElse(Property<T> property, T fallback) {
     if (!has(property)) {
+      if (fallback == null) {
+        return null;
+      }
+
       return Value.create(fallback);
     }
 
@@ -254,86 +258,6 @@ public final class PropertySet {
 
   public RuleIterator iterator() {
     return new RuleIterator();
-  }
-
-  public DifferenceIterator difference(PropertySet other) {
-    return new DifferenceIterator(this, other);
-  }
-
-  public static class DifferenceIterator {
-
-    private int idx = 0;
-    private Property<Object> property;
-    private Object self;
-    private Object other;
-
-    final PropertySet selfSet;
-    final PropertySet otherSet;
-
-    public DifferenceIterator(PropertySet selfSet, PropertySet otherSet) {
-      this.selfSet = selfSet;
-      this.otherSet = otherSet;
-    }
-
-    public boolean hasNext() {
-      if (idx >= Properties.count()) {
-        return false;
-      }
-
-      while (idx < Properties.count()) {
-        Property<Object> r = Properties.getById(idx);
-
-        if (r == null) {
-          idx++;
-          continue;
-        }
-
-        Object self = selfSet.get(r);
-        Object other = otherSet.get(r);
-
-        if (Objects.equals(self, other)) {
-          idx++;
-          continue;
-        }
-
-        return true;
-      }
-
-      return false;
-    }
-
-    public void next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-
-      property = Properties.getById(idx);
-      self = selfSet.get(property);
-      other = otherSet.get(property);
-
-      idx++;
-    }
-
-    private void ensureSet() {
-      if (property == null) {
-        throw new IllegalStateException("next() has not been called once");
-      }
-    }
-
-    public Property<Object> rule() {
-      ensureSet();
-      return property;
-    }
-
-    public Object selfValue() {
-      ensureSet();
-      return self;
-    }
-
-    public Object otherValue() {
-      ensureSet();
-      return other;
-    }
   }
 
   public class RuleIterator {

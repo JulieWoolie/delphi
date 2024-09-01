@@ -2,8 +2,6 @@ package net.arcadiusmc.delphidom;
 
 import java.util.List;
 import lombok.Getter;
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
-import net.arcadiusmc.delphidom.scss.PropertySet;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
@@ -20,14 +18,8 @@ public abstract class DelphiNode implements Node {
 
   private int flags = 0;
 
-  public final ComputedStyle style;
-  public final PropertySet styleSet;
-
   public DelphiNode(DelphiDocument document) {
     this.document = document;
-
-    this.style = new ComputedStyle();
-    this.styleSet = new PropertySet();
   }
 
   @Override

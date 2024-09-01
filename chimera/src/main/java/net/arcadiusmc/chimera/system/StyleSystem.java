@@ -25,18 +25,20 @@ import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.event.MutationEvent;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 
 @Getter
 public class StyleSystem {
 
-  private final Document document;
+  private Document document;
 
   private final List<ChimeraStylesheet> sheets = new ArrayList<>();
   private final List<Rule> rules = new ArrayList<>();
 
   private final Map<Node, StyleNode> styleNodes = new HashMap<>();
+  private ElementStyleNode rootNode;
 
   private final Map<String, Object> variables = new HashMap<>();
 
@@ -46,19 +48,20 @@ public class StyleSystem {
   @Setter
   private StyleUpdateCallbacks updateCallbacks;
 
-  public StyleSystem(Document document) {
-    this.document = document;
+  public StyleSystem() {
 
-    // Can be null during testing
-    if (document != null) {
-      initialize();
-    }
   }
 
-  private void initialize() {
+  public void initialize(Document document) {
+    this.document = document;
+
     EventTarget l = document.getGlobalTarget();
 
     l.addEventListener(EventTypes.MODIFY_ATTR, new InlineMutateListener());
+
+    DomMutationListener domListener = new DomMutationListener();
+    l.addEventListener(EventTypes.APPEND_CHILD, domListener);
+    l.addEventListener(EventTypes.REMOVE_CHILD, domListener);
 
     StyleUpdateListener updateListener = new StyleUpdateListener();
     l.addEventListener(EventTypes.APPEND_CHILD, updateListener);
@@ -68,6 +71,10 @@ public class StyleSystem {
 
     l.addEventListener(EventTypes.CLICK_EXPIRE, updateListener);
     l.addEventListener(EventTypes.CLICK, updateListener);
+
+    if (document.getBody() != null) {
+      rootNode = (ElementStyleNode) createNode(document.getBody());
+    }
   }
 
   public void addStylesheet(ChimeraStylesheet stylesheet) {
@@ -79,6 +86,10 @@ public class StyleSystem {
     }
 
     rules.sort(Comparator.naturalOrder());
+
+    if (rootNode != null) {
+      updateStyle(rootNode);
+    }
   }
 
   private void applyCascading(StyleNode node, PropertySet out) {
@@ -114,7 +125,7 @@ public class StyleSystem {
       Element domElement = el.getDomNode();
 
       for (Rule rule : rules) {
-        if (!rule.getSelectorObject().test(domElement, null)) {
+        if (!rule.getSelectorObject().test(null, domElement)) {
           continue;
         }
 
@@ -193,7 +204,7 @@ public class StyleSystem {
 
     for (int i = 0; i < defaultStyleSheet.getLength(); i++) {
       Rule r = defaultStyleSheet.getRule(i);
-      if (!r.getSelectorObject().test(el, null)) {
+      if (!r.getSelectorObject().test(null, el)) {
         continue;
       }
 
@@ -230,7 +241,12 @@ public class StyleSystem {
     StyleNode n;
 
     if (node instanceof Element element) {
-      n = new ElementStyleNode(element, this);
+      ElementStyleNode elNode = new ElementStyleNode(element, this);
+      n = elNode;
+
+      for (Node child : element.getChildren()) {
+        elNode.addChild(createNode(child), elNode.getChildren().size());
+      }
     } else {
       n = new StyleNode(node, this);
     }
@@ -245,6 +261,35 @@ public class StyleSystem {
 
   public ChimeraSheetBuilder newBuilder() {
     return new ChimeraSheetBuilder(this);
+  }
+
+  public void updateDomStyle(Node domNode) {
+    StyleNode node = getStyleNode(domNode);
+    if (node == null) {
+      return;
+    }
+
+    updateStyle(node);
+  }
+
+  class DomMutationListener implements EventListener.Typed<MutationEvent> {
+
+    @Override
+    public void handleEvent(MutationEvent event) {
+      ElementStyleNode node = (ElementStyleNode) getStyleNode(event.getTarget());
+      if (node == null) {
+        return;
+      }
+
+      if (event.getType().equals(EventTypes.APPEND_CHILD)) {
+        StyleNode childNode = createNode(event.getNode());
+        node.addChild(childNode, event.getMutationIndex());
+        return;
+      }
+
+      // type = remove child
+      node.removeChild(event.getMutationIndex());
+    }
   }
 
   class InlineMutateListener implements EventListener.Typed<AttributeMutateEvent> {

@@ -25,7 +25,7 @@ for (let t of types) {
     if (!generateImpl) {
       outp += `
     /**
-     * Sets the ${edge.toLowerCase()} ${lowT}.
+     * Set the ${edge.toLowerCase()} ${lowT}.
      * @param value ${edge.toLowerCase()} ${lowT}
      * @return {@code this}
      */`
@@ -41,7 +41,7 @@ for (let t of types) {
       outp += "public "
     }
 
-    outp += `StyleProperties set${t}${edge}(@Nullable Primitive value)`
+    outp += `StyleProperties set${t}${edge}(@Nullable String value)`
 
     if (!generateImpl) {
       outp += ";"

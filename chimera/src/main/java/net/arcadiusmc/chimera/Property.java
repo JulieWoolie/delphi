@@ -1,5 +1,6 @@
 package net.arcadiusmc.chimera;
 
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,6 +24,9 @@ public final class Property<T> {
       boolean visualAffecting,
       boolean cascading
   ) {
+    Objects.requireNonNull(type, "Null type");
+    Objects.requireNonNull(defaultValue, "Null default value");
+
     this.type = type;
     this.defaultValue = defaultValue;
     this.cascading = cascading;

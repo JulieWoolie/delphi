@@ -9,4 +9,5 @@ repositories {
 
 dependencies {
   implementation(project(":api"))
+  implementation(project(":chimera"))
 }

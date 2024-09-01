@@ -17,11 +17,10 @@ import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
-import net.arcadiusmc.delphidom.parser.ParserErrors.Error;
-import net.arcadiusmc.delphidom.parser.ParserErrors.ErrorLevel;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.TagNames;
+import org.slf4j.event.Level;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -345,33 +344,33 @@ public class DocumentSaxParser extends DefaultHandler {
 
   @Override
   public void warning(SAXParseException e) throws SAXException {
-    saxException(ErrorLevel.WARN, e);
+    saxException(Level.WARN, e);
   }
 
   @Override
   public void error(SAXParseException e) throws SAXException {
-    saxException(ErrorLevel.ERROR, e);
+    saxException(Level.ERROR, e);
   }
 
   @Override
   public void fatalError(SAXParseException e) throws SAXException {
-    saxException(ErrorLevel.ERROR, e);
+    saxException(Level.ERROR, e);
   }
 
   private void warn(String message, Object... args) {
-    log(ErrorLevel.WARN, message, args);
+    log(Level.WARN, message, args);
   }
 
   private void error(String message, Object... args) {
-    log(ErrorLevel.ERROR, message, args);
+    log(Level.ERROR, message, args);
   }
 
-  private void log(ErrorLevel level, String message, Object... args) {
+  private void log(Level level, String message, Object... args) {
     saxException(level, new SAXParseException(String.format(message, args), locator));
   }
 
-  private void saxException(ErrorLevel level, SAXParseException exc) {
-    if (level == ErrorLevel.ERROR) {
+  private void saxException(Level level, SAXParseException exc) {
+    if (level == Level.ERROR) {
       failed = true;
     }
 
@@ -382,7 +381,7 @@ public class DocumentSaxParser extends DefaultHandler {
         exc.getMessage()
     );
 
-    Error e = new Error(message, level);
+    Error e = new Error(level, message);
     errors.add(e);
 
     if (listener != null) {

@@ -286,7 +286,10 @@ public class ComputedStyleSet {
   }
 
   private static <T> T getExplicit(PropertySet set, Property<T> property) {
-    Value<T> value = set.get(property);
+    Value<T> value = set.orNull(property);
+    if (value == null) {
+      return property.getDefaultValue();
+    }
 
     if (value.getType() != ValueType.EXPLICIT) {
       return property.getDefaultValue();
