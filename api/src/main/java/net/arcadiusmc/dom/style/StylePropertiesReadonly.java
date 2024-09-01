@@ -48,7 +48,7 @@ public interface StylePropertiesReadonly {
 
   @Nullable String getZIndex();
 
-  @Nullable String getTextColor();
+  @Nullable String getColor();
 
   @Nullable String getBackgroundColor();
 

@@ -132,7 +132,7 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
-  public @Nullable String getTextColor() {
+  public @Nullable String getColor() {
     return get(Properties.COLOR);
   }
 
