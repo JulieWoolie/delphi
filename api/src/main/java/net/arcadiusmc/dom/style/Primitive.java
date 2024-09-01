@@ -94,6 +94,21 @@ public sealed interface Primitive permits PrimitiveImpl {
      * Base value is a percentage of the screen's height
      */
     VH ("vh"),
+
+    /**
+     * Base value is 1x the size of a block in the game
+     */
+    M ("m"),
+
+    /**
+     * Base value is 1/100th the size of a block in the game
+     */
+    CM ("cm"),
+
+    /**
+     * Base value is 1/100th of the size of the parent element
+     */
+    PERCENT ("%"),
     ;
 
     private final String unit;
