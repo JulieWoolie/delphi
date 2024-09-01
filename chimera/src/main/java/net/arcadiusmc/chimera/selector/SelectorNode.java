@@ -1,48 +1,37 @@
 package net.arcadiusmc.chimera.selector;
 
-import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.dom.Element;
 
 @Getter
-public class SelectorNode {
+@Setter
+public class SelectorNode implements Selector {
 
-  final SelectorFunction[] functions;
-  final Combinator combinator;
+  Selector selector = Selector.MATCH_ALL;
+  Combinator combinator = Combinator.DESCENDANT;
 
-  public SelectorNode(Combinator combinator, SelectorFunction[] functions) {
-    this.functions = functions;
-    this.combinator = combinator;
-
-    Preconditions.checkArgument(combinator != null, "Null combinator");
-    Preconditions.checkArgument(functions != null, "Null functions array");
-    Preconditions.checkArgument(functions.length >= 1, "At least 1 function required");
+  @Override
+  public boolean test(Element root, Element el) {
+    return selector.test(root, el);
   }
 
-  public boolean test(Element root, Element el) {
-    for (SelectorFunction function : functions) {
-      if (!function.test(root, el)) {
-        return false;
-      }
-    }
-
-    return true;
+  @Override
+  public void append(StringBuilder builder) {
+    append(builder, false);
   }
 
   public void append(StringBuilder builder, boolean appendCombinator) {
-    for (SelectorFunction function : functions) {
-      function.append(builder);
-    }
+    selector.append(builder);
 
     if (appendCombinator) {
       combinator.append(builder);
     }
   }
 
+  @Override
   public void appendSpec(Spec spec) {
-    for (SelectorFunction function : functions) {
-      function.appendSpec(spec);
-    }
+    selector.appendSpec(spec);
   }
 
   @Override

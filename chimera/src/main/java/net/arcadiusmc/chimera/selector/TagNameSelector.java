@@ -1,33 +1,32 @@
 package net.arcadiusmc.chimera.selector;
 
+import java.util.Objects;
 import net.arcadiusmc.dom.Element;
 
-enum MatchAll implements Selector {
-  MATCH_ALL,
-  ;
+public record TagNameSelector(String tagName) implements Selector {
 
   @Override
   public boolean test(Element root, Element element) {
-    return true;
+    return Objects.equals(tagName, element.getTagName());
   }
 
   @Override
   public void append(StringBuilder builder) {
-    builder.append('*');
+    builder.append(tagName);
   }
 
   @Override
   public void appendSpec(Spec spec) {
-
+    spec.typeColumn++;
   }
 
   @Override
   public String getCssString() {
-    return "*";
+    return tagName;
   }
 
   @Override
   public String toString() {
-    return "*";
+    return tagName;
   }
 }

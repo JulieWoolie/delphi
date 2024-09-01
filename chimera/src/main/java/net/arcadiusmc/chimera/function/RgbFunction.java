@@ -3,7 +3,7 @@ package net.arcadiusmc.chimera.function;
 import static net.arcadiusmc.dom.style.Color.MAX_VALUE;
 import static net.arcadiusmc.dom.style.Color.MIN_VALUE;
 
-import net.arcadiusmc.chimera.ChimeraContext;
+import net.arcadiusmc.chimera.parse.ChimeraContext;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;

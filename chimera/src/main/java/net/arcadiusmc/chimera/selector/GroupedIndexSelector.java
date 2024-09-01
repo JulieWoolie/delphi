@@ -3,7 +3,7 @@ package net.arcadiusmc.chimera.selector;
 
 import net.arcadiusmc.dom.Element;
 
-public record GroupedIndexSelector(AnB anb, SelectorGroup group) implements IndexSelector {
+public record GroupedIndexSelector(AnB anb, Selector group) implements IndexSelector {
 
   @Override
   public boolean test(boolean inverted, Element root, Element el) {

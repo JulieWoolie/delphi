@@ -73,9 +73,9 @@ public interface PseudoFunctions {
     }
   };
 
-  PseudoFunc<SelectorGroup> IS = new SelectorPseudoFunc() {
+  PseudoFunc<Selector> IS = new SelectorPseudoFunc() {
     @Override
-    public boolean test(Element root, Element el, SelectorGroup value) {
+    public boolean test(Element root, Element el, Selector value) {
       return value.test(root, el);
     }
 
@@ -85,9 +85,9 @@ public interface PseudoFunctions {
     }
   };
 
-  PseudoFunc<SelectorGroup> NOT = new SelectorPseudoFunc() {
+  PseudoFunc<Selector> NOT = new SelectorPseudoFunc() {
     @Override
-    public boolean test(Element root, Element el, SelectorGroup value) {
+    public boolean test(Element root, Element el, Selector value) {
       return !value.test(root, el);
     }
 

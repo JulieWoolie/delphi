@@ -1,7 +1,7 @@
 package net.arcadiusmc.chimera.function;
 
 import lombok.Getter;
-import net.arcadiusmc.chimera.Location;
+import net.arcadiusmc.chimera.parse.Location;
 
 @Getter
 public class ScssInvocationException extends Exception {

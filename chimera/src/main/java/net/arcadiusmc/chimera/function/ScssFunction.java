@@ -1,6 +1,6 @@
 package net.arcadiusmc.chimera.function;
 
-import net.arcadiusmc.chimera.ChimeraContext;
+import net.arcadiusmc.chimera.parse.ChimeraContext;
 import org.apache.commons.lang3.Range;
 
 public interface ScssFunction {

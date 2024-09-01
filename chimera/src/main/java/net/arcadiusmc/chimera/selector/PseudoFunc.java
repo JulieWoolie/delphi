@@ -12,10 +12,10 @@ public interface PseudoFunc<T> {
     builder.append(value);
   }
 
-  interface SelectorPseudoFunc extends PseudoFunc<SelectorGroup> {
+  interface SelectorPseudoFunc extends PseudoFunc<Selector> {
 
     @Override
-    default void appendValue(StringBuilder builder, SelectorGroup value) {
+    default void appendValue(StringBuilder builder, Selector value) {
       value.append(builder);
     }
   }

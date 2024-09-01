@@ -27,16 +27,32 @@ public record AnB(int a, int b) {
 
   public void append(StringBuilder builder) {
     if (a == -1) {
-      builder.append("-n+");
+      builder.append("-n");
+
+      if (b != 0) {
+        builder.append("+");
+      }
     } else if (a != 0) {
       if (a != 1) {
         builder.append(a);
       }
 
       builder.append('n');
-      builder.append('+');
+
+      if (b != 0) {
+        builder.append('+');
+      }
     }
 
-    builder.append(b);
+    if (b != 0) {
+      builder.append(b);
+    }
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    append(builder);
+    return builder.toString();
   }
 }

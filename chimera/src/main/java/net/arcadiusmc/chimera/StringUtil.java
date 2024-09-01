@@ -2,14 +2,6 @@ package net.arcadiusmc.chimera;
 
 public class StringUtil {
 
-  public static Boolean parseBoolean(String input) {
-    return switch (input) {
-      case "yes", "true", "enabled", "enable" -> true;
-      case "no", "false", "disabled", "disable" -> false;
-      default -> null;
-    };
-  }
-
   public static boolean containsWord(String containing, String word) {
     int index = containing.indexOf(word);
 
