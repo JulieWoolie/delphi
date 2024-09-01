@@ -38,6 +38,9 @@ public class ScssFunctionsTest {
     Color bg = NamedColor.GREEN.brighten(0.25f);
 
     assertEquals(bg, c);
+
+    c = parseColor("brighten(green 25%)");
+    assertEquals(bg, c);
   }
 
   @Test
@@ -45,6 +48,9 @@ public class ScssFunctionsTest {
     Color c = parseColor("darken(green 0.25)");
     Color dg = NamedColor.GREEN.darken(0.25f);
 
+    assertEquals(dg, c);
+
+    c = parseColor("darken(green 25%)");
     assertEquals(dg, c);
   }
 
