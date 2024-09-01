@@ -19,9 +19,9 @@ public class RgbFunction implements ScssFunction {
 
   @Override
   public Object invoke(ChimeraContext ctx, Argument[] arguments) {
-    int red = toChannelValue(arguments[1]);
-    int green = toChannelValue(arguments[2]);
-    int blue = toChannelValue(arguments[3]);
+    int red = toChannelValue(arguments[0]);
+    int green = toChannelValue(arguments[1]);
+    int blue = toChannelValue(arguments[2]);
 
     int alpha;
 
@@ -78,6 +78,6 @@ public class RgbFunction implements ScssFunction {
       return Range.is(4);
     }
 
-    return Range.is(5);
+    return Range.is(3);
   }
 }
