@@ -1,10 +1,23 @@
 package net.arcadiusmc.dom.style;
 
-public enum DisplayType {
-  NONE,
-  INLINE,
-  BLOCK,
-  INLINE_BLOCK,
-  FLEX,
+public enum DisplayType implements KeywordRepresentable {
+  NONE ("none"),
+  INLINE ("inline"),
+  BLOCK ("block"),
+  INLINE_BLOCK ("inline-block"),
+  FLEX ("flex"),
+  ;
 
+  public static final DisplayType DEFAULT = INLINE;
+
+  private final String keyword;
+
+  DisplayType(String keyword) {
+    this.keyword = keyword;
+  }
+
+  @Override
+  public String getKeyword() {
+    return keyword;
+  }
 }
