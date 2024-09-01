@@ -1,12 +1,23 @@
 package net.arcadiusmc.chimera.parse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import net.arcadiusmc.chimera.parse.TokenStream.ParseMode;
 import org.junit.jupiter.api.Test;
 
 class TokenStreamTest {
+
+  @Test
+  void testTokenNames() {
+    String unknown = "unknown";
+
+    for (int i = 0; i < Token.LAST_TOKEN; i++) {
+      String name = Token.typeToString(i);
+      assertNotEquals(unknown, name, "Token type " + i + " was unknown");
+    }
+  }
 
   @Test
   void recognizeNumbers() {

@@ -57,11 +57,15 @@ public record Token(
   public static final int ANGLE_RIGHT   = ANGLE_LEFT + 1;
   public static final int MINUS         = ANGLE_RIGHT + 1;
 
+  public static final int LAST_TOKEN = MINUS;
+
   public static String typeToString(int ttype) {
     return switch (ttype) {
       case EOF -> "end-of-input";
       case ID -> "identifier";
+      case STRING -> "quoted-string";
       case NUMBER -> "number";
+      case INT -> "integer";
       case HEX -> "hex-sequence";
       case HEX_SHORT -> "short-hex-sequence";
       case HEX_ALPHA -> "alpha-hex-sequence";
