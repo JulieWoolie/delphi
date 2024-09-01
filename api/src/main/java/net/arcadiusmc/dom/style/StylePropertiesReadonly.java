@@ -4,99 +4,99 @@ import org.jetbrains.annotations.Nullable;
 
 public interface StylePropertiesReadonly {
 
-  @Nullable Primitive getMaxWidth();
+  @Nullable String getMaxWidth();
 
-  @Nullable Primitive getMaxHeight();
+  @Nullable String getMaxHeight();
 
-  @Nullable Primitive getMinWidth();
+  @Nullable String getMinWidth();
 
-  @Nullable Primitive getMinHeight();
+  @Nullable String getMinHeight();
 
-  @Nullable Primitive getPaddingLeft();
+  @Nullable String getPaddingLeft();
 
-  @Nullable Primitive getPaddingRight();
+  @Nullable String getPaddingRight();
 
-  @Nullable Primitive getPaddingTop();
+  @Nullable String getPaddingTop();
 
-  @Nullable Primitive getPaddingBottom();
+  @Nullable String getPaddingBottom();
 
-  @Nullable Primitive getBorderLeft();
+  @Nullable String getBorderLeft();
 
-  @Nullable Primitive getBorderRight();
+  @Nullable String getBorderRight();
 
-  @Nullable Primitive getBorderTop();
+  @Nullable String getBorderTop();
 
-  @Nullable Primitive getBorderBottom();
+  @Nullable String getBorderBottom();
 
-  @Nullable Primitive getOutlineLeft();
+  @Nullable String getOutlineLeft();
 
-  @Nullable Primitive getOutlineRight();
+  @Nullable String getOutlineRight();
 
-  @Nullable Primitive getOutlineTop();
+  @Nullable String getOutlineTop();
 
-  @Nullable Primitive getOutlineBottom();
+  @Nullable String getOutlineBottom();
 
-  @Nullable Primitive getMarginLeft();
+  @Nullable String getMarginLeft();
 
-  @Nullable Primitive getMarginRight();
+  @Nullable String getMarginRight();
 
-  @Nullable Primitive getMarginTop();
+  @Nullable String getMarginTop();
 
-  @Nullable Primitive getMarginBottom();
+  @Nullable String getMarginBottom();
 
-  @Nullable Primitive getScale();
+  @Nullable String getScale();
 
-  int getZIndex();
+  @Nullable String getZIndex();
 
-  @Nullable Color getTextColor();
+  @Nullable String getTextColor();
 
-  @Nullable Color getBackgroundColor();
+  @Nullable String getBackgroundColor();
 
-  @Nullable Color getBorderColor();
+  @Nullable String getBorderColor();
 
-  @Nullable Color getOutlineColor();
+  @Nullable String getOutlineColor();
 
-  boolean getTextShadow();
+  @Nullable String getTextShadow();
 
-  @Nullable DisplayType getDisplay();
+  @Nullable String getDisplay();
 
-  boolean getBold();
+  @Nullable String getBold();
 
-  boolean getItalic();
+  @Nullable String getItalic();
 
-  boolean getUnderlined();
+  @Nullable String getUnderlined();
 
-  boolean getObfuscated();
+  @Nullable String getObfuscated();
 
-  boolean getStrikethrough();
+  @Nullable String getStrikethrough();
 
   /**
    * Get the {@code flex-direction} property value.
    * @return Flex direction, or {@code null}, if not set.
    */
-  @Nullable FlexDirection getFlexDirection();
+  @Nullable String getFlexDirection();
 
   /**
    * Get the {@code flex-wrap} property value.
    * @return Flex wrap, or {@code null}, if not set.
    */
-  @Nullable FlexWrap getFlexWrap();
+  @Nullable String getFlexWrap();
 
   /**
    * Get the {@code justify-content} property value.
    * @return Justify content, or {@code null}, if not set.
    */
-  @Nullable JustifyContent getJustifyContent();
+  @Nullable String getJustifyContent();
 
   /**
    * Get the {@code align-items} property value.
    * @return Item alignment, or {@code null}, if not set.
    */
-  @Nullable AlignItems getAlignItems();
+  @Nullable String getAlignItems();
 
   /**
    * Get the {@code order} property value.
    * @return Order, or {@code 0} if not set
    */
-  int getOrder();
+  @Nullable String getOrder();
 }

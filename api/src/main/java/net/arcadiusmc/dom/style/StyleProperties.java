@@ -1,410 +1,702 @@
 package net.arcadiusmc.dom.style;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 public interface StyleProperties extends StylePropertiesReadonly {
 
+  /**
+   * Set the {@code color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setColor(@Nullable String value);
+
+  /**
+   * Set the {@code color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setColor(@Nullable Color value);
+
+  /**
+   * Set the {@code background-color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBackgroundColor(@Nullable String value);
+
+  /**
+   * Set the {@code background-color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBackgroundColor(@Nullable Color value);
+
+  /**
+   * Set the {@code border-color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderColor(@Nullable String value);
+
+  /**
+   * Set the {@code border-color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderColor(@Nullable Color value);
+
+  /**
+   * Set the {@code outline-color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOutlineColor(@Nullable String value);
+
+  /**
+   * Set the {@code outline-color} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOutlineColor(@Nullable Color value);
+
+  /**
+   * Set the {@code text-shadow} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setTextShadow(@Nullable String value);
+
+  /**
+   * Set the {@code text-shadow} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setTextShadow(@Nullable Boolean value);
+
+  /**
+   * Set the {@code bold} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBold(@Nullable String value);
+
+  /**
+   * Set the {@code bold} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBold(@Nullable Boolean value);
+
+  /**
+   * Set the {@code italic} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setItalic(@Nullable String value);
+
+  /**
+   * Set the {@code italic} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setItalic(@Nullable Boolean value);
+
+  /**
+   * Set the {@code underlined} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setUnderlined(@Nullable String value);
+
+  /**
+   * Set the {@code underlined} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setUnderlined(@Nullable Boolean value);
+
+  /**
+   * Set the {@code strikethrough} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setStrikethrough(@Nullable String value);
+
+  /**
+   * Set the {@code strikethrough} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setStrikethrough(@Nullable Boolean value);
+
+  /**
+   * Set the {@code obfuscated} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setObfuscated(@Nullable String value);
+
+  /**
+   * Set the {@code obfuscated} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setObfuscated(@Nullable Boolean value);
+
+  /**
+   * Set the {@code display} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setDisplay(@Nullable String value);
+
+  /**
+   * Set the {@code display} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setDisplay(@Nullable DisplayType value);
+
+  /**
+   * Set the {@code scale} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setScale(@Nullable String value);
+
+  /**
+   * Set the {@code scale} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setScale(@Nullable Primitive value);
+
+  /**
+   * Set the {@code max-width} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMaxWidth(@Nullable String value);
+
+  /**
+   * Set the {@code max-width} property.
+   * @param value Value
+   * @return {@code this}
+   */
   StyleProperties setMaxWidth(@Nullable Primitive value);
 
-  StyleProperties setMaxHeight(@Nullable Primitive value);
+  /**
+   * Set the {@code min-width} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMinWidth(@Nullable String value);
 
+  /**
+   * Set the {@code min-width} property.
+   * @param value Value
+   * @return {@code this}
+   */
   StyleProperties setMinWidth(@Nullable Primitive value);
 
+  /**
+   * Set the {@code max-height} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMaxHeight(@Nullable String value);
+
+  /**
+   * Set the {@code max-height} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMaxHeight(@Nullable Primitive value);
+
+  /**
+   * Set the {@code min-height} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMinHeight(@Nullable String value);
+
+  /**
+   * Set the {@code min-height} property.
+   * @param value Value
+   * @return {@code this}
+   */
   StyleProperties setMinHeight(@Nullable Primitive value);
 
   /**
-   * Set the {@code padding-top} property value.
-   * @param value top padding
+   * Set the {@code padding} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setPadding(@Nullable String value);
+
+  /**
+   * Set the {@code padding} property.
+   * @param value value padding
+   * @return {@code this}
+   */
+  StyleProperties setPadding(Primitive value);
+
+  /**
+   * Set the {@code padding} property.
+   * @param x x padding
+   * @param y y padding
+   * @return {@code this}
+   */
+  StyleProperties setPadding(Primitive x, Primitive y);
+
+  /**
+   * Set the {@code padding} property.
+   * @param top top padding
+   * @param x x padding
+   * @param bottom bottom padding
+   * @return {@code this}
+   */
+  StyleProperties setPadding(Primitive top, Primitive x, Primitive bottom);
+
+  /**
+   * Set the {@code padding} property.
+   * @param top top padding
+   * @param right right padding
+   * @param bottom bottom padding
+   * @param left left padding
+   * @return {@code this}
+   */
+  StyleProperties setPadding(Primitive top, Primitive right, Primitive bottom, Primitive left);
+
+  /**
+   * Set the {@code padding-top} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setPaddingTop(@Nullable String value);
+
+  /**
+   * Set the {@code padding-top} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setPaddingTop(@Nullable Primitive value);
 
   /**
-   * Set the {@code padding-right} property value.
-   * @param value right padding
+   * Set the {@code padding-right} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setPaddingRight(@Nullable String value);
+
+  /**
+   * Set the {@code padding-right} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setPaddingRight(@Nullable Primitive value);
 
   /**
-   * Set the {@code padding-bottom} property value.
-   * @param value bottom padding
+   * Set the {@code padding-bottom} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setPaddingBottom(@Nullable String value);
+
+  /**
+   * Set the {@code padding-bottom} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setPaddingBottom(@Nullable Primitive value);
 
   /**
-   * Set the {@code padding-left} property value.
-   * @param value left padding
+   * Set the {@code padding-left} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setPaddingLeft(@Nullable String value);
+
+  /**
+   * Set the {@code padding-left} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setPaddingLeft(@Nullable Primitive value);
 
   /**
-   * Set the padding.
-   *
-   * @param value Padding, applied to all sides
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setPadding(Primitive value) {
-    return this.setPaddingTop(value)
-        .setPaddingRight(value)
-        .setPaddingBottom(value)
-        .setPaddingLeft(value);
-  }
-
-  /**
-   * Set the padding.
-   *
-   * @param x left and right padding
-   * @param y top and bottom padding
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setPadding(Primitive x, Primitive y) {
-    return this.setPaddingTop(y)
-        .setPaddingRight(x)
-        .setPaddingBottom(y)
-        .setPaddingLeft(x);
-  }
-
-  /**
-   * Set the padding.
-   *
-   * @param top top padding
-   * @param x left and right padding
-   * @param bottom bottom padding
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setPadding(Primitive top, Primitive x, Primitive bottom) {
-    return this.setPaddingTop(top)
-        .setPaddingRight(x)
-        .setPaddingBottom(bottom)
-        .setPaddingLeft(x);
-  }
-
-  /**
-   * Set the padding.
-   *
-   * @param top top padding
-   * @param right right side padding
-   * @param left left side padding
-   * @param bottom bottom padding
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setPadding(Primitive top, Primitive right, Primitive bottom, Primitive left) {
-    return this.setPaddingTop(top)
-        .setPaddingRight(right)
-        .setPaddingBottom(bottom)
-        .setPaddingLeft(left);
-  }
-
-  /**
-   * Set the {@code border-top} property value.
-   * @param value top border
+   * Set the {@code outline} property.
+   * @param value Value
    * @return {@code this}
    */
-  StyleProperties setBorderTop(@Nullable Primitive value);
+  StyleProperties setOutline(@Nullable String value);
 
   /**
-   * Set the {@code border-right} property value.
-   * @param value right border
+   * Set the {@code outline} property.
+   * @param value value outline
    * @return {@code this}
    */
-  StyleProperties setBorderRight(@Nullable Primitive value);
+  StyleProperties setOutline(Primitive value);
 
   /**
-   * Set the {@code border-bottom} property value.
-   * @param value bottom border
+   * Set the {@code outline} property.
+   * @param x x outline
+   * @param y y outline
    * @return {@code this}
    */
-  StyleProperties setBorderBottom(@Nullable Primitive value);
+  StyleProperties setOutline(Primitive x, Primitive y);
 
   /**
-   * Set the {@code border-left} property value.
-   * @param value left border
+   * Set the {@code outline} property.
+   * @param top top outline
+   * @param x x outline
+   * @param bottom bottom outline
    * @return {@code this}
    */
-  StyleProperties setBorderLeft(@Nullable Primitive value);
+  StyleProperties setOutline(Primitive top, Primitive x, Primitive bottom);
 
   /**
-   * Set the border.
-   *
-   * @param value Border, applied to all sides
-   *
-   * @return {@code this}.
+   * Set the {@code outline} property.
+   * @param top top outline
+   * @param right right outline
+   * @param bottom bottom outline
+   * @param left left outline
+   * @return {@code this}
    */
-  default StyleProperties setBorder(Primitive value) {
-    return this.setBorderTop(value)
-        .setBorderRight(value)
-        .setBorderBottom(value)
-        .setBorderLeft(value);
-  }
+  StyleProperties setOutline(Primitive top, Primitive right, Primitive bottom, Primitive left);
 
   /**
-   * Set the border.
-   *
-   * @param x left and right border
-   * @param y top and bottom border
-   *
-   * @return {@code this}.
+   * Set the {@code outline-top} property.
+   * @param value Value
+   * @return {@code this}
    */
-  default StyleProperties setBorder(Primitive x, Primitive y) {
-    return this.setBorderTop(y)
-        .setBorderRight(x)
-        .setBorderBottom(y)
-        .setBorderLeft(x);
-  }
+  StyleProperties setOutlineTop(@Nullable String value);
 
   /**
-   * Set the border.
-   *
-   * @param top top border
-   * @param x left and right border
-   * @param bottom bottom border
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setBorder(Primitive top, Primitive x, Primitive bottom) {
-    return this.setBorderTop(top)
-        .setBorderRight(x)
-        .setBorderBottom(bottom)
-        .setBorderLeft(x);
-  }
-
-  /**
-   * Set the border.
-   *
-   * @param top top border
-   * @param right right side border
-   * @param left left side border
-   * @param bottom bottom border
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setBorder(Primitive top, Primitive right, Primitive bottom, Primitive left) {
-    return this.setBorderTop(top)
-        .setBorderRight(right)
-        .setBorderBottom(bottom)
-        .setBorderLeft(left);
-  }
-
-  /**
-   * Set the {@code outline-top} property value.
-   * @param value top outline
+   * Set the {@code outline-top} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setOutlineTop(@Nullable Primitive value);
 
   /**
-   * Set the {@code outline-right} property value.
-   * @param value right outline
+   * Set the {@code outline-right} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOutlineRight(@Nullable String value);
+
+  /**
+   * Set the {@code outline-right} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setOutlineRight(@Nullable Primitive value);
 
   /**
-   * Set the {@code outline-bottom} property value.
-   * @param value bottom outline
+   * Set the {@code outline-bottom} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOutlineBottom(@Nullable String value);
+
+  /**
+   * Set the {@code outline-bottom} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setOutlineBottom(@Nullable Primitive value);
 
   /**
-   * Set the {@code outline-left} property value.
-   * @param value left outline
+   * Set the {@code outline-left} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOutlineLeft(@Nullable String value);
+
+  /**
+   * Set the {@code outline-left} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setOutlineLeft(@Nullable Primitive value);
 
   /**
-   * Set the outline.
-   *
-   * @param value Outline, applied to all sides
-   *
-   * @return {@code this}.
+   * Set the {@code border} property.
+   * @param value Value
+   * @return {@code this}
    */
-  default StyleProperties setOutline(Primitive value) {
-    return this.setOutlineTop(value)
-        .setOutlineRight(value)
-        .setOutlineBottom(value)
-        .setOutlineLeft(value);
-  }
+  StyleProperties setBorder(@Nullable String value);
 
   /**
-   * Set the outline.
-   *
-   * @param x left and right outline
-   * @param y top and bottom outline
-   *
-   * @return {@code this}.
+   * Set the {@code border} property.
+   * @param value value border
+   * @return {@code this}
    */
-  default StyleProperties setOutline(Primitive x, Primitive y) {
-    return this.setOutlineTop(y)
-        .setOutlineRight(x)
-        .setOutlineBottom(y)
-        .setOutlineLeft(x);
-  }
+  StyleProperties setBorder(Primitive value);
 
   /**
-   * Set the outline.
-   *
-   * @param top top outline
-   * @param x left and right outline
-   * @param bottom bottom outline
-   *
-   * @return {@code this}.
+   * Set the {@code border} property.
+   * @param x x border
+   * @param y y border
+   * @return {@code this}
    */
-  default StyleProperties setOutline(Primitive top, Primitive x, Primitive bottom) {
-    return this.setOutlineTop(top)
-        .setOutlineRight(x)
-        .setOutlineBottom(bottom)
-        .setOutlineLeft(x);
-  }
+  StyleProperties setBorder(Primitive x, Primitive y);
 
   /**
-   * Set the outline.
-   *
-   * @param top top outline
-   * @param right right side outline
-   * @param left left side outline
-   * @param bottom bottom outline
-   *
-   * @return {@code this}.
+   * Set the {@code border} property.
+   * @param top top border
+   * @param x x border
+   * @param bottom bottom border
+   * @return {@code this}
    */
-  default StyleProperties setOutline(Primitive top, Primitive right, Primitive bottom, Primitive left) {
-    return this.setOutlineTop(top)
-        .setOutlineRight(right)
-        .setOutlineBottom(bottom)
-        .setOutlineLeft(left);
-  }
+  StyleProperties setBorder(Primitive top, Primitive x, Primitive bottom);
 
   /**
-   * Set the {@code margin-top} property value.
-   * @param value top margin
+   * Set the {@code border} property.
+   * @param top top border
+   * @param right right border
+   * @param bottom bottom border
+   * @param left left border
+   * @return {@code this}
+   */
+  StyleProperties setBorder(Primitive top, Primitive right, Primitive bottom, Primitive left);
+
+  /**
+   * Set the {@code border-top} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderTop(@Nullable String value);
+
+  /**
+   * Set the {@code border-top} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderTop(@Nullable Primitive value);
+
+  /**
+   * Set the {@code border-right} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderRight(@Nullable String value);
+
+  /**
+   * Set the {@code border-right} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderRight(@Nullable Primitive value);
+
+  /**
+   * Set the {@code border-bottom} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderBottom(@Nullable String value);
+
+  /**
+   * Set the {@code border-bottom} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderBottom(@Nullable Primitive value);
+
+  /**
+   * Set the {@code border-left} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderLeft(@Nullable String value);
+
+  /**
+   * Set the {@code border-left} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBorderLeft(@Nullable Primitive value);
+
+  /**
+   * Set the {@code margin} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMargin(@Nullable String value);
+
+  /**
+   * Set the {@code margin} property.
+   * @param value value margin
+   * @return {@code this}
+   */
+  StyleProperties setMargin(Primitive value);
+
+  /**
+   * Set the {@code margin} property.
+   * @param x x margin
+   * @param y y margin
+   * @return {@code this}
+   */
+  StyleProperties setMargin(Primitive x, Primitive y);
+
+  /**
+   * Set the {@code margin} property.
+   * @param top top margin
+   * @param x x margin
+   * @param bottom bottom margin
+   * @return {@code this}
+   */
+  StyleProperties setMargin(Primitive top, Primitive x, Primitive bottom);
+
+  /**
+   * Set the {@code margin} property.
+   * @param top top margin
+   * @param right right margin
+   * @param bottom bottom margin
+   * @param left left margin
+   * @return {@code this}
+   */
+  StyleProperties setMargin(Primitive top, Primitive right, Primitive bottom, Primitive left);
+
+  /**
+   * Set the {@code margin-top} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginTop(@Nullable String value);
+
+  /**
+   * Set the {@code margin-top} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setMarginTop(@Nullable Primitive value);
 
   /**
-   * Set the {@code margin-right} property value.
-   * @param value right margin
+   * Set the {@code margin-right} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginRight(@Nullable String value);
+
+  /**
+   * Set the {@code margin-right} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setMarginRight(@Nullable Primitive value);
 
   /**
-   * Set the {@code margin-bottom} property value.
-   * @param value bottom margin
+   * Set the {@code margin-bottom} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginBottom(@Nullable String value);
+
+  /**
+   * Set the {@code margin-bottom} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setMarginBottom(@Nullable Primitive value);
 
   /**
-   * Set the {@code margin-left} property value.
-   * @param value left margin
+   * Set the {@code margin-left} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginLeft(@Nullable String value);
+
+  /**
+   * Set the {@code margin-left} property.
+   * @param value Value
    * @return {@code this}
    */
   StyleProperties setMarginLeft(@Nullable Primitive value);
 
   /**
-   * Set the margin.
-   *
-   * @param value Margin, applied to all sides
-   *
-   * @return {@code this}.
+   * Set the {@code z-index} property.
+   * @param value Value
+   * @return {@code this}
    */
-  default StyleProperties setMargin(Primitive value) {
-    return this.setMarginTop(value)
-        .setMarginRight(value)
-        .setMarginBottom(value)
-        .setMarginLeft(value);
-  }
+  StyleProperties setZIndex(@Nullable String value);
 
   /**
-   * Set the margin.
-   *
-   * @param x left and right margin
-   * @param y top and bottom margin
-   *
-   * @return {@code this}.
+   * Set the {@code z-index} property.
+   * @param value Value
+   * @return {@code this}
    */
-  default StyleProperties setMargin(Primitive x, Primitive y) {
-    return this.setMarginTop(y)
-        .setMarginRight(x)
-        .setMarginBottom(y)
-        .setMarginLeft(x);
-  }
-
-  /**
-   * Set the margin.
-   *
-   * @param top top margin
-   * @param x left and right margin
-   * @param bottom bottom margin
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setMargin(Primitive top, Primitive x, Primitive bottom) {
-    return this.setMarginTop(top)
-        .setMarginRight(x)
-        .setMarginBottom(bottom)
-        .setMarginLeft(x);
-  }
-
-  /**
-   * Set the margin.
-   *
-   * @param top top margin
-   * @param right right side margin
-   * @param left left side margin
-   * @param bottom bottom margin
-   *
-   * @return {@code this}.
-   */
-  default StyleProperties setMargin(Primitive top, Primitive right, Primitive bottom, Primitive left) {
-    return this.setMarginTop(top)
-        .setMarginRight(right)
-        .setMarginBottom(bottom)
-        .setMarginLeft(left);
-  }
-
   StyleProperties setZIndex(@Nullable Integer value);
 
-  StyleProperties setScale(@Nullable Primitive value);
+  /**
+   * Set the {@code align-items} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setAlignItems(@Nullable String value);
 
-  StyleProperties setTextColor(@Nullable Color value);
+  /**
+   * Set the {@code align-items} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setAlignItems(@Nullable AlignItems value);
 
-  StyleProperties setBackgroundColor(@Nullable Color value);
+  /**
+   * Set the {@code flex-direction} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setFlexDirection(@Nullable String value);
 
-  StyleProperties setBorderColor(@Nullable Color value);
-
-  StyleProperties setOutlineColor(@Nullable Color value);
-
-  StyleProperties setTextShadow(@Nullable Boolean value);
-
-  StyleProperties setDisplay(@Nullable DisplayType value);
-
-  StyleProperties setBold(@Nullable Boolean value);
-
-  StyleProperties setItalic(@Nullable Boolean value);
-
-  StyleProperties setUnderlined(@Nullable Boolean value);
-
-  StyleProperties setObfuscated(@Nullable Boolean value);
-
-  StyleProperties setStrikethrough(@Nullable Boolean value);
-  
+  /**
+   * Set the {@code flex-direction} property.
+   * @param value Value
+   * @return {@code this}
+   */
   StyleProperties setFlexDirection(@Nullable FlexDirection value);
-  
+
+  /**
+   * Set the {@code flex-wrap} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setFlexWrap(@Nullable String value);
+
+  /**
+   * Set the {@code flex-wrap} property.
+   * @param value Value
+   * @return {@code this}
+   */
   StyleProperties setFlexWrap(@Nullable FlexWrap value);
-  
+
+  /**
+   * Set the {@code justify-content} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setJustifyContent(@Nullable String value);
+
+  /**
+   * Set the {@code justify-content} property.
+   * @param value Value
+   * @return {@code this}
+   */
   StyleProperties setJustifyContent(@Nullable JustifyContent value);
-  
-  StyleProperties setAlignItems(@Nullable AlignItems items);
-  
-  StyleProperties setOrder(@Nullable Integer order);
+
+  /**
+   * Set the {@code order} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOrder(@Nullable String value);
+
+  /**
+   * Set the {@code order} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setOrder(@Nullable Integer value);
 }
