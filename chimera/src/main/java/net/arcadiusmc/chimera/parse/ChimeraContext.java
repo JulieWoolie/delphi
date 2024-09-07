@@ -21,7 +21,7 @@ public class ChimeraContext {
 
     functions.put("rgb", ScssFunctions.RGB);
     functions.put("rgba", ScssFunctions.RGBA);
-    functions.put("brighten", ScssFunctions.BRIGHTEN);
+    functions.put("lighten", ScssFunctions.BRIGHTEN);
     functions.put("darken", ScssFunctions.DARKEN);
   }
 
