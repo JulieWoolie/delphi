@@ -1,6 +1,7 @@
 package net.arcadiusmc.dom.style;
 
 import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 public interface StyleProperties extends StylePropertiesReadonly {
 
@@ -699,4 +700,16 @@ public interface StyleProperties extends StylePropertiesReadonly {
    * @return {@code this}
    */
   StyleProperties setOrder(@Nullable Integer value);
+
+  /**
+   * Set the value of a CSS property.
+   *
+   * @param propertyName CSS property name
+   * @param value Property value
+   *
+   * @return {@code this}
+   *
+   * @throws NullPointerException If {@code propertyName} is {@code null}
+   */
+  StyleProperties setProperty(@NotNull String propertyName, @Nullable String value);
 }

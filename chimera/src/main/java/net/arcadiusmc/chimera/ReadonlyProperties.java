@@ -1,6 +1,11 @@
 package net.arcadiusmc.chimera;
 
+import com.google.common.base.Strings;
+import java.util.HashSet;
+import java.util.Set;
+import net.arcadiusmc.chimera.PropertySet.RuleIterator;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ReadonlyProperties implements StylePropertiesReadonly {
@@ -209,5 +214,32 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   @Override
   public String getOrder() {
     return get(Properties.ORDER);
+  }
+
+  @Override
+  public @Nullable String getPropertyValue(String propertyName) {
+    if (Strings.isNullOrEmpty(propertyName)) {
+      return null;
+    }
+
+    Property<Object> prop = Properties.getByKey(propertyName);
+    if (prop == null) {
+      return null;
+    }
+
+    return get(prop);
+  }
+
+  @Override
+  public @NotNull Set<String> getProperties() {
+    Set<String> strings = new HashSet<>();
+    RuleIterator it = set.iterator();
+
+    while (it.hasNext()) {
+      it.next();
+      strings.add(it.property().getKey());
+    }
+
+    return strings;
   }
 }

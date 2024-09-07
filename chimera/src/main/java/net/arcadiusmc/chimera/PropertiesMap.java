@@ -1,6 +1,6 @@
 package net.arcadiusmc.chimera;
 
-import javax.annotation.Nullable;
+import com.google.common.base.Strings;
 import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
 import net.arcadiusmc.chimera.parse.ChimeraParser;
@@ -17,6 +17,8 @@ import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.StyleProperties;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
 public class PropertiesMap extends ReadonlyProperties implements StyleProperties {
@@ -664,6 +666,21 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   @Override
   public PropertiesMap setOrder(@Nullable Integer value) {
     set(Properties.ORDER, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setProperty(@NotNull String propertyName, @Nullable String value) {
+    if (Strings.isNullOrEmpty(propertyName)) {
+      return this;
+    }
+
+    Property<Object> prop = Properties.getByKey(propertyName);
+    if (prop == null) {
+      return null;
+    }
+
+    set(prop, value);
     return triggerChange();
   }
 }

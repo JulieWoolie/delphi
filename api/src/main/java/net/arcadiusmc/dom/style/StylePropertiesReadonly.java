@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+import java.util.Set;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface StylePropertiesReadonly {
@@ -99,4 +102,24 @@ public interface StylePropertiesReadonly {
    * @return Order, or {@code 0} if not set
    */
   @Nullable String getOrder();
+
+  /**
+   * Get a set of CSS property names that are explicitly set
+   * by this property set.
+   *
+   * @return Property names
+   */
+  @NotNull Set<String> getProperties();
+
+  /**
+   * Get the value of a CSS property.
+   * <p>
+   * If the specified {@code propertyName} is {@code null}, or if the property was not found,
+   * or its value was not set, then this method will return {@code null}.
+   *
+   * @param propertyName CSS property name
+   * @return Property value, or {@code null}, if the property is not set in this object.
+   */
+  @Contract("null -> null")
+  @Nullable String getPropertyValue(String propertyName);
 }
