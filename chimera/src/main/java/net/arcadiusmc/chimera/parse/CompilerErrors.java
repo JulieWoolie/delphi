@@ -106,7 +106,7 @@ public class CompilerErrors {
         .append('\n')
         .append(linePad)
         .append(" |")
-        .append(" ".repeat(column))
+        .append(" ".repeat(Math.max(0, column - 1)))
         .append("^ ")
         .append(message)
 
