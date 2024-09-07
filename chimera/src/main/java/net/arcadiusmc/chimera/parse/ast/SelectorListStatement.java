@@ -7,6 +7,8 @@ import lombok.Setter;
 import net.arcadiusmc.chimera.parse.CompilerErrors;
 import net.arcadiusmc.chimera.selector.Selector;
 import net.arcadiusmc.chimera.selector.SelectorList;
+import net.arcadiusmc.chimera.selector.SelectorList.ListStyle;
+import net.arcadiusmc.chimera.selector.SelectorList.ListType;
 
 @Getter @Setter
 public class SelectorListStatement extends SelectorExpression {
@@ -28,6 +30,8 @@ public class SelectorListStatement extends SelectorExpression {
     }
 
     SelectorList list = new SelectorList(this.selectors.size());
+    list.setType(ListType.OR);
+    list.setStyle(ListStyle.COMMA_LIST);
 
     for (int i = 0; i < selectors.size(); i++) {
       list.add(selectors.get(i).compile(errors));

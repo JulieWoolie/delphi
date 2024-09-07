@@ -9,6 +9,7 @@ import net.arcadiusmc.chimera.selector.Combinator;
 import net.arcadiusmc.chimera.selector.Selector;
 import net.arcadiusmc.chimera.selector.SelectorList;
 import net.arcadiusmc.chimera.selector.SelectorList.ListStyle;
+import net.arcadiusmc.chimera.selector.SelectorList.ListType;
 import net.arcadiusmc.chimera.selector.SelectorNode;
 
 @Getter @Setter
@@ -41,6 +42,7 @@ public class SelectorNodeStatement extends SelectorExpression {
 
     SelectorList list = new SelectorList(expressions.size());
     list.setStyle(ListStyle.COMPACT);
+    list.setType(ListType.AND);
 
     node.setSelector(list);
 

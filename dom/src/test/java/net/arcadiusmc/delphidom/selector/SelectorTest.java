@@ -411,4 +411,22 @@ class SelectorTest {
     assertTrue(selector.test(body, span1));
     assertFalse(selector.test(body, div3));
   }
+
+  @Test
+  void testListOfTagNames() {
+    DelphiDocument doc = createDoc();
+    DelphiElement u = doc.createElement("u");
+    DelphiElement underlined = doc.createElement("underlined");
+    DelphiElement div = doc.createElement("div");
+
+    DelphiElement body = doc.getBody();
+    body.appendChild(u);
+    body.appendChild(underlined);
+    body.appendChild(div);
+
+    Selector selector = Chimera.parseSelector("u, underlined");
+    assertTrue(selector.test(null, u));
+    assertTrue(selector.test(null, underlined));
+    assertFalse(selector.test(null, div));
+  }
 }

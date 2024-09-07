@@ -21,6 +21,9 @@ public class SelectorList implements Selector, Iterable<Selector> {
   @Getter @Setter
   private ListStyle style = ListStyle.COMMA_LIST;
 
+  @Getter @Setter
+  private ListType type = ListType.OR;
+
   public SelectorList() {
     this(DEFAULT_SIZE);
   }
@@ -48,6 +51,14 @@ public class SelectorList implements Selector, Iterable<Selector> {
       return true;
     }
 
+    if (type == ListType.OR) {
+      return testOr(root, element);
+    } else {
+      return testAnd(root, element);
+    }
+  }
+
+  private boolean testAnd(Element root, Element element) {
     for (Selector selector : selectors) {
       if (selector.test(root, element)) {
         continue;
@@ -57,6 +68,18 @@ public class SelectorList implements Selector, Iterable<Selector> {
     }
 
     return true;
+  }
+
+  private boolean testOr(Element root, Element element) {
+    for (Selector selector : selectors) {
+      if (!selector.test(root, element)) {
+        continue;
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
   @Override
@@ -94,6 +117,14 @@ public class SelectorList implements Selector, Iterable<Selector> {
 
     // Do not delimit entries at all
     COMPACT
+  }
+
+  public enum ListType {
+    // All must match
+    AND,
+
+    // One must match
+    OR
   }
 
   private class Iter implements Iterator<Selector> {
