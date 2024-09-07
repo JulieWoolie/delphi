@@ -1,6 +1,5 @@
 package net.arcadiusmc.delphi.util;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
@@ -87,19 +86,19 @@ public sealed interface Result<T, E> permits Err, Ok {
    *   <caption>Returned results</caption>
    *   <tr>
    *     <th>Exception Types</th>
-   *     <th>Returned message</th>
+   *     <th>Returned error code</th>
    *   </tr>
    *   <tr>
-   *     <td>{@link NoSuchFileException} or {@link FileNotFoundException}</td>
-   *     <td>{@code "No such file"}</td>
+   *     <td>{@link NoSuchFileException}</td>
+   *     <td>{@link DelphiException#ERR_NO_FILE}</td>
    *   </tr>
    *   <tr>
    *     <td>{@link AccessDeniedException}</td>
-   *     <td>{@code "Access Denied: %reason%"}, where {@code %reason%} is {@link AccessDeniedException#getReason()}</td>
+   *     <td>{@link DelphiException#ERR_ACCESS_DENIED}</td>
    *   </tr>
    *   <tr>
    *     <td>Any other IO exception type</td>
-   *     <td>{@code "IO Error: %reason%"}, where {@code %reason%} is {@link IOException#getMessage()}</td>
+   *     <td>{@link DelphiException#ERR_IO_ERROR}</td>
    *   </tr>
    * </table>
    *
