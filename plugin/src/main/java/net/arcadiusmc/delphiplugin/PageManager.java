@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.DelphiException;
@@ -15,7 +16,6 @@ import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.event.EventImpl;
-import net.arcadiusmc.delphidom.scss.SheetBuilder;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.resource.Modules;
@@ -198,6 +198,6 @@ public class PageManager implements Delphi {
 
   @Override
   public @NotNull StylesheetBuilder newStylesheetBuilder() {
-    return new SheetBuilder();
+    return new ChimeraSheetBuilder();
   }
 }
