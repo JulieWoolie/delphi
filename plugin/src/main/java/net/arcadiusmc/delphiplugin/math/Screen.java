@@ -34,6 +34,8 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   public final Quaternionf rightRotation = new Quaternionf();
 
   public static void lookInDirection(Quaternionf lrot, Vector3f dir) {
+    // I've definitely fucked up some order of operations here,
+    // because why is the global up = -1
     Vector3f globalUp = new Vector3f(0, -1, 0);
     Vector3f right = new Vector3f();
     Vector3f up = new Vector3f();
