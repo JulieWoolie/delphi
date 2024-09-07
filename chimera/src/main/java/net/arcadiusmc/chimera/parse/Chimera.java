@@ -247,6 +247,7 @@ public final class Chimera {
       case TRUE -> true;
       case FALSE -> false;
 
+      case BLOCK -> DisplayType.BLOCK;
       case NONE -> DisplayType.NONE;
       case INLINE -> DisplayType.INLINE;
       case INLINE_BLOCK -> DisplayType.INLINE_BLOCK;
