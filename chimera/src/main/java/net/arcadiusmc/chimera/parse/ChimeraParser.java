@@ -1068,7 +1068,7 @@ public class ChimeraParser {
       }
     }
 
-    Location l = expect(BRACKET_CLOSE).location();
+    Location l = expect(BRACKET_CLOSE).end();
     expr.setEnd(l);
 
     popScope();
