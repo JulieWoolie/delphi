@@ -3,8 +3,8 @@ package net.arcadiusmc.delphiplugin.render;
 import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE;
 import static net.arcadiusmc.delphiplugin.render.RenderObject.NIL_COLOR;
 
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
@@ -30,7 +30,7 @@ public abstract class TextContent implements ElementContent {
     return true;
   }
 
-  private Component resolve(ComputedStyle set) {
+  private Component resolve(FullStyle set) {
     Component base = getBaseText();
 
     if (TextUtil.isEmpty(base)) {
@@ -39,7 +39,9 @@ public abstract class TextContent implements ElementContent {
 
     Component result;
     boolean override = overrideStyle();
-    TextColor textColor = TextUtil.toTextColor(set.textColor);
+    TextColor textColor = set.textColor == null
+        ? NamedTextColor.BLACK
+        : TextUtil.toTextColor(set.textColor);
 
     if (override) {
       result = base.color(textColor);
@@ -70,7 +72,7 @@ public abstract class TextContent implements ElementContent {
   }
 
   @Override
-  public void applyContentTo(Display entity, ComputedStyle set) {
+  public void applyContentTo(Display entity, FullStyle set) {
     TextDisplay display = (TextDisplay) entity;
 
     Component text = resolve(set);
@@ -83,7 +85,7 @@ public abstract class TextContent implements ElementContent {
   }
 
   @Override
-  public void measureContent(Vector2f out, ComputedStyle set) {
+  public void measureContent(Vector2f out, FullStyle set) {
     if (isEmpty()) {
       out.set(0);
       return;

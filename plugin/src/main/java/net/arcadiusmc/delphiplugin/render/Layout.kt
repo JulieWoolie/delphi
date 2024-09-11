@@ -1,5 +1,11 @@
 package net.arcadiusmc.delphiplugin.render
 
+import net.arcadiusmc.chimera.ComputedStyleSet
+import net.arcadiusmc.chimera.ValueOrAuto
+import net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE
+import net.arcadiusmc.delphidom.Consts.LEN0_PX
+import net.arcadiusmc.delphidom.Loggers
+import net.arcadiusmc.delphidom.Rect
 import net.arcadiusmc.delphiplugin.math.Rectangle
 import net.arcadiusmc.dom.style.*
 import org.joml.Vector2f
@@ -13,7 +19,120 @@ class RenderLine {
   var bottomMargin: Float = 0.0f
 }
 
+val LOGGER = Loggers.getDocumentLogger()
+
+fun measure(el: ElementRenderObject) {
+  val queue: Deque<RenderObject> = ArrayDeque()
+  queue.addLast(el)
+  addToQueue(queue, el)
+
+  val maxSize: Vector2f = Vector2f()
+  val screenSize: Vector2f = el.view.screen.dimensions
+
+  fun computeRect(
+    rect: Rect,
+    t: ValueOrAuto,
+    r: ValueOrAuto,
+    b: ValueOrAuto,
+    l: ValueOrAuto
+  ) {
+    rect.top = computePrimitive(t, maxSize.y, screenSize) ?: 0f
+    rect.right = computePrimitive(r, maxSize.x, screenSize) ?: 0f
+    rect.bottom = computePrimitive(b, maxSize.y, screenSize) ?: 0f
+    rect.left = computePrimitive(l, maxSize.x, screenSize) ?: 0f
+  }
+
+  while (queue.isNotEmpty()) {
+    val e: RenderObject = queue.pollFirst()
+    maxSize(e, maxSize)
+
+    val out: FullStyle = e.style
+    val set: ComputedStyleSet = e.styleSet
+
+    applyStandardProperties(out, set)
+
+    computeRect(out.margin, set.marginTop, set.marginRight, set.marginBottom, set.marginLeft)
+    computeRect(out.padding, set.paddingTop, set.paddingRight, set.paddingBottom, set.paddingLeft)
+    computeRect(out.border, set.borderTop, set.borderRight, set.borderBottom, set.borderLeft)
+    computeRect(out.outline, set.outlineTop, set.outlineRight, set.outlineBottom, set.outlineLeft)
+
+    out.maxSize.x = computePrimitive(set.maxWidth, maxSize.x, screenSize) ?: Float.MAX_VALUE
+    out.maxSize.y = computePrimitive(set.maxHeight, maxSize.y, screenSize) ?: Float.MAX_VALUE
+    out.minSize.x = computePrimitive(set.minWidth, maxSize.x, screenSize) ?: Float.MIN_VALUE
+    out.minSize.y = computePrimitive(set.minHeight, maxSize.y, screenSize) ?: Float.MIN_VALUE
+    out.setSize.x = computePrimitive(set.width, maxSize.x, screenSize) ?: 0f
+    out.setSize.y = computePrimitive(set.height, maxSize.y, screenSize) ?: 0f
+    out.scale.x = computePrimitive(set.scaleX, maxSize.x, screenSize) ?: 1f
+    out.scale.y = computePrimitive(set.scaleY, maxSize.y, screenSize) ?: 1f
+  }
+}
+
+fun computePrimitive(v: ValueOrAuto, maxSize: Float, screenSize: Vector2f): Float? {
+  if (v.isAuto) {
+    return null
+  }
+
+  val prim: Primitive = v.primitive
+  val value: Float = prim.value
+  val percent: Float = value * 0.01f;
+
+  return when (prim.unit) {
+    Primitive.Unit.NONE -> value
+    Primitive.Unit.PX -> value * CHAR_PX_SIZE
+    Primitive.Unit.CH -> value * LEN0_PX
+    Primitive.Unit.VW -> (percent) * screenSize.x
+    Primitive.Unit.VH -> (percent) * screenSize.y
+    Primitive.Unit.M -> value
+    Primitive.Unit.CM -> percent
+    Primitive.Unit.PERCENT -> percent * maxSize
+    else -> null
+  }
+}
+
+fun applyStandardProperties(out: FullStyle, set: ComputedStyleSet) {
+  // Colors
+  out.textColor = set.color
+  out.backgroundColor = set.backgroundColor
+  out.borderColor = set.borderColor
+  out.outlineColor = set.outlineColor
+
+  // Text options
+  out.textShadowed = set.textShadow
+  out.bold = set.bold
+  out.italic = set.italic
+  out.underlined = set.underlined
+  out.strikethrough = set.strikethrough
+  out.obfuscated = set.obfuscated
+
+  out.display = set.display
+  out.zindex = set.zindex
+  out.alignItems = set.alignItems
+  out.flexDirection = set.flexDirection
+  out.flexWrap = set.flexWrap
+  out.justify = set.justifyContent
+  out.order = set.order
+}
+
+fun addToQueue(queue: Deque<RenderObject>, el: ElementRenderObject) {
+  for (childObject in el.childObjects) {
+    queue.addLast(childObject)
+  }
+
+  for (childObject in el.childObjects) {
+    if (childObject !is ElementRenderObject) {
+      continue
+    }
+
+    addToQueue(queue, childObject)
+  }
+}
+
 fun layout(el: ElementRenderObject) {
+  measure(el)
+  layoutInternal(el)
+}
+
+private fun layoutInternal(el: ElementRenderObject) {
   if (el.childObjects.isEmpty()) {
     return
   }
@@ -23,7 +142,7 @@ fun layout(el: ElementRenderObject) {
       continue
     }
 
-    layout(childObject)
+    layoutInternal(childObject)
   }
 
   if (el.style.display == DisplayType.FLEX) {
@@ -108,7 +227,7 @@ fun layoutFlex(el: ElementRenderObject) {
   val style = el.style
 
   // Content alignment along the Flex box's axis (column or row)
-  val justify = style.justfiy
+  val justify = style.justify
 
   // Content alignment along the Flex box's cross axis
   val alignItems = style.alignItems
@@ -269,7 +388,7 @@ fun splitIntoLines(el: ElementRenderObject): MutableList<RenderLine> {
   return lines
 }
 
-fun maxSize(el: ElementRenderObject, out: Vector2f) {
+fun maxSize(el: RenderObject, out: Vector2f) {
   if (el.parent != null) {
     maxSize(el.parent, out)
   } else {

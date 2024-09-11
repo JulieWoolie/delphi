@@ -4,7 +4,7 @@ import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
+import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import org.bukkit.Location;
@@ -20,7 +20,7 @@ public class ContentRenderObject extends RenderObject {
   @Setter
   private boolean contentDirty = false;
 
-  public ContentRenderObject(PageView view, ComputedStyle style, Screen screen) {
+  public ContentRenderObject(PageView view, ComputedStyleSet style, Screen screen) {
     super(view, style, screen);
   }
 

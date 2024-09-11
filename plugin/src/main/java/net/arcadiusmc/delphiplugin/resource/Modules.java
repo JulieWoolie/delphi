@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
+import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.Rule;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
@@ -35,12 +37,7 @@ import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.Loggers;
-import net.arcadiusmc.delphidom.parser.ErrorListener;
-import net.arcadiusmc.delphidom.scss.Rule;
-import net.arcadiusmc.delphidom.scss.ScssParser;
-import net.arcadiusmc.delphidom.scss.Sheet;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
-import net.arcadiusmc.dom.ParserException;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -61,7 +58,7 @@ public class Modules implements DelphiResources {
   private FileSystemProvider zipProvider;
 
   @Getter
-  private Sheet defaultStyle;
+  private ChimeraStylesheet defaultStyle;
 
   public DelphiPlugin plugin;
 
@@ -103,25 +100,12 @@ public class Modules implements DelphiResources {
       return;
     }
 
-    ScssParser parser = new ScssParser(buf);
-    parser.getErrors().setListener(ErrorListener.logging(LOGGER));
-
-    Sheet sheet;
-
-    try {
-      sheet = parser.stylesheet();
-    } catch (ParserException exc) {
-      LOGGER.error("Error parsing {}", DEFAULT_STYLE, exc);
-      defaultStyle = null;
-      return;
-    }
-
-    defaultStyle = sheet;
-    defaultStyle.addFlag(Sheet.FLAG_DEFAULT);
+    defaultStyle = PageResources.parseSheet(buf, DEFAULT_STYLE, null);
+    defaultStyle.setFlags(ChimeraStylesheet.FLAG_DEFAULT_STYLE);
 
     for (int i = 0; i < defaultStyle.getLength(); i++) {
       Rule rule = defaultStyle.getRule(i);
-      rule.getSelectorObj().getSpec().set(0);
+      rule.getSpec().set(0);
     }
   }
 

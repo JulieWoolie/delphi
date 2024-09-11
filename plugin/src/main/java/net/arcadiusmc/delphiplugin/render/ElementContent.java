@@ -1,6 +1,5 @@
 package net.arcadiusmc.delphiplugin.render;
 
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
@@ -10,11 +9,11 @@ public interface ElementContent {
 
   Display createEntity(World world, Location location);
 
-  void applyContentTo(Display entity, ComputedStyle set);
+  void applyContentTo(Display entity, FullStyle set);
 
   Class<? extends Display> getEntityClass();
 
-  void measureContent(Vector2f out, ComputedStyle set);
+  void measureContent(Vector2f out, FullStyle set);
 
   boolean isEmpty();
 

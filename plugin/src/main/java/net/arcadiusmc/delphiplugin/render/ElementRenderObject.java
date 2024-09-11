@@ -3,7 +3,7 @@ package net.arcadiusmc.delphiplugin.render;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
+import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.style.DisplayType;
@@ -30,7 +30,7 @@ public class ElementRenderObject extends RenderObject {
 
   protected final List<RenderObject> childObjects = new ArrayList<>();
 
-  public ElementRenderObject(PageView view, ComputedStyle style, Screen screen) {
+  public ElementRenderObject(PageView view, ComputedStyleSet style, Screen screen) {
     super(view, style, screen);
   }
 

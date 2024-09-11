@@ -22,9 +22,10 @@ repositories {
 
 dependencies {
   implementation(project(":dom"))
+  implementation(project(":chimera"))
   implementation(project(":api"))
 
-  compileOnly(kotlin("stdlib"))
+  //implementation(kotlin("stdlib"))
 
   paperweight.paperDevBundle("$minecraftVersion-R0.1-SNAPSHOT")
 }

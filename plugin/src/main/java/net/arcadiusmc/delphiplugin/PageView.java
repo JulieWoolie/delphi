@@ -6,12 +6,16 @@ import static net.arcadiusmc.delphidom.Consts.MIN_SCREEN_SIZE;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.chimera.ComputedStyleSet;
+import net.arcadiusmc.chimera.DirtyBit;
+import net.arcadiusmc.chimera.StyleUpdateCallbacks;
+import net.arcadiusmc.chimera.system.StyleNode;
+import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphidom.ChatNode;
 import net.arcadiusmc.delphidom.DelphiDocument;
@@ -24,7 +28,6 @@ import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.MouseEventImpl;
-import net.arcadiusmc.delphidom.scss.DirtyBit;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.render.ComponentContent;
@@ -38,6 +41,7 @@ import net.arcadiusmc.delphiplugin.resource.PageResources;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.TagNames;
@@ -66,7 +70,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
-public class PageView implements ExtendedView {
+public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   private static final Logger LOGGER = Loggers.getLogger("DocumentView");
 
@@ -130,9 +134,9 @@ public class PageView implements ExtendedView {
     }
 
     renderRoot.getPosition().set(0, screen.getHeight());
+    LayoutKt.layout(renderRoot);
 
     renderRoot.spawnRecursive();
-    LayoutKt.layout(renderRoot);
 
     closed = false;
 
@@ -213,6 +217,20 @@ public class PageView implements ExtendedView {
   }
 
   @Override
+  public void moveTo(@NotNull Location location, boolean changeRotation) {
+    Objects.requireNonNull(location, "Null location");
+    Objects.requireNonNull(location.getWorld(), "Null location world");
+
+    moveTo(
+        location.getWorld(),
+        (float) location.getX(),
+        (float) location.getY(),
+        (float) location.getZ(),
+        changeRotation ? location : null
+    );
+  }
+
+  @Override
   public void moveTo(@NotNull World world, @NotNull Vector3f position) {
     Objects.requireNonNull(world, "Null world");
     Objects.requireNonNull(position, "Null position");
@@ -285,6 +303,8 @@ public class PageView implements ExtendedView {
     if (document.getBody() != null) {
       renderRoot = (ElementRenderObject) initRenderTree(document.getBody());
     }
+
+    document.getStyles().setUpdateCallbacks(this);
   }
 
   private void configureScreen() {
@@ -352,19 +372,28 @@ public class PageView implements ExtendedView {
   private RenderObject initRenderTree(DelphiNode node) {
     RenderObject obj;
 
+    StyleObjectModel styles = node.getDocument().getStyles();
+    StyleNode styleNode = styles.getStyleNode(node);
+
+    if (styleNode == null) {
+      styleNode = styles.createNode(node);
+    }
+
+    ComputedStyleSet styleSet = styleNode.getComputedSet();
+
     switch (node) {
       case Text text -> {
-        ContentRenderObject o = new ContentRenderObject(this, node.style, screen);
+        ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
         o.setContent(new StringContent(text.getTextContent()));
         obj = o;
       }
       case ChatNode chat -> {
-        ContentRenderObject o = new ContentRenderObject(this, node.style, screen);
+        ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
         o.setContent(new ComponentContent(chat.getContent()));
         obj = o;
       }
       case DelphiItemElement item -> {
-        ContentRenderObject o = new ContentRenderObject(this, node.style, screen);
+        ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
 
         if (ItemContent.isEmpty(item.getItemStack())) {
           o.setContent(null);
@@ -375,7 +404,7 @@ public class PageView implements ExtendedView {
         obj = o;
       }
       default -> {
-        ElementRenderObject o = new ElementRenderObject(this, node.style, screen);
+        ElementRenderObject o = new ElementRenderObject(this, styleSet, screen);
         DelphiElement el = (DelphiElement) node;
 
         for (DelphiNode delphiNode : el.childList()) {
@@ -398,7 +427,7 @@ public class PageView implements ExtendedView {
     return obj;
   }
 
-  public RenderObject getRenderObject(DelphiNode node) {
+  public RenderObject getRenderObject(Node node) {
     return renderObjects.get(node);
   }
 
@@ -423,12 +452,12 @@ public class PageView implements ExtendedView {
   }
 
   @Override
-  public void styleUpdated(DelphiNode node, int changes) {
+  public void styleUpdated(StyleNode styleNode, int changes) {
     if (changes == 0 || closed) {
       return;
     }
 
-    RenderObject obj = getRenderObject(node);
+    RenderObject obj = getRenderObject(styleNode.getDomNode());
     if (obj == null) {
       return;
     }
@@ -446,16 +475,18 @@ public class PageView implements ExtendedView {
       respawn = changed(changes, DirtyBit.VISUAL);
     }
 
-    if (respawn) {
-      obj.spawn();
-    }
-
     if (changed(changes, DirtyBit.LAYOUT)) {
       if (obj instanceof ElementRenderObject el) {
         el.sortChildren();
       }
-
       triggerRealign();
+
+      if (renderRoot != null) {
+        renderRoot.spawnRecursive();
+      }
+    } else if (respawn) {
+      LayoutKt.applyStandardProperties(obj.getStyle(), styleNode.getComputedSet());
+      obj.spawn();
     }
   }
 
@@ -506,15 +537,6 @@ public class PageView implements ExtendedView {
       return null;
     }
     return new Vector3f(cursorWorld);
-  }
-
-  @Override
-  public Map<String, Object> getStyleVariables() {
-    if (resources == null) {
-      return new HashMap<>();
-    }
-
-    return resources.getStyleVariables();
   }
 
   @Override
@@ -757,7 +779,7 @@ public class PageView implements ExtendedView {
       DelphiElement parent = p.getParent();
 
       if (parent == null) {
-        document.getStyles().updateStyles(p);
+        document.getStyles().updateDomStyle(p);
       }
 
       p = parent;
@@ -893,14 +915,15 @@ public class PageView implements ExtendedView {
             obj = initRenderTree(tooltip);
           }
 
-          document.getStyles().updateStyles(tooltip);
+          document.getStyles().updateDomStyle(tooltip);
 
           obj.moveTo(event.getScreenPosition());
-          obj.spawnRecursive();
 
           if (obj instanceof ElementRenderObject eObj) {
             LayoutKt.layout(eObj);
           }
+
+          obj.spawnRecursive();
         }
 
         case EventTypes.MOUSE_LEAVE -> {

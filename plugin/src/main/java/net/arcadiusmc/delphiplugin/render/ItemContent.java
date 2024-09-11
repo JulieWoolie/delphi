@@ -4,7 +4,6 @@ import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphidom.Consts.ITEM_SPRITE_SIZE;
 
 import java.util.Objects;
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
@@ -38,7 +37,7 @@ public class ItemContent implements ElementContent {
   }
 
   @Override
-  public void applyContentTo(Display entity, ComputedStyle set) {
+  public void applyContentTo(Display entity, FullStyle set) {
     ItemDisplay display = (ItemDisplay) entity;
     display.setItemStack(item);
   }
@@ -49,7 +48,7 @@ public class ItemContent implements ElementContent {
   }
 
   @Override
-  public void measureContent(Vector2f out, ComputedStyle set) {
+  public void measureContent(Vector2f out, FullStyle set) {
     out.set(ITEM_SPRITE_SIZE);
   }
 

@@ -1,29 +1,35 @@
 package net.arcadiusmc.delphiplugin.render;
 
+import com.google.common.base.Strings;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.PropertySet.PropertyIterator;
+import net.arcadiusmc.chimera.Rule;
+import net.arcadiusmc.chimera.Value;
+import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphi.resource.ApiModule;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
+import net.arcadiusmc.delphi.resource.IoModule;
+import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
+import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.XmlPrintVisitor;
 import net.arcadiusmc.delphidom.event.EventListenerList;
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
-import net.arcadiusmc.delphidom.scss.DocumentStyles;
-import net.arcadiusmc.delphidom.scss.Property;
-import net.arcadiusmc.delphidom.scss.PropertySet;
-import net.arcadiusmc.delphidom.scss.PropertySet.RuleIterator;
-import net.arcadiusmc.delphidom.scss.Rule;
-import net.arcadiusmc.delphidom.scss.Sheet;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.event.EventListener;
+import net.arcadiusmc.dom.style.StyleProperties;
+import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import org.joml.Vector2f;
 
 public class RenderTreePrint extends XmlPrintVisitor {
@@ -39,7 +45,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
   public void appendHeader() {
     DelphiDocument doc = view.getDocument();
-    DocumentStyles styles = doc.getStyles();
+    StyleObjectModel styles = doc.getStyles();
 
     nlIndent().append("<header>");
     indent++;
@@ -56,8 +62,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
           .append(" />");
     }
 
-    for (Sheet stylesheet : styles.stylesheets) {
-      if ((stylesheet.getFlags() & Sheet.FLAG_DEFAULT) == Sheet.FLAG_DEFAULT) {
+    for (ChimeraStylesheet stylesheet : styles.getSheets()) {
+      if ((stylesheet.getFlags() & ChimeraStylesheet.FLAG_DEFAULT_STYLE) != 0) {
         continue;
       }
 
@@ -70,19 +76,14 @@ public class RenderTreePrint extends XmlPrintVisitor {
         nlIndent().append(rule.getSelector()).append(" {");
         indent++;
 
-        RuleIterator it = rule.getPropertySet().iterator();
+        PropertyIterator it = rule.getPropertySet().iterator();
         while (it.hasNext()) {
           it.next();
 
           nlIndent().append(it.property().getKey()).append(": ");
 
-          Object val = it.value();
-
-          if (val instanceof Enum<?> e) {
-            builder.append(e.name().toLowerCase().replace("_", "-"));
-          } else {
-            builder.append(val);
-          }
+          Value<Object> val = it.value();
+          builder.append(val.getTextValue());
         }
 
         indent--;
@@ -101,14 +102,14 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("render-object-count: ").append(view.getRenderObjects().size());
     nlIndent().append("module-name: ").append(view.getResources().getModuleName());
 
-    String moduleType;
     ResourceModule module = view.getResources().getModule();
-
-    moduleType = switch (module) {
+    String moduleType = switch (module) {
       case ApiModule apiModule -> "api-module";
-      case ZipModule zipModule -> "zip";
-      case DirectoryModule directoryModule -> "directory";
-      case null, default -> "unknown";
+      case ZipModule zip -> "zip(" + zip.getZipFile() + ")";
+      case DirectoryModule dir -> "directory(" + dir.getDirectory() + ")";
+      case JarResourceModule jarRes -> "jar-resource";
+      case IoModule io -> "io-module";
+      case null -> "unknown";
     };
 
     nlIndent().append("module-type: ").append(moduleType);
@@ -130,12 +131,104 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("</header>");
   }
 
+  private void appendFullStyle(FullStyle style)  {
+    nlIndent().append("padding:");
+    appendRect(style.padding);
+
+    nlIndent().append("border: ");
+    appendRect(style.border);
+
+    nlIndent().append("outline: ");
+    appendRect(style.outline);
+
+    nlIndent().append("margin: ");
+    appendRect(style.margin);
+
+    nlIndent().append("text-color: ").append(style.textColor);
+    nlIndent().append("background-color: ").append(style.backgroundColor);
+    nlIndent().append("border-color: ").append(style.borderColor);
+    nlIndent().append("outline-color: ").append(style.outlineColor);
+
+    nlIndent().append("text-shadowed: ").append(style.textShadowed);
+    nlIndent().append("bold: ").append(style.bold);
+    nlIndent().append("italic: ").append(style.italic);
+    nlIndent().append("underlined: ").append(style.underlined);
+    nlIndent().append("strikethrough: ").append(style.strikethrough);
+    nlIndent().append("obfuscated: ").append(style.obfuscated);
+
+    nlIndent().append("display: DisplayType.").append(style.display);
+
+    nlIndent().append("scale: ").append(style.scale);
+    nlIndent().append("set-size: ").append(style.setSize);
+    nlIndent().append("min-size: ").append(style.minSize);
+    nlIndent().append("max-size: ").append(style.maxSize);
+
+    nlIndent().append("z-index: ").append(style.zindex);
+    nlIndent().append("align-items: ").append(style.alignItems);
+    nlIndent().append("flex-direction: ").append(style.flexDirection);
+    nlIndent().append("flex-wrap: ").append(style.flexWrap);
+    nlIndent().append("justify-content: ").append(style.justify);
+    nlIndent().append("order: ").append(style.order);
+  }
+
+  private void appendRect(Rect rect) {
+    builder.append(rect.toString());
+  }
+
+  private List<Rule> findApplicableRules(DelphiNode node) {
+    if (!(node instanceof DelphiElement el)) {
+      return List.of();
+    }
+
+    StyleObjectModel styles = node.getDocument().getStyles();
+    List<Rule> rules = new ArrayList<>();
+
+    for (Rule rule : styles.getRules()) {
+      if (!rule.getSelectorObject().test(null, el)) {
+        continue;
+      }
+
+      rules.add(rule);
+    }
+
+    return rules;
+  }
+
+  private void appendProperties(boolean nl, String title, StylePropertiesReadonly readonly) {
+    Set<String> properties = readonly.getProperties();
+    if (properties.isEmpty()) {
+      return;
+    }
+
+    if (nl) {
+      nlIndent();
+    }
+
+    nlIndent()
+        .append(title)
+        .append("(property-count=")
+        .append(properties.size())
+        .append("): ");
+
+    indent++;
+
+    for (String property : properties) {
+      String value = readonly.getPropertyValue(property);
+
+      if (Strings.isNullOrEmpty(property)) {
+        continue;
+      }
+
+      nlIndent().append(property).append(": ").append(value).append(";");
+    }
+
+    indent--;
+  }
+
   private void appendRenderObjectComment(DelphiNode node, RenderObject re) {
     nlIndent().append("render-element:");
     indent++;
 
-    ComputedStyle s = re.getStyle();
-    nlIndent().append("content-scale: ").append(s.scale);
     nlIndent().append("parent-set: ").append(re.parent != null);
 
     if (re instanceof ContentRenderObject co) {
@@ -155,13 +248,39 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("content-start: ").append(vector);
 
     nlIndent().append("position: ").append(re.getPosition());
-    nlIndent().append("max-size: ").append(s.maxSize);
-    nlIndent().append("min-size: ").append(s.minSize);
-    nlIndent().append("padding: ").append(s.padding);
-    nlIndent().append("outline-size: ").append(s.outline);
     nlIndent().append("depth: ").append(re.getDepth());
 
+    nlIndent().append("full-style:");
+    indent++;
+    appendFullStyle(re.getStyle());
     indent--;
+
+    indent--;
+
+    List<Rule> applicable = findApplicableRules(node);
+    if (!applicable.isEmpty()) {
+      nlIndent();
+
+      nlIndent()
+          .append("applicable-rules(")
+          .append(applicable.size())
+          .append(" / ")
+          .append(node.getDocument().getStyles().getRules().size())
+          .append("):");
+
+      indent++;
+
+      for (Rule rule : applicable) {
+        appendProperties(false, "rule[" + rule.getSelector() + "]", rule.getProperties());
+      }
+
+      indent--;
+    }
+
+    if (node instanceof DelphiElement el) {
+      StyleProperties inline = el.getInlineStyle();
+      appendProperties(true, "inline-properties", inline);
+    }
 
     builder.append("\n");
     nlIndent().append("layers:");
@@ -196,29 +315,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
     indent--;
 
-    PropertySet set = node.styleSet;
-    RuleIterator it = set.iterator();
-
-    if (it.hasNext()) {
-      builder.append('\n');
-      nlIndent().append("style-properties:");
-      indent++;
-
-      while (it.hasNext()) {
-        it.next();
-
-        Property<Object> rule = it.property();
-        Object value = it.value();
-
-        nlIndent()
-            .append(rule.getKey())
-            .append(": ")
-            .append(value)
-            .append(';');
-      }
-
-      indent--;
-    }
+    StylePropertiesReadonly styleSet = node.getDocument().getCurrentStyle(node);
+    appendProperties(true, "current-style-properties", styleSet);
 
     if (node instanceof DelphiElement el) {
       appendListeners("", el.getListenerList());

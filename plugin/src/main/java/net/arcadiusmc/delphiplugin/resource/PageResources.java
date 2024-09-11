@@ -21,13 +21,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.chimera.ChimeraSheetBuilder;
+import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.parse.Chimera;
+import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.ChimeraParser;
+import net.arcadiusmc.chimera.parse.CompilerErrors;
+import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ApiModule;
 import net.arcadiusmc.delphi.resource.DelphiException;
@@ -40,11 +47,7 @@ import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.parser.DocumentSaxParser;
-import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.parser.PluginMissingException;
-import net.arcadiusmc.delphidom.scss.ScssParser;
-import net.arcadiusmc.delphidom.scss.Sheet;
-import net.arcadiusmc.delphidom.scss.SheetBuilder;
 import net.arcadiusmc.delphiplugin.ItemCodec;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.command.PathParser;
@@ -64,17 +67,6 @@ import org.xml.sax.SAXException;
 public class PageResources implements ViewResources {
 
   private static final Logger LOGGER = Loggers.getDocumentLogger();
-
-  static final ErrorListener ERROR_LISTENER = error -> {
-    switch (error.level()) {
-      case ERROR -> LOGGER.error(error.message());
-      case WARN -> LOGGER.warn(error.message());
-      default -> {}
-    }
-  };
-
-  @Getter
-  private final Map<String, Object> styleVariables = new HashMap<>();
 
   @Getter
   private final String moduleName;
@@ -163,7 +155,10 @@ public class PageResources implements ViewResources {
       Result<Document, String> result;
 
       try {
-        result = api.loadDocument(path, new ContextImpl(view.getPlayer(), view));
+        result = api.loadDocument(
+            path,
+            new ContextImpl(view.getPlayer(), view, modules.getDefaultStyle(), this)
+        );
       } catch (Exception t) {
         LOGGER.error("Module {} threw an error when attempting to load document",
             path.getModuleName(), t
@@ -202,6 +197,10 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
+    return parseDocument(buf, uri);
+  }
+
+  private Result<DelphiDocument, DelphiException> parseDocument(StringBuffer buf, String uri) {
     SAXParser parser;
     try {
       parser = DocumentSaxParser.PARSER_FACTORY.newSAXParser();
@@ -245,7 +244,10 @@ public class PageResources implements ViewResources {
       return Result.err(new DelphiException(ERR_UNKNOWN));
     }
 
-    return Result.ok(handler.getDocument());
+    DelphiDocument doc = handler.getDocument();
+    doc.getStyles().setDefaultStyleSheet(modules.getDefaultStyle());
+
+    return Result.ok(doc);
   }
 
   @Override
@@ -267,35 +269,68 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
-    ScssParser parser = new ScssParser(buf);
-    parser.setVariables(styleVariables);
-    parser.getErrors().setListener(ERROR_LISTENER);
-
-    Sheet sheet;
-
-    try {
-      sheet = parser.stylesheet();
-    } catch (ParserException exc) {
-      // Ignored, the error has already been logged by setListener
-      return Result.err(new DelphiException(ERR_SYNTAX, exc.getMessage(), exc));
-    }
-
-    return Result.ok(sheet);
+    return Result.ok(parseSheet(buf, path.toString(), null));
   }
 
-  record ContextImpl(Player player, PageView view) implements DocumentContext {
+  static ChimeraStylesheet parseSheet(
+      StringBuffer buf,
+      String sourceName,
+      Map<String, Object> variables
+  ) {
+    ChimeraParser parser = new ChimeraParser(buf);
+
+    CompilerErrors errors = parser.getErrors();
+    errors.setSourceName(sourceName);
+    errors.setListener(error -> {
+      LOGGER.atLevel(error.getLevel())
+          .setMessage(error.getFormattedError())
+          .log();
+    });
+
+    SheetStatement statement = parser.stylesheet();
+
+    ChimeraContext ctx = new ChimeraContext(buf);
+    ctx.setErrors(errors);
+
+    if (variables != null) {
+      ctx.setVariables(variables);
+    }
+
+    return Chimera.compileSheet(statement, ctx);
+  }
+
+  record ContextImpl(
+      Player player,
+      PageView view,
+      ChimeraStylesheet defaultSheet,
+      PageResources resources
+  ) implements DocumentContext {
 
     @Override
     public @NotNull Document newDocument() {
       DelphiDocument document = new DelphiDocument();
       document.setView(view);
       document.setBody(document.createElement(TagNames.BODY));
+      document.getStyles().setDefaultStyleSheet(defaultSheet);
       return document;
     }
 
     @Override
     public @NotNull StylesheetBuilder newStylesheet() {
-      return new SheetBuilder();
+      return new ChimeraSheetBuilder(null);
+    }
+
+    @Override
+    public @NotNull Stylesheet parseStylesheet(@NotNull String string) {
+      Objects.requireNonNull(string, "Null string");
+      return parseSheet(new StringBuffer(string), "<stylesheet>", null);
+    }
+
+    @Override
+    public @NotNull Document parseDocument(@NotNull String string) throws ParserException {
+      return resources
+          .parseDocument(new StringBuffer(string), "<document>")
+          .getOrThrow(e -> e);
     }
 
     @Override

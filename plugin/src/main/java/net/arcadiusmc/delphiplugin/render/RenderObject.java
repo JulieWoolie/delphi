@@ -8,8 +8,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphidom.Rect;
-import net.arcadiusmc.delphidom.scss.ComputedStyle;
 import net.arcadiusmc.delphiplugin.HideUtil;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
@@ -41,7 +41,8 @@ public abstract class RenderObject {
   protected final Screen screen;
   protected final PageView view;
 
-  protected final ComputedStyle style;
+  protected final ComputedStyleSet styleSet;
+  protected final FullStyle style = new FullStyle();
 
   protected final Vector2f position = new Vector2f(0);
   private boolean spawned;
@@ -56,10 +57,10 @@ public abstract class RenderObject {
   @Setter
   private int sourceIndex = 0;
 
-  public RenderObject(PageView view, ComputedStyle style, Screen screen) {
+  public RenderObject(PageView view, ComputedStyleSet style, Screen screen) {
     this.view = view;
     this.screen = screen;
-    this.style = style;
+    this.styleSet = style;
   }
 
   public static boolean isNotSpawned(Layer layer) {
