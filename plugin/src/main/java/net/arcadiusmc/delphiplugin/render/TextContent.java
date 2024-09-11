@@ -21,7 +21,10 @@ public abstract class TextContent implements ElementContent {
 
   @Override
   public Display createEntity(World world, Location location) {
-    return world.spawn(location, TextDisplay.class, d -> d.setBackgroundColor(NIL_COLOR));
+    return world.spawn(location, TextDisplay.class, d -> {
+      d.setBackgroundColor(NIL_COLOR);
+      d.setLineWidth(Integer.MAX_VALUE);
+    });
   }
 
   protected abstract Component getBaseText();

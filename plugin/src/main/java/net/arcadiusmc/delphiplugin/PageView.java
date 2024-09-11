@@ -61,7 +61,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -133,9 +132,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       return;
     }
 
-    renderRoot.getPosition().set(0, screen.getHeight());
+    renderRoot.moveTo(new Vector2f(0, screen.getHeight()));
     LayoutKt.layout(renderRoot);
 
+    renderRoot.killRecursive();
     renderRoot.spawnRecursive();
 
     closed = false;
@@ -394,13 +394,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       }
       case DelphiItemElement item -> {
         ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
-
-        if (ItemContent.isEmpty(item.getItemStack())) {
-          o.setContent(null);
-        } else {
-          o.setContent(new ItemContent(item.getItemStack()));
-        }
-
+        o.setContent(new ItemContent(item.getItemStack()));
         obj = o;
       }
       default -> {
@@ -508,14 +502,8 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       ComponentContent content = new ComponentContent(chat.getContent());
       obj.setContent(content);
     } else if (node instanceof DelphiItemElement itemEl) {
-      ItemStack stack = itemEl.getItemStack();
-
-      if (ItemContent.isEmpty(stack)) {
-        obj.setContent(null);
-      } else {
-        ItemContent content = new ItemContent(itemEl.getItemStack());
-        obj.setContent(content);
-      }
+      ItemContent content = new ItemContent(itemEl.getItemStack());
+      obj.setContent(content);
     }
 
     obj.spawn();
@@ -1008,6 +996,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       }
 
       screen.setDimensions(w, h);
+
+      if (renderRoot != null) {
+        renderRoot.moveTo(new Vector2f(0, h));
+      }
     }
   }
 }

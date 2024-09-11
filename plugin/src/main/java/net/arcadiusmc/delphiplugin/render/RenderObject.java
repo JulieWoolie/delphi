@@ -263,8 +263,8 @@ public abstract class RenderObject {
       lrot.transform(layer.translate, layer.rotatedTranslate);
       rrot.transform(layer.rotatedTranslate);
 
-      layer.leftRotation.set(lrot);
-      layer.rightRotation.set(rrot);
+      layer.leftRotation.mul(lrot);
+      layer.rightRotation.mul(rrot);
     });
   }
 

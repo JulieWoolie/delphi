@@ -3,7 +3,6 @@ package net.arcadiusmc.delphiplugin.render;
 import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphidom.Consts.ITEM_SPRITE_SIZE;
 
-import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
@@ -22,7 +21,7 @@ public class ItemContent implements ElementContent {
   private final ItemStack item;
 
   public ItemContent(ItemStack item) {
-    this.item = Objects.requireNonNull(item, "Null item");
+    this.item = item;
   }
 
   public static boolean isEmpty(ItemStack item) {
@@ -54,7 +53,7 @@ public class ItemContent implements ElementContent {
 
   @Override
   public boolean isEmpty() {
-    return isEmpty(item);
+    return false;
   }
 
   @Override
