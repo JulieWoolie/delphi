@@ -143,6 +143,7 @@ public class DocumentSaxParser extends DefaultHandler {
   @Override
   public void startDocument() throws SAXException {
     document = new DelphiDocument();
+    document.setView(view);
 
     depth++;
   }
