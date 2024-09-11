@@ -17,9 +17,11 @@ import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
+import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.TagNames;
+import net.arcadiusmc.dom.event.EventTypes;
 import org.slf4j.event.Level;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -111,6 +113,11 @@ public class DocumentSaxParser extends DefaultHandler {
     if (root == null) {
       root = (DelphiElement) n;
       document.setBody(root);
+
+      Mutation mutation = new Mutation(EventTypes.APPEND_CHILD, document);
+      mutation.initEvent(null, false, false, n, 0);
+
+      document.dispatchEvent(mutation);
     }
 
     if (!nodes.isEmpty()) {
