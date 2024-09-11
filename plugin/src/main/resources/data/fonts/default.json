@@ -2,6 +2,7 @@
   "font-id": "minecraft:default",
   "bold-modifier": 1,
   "height": 8,
+  "priority": 1000,
   "char-widths": {
     "\u0001": 16,
     "\u0002": 16,
