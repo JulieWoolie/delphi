@@ -8,6 +8,16 @@ import org.jetbrains.annotations.NotNull;
  */
 public sealed interface Primitive permits PrimitiveImpl {
 
+  /**
+   * The amount of degrees in a circle.
+   */
+  float DEGREES_IN_CIRCLE = 360.0f;
+
+  /**
+   * The amount of gradians in a circle.
+   */
+  float GRADIANS_IN_CIRCLE = 400.0f;
+
   /** Zero value constant */
   Primitive ZERO = new PrimitiveImpl(0, Unit.NONE);
 
@@ -67,6 +77,16 @@ public sealed interface Primitive permits PrimitiveImpl {
   boolean isZero();
 
   /**
+   * Get the primitive's value in degrees.
+   * <p>
+   * If the primitive's value is not {@link Unit#NONE} or an angle unit, then this function
+   * will return {@code 0}. Otherwise, the primitive's value is converted to degrees.
+   *
+   * @return Value in degrees, or {@code 0}, if the primitive does not represent an angular value.
+   */
+  float toDegrees();
+
+  /**
    * Style units
    */
   enum Unit {
@@ -109,6 +129,26 @@ public sealed interface Primitive permits PrimitiveImpl {
      * Base value is 1/100th of the size of the parent element
      */
     PERCENT ("%"),
+
+    /**
+     * Represents an angle in degrees. A full circle is 360 degrees.
+     */
+    DEG ("deg"),
+
+    /**
+     * Represents an angle in gradians. A full circle is 400 gradians.
+     */
+    GRAD ("grad"),
+
+    /**
+     * Represents an angle in radians. A full circle is approximately 6.2832 radians.
+     */
+    RAD ("rad"),
+
+    /**
+     * Represents an angle in a number of turns around the circle. A full circle is 1 turn.
+     */
+    TURN ("turn"),
     ;
 
     private final String unit;
@@ -117,7 +157,24 @@ public sealed interface Primitive permits PrimitiveImpl {
       this.unit = unit;
     }
 
+    /**
+     * Get an array of angular units. (Includes {@link #NONE})
+     * @return Angle unit array
+     */
+    public static Unit[] angleUnits() {
+      return new Unit[]{ DEG, GRAD, RAD, TURN, NONE };
+    }
+
+    /**
+     * Get a string representation of the unit.
+     * @return Unit CSS representation
+     */
     public String getUnit() {
+      return unit;
+    }
+
+    @Override
+    public String toString() {
       return unit;
     }
   }

@@ -29,6 +29,17 @@ final class PrimitiveImpl implements Primitive {
   }
 
   @Override
+  public float toDegrees() {
+    return switch (unit) {
+      case NONE, DEG -> value;
+      case RAD -> (float) Math.toDegrees(value);
+      case TURN -> DEGREES_IN_CIRCLE * value;
+      case GRAD -> (value / GRADIANS_IN_CIRCLE) * DEGREES_IN_CIRCLE;
+      default -> 0;
+    };
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
