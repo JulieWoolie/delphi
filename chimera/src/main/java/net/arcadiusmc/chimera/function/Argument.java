@@ -47,7 +47,7 @@ public class Argument {
     }
 
     if (prim.getValue() < minimumValue) {
-      errors.error(location, "Argument %s cannot be less than %s", argumentIndex, minimumValue);
+      cannotBeLessThan(minimumValue);
       return Primitive.create(minimumValue, prim.getUnit());
     }
 
@@ -55,11 +55,11 @@ public class Argument {
   }
 
   public void cannotBeLessThan(float value) {
-    errors.error(location, "Argument %s cannot be less than %s", argumentIndex, value);
+    errors.warn(location, "Argument %s cannot be less than %s", argumentIndex, value);
   }
 
   public void cannotBeMoreThan(float value) {
-    errors.error(location, "Argument %s cannot be greater than %s", argumentIndex, value);
+    errors.warn(location, "Argument %s cannot be greater than %s", argumentIndex, value);
   }
 
   private Primitive coerceToPrimitive(Unit... allowedUnits) {
