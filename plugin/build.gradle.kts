@@ -41,11 +41,4 @@ tasks {
   shadowJar {
     archiveBaseName.set(pluginBaseName)
   }
-  compileKotlin {
-    compilerOptions {
-      freeCompilerArgs.add("-Xno-param-assertions")
-      freeCompilerArgs.add("-Xno-call-assertions")
-      freeCompilerArgs.add("-Xno-receiver-assertions")
-    }
-  }
 }
