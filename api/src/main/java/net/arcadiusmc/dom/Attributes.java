@@ -4,6 +4,9 @@ import com.google.common.base.Strings;
 import net.arcadiusmc.delphi.util.Result;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Attribute name constants
+ */
 public interface Attributes {
   /**
    * ID attribute.

@@ -4,6 +4,9 @@ import java.util.function.Consumer;
 import net.arcadiusmc.dom.ParserException;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * CSS Style sheet builder
+ */
 public interface StylesheetBuilder {
 
   /**

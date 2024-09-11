@@ -3,6 +3,9 @@ package net.arcadiusmc.dom.event;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+/**
+ * Provides contextual information about mouse movement and what button caused the event.
+ */
 public interface MouseEvent extends Event {
 
   /**

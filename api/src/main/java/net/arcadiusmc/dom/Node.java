@@ -4,6 +4,19 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Represents a node in the DOM structure.
+ * <p>
+ * A node can be an element, text, component or an item element. Unlike, regular DOM
+ * implementations, attributes are <i>not</i> nodes.
+ *
+ * @see Document
+ * @see Element
+ * @see ItemElement
+ * @see ButtonElement
+ * @see TextNode
+ * @see ComponentNode
+ */
 public interface Node {
 
   /**

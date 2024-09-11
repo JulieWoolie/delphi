@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * A primitive style value
+ * Numeric style value
  */
 public sealed interface Primitive permits PrimitiveImpl {
 

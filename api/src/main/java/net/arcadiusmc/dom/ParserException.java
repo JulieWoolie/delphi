@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom;
 
+/**
+ * Exception thrown when an input failed to be parsed or evaluated
+ */
 public class ParserException extends RuntimeException {
 
   public ParserException(String message) {

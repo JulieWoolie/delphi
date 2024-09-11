@@ -17,7 +17,13 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface Element extends Node, EventTarget, ParentNode {
+/**
+ * Represents an element with attributes in a DOM tree.
+ * <p>
+ * Elements are not guaranteed to have children. An element can only support children if
+ * {@link #canHaveChildren()} returns {@code true}.
+ */
+public interface Element extends Node, EventTarget, DomQueryable {
 
   /**
    * Get the modifiable inline style properties.
@@ -391,6 +397,21 @@ public interface Element extends Node, EventTarget, ParentNode {
     appendChild(node);
     return node;
   }
+
+  /**
+   * Get the element's text content.
+   * <p>
+   * Returns the joined the text content of all descendants.
+   *
+   * @return Text content
+   */
+  String getTextContent();
+
+  /**
+   * Remove all child elements and replace it with the specified {@code content}
+   * @param content New text content
+   */
+  void setTextContent(String content);
 
   /**
    * Applies a consumer to all descendant nodes of this element.

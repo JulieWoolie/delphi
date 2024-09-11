@@ -4,6 +4,13 @@ import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.dom.Document;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Modules that are defined programmatically by plugins.
+ * <p>
+ * API modules are only queried when a {@code .xml} document is loaded. It's presumed that an API
+ * module creates documents and links style sheets to them programmatically so the ability to load
+ * stylesheets and other external files (like item json files) is not provided.
+ */
 public non-sealed interface ApiModule extends ResourceModule {
 
   /**

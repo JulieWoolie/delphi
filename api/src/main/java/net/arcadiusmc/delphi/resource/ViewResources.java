@@ -9,6 +9,9 @@ import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.style.Stylesheet;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Resource manager for an open {@link DocumentView}
+ */
 public interface ViewResources {
 
   /**

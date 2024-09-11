@@ -12,7 +12,7 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface Document extends EventTarget, ParentNode {
+public interface Document extends EventTarget, DomQueryable {
 
   /**
    * Amount of ticks an element remains 'active' for after being clicked

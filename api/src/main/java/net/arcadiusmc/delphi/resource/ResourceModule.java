@@ -3,6 +3,9 @@ package net.arcadiusmc.delphi.resource;
 import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Delphi page module interface
+ */
 public sealed interface ResourceModule permits IoModule, ApiModule {
 
   /**

@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom;
 
+/**
+ * Tag name constants
+ */
 public interface TagNames {
 
   /**

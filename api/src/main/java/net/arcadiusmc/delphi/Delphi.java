@@ -11,6 +11,9 @@ import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Delphi plugin interface.
+ */
 public interface Delphi {
 
   /**

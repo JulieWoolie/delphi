@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.event;
 
+/**
+ * Attribute event action
+ */
 public enum AttributeAction {
   /** Attribute did not exist before */
   ADD,

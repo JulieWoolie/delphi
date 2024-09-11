@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+/**
+ * CSS style sheet
+ */
 public interface Stylesheet {
 
   /**

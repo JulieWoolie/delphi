@@ -1,5 +1,9 @@
 package net.arcadiusmc.dom.event;
 
+/**
+ * Event fired when either an attribute on an element is modified or when a document option is
+ * modified
+ */
 public interface AttributeMutateEvent extends Event {
 
   /**

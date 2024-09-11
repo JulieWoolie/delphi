@@ -1,5 +1,8 @@
 package net.arcadiusmc.delphi.util;
 
+/**
+ * Exception thrown by {@link Result#getOrThrow()} when there is no value present.
+ */
 public class ResultException extends RuntimeException {
 
   final Object errorObject;

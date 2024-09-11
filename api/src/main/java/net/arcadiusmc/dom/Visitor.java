@@ -1,7 +1,15 @@
 package net.arcadiusmc.dom;
 
+/**
+ * DOM tree visitor
+ */
 public interface Visitor {
 
+  /**
+   * Recursively visit the specified {@code node} and it's children, if it has any.
+   * @param node Node to visit
+   * @param visitor Visitor
+   */
   static void visit(Node node, Visitor visitor) {
     node.enterVisitor(visitor);
 

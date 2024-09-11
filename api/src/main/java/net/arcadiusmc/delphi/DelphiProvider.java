@@ -4,6 +4,9 @@ import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Delphi service provider interface.
+ */
 public final class DelphiProvider {
   private DelphiProvider() {}
 

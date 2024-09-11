@@ -3,6 +3,9 @@ package net.arcadiusmc.delphi.resource;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A module which loads text files from some kind of IO, for example the file system.
+ */
 public non-sealed interface IoModule extends ResourceModule {
 
   /**

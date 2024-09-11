@@ -3,6 +3,9 @@ package net.arcadiusmc.dom.style;
 import javax.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Modifiable map of style properties
+ */
 public interface StyleProperties extends StylePropertiesReadonly {
 
   /**

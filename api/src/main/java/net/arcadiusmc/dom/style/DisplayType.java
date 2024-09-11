@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+/**
+ * CSS {@code display} property value type.
+ */
 public enum DisplayType implements KeywordRepresentable {
   NONE ("none"),
   INLINE ("inline"),

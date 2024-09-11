@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 
+/**
+ * Delphi API exception, uses error codes
+ */
 public class DelphiException extends RuntimeException {
 
   /** Unknown error */

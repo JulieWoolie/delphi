@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+/**
+ * CSS {@code justify-content} value type
+ */
 public enum JustifyContent implements KeywordRepresentable {
   FLEX_START ("flex-start"),
   FLEX_END ("flex-end"),

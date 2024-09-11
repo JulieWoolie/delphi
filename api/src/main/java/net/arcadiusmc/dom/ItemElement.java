@@ -3,6 +3,12 @@ package net.arcadiusmc.dom;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Represents an ItemStack element
+ * <pre><code>
+ * <item src="./item.json" />
+ * </code></pre>
+ */
 public interface ItemElement extends Element {
 
   /**

@@ -3,6 +3,9 @@ package net.arcadiusmc.delphi;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+/**
+ * The plane a {@link DocumentView} exists on.
+ */
 public interface Screen {
 
   int DEFAULT_WIDTH = 3;

@@ -2,6 +2,9 @@ package net.arcadiusmc.dom.event;
 
 import net.arcadiusmc.dom.Node;
 
+/**
+ * Provides contextual information about modifications to the DOM tree
+ */
 public interface MutationEvent extends Event {
 
   /**

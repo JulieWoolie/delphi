@@ -4,7 +4,10 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface ParentNode {
+/**
+ * Represents an object that supports querying its descendant elements.
+ */
+public interface DomQueryable {
 
   /**
    * Gets an array list of elements by their tag name

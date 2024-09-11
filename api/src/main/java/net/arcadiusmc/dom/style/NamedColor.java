@@ -9,10 +9,20 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import org.jetbrains.annotations.Contract;
 
+/**
+ * CSS Color name constants
+ */
 public final class NamedColor {
   private NamedColor() {}
 
+  /**
+   * Unmodifiable color name to color value map
+   */
   public static final Map<String, Color> NAMES;
+
+  /**
+   * Unmodifiable ARGB value to color name map
+   */
   public static final Int2ObjectMap<String> VALUE_TO_NAME;
 
   /** AliceBlue. */

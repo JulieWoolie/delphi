@@ -2,6 +2,9 @@ package net.arcadiusmc.dom.event;
 
 import net.arcadiusmc.dom.Document;
 
+/**
+ * An object which can host event listeners and be the target of {@link Event} dispatches
+ */
 public interface EventTarget {
 
   /**

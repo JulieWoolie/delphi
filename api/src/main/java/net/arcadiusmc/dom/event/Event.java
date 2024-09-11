@@ -4,6 +4,9 @@ import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Event interface used to provide contextual information about an event.
+ */
 public interface Event {
 
   /**

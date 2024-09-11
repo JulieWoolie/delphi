@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+/**
+ * CSS {@code flex-direction} value type
+ */
 public enum FlexDirection implements KeywordRepresentable {
   ROW ("row"),
   ROW_REVERSE ("row-reverse"),

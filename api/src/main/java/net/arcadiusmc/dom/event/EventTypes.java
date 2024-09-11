@@ -2,6 +2,9 @@ package net.arcadiusmc.dom.event;
 
 import net.arcadiusmc.dom.Document;
 
+/**
+ * Event type constants
+ */
 public interface EventTypes {
 
   /**

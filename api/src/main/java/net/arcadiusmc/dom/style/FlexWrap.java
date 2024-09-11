@@ -1,5 +1,8 @@
 package net.arcadiusmc.dom.style;
 
+/**
+ * CSS {@code flex-wrap} value type
+ */
 public enum FlexWrap implements KeywordRepresentable {
   NOWRAP ("nowrap"),
   WRAP ("wrap"),
