@@ -65,4 +65,10 @@ public interface NodeVisitor<R, C> {
   R rectangle(RectExpr expr, C c);
 
   R important(ImportantMarker marker, C c);
+
+  R unary(UnaryExpr expr, C c);
+
+  R namespaced(NamespaceExpr expr, C c);
+
+  R binary(BinaryExpr expr, C c);
 }

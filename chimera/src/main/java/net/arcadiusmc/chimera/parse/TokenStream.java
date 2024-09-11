@@ -6,6 +6,12 @@ import lombok.Getter;
 
 public class TokenStream {
 
+  static final String DEBUG = "debug";
+  static final String PRINT = "print";
+  static final String ERROR = "error";
+  static final String IF = "if";
+  static final String FUNCTION = "function";
+
   static final int HEX_SHORT_LENGTH = 3;
   static final int HEX_LENGTH = 6;
   static final int HEX_ALPHA_LENGTH = 8;
@@ -79,6 +85,16 @@ public class TokenStream {
 
   int ahead(int off) {
     return charAt(cursor + off);
+  }
+
+  void skip(String sequence) {
+    skip(sequence.length());
+  }
+
+  void skip(int chars) {
+    for (int i = 0; i < chars; i++) {
+      advance();
+    }
   }
 
   void advance() {
@@ -241,9 +257,11 @@ public class TokenStream {
       case ')' -> singleChar(Token.BRACKET_CLOSE);
       case '[' -> singleChar(Token.SQUARE_OPEN);
       case ']' -> singleChar(Token.SQUARE_CLOSE);
-      case '<' -> singleChar(Token.ANGLE_LEFT);
-      case '>' -> singleChar(Token.ANGLE_RIGHT);
 
+      case '<' -> singleOrEq(Token.ANGLE_LEFT, Token.LTE);
+      case '>' -> singleOrEq(Token.ANGLE_RIGHT, Token.GTE);
+      case '=' -> singleOrEq(Token.EQUALS, Token.EQUAL_TO);
+      case '!' -> singleOrEq(Token.EXCLAMATION, Token.NOT_EQUAL_TO);
       case '$' -> singleOrEq(Token.DOLLAR_SIGN, Token.DOLLAR_EQ);
       case '*' -> singleOrEq(Token.STAR, Token.STAR_EQ);
       case '^' -> singleOrEq(Token.UP_ARROW, Token.CARET_EQ);
@@ -253,10 +271,30 @@ public class TokenStream {
       case ';' -> singleChar(Token.SEMICOLON);
       case ',' -> singleChar(Token.COMMA);
       case ':' -> singleChar(Token.COLON);
-      case '@' -> singleChar(Token.AT);
-      case '=' -> singleChar(Token.EQUALS);
       case '%' -> singleChar(Token.PERCENT);
-      case '!' -> singleChar(Token.EXCLAMATION);
+      case '/' -> singleChar(Token.SLASH);
+      case '+' -> singleChar(Token.PLUS);
+
+      case '@' -> {
+        advance();
+
+        if (isIdStart(currentChar)) {
+          String id = readId();
+
+          yield switch (id.toLowerCase()) {
+            case "if" -> token(Token.AT_IF);
+            case "else" -> token(Token.AT_ELSE);
+            case "function" -> token(Token.AT_FUNCTION);
+            case "print" -> token(Token.AT_PRINT);
+            case "debug" -> token(Token.AT_DEBUG);
+            case "error" -> token(Token.AT_ERROR);
+            case "warn" -> token(Token.AT_WARN);
+            default -> token(Token.AT_ID, id);
+          };
+        }
+
+        yield token(Token.AT);
+      }
 
       case '#' -> {
         advance();
@@ -302,10 +340,20 @@ public class TokenStream {
 
         // Dot has to be checked after, it could be a number decimal
         if (currentChar == '.') {
-          yield singleChar(Token.DOT);
-        }
-        if (currentChar == '+') {
-          yield singleChar(Token.PLUS);
+          advance();
+
+          if (currentChar == '.') {
+            advance();
+
+            if (currentChar == '.') {
+              advance();
+              yield token(Token.ELLIPSES);
+            }
+
+            yield token(Token.UNKNOWN, "..");
+          }
+
+          yield token(Token.DOT);
         }
         if (currentChar == '-') {
           yield singleChar(Token.MINUS);
@@ -334,7 +382,7 @@ public class TokenStream {
     int ahead1 = charAt(cursor + 1);
     int ahead2 = charAt(cursor + 2);
 
-    if ((mode() != ParseMode.SELECTOR && currentChar == '+') || currentChar == '-') {
+    if (currentChar == '-') {
       if (isNumber(ahead1)) {
         return true;
       }
@@ -481,13 +529,11 @@ public class TokenStream {
   }
 
   private Token parseNumberValue() {
-    StringBuffer repr = new StringBuffer();
+    StringBuilder repr = new StringBuilder();
     int ttype = Token.INT;
 
     if (currentChar == '-') {
       repr.append('-');
-      advance();
-    } else if (currentChar == '+') {
       advance();
     }
 

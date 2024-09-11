@@ -1,8 +1,8 @@
 package net.arcadiusmc.chimera;
 
-import net.arcadiusmc.dom.Node;
+import net.arcadiusmc.chimera.system.StyleNode;
 
 public interface StyleUpdateCallbacks {
 
-  void styleUpdated(Node node, int changes);
+  void styleUpdated(StyleNode styleNode, int changes);
 }

@@ -6,13 +6,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class SheetStatement extends Statement {
+public class Block extends Statement {
 
-  private final List<VariableDecl> variableDeclarations = new ArrayList<>();
-  private final List<RuleStatement> rules = new ArrayList<>();
+  private final List<Statement> statements = new ArrayList<>();
+  private boolean propertyDeclAllowed = true;
 
   @Override
   public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.sheet(this, context);
+    return null;
   }
 }

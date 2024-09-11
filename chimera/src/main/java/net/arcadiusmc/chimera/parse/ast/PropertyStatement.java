@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class PropertyStatement extends Node {
+public class PropertyStatement extends Statement {
 
   private Identifier propertyName;
   private Expression value;

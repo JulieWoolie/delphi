@@ -56,12 +56,28 @@ public record Token(
   public static final int ANGLE_LEFT    = PLUS + 1;
   public static final int ANGLE_RIGHT   = ANGLE_LEFT + 1;
   public static final int MINUS         = ANGLE_RIGHT + 1;
+  public static final int ELLIPSES      = MINUS + 1;
+  public static final int LTE           = ELLIPSES + 1;
+  public static final int GTE           = LTE + 1;
+  public static final int EQUAL_TO      = GTE + 1;
+  public static final int NOT_EQUAL_TO  = EQUAL_TO + 1;
+  public static final int SLASH         = NOT_EQUAL_TO + 1;
 
-  public static final int LAST_TOKEN = MINUS;
+  public static final int AT_DEBUG      = SLASH + 1;
+  public static final int AT_PRINT      = AT_DEBUG + 1;
+  public static final int AT_WARN       = AT_PRINT + 1;
+  public static final int AT_ERROR      = AT_WARN + 1;
+  public static final int AT_FUNCTION   = AT_ERROR + 1;
+  public static final int AT_IF         = AT_FUNCTION + 1;
+  public static final int AT_ELSE       = AT_IF + 1;
+  public static final int AT_ID         = AT_ELSE + 1;
+
+  public static final int LAST_TOKEN = AT_ID;
 
   public static String typeToString(int ttype) {
     return switch (ttype) {
       case EOF -> "end-of-input";
+
       case ID -> "identifier";
       case STRING -> "quoted-string";
       case NUMBER -> "number";
@@ -69,12 +85,24 @@ public record Token(
       case HEX -> "hex-sequence";
       case HEX_SHORT -> "short-hex-sequence";
       case HEX_ALPHA -> "alpha-hex-sequence";
+      case WHITESPACE -> "white-space";
+
       case SQUIG_OPEN -> "'{'";
       case SQUIG_CLOSE -> "'}'";
       case BRACKET_OPEN -> "'('";
       case BRACKET_CLOSE -> "')'";
       case SQUARE_OPEN -> "'['";
       case SQUARE_CLOSE -> "']'";
+
+      case AT_DEBUG -> "'@debug'";
+      case AT_PRINT -> "'@print'";
+      case AT_ERROR -> "'@error'";
+      case AT_WARN -> "'@warn'";
+      case AT_FUNCTION -> "'@function'";
+      case AT_IF -> "'@if'";
+      case AT_ELSE -> "'@else'";
+      case AT_ID -> "@-identifier";
+
       case COLON -> "':'";
       case SEMICOLON -> "';'";
       case DOLLAR_SIGN -> "'$'";
@@ -88,17 +116,24 @@ public record Token(
       case AT -> "'@'";
       case COMMA -> "','";
       case PERCENT -> "'%'";
-      case WHITESPACE -> "white-space";
       case EXCLAMATION -> "'!'";
       case PLUS -> "'+'";
       case ANGLE_LEFT -> "'<'";
       case ANGLE_RIGHT -> "'>'";
       case MINUS -> "'-'";
+      case ELLIPSES -> "'...'";
+      case LTE -> "'<='";
+      case GTE -> "'>='";
+      case EQUAL_TO -> "'=='";
+      case NOT_EQUAL_TO -> "'!='";
+      case SLASH -> "'/'";
+
       case WALL_EQ -> "'|='";
       case SQUIG_EQ -> "'~='";
       case CARET_EQ -> "'^='";
       case DOLLAR_EQ -> "'$='";
       case STAR_EQ -> "'*='";
+
       default -> "unknown";
     };
   }

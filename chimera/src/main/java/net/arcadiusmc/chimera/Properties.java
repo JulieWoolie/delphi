@@ -1,5 +1,8 @@
 package net.arcadiusmc.chimera;
 
+import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE;
+import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE_RECT;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.util.Map;
@@ -20,41 +23,42 @@ public final class Properties {
   private static Property[] idLookup = new Property[50];
   private static int nextId = 0;
 
+
   public static final Property<Color> COLOR = Property.builder(Color.class)
       .defaultValue(NamedColor.BLACK)
       .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
-      //.function((s, screen, color) -> s.textColor = color)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Color> BACKGROUND_COLOR = Property.builder(Color.class)
       .defaultValue(NamedColor.TRANSPARENT)
       .cascading(false)
       .layoutAffecting(false)
-      //.function((n, screen, color) -> n.backgroundColor = color)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Color> BORDER_COLOR = Property.builder(Color.class)
       .defaultValue(NamedColor.BLACK)
       .cascading(false)
       .layoutAffecting(false)
-      //.function((n, screen, color) -> n.borderColor = color)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Color> OUTLINE_COLOR = Property.builder(Color.class)
       .defaultValue(NamedColor.BLACK)
       .cascading(false)
       .layoutAffecting(false)
-      //.function((n, screen, color) -> n.outlineColor = color)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Boolean> TEXT_SHADOW = Property.builder(Boolean.class)
       .defaultValue(false)
-      .cascading(false)
+      .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
-      //.function((n,s,v) -> n.textShadowed = v)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Boolean> BOLD = Property.builder(Boolean.class)
@@ -62,7 +66,7 @@ public final class Properties {
       .cascading(true)
       .layoutAffecting(true)
       .contentAffecting(true)
-      //.function((s, screen, b) -> s.bold = b)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Boolean> ITALIC = Property.builder(Boolean.class)
@@ -70,7 +74,7 @@ public final class Properties {
       .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
-      //.function((s, screen, b) -> s.italic = b)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Boolean> UNDERLINED = Property.builder(Boolean.class)
@@ -78,7 +82,7 @@ public final class Properties {
       .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
-      //.function((s, screen, b) -> s.underlined = b)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Boolean> STRIKETHROUGH = Property.builder(Boolean.class)
@@ -86,7 +90,7 @@ public final class Properties {
       .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
-      //.function((s, screen, b) -> s.strikethrough = b)
+      .visualAffecting(true)
       .build();
 
   public static final Property<Boolean> OBFUSCATED = Property.builder(Boolean.class)
@@ -94,213 +98,226 @@ public final class Properties {
       .cascading(true)
       .layoutAffecting(false)
       .contentAffecting(true)
-      //.function((s, screen, b) -> s.obfuscated = b)
+      .visualAffecting(true)
       .build();
 
   public static final Property<DisplayType> DISPLAY = Property.builder(DisplayType.class)
       .defaultValue(DisplayType.DEFAULT)
       .cascading(true)
       .layoutAffecting(true)
-      //.function((s, screen, d) -> s.display = d)
       .build();
 
   public static final Property<Primitive> SCALE = Property.builder(Primitive.class)
       .defaultValue(Primitive.create(1))
       .cascading(true)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.scale.set(v)))
+      .validator(NON_ANGLE)
+      .build();
+
+  public static final Property<Primitive> WIDTH = Property.builder(Primitive.class)
+      .defaultValue(Primitive.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE)
+      .build();
+
+  public static final Property<Primitive> HEIGHT = Property.builder(Primitive.class)
+      .defaultValue(Primitive.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MIN_WIDTH = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.minSize.x = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MIN_HEIGHT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.minSize.y = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MAX_WIDTH = Property.builder(Primitive.class)
       .defaultValue(Primitive.create(Float.MAX_VALUE))
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.maxSize.x = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MAX_HEIGHT = Property.builder(Primitive.class)
       .defaultValue(Primitive.create(Float.MAX_VALUE))
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.maxSize.y = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> BORDER_TOP = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.border.top = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> BORDER_BOTTOM = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.border.bottom = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> BORDER_LEFT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.border.left = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> BORDER_RIGHT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.border.right = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> OUTLINE_TOP = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.outline.top = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> OUTLINE_BOTTOM = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.outline.bottom = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> OUTLINE_LEFT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.outline.left = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> OUTLINE_RIGHT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.outline.right = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> PADDING_TOP = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.padding.top = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> PADDING_BOTTOM = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.padding.bottom = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> PADDING_LEFT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.padding.left = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> PADDING_RIGHT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.padding.right = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MARGIN_TOP = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.margin.top = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MARGIN_BOTTOM = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.margin.bottom = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MARGIN_LEFT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.margin.left = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<Primitive> MARGIN_RIGHT = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
-      //.function(createFunction((n, v) -> n.margin.right = v))
+      .validator(NON_ANGLE)
       .build();
 
   public static final Property<PrimitiveRect> PADDING = Property.builder(PrimitiveRect.class)
       .defaultValue(PrimitiveRect.ZERO)
       .cascading(false)
       .layoutAffecting(true)
+      .validator(NON_ANGLE_RECT)
       .build();
 
   public static final Property<PrimitiveRect> BORDER = Property.builder(PrimitiveRect.class)
       .defaultValue(PrimitiveRect.ZERO)
       .cascading(false)
       .layoutAffecting(true)
+      .validator(NON_ANGLE_RECT)
       .build();
 
   public static final Property<PrimitiveRect> OUTLINE = Property.builder(PrimitiveRect.class)
       .defaultValue(PrimitiveRect.ZERO)
       .cascading(false)
       .layoutAffecting(true)
+      .validator(NON_ANGLE_RECT)
       .build();
 
   public static final Property<PrimitiveRect> MARGIN = Property.builder(PrimitiveRect.class)
       .defaultValue(PrimitiveRect.ZERO)
       .cascading(false)
       .layoutAffecting(true)
+      .validator(NON_ANGLE_RECT)
       .build();
 
   public static final Property<Integer> Z_INDEX = Property.builder(Integer.class)
       .defaultValue(0)
       .cascading(true)
       .layoutAffecting(false)
-      //.function((n, screen, integer) -> n.zindex = integer)
       .build();
 
   public static final Property<AlignItems> ALIGN_ITEMS = Property.builder(AlignItems.class)
       .defaultValue(AlignItems.DEFAULT)
       .cascading(false)
       .layoutAffecting(true)
-      //.function((s, screen, alignItems) -> s.alignItems = alignItems)
       .build();
 
   public static final Property<FlexDirection> FLEX_DIRECTION = Property.builder(FlexDirection.class)
       .defaultValue(FlexDirection.DEFAULT)
       .cascading(false)
       .layoutAffecting(true)
-      //.function((s, screen, flexDirection) -> s.flexDirection = flexDirection)
       .build();
 
   public static final Property<FlexWrap> FLEX_WRAP = Property.builder(FlexWrap.class)
       .defaultValue(FlexWrap.DEFAULT)
       .cascading(false)
       .layoutAffecting(true)
-      //.function((s, screen, flexWrap) -> s.flexWrap = flexWrap)
       .build();
 
   public static final Property<JustifyContent> JUSTIFY_CONTENT
@@ -308,14 +325,12 @@ public final class Properties {
       .defaultValue(JustifyContent.DEFAULT)
       .cascading(false)
       .layoutAffecting(true)
-      //.function((s, screen, justifyContent) -> s.justfiy = justifyContent)
       .build();
 
   public static final Property<Integer> ORDER = Property.builder(Integer.class)
       .defaultValue(0)
       .cascading(false)
       .layoutAffecting(true)
-      //.function((s, screen, integer) -> s.order = integer)
       .build();
 
   static {
@@ -358,6 +373,9 @@ public final class Properties {
     register("strikethrough",     STRIKETHROUGH);
     register("obfuscated",        OBFUSCATED);
 
+    register("width",             WIDTH);
+    register("height",            HEIGHT);
+
     register("min-width",         MIN_WIDTH);
     register("min-height",        MIN_HEIGHT);
 
@@ -383,6 +401,11 @@ public final class Properties {
     register("margin-bottom",     MARGIN_BOTTOM);
     register("margin-left",       MARGIN_LEFT);
     register("margin-right",      MARGIN_RIGHT);
+
+    register("padding",           PADDING);
+    register("outline",           OUTLINE);
+    register("border",            BORDER);
+    register("margin",            MARGIN);
   }
 
   private static <T> void register(String key, Property<T> property) {

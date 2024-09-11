@@ -8,6 +8,7 @@ import net.arcadiusmc.chimera.function.Argument;
 import net.arcadiusmc.chimera.function.ScssFunction;
 import net.arcadiusmc.chimera.function.ScssInvocationException;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import org.apache.commons.lang3.Range;
 
 @Getter @Setter
@@ -17,13 +18,13 @@ public class CallExpr extends Expression {
   private final List<Expression> arguments = new ArrayList<>();
 
   @Override
-  public Object evaluate(ChimeraContext ctx) {
+  public Object evaluate(ChimeraContext ctx, Scope scope) {
     if (functionName == null) {
       return null;
     }
 
     String name = functionName.getValue();
-    ScssFunction func = ctx.getFunctions().get(name);
+    ScssFunction func = scope.getFunction(name);
 
     if (func == null) {
       ctx.getErrors().error(getStart(), "Unknown function %s", name);
@@ -33,7 +34,7 @@ public class CallExpr extends Expression {
     Argument[] arguments = new Argument[this.arguments.size()];
     for (int i = 0; i < this.arguments.size(); i++) {
       Expression argExpr = this.arguments.get(i);
-      Object value = argExpr.evaluate(ctx);
+      Object value = argExpr.evaluate(ctx, scope);
 
       Argument arg = new Argument();
       arg.setArgumentIndex(i);

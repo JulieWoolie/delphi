@@ -13,6 +13,7 @@ import static net.arcadiusmc.chimera.Properties.COLOR;
 import static net.arcadiusmc.chimera.Properties.DISPLAY;
 import static net.arcadiusmc.chimera.Properties.FLEX_DIRECTION;
 import static net.arcadiusmc.chimera.Properties.FLEX_WRAP;
+import static net.arcadiusmc.chimera.Properties.HEIGHT;
 import static net.arcadiusmc.chimera.Properties.ITALIC;
 import static net.arcadiusmc.chimera.Properties.JUSTIFY_CONTENT;
 import static net.arcadiusmc.chimera.Properties.MARGIN;
@@ -41,8 +42,10 @@ import static net.arcadiusmc.chimera.Properties.SCALE;
 import static net.arcadiusmc.chimera.Properties.STRIKETHROUGH;
 import static net.arcadiusmc.chimera.Properties.TEXT_SHADOW;
 import static net.arcadiusmc.chimera.Properties.UNDERLINED;
+import static net.arcadiusmc.chimera.Properties.WIDTH;
 import static net.arcadiusmc.chimera.Properties.Z_INDEX;
 
+import lombok.ToString;
 import net.arcadiusmc.chimera.Value.ValueType;
 import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.Color;
@@ -52,6 +55,7 @@ import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
 
+@ToString
 public class ComputedStyleSet {
 
   public Color color;
@@ -70,6 +74,9 @@ public class ComputedStyleSet {
 
   public ValueOrAuto scaleX;
   public ValueOrAuto scaleY;
+
+  public ValueOrAuto width;
+  public ValueOrAuto height;
 
   public ValueOrAuto minWidth;
   public ValueOrAuto minHeight;
@@ -104,7 +111,7 @@ public class ComputedStyleSet {
   public int order;
 
   public ComputedStyleSet() {
-
+    clear();
   }
 
   public void clear() {
@@ -125,6 +132,8 @@ public class ComputedStyleSet {
     scaleX = ValueOrAuto.ONE;
     scaleY = ValueOrAuto.ONE;
 
+    width = ValueOrAuto.AUTO;
+    height = ValueOrAuto.AUTO;
     minWidth = ValueOrAuto.AUTO;
     minHeight = ValueOrAuto.AUTO;
     maxWidth = ValueOrAuto.AUTO;
@@ -159,8 +168,6 @@ public class ComputedStyleSet {
   }
   
   public void putAll(PropertySet set) {
-    clear();
-
     color = getExplicit(set, COLOR);
     backgroundColor = getExplicit(set, BACKGROUND_COLOR);
     borderColor = getExplicit(set, BORDER_COLOR);
@@ -179,6 +186,8 @@ public class ComputedStyleSet {
     scaleX = scale;
     scaleY = scale;
 
+    width = getPrimitive(set, WIDTH);
+    height = getPrimitive(set, HEIGHT);
     minWidth = getPrimitive(set, MIN_WIDTH);
     minHeight = getPrimitive(set, MIN_HEIGHT);
     maxWidth = getPrimitive(set, MAX_WIDTH);

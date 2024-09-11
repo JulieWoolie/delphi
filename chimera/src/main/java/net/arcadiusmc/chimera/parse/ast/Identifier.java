@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.NamedColor;
 
@@ -13,7 +14,7 @@ public class Identifier extends Expression {
   private String value;
 
   @Override
-  public Object evaluate(ChimeraContext ctx) {
+  public Object evaluate(ChimeraContext ctx, Scope scope) {
     if (Strings.isNullOrEmpty(value)) {
       return null;
     }

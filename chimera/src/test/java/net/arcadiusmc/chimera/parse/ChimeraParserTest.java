@@ -13,11 +13,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
+import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
+import net.arcadiusmc.chimera.parse.ast.BinaryOp;
+import net.arcadiusmc.chimera.parse.ast.CallExpr;
 import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.RectExpr;
 import net.arcadiusmc.chimera.parse.ast.RegularSelectorStatement;
@@ -26,6 +30,8 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.AttributeExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.ClassNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorNodeStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
+import net.arcadiusmc.chimera.parse.ast.UnaryExpr;
+import net.arcadiusmc.chimera.parse.ast.UnaryOp;
 import net.arcadiusmc.chimera.parse.ast.VariableDecl;
 import net.arcadiusmc.chimera.parse.ast.VariableExpr;
 import net.arcadiusmc.chimera.selector.AttributeOperation;
@@ -447,6 +453,68 @@ class ChimeraParserTest {
     assertNumberValue(14, Unit.PX, rect.getRight());
     assertNumberValue(10, Unit.PX, rect.getTop());
     assertNumberValue(10, Unit.PX, rect.getBottom());
+  }
+
+  @Test
+  void testNamespaced() {
+    NamespaceExpr expr = parseExpr("color.red(#fff)", NamespaceExpr.class);
+    assertEquals("color", expr.getNamespace().getValue());
+
+    CallExpr call = assertInstanceOf(CallExpr.class, expr.getTarget());
+    assertEquals("red", call.getFunctionName().getValue());
+    assertEquals(1, call.getArguments().size());
+  }
+
+  @Test
+  void testUnary() {
+    UnaryExpr unaryExpr = parseExpr("not true", UnaryExpr.class);
+    assertEquals(UnaryOp.INVERT, unaryExpr.getOp());
+
+    KeywordLiteral literal = assertInstanceOf(KeywordLiteral.class, unaryExpr.getValue());
+    assertEquals(Keyword.TRUE, literal.getKeyword());
+
+    unaryExpr = parseExpr("+id", UnaryExpr.class);
+    assertEquals(UnaryOp.PLUS, unaryExpr.getOp());
+
+    unaryExpr = parseExpr("-$variable", UnaryExpr.class);
+    assertEquals(UnaryOp.MINUS, unaryExpr.getOp());
+  }
+
+  @Test
+  void testParenExpr() {
+    Expression expr = parseExpr("-($variable)", Expression.class);
+    System.out.println(expr);
+  }
+
+  @Test
+  void testBinary() {
+    BinaryExpr expr = parseExpr("4px + 2px", BinaryExpr.class);
+    assertEquals(BinaryOp.PLUS, expr.getOp());
+
+    NumberLiteral lhs = assertInstanceOf(NumberLiteral.class, expr.getLhs());
+    NumberLiteral rhs = assertInstanceOf(NumberLiteral.class, expr.getRhs());
+
+    assertEquals(4, lhs.getValue());
+    assertEquals(2, rhs.getValue());
+
+    expr = parseExpr("4px + -$var", BinaryExpr.class);
+    assertEquals(BinaryOp.PLUS, expr.getOp());
+
+    lhs = assertInstanceOf(NumberLiteral.class, expr.getLhs());
+    assertEquals(4, lhs.getValue());
+    assertEquals(Unit.PX, lhs.getUnit());
+
+    UnaryExpr unary = assertInstanceOf(UnaryExpr.class, expr.getRhs());
+    assertEquals(UnaryOp.MINUS, unary.getOp());
+
+    VariableExpr varExpr = assertInstanceOf(VariableExpr.class, unary.getValue());
+    assertEquals("var", varExpr.getVariableName().getValue());
+
+    expr = parseExpr("true and false", BinaryExpr.class);
+    assertEquals(BinaryOp.AND, expr.getOp());
+
+    expr = parseExpr("true or false", BinaryExpr.class);
+    assertEquals(BinaryOp.OR, expr.getOp());
   }
 
   void assertNumberValue(Number num, Unit unit, Expression expr) {

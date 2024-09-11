@@ -1,6 +1,8 @@
 package net.arcadiusmc.chimera.parse;
 
 import java.util.List;
+import java.util.Map;
+import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
 import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
@@ -9,6 +11,7 @@ import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.Node;
 import net.arcadiusmc.chimera.parse.ast.NodeVisitor;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
@@ -30,6 +33,7 @@ import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorNodeStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.chimera.parse.ast.StringLiteral;
+import net.arcadiusmc.chimera.parse.ast.UnaryExpr;
 import net.arcadiusmc.chimera.parse.ast.VariableDecl;
 import net.arcadiusmc.chimera.parse.ast.VariableExpr;
 
@@ -51,7 +55,11 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   private StringBuilder enterTag(String tag, Node node) {
-    startTag(tag, node).append('>');
+    return enterTag(tag, node, null);
+  }
+
+  private StringBuilder enterTag(String tag, Node node, Map<String, Object> attrs) {
+    startTag(tag, node, attrs).append('>');
     indent++;
     return builder;
   }
@@ -62,10 +70,18 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   private StringBuilder voidTag(String tag, Node node) {
-    return startTag(tag, node).append(" />");
+    return voidTag(tag, node, null);
+  }
+
+  private StringBuilder voidTag(String tag, Node node, Map<String, Object> attrs) {
+    return startTag(tag, node, attrs).append(" />");
   }
 
   private StringBuilder startTag(String tag, Node node) {
+    return startTag(tag, node, null);
+  }
+
+  private StringBuilder startTag(String tag, Node node, Map<String, Object> attrs) {
     nlIndent().append("<").append(tag);
 
     if (node.getStart() != null) {
@@ -82,6 +98,26 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
           .append('"')
           .append(node.getEnd())
           .append('"');
+    }
+
+    if (attrs != null && !attrs.isEmpty()) {
+      attrs.forEach((s, object) -> {
+        String valueString;
+
+        if (object instanceof Enum<?> e) {
+          valueString = e.name().toLowerCase();
+        } else {
+          valueString = String.valueOf(object);
+        }
+
+        builder
+            .append(' ')
+            .append(s)
+            .append('=')
+            .append('"')
+            .append(valueString)
+            .append('"');
+      });
     }
 
     return builder;
@@ -118,8 +154,7 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
 
   @Override
   public Void stringLiteral(StringLiteral expr, Void unused) {
-    enterTag("string-literal", expr).append(expr.getValue()).append("</string-literal>");
-    indent--;
+    voidTag("string-literal", expr, Map.of("value", expr.getValue()));
     return null;
   }
 
@@ -200,28 +235,13 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
 
   @Override
   public Void numberLiteral(NumberLiteral expr, Void unused) {
-    startTag("number", expr)
-        .append(" value=")
-        .append('"')
-        .append(expr.getValue())
-        .append('"')
-        .append(" unit=")
-        .append('"')
-        .append(expr.getUnit().name().toLowerCase())
-        .append('"')
-        .append(" />");
-
+    voidTag("number", expr, Map.of("value", expr.getValue(), "unit", expr.getUnit()));
     return null;
   }
 
   @Override
   public Void keywordLiteral(KeywordLiteral expr, Void unused) {
-    startTag("keyword", expr)
-        .append(" keyword=").append('"')
-        .append(expr.getKeyword().name().toLowerCase())
-        .append('"')
-        .append(" />");
-
+    voidTag("keyword", expr, Map.of("keyword", expr.getKeyword()));
     return null;
   }
 
@@ -240,31 +260,19 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
 
   @Override
   public Void identifier(Identifier expr, Void unused) {
-    startTag("identifier", expr)
-        .append(" value=")
-        .append('"')
-        .append(expr.getValue())
-        .append('"')
-        .append(" />");
-
+    voidTag("identifier", expr, Map.of("value", expr.getValue()));
     return null;
   }
 
   @Override
   public Void error(ErroneousExpr expr, Void unused) {
-    startTag("error", expr).append("/>");
+    voidTag("error", expr, Map.of("error-token", expr.getToken().info()));
     return null;
   }
 
   @Override
   public Void colorLiteral(ColorLiteral expr, Void unused) {
-    startTag("color", expr)
-        .append(" value=")
-        .append('"')
-        .append(expr.getColor().toString())
-        .append('"')
-        .append(" />");
-
+    voidTag("color", expr, Map.of("value", expr.getColor()));
     return null;
   }
 
@@ -335,12 +343,7 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
 
   @Override
   public Void evenOdd(EvenOddKeyword expr, Void unused) {
-    startTag("even-odd", expr)
-        .append(" value=")
-        .append('"')
-        .append(expr.getEvenOdd().name().toLowerCase())
-        .append('"')
-        .append(" />");
+    voidTag("even-odd", expr, Map.of("value", expr.getEvenOdd()));
 
     return null;
   }
@@ -380,14 +383,7 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
 
   @Override
   public Void selectorAttribute(AttributeExpr expr, Void unused) {
-    startTag("attribute", expr)
-        .append(" operation=")
-        .append('"')
-        .append(expr.getOperation().name().toLowerCase())
-        .append('"')
-        .append(" >");
-
-    indent++;
+    enterTag("attribute", expr, Map.of("operation", expr.getOperation()));
 
     expr.getAttributeName().visit(this, unused);
 
@@ -426,13 +422,7 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
 
   @Override
   public Void selectorNode(SelectorNodeStatement node, Void unused) {
-    startTag("selector-node", node)
-        .append(" combinator=")
-        .append('"')
-        .append(node.getCombinator().name().toLowerCase())
-        .append('"')
-        .append(">");
-    indent++;
+    enterTag("selector-node", node, Map.of("combinator", node.getCombinator()));
 
     for (SelectorExpression expression : node.getExpressions()) {
       expression.visit(this, unused);
@@ -470,6 +460,50 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   @Override
   public Void important(ImportantMarker marker, Void unused) {
     voidTag("important", marker);
+    return null;
+  }
+
+  @Override
+  public Void unary(UnaryExpr expr, Void unused) {
+    enterTag("unary", expr, Map.of("operation", expr.getOp()));
+
+    if (expr.getValue() != null) {
+      expr.getValue().visit(this, unused);
+    }
+
+    exitTag("unary");
+    return null;
+  }
+
+  @Override
+  public Void namespaced(NamespaceExpr expr, Void unused) {
+    enterTag("namespaced", expr);
+
+    if (expr.getNamespace() != null) {
+      identifier(expr.getNamespace(), unused);
+    }
+
+    if (expr.getTarget() != null) {
+      expr.getTarget().visit(this, unused);
+    }
+
+    exitTag("namespaced");
+    return null;
+  }
+
+  @Override
+  public Void binary(BinaryExpr expr, Void unused) {
+    enterTag("binary", expr, Map.of("operation", expr.getOp()));
+
+    if (expr.getLhs() != null) {
+      expr.getLhs().visit(this, unused);
+    }
+
+    if (expr.getRhs() != null) {
+      expr.getRhs().visit(this, unused);
+    }
+
+    exitTag("binary");
     return null;
   }
 

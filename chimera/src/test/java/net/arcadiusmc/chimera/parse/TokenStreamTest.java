@@ -23,8 +23,7 @@ class TokenStreamTest {
   void recognizeNumbers() {
     recognizeToken(Token.INT, "1");
     recognizeToken(Token.INT, "-1");
-    recognizeToken(Token.INT, "+15");
-    recognizeToken(Token.INT, "+15475");
+    recognizeToken(Token.INT, "15");
     recognizeToken(Token.INT, "15475");
     recognizeToken(Token.INT, "-15475");
     recognizeToken(Token.NUMBER, "1.234");
@@ -74,6 +73,12 @@ class TokenStreamTest {
     recognizeToken(Token.ANGLE_RIGHT, ">");
     recognizeToken(Token.ANGLE_LEFT, "<");
     recognizeToken(Token.MINUS, "-");
+    recognizeToken(Token.ELLIPSES, "...");
+    recognizeToken(Token.GTE, ">=");
+    recognizeToken(Token.LTE, "<=");
+    recognizeToken(Token.EQUAL_TO, "==");
+    recognizeToken(Token.NOT_EQUAL_TO, "!=");
+    recognizeToken(Token.SLASH, "/");
   }
 
   @Test
@@ -100,6 +105,18 @@ class TokenStreamTest {
     recognizeToken(Token.HEX, ParseMode.VALUES, "#ffcc00");
     recognizeToken(Token.HEX_SHORT, ParseMode.VALUES, "#fc0");
     recognizeToken(Token.HEX_ALPHA, ParseMode.VALUES, "#ffcc2200");
+  }
+
+  @Test
+  void recognizeAtTokens() {
+    recognizeToken(Token.AT_FUNCTION, "@function");
+    recognizeToken(Token.AT_WARN, "@warn");
+    recognizeToken(Token.AT_DEBUG, "@debug");
+    recognizeToken(Token.AT_ERROR, "@error");
+    recognizeToken(Token.AT_PRINT, "@print");
+    recognizeToken(Token.AT_IF, "@if");
+    recognizeToken(Token.AT_ELSE, "@else");
+    recognizeToken(Token.AT_ID, "@identifier-token");
   }
 
   private void recognizeToken(int ttype, String input) {

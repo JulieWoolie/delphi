@@ -38,5 +38,15 @@ public enum Keyword {
 
   // Boolean values
   TRUE,
-  FALSE
+  FALSE,
+  ;
+
+  @Override
+  public String toString() {
+    return name().toLowerCase().replace("_", "-");
+  }
+
+  static Keyword valueOf(boolean b) {
+    return b ? TRUE : FALSE;
+  }
 }

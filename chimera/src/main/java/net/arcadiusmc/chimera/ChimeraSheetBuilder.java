@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.selector.Selector;
-import net.arcadiusmc.chimera.system.StyleSystem;
+import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
@@ -15,10 +15,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class ChimeraSheetBuilder implements StylesheetBuilder {
 
-  private final @Nullable StyleSystem system;
+  private final @Nullable StyleObjectModel system;
   private final List<Rule> rules = new ArrayList<>();
 
-  public ChimeraSheetBuilder(@Nullable StyleSystem system) {
+  public ChimeraSheetBuilder(@Nullable StyleObjectModel system) {
     this.system = system;
   }
 

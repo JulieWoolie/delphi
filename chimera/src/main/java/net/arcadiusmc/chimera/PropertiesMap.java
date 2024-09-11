@@ -1,14 +1,16 @@
 package net.arcadiusmc.chimera;
 
 import com.google.common.base.Strings;
+import java.util.Optional;
 import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
 import net.arcadiusmc.chimera.parse.ChimeraParser;
 import net.arcadiusmc.chimera.parse.CompilerErrors;
 import net.arcadiusmc.chimera.parse.Location;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.chimera.parse.ast.Expression;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
-import net.arcadiusmc.chimera.system.StyleSystem;
+import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
@@ -23,9 +25,9 @@ import org.slf4j.event.Level;
 
 public class PropertiesMap extends ReadonlyProperties implements StyleProperties {
 
-  private final @Nullable StyleSystem system;
+  private final @Nullable StyleObjectModel system;
 
-  public PropertiesMap(PropertySet set, @Nullable StyleSystem system) {
+  public PropertiesMap(PropertySet set, @Nullable StyleObjectModel system) {
     super(set);
     this.system = system;
   }
@@ -49,8 +51,9 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
     ChimeraContext ctx = new ChimeraContext(parser.getStream().getInput());
     ctx.setErrors(errors);
 
+    Scope scope = Scope.createTopLevel();
     if (system != null) {
-      ctx.setVariables(system.getVariables());
+      scope.getVariableMap().putAll(system.getVariables());
     }
 
     Expression expression = parser.expr();
@@ -60,7 +63,7 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
       errors.error(marker.getStart(), "'!important' not allowed here");
     }
 
-    Object obj = expression.evaluate(ctx);
+    Object obj = expression.evaluate(ctx, scope);
     if (obj == null) {
       return;
     }
@@ -68,7 +71,7 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
     Value<T> cssValue = Chimera.coerceCssValue(
         value,
         marker != null,
-        property.getType(),
+        property,
         obj,
         errors,
         Location.START
@@ -86,6 +89,22 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   private <T> void set(Property<T> property, T value) {
+    if (value == null) {
+      set.remove(property);
+      return;
+    }
+
+    Optional<String> errorOpt = property.validateValue(value);
+    if (errorOpt.isPresent()) {
+      StyleLoggers.getLogger().error(
+          "Invalid value for property {}: {}",
+          property.getKey(),
+          errorOpt.get()
+      );
+
+      return;
+    }
+
     set.set(property, value);
   }
 
@@ -234,6 +253,30 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   @Override
   public PropertiesMap setScale(@Nullable Primitive value) {
     set(Properties.SCALE, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setWidth(@Nullable String value) {
+    parse(Properties.WIDTH, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setWidth(@Nullable Primitive value) {
+    set(Properties.WIDTH, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setHeight(@Nullable String value) {
+    parse(Properties.HEIGHT, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setHeight(@Nullable Primitive value) {
+    set(Properties.HEIGHT, value);
     return triggerChange();
   }
 

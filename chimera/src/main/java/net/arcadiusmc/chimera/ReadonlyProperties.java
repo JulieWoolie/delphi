@@ -3,7 +3,7 @@ package net.arcadiusmc.chimera;
 import com.google.common.base.Strings;
 import java.util.HashSet;
 import java.util.Set;
-import net.arcadiusmc.chimera.PropertySet.RuleIterator;
+import net.arcadiusmc.chimera.PropertySet.PropertyIterator;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +24,16 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
     }
 
     return value.getTextValue();
+  }
+
+  @Override
+  public @Nullable String getHeight() {
+    return get(Properties.HEIGHT);
+  }
+
+  @Override
+  public @Nullable String getWidth() {
+    return get(Properties.WIDTH);
   }
 
   @Override
@@ -233,7 +243,7 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   @Override
   public @NotNull Set<String> getProperties() {
     Set<String> strings = new HashSet<>();
-    RuleIterator it = set.iterator();
+    PropertyIterator it = set.iterator();
 
     while (it.hasNext()) {
       it.next();

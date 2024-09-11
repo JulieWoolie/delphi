@@ -41,6 +41,14 @@ public class CompilerErrors {
     pushError(Level.ERROR, null, format, args);
   }
 
+  public void log(Level level, Location location, String format, Object... args) {
+    pushError(level, location, format, args);
+  }
+
+  public void log(Level level, String format, Object... args) {
+    pushError(level, null, format, args);
+  }
+
   private void pushError(Level level, Location location, String format, Object... args) {
     String message = String.format(format, args);
     String formatted;
@@ -106,7 +114,7 @@ public class CompilerErrors {
         .append('\n')
         .append(linePad)
         .append(" |")
-        .append(" ".repeat(Math.max(0, column - 1)))
+        .append(" ".repeat(Math.max(0, column)))
         .append("^ ")
         .append(message)
 

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class RuleStatement extends Node {
+public class RuleStatement extends Statement {
 
   private SelectorExpression selector;
 

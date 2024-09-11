@@ -1,5 +1,6 @@
 package net.arcadiusmc.chimera.parse;
 
+import static net.arcadiusmc.chimera.parse.Token.ANGLE_LEFT;
 import static net.arcadiusmc.chimera.parse.Token.ANGLE_RIGHT;
 import static net.arcadiusmc.chimera.parse.Token.BRACKET_CLOSE;
 import static net.arcadiusmc.chimera.parse.Token.BRACKET_OPEN;
@@ -9,19 +10,25 @@ import static net.arcadiusmc.chimera.parse.Token.COMMA;
 import static net.arcadiusmc.chimera.parse.Token.DOLLAR_EQ;
 import static net.arcadiusmc.chimera.parse.Token.DOLLAR_SIGN;
 import static net.arcadiusmc.chimera.parse.Token.DOT;
+import static net.arcadiusmc.chimera.parse.Token.ELLIPSES;
 import static net.arcadiusmc.chimera.parse.Token.EQUALS;
+import static net.arcadiusmc.chimera.parse.Token.EQUAL_TO;
 import static net.arcadiusmc.chimera.parse.Token.EXCLAMATION;
+import static net.arcadiusmc.chimera.parse.Token.GTE;
 import static net.arcadiusmc.chimera.parse.Token.HASHTAG;
 import static net.arcadiusmc.chimera.parse.Token.HEX;
 import static net.arcadiusmc.chimera.parse.Token.HEX_ALPHA;
 import static net.arcadiusmc.chimera.parse.Token.HEX_SHORT;
 import static net.arcadiusmc.chimera.parse.Token.ID;
 import static net.arcadiusmc.chimera.parse.Token.INT;
+import static net.arcadiusmc.chimera.parse.Token.LTE;
 import static net.arcadiusmc.chimera.parse.Token.MINUS;
+import static net.arcadiusmc.chimera.parse.Token.NOT_EQUAL_TO;
 import static net.arcadiusmc.chimera.parse.Token.NUMBER;
 import static net.arcadiusmc.chimera.parse.Token.PERCENT;
 import static net.arcadiusmc.chimera.parse.Token.PLUS;
 import static net.arcadiusmc.chimera.parse.Token.SEMICOLON;
+import static net.arcadiusmc.chimera.parse.Token.SLASH;
 import static net.arcadiusmc.chimera.parse.Token.SQUARE_CLOSE;
 import static net.arcadiusmc.chimera.parse.Token.SQUARE_OPEN;
 import static net.arcadiusmc.chimera.parse.Token.SQUIGLY;
@@ -38,6 +45,8 @@ import java.util.Objects;
 import java.util.Stack;
 import lombok.Getter;
 import net.arcadiusmc.chimera.parse.TokenStream.ParseMode;
+import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
+import net.arcadiusmc.chimera.parse.ast.BinaryOp;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
 import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
@@ -47,6 +56,7 @@ import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
 import net.arcadiusmc.chimera.parse.ast.RectExpr;
@@ -67,6 +77,8 @@ import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorNodeStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.chimera.parse.ast.StringLiteral;
+import net.arcadiusmc.chimera.parse.ast.UnaryExpr;
+import net.arcadiusmc.chimera.parse.ast.UnaryOp;
 import net.arcadiusmc.chimera.parse.ast.VariableDecl;
 import net.arcadiusmc.chimera.parse.ast.VariableExpr;
 import net.arcadiusmc.chimera.selector.AttributeOperation;
@@ -92,6 +104,12 @@ public class ChimeraParser {
   public ChimeraParser(StringBuffer buffer) {
     this.errors = new CompilerErrors(buffer);
     this.stream = new TokenStream(buffer, errors);
+  }
+
+  public ChimeraContext createContext() {
+    ChimeraContext ctx = new ChimeraContext(stream.getInput());
+    ctx.setErrors(errors);
+    return ctx;
   }
 
   public ParserScope scope() {
@@ -627,6 +645,9 @@ public class ChimeraParser {
     return stat;
   }
 
+  /* --------------------------- Statements ---------------------------- */
+
+
   /* --------------------------- Expressions ---------------------------- */
 
   PropertyStatement propertyStatement(boolean importantAllowed) {
@@ -678,7 +699,7 @@ public class ChimeraParser {
     if (expr.getStart().line() != peek().location().line()) {
       return false;
     }
-    if (matches(SEMICOLON)) {
+    if (matches(SEMICOLON, BRACKET_CLOSE)) {
       return false;
     }
     if (!hasNext()) {
@@ -689,7 +710,7 @@ public class ChimeraParser {
   }
 
   public Expression expr() {
-    Expression expr = primaryExpr();
+    Expression expr = logicOr();
 
     if (!isRectangleStart(expr)) {
       return expr;
@@ -700,8 +721,8 @@ public class ChimeraParser {
 
     rectParams[0] = expr;
 
-    while (peek().location().line() == expr.getStart().line() && !matches(SEMICOLON) && hasNext()) {
-      Expression e = primaryExpr();
+    while (peek().location().line() == expr.getStart().line() && !matches(SEMICOLON, BRACKET_CLOSE) && hasNext()) {
+      Expression e = logicOr();
       rectParams[count++] = e;
 
       if (count >= rectParams.length) {
@@ -744,6 +765,211 @@ public class ChimeraParser {
     return rect;
   }
 
+  Expression logicOr() {
+    Expression e = logicAnd();
+    Location start = e.getStart();
+
+    while (matchesId("or")) {
+      next();
+
+      Expression rhs = logicAnd();
+
+      BinaryExpr expr = new BinaryExpr();
+      expr.setOp(BinaryOp.OR);
+      expr.setLhs(e);
+      expr.setRhs(rhs);
+      expr.setStart(start);
+      expr.setEnd(rhs.getEnd());
+
+      e = expr;
+    }
+
+    return e;
+  }
+
+  Expression logicAnd() {
+    Expression e = equalityExpr();
+    Location start = e.getStart();
+
+    while (matchesId("and")) {
+      next();
+
+      Expression rhs = equalityExpr();
+
+      BinaryExpr expr = new BinaryExpr();
+      expr.setOp(BinaryOp.AND);
+      expr.setLhs(e);
+      expr.setRhs(rhs);
+      expr.setStart(start);
+      expr.setEnd(rhs.getEnd());
+
+      e = expr;
+    }
+
+    return e;
+  }
+
+  Expression equalityExpr() {
+    Expression e = comparisonExpr();
+    Location start = e.getStart();
+
+    while (matches(EQUAL_TO, NOT_EQUAL_TO)) {
+      BinaryOp op = next().type() == EQUAL_TO
+          ? BinaryOp.EQUAL
+          : BinaryOp.NOT_EQUAL;
+
+      Expression rhs = comparisonExpr();
+      BinaryExpr expr = new BinaryExpr();
+      expr.setRhs(rhs);
+      expr.setLhs(e);
+      expr.setOp(op);
+      expr.setStart(start);
+      expr.setEnd(rhs.getEnd());
+
+      e = expr;
+    }
+
+    return e;
+  }
+
+  Expression comparisonExpr() {
+    Expression e = additiveExpr();
+    Location start = e.getStart();
+
+    while (matches(ANGLE_LEFT, ANGLE_RIGHT, GTE, LTE)) {
+      BinaryOp op = switch (next().type()) {
+        case ANGLE_LEFT -> BinaryOp.LT;
+        case ANGLE_RIGHT -> BinaryOp.GT;
+        case LTE -> BinaryOp.LTE;
+        default -> BinaryOp.GTE;
+      };
+
+      Expression rhs = additiveExpr();
+      BinaryExpr expr = new BinaryExpr();
+      expr.setStart(start);
+      expr.setLhs(e);
+      expr.setRhs(rhs);
+      expr.setOp(op);
+      expr.setEnd(rhs.getEnd());
+
+      e = expr;
+    }
+
+    return e;
+  }
+
+  Expression additiveExpr() {
+    Expression e = multiplicativeExpr();
+    Location start = e.getStart();
+
+    while (matches(PLUS, MINUS)) {
+      BinaryOp binOp = next().type() == PLUS
+          ? BinaryOp.PLUS
+          : BinaryOp.MINUS;
+
+      BinaryExpr bin = new BinaryExpr();
+      Expression rhs = multiplicativeExpr();
+
+      bin.setStart(start);
+      bin.setRhs(rhs);
+      bin.setLhs(e);
+      bin.setOp(binOp);
+      bin.setEnd(rhs.getEnd());
+
+      e = bin;
+    }
+
+    return e;
+  }
+
+  Expression multiplicativeExpr() {
+    Expression e = unaryExpr();
+    var start = e.getStart();
+
+    while (matches(SLASH, STAR, PERCENT)) {
+      BinaryOp binOp = switch (next().type()) {
+        case SLASH -> BinaryOp.DIV;
+        case STAR -> BinaryOp.MUL;
+        default -> BinaryOp.MOD;
+      };
+
+      BinaryExpr bin = new BinaryExpr();
+      Expression rhs = unaryExpr();
+
+      bin.setStart(start);
+      bin.setLhs(e);
+      bin.setRhs(rhs);
+      bin.setEnd(rhs.getEnd());
+      bin.setOp(binOp);
+
+      e = bin;
+    }
+
+    return e;
+  }
+
+  Expression unaryExpr() {
+    if (!matches(PLUS, MINUS) && !matchesId("not")) {
+      Expression expr = namespacedExpr();
+
+      if (matches(ELLIPSES)) {
+        UnaryExpr unary = new UnaryExpr();
+        unary.setStart(expr.getStart());
+        unary.setOp(UnaryOp.SPREAD);
+        unary.setValue(expr);
+
+        Location end = next().end();
+        unary.setEnd(end);
+
+        return unary;
+      }
+
+      return expr;
+    }
+
+    UnaryOp op = switch (peek().type()) {
+      case ID -> UnaryOp.INVERT;
+      case MINUS -> UnaryOp.MINUS;
+      case PLUS -> UnaryOp.PLUS;
+      default -> throw new IllegalStateException();
+    };
+    Location start = next().location();
+
+    Expression expr = namespacedExpr();
+
+    UnaryExpr unary = new UnaryExpr();
+    unary.setStart(start);
+    unary.setEnd(expr.getEnd());
+    unary.setValue(expr);
+    unary.setOp(op);
+
+    return unary;
+  }
+
+  Expression namespacedExpr() {
+    Expression prim = primaryExpr();
+
+    if (!(prim instanceof Identifier id)) {
+      return prim;
+    }
+
+    if (!matches(DOT)) {
+      return prim;
+    }
+
+    NamespaceExpr expr = new NamespaceExpr();
+    expr.setStart(prim.getStart());
+    expr.setNamespace(id);
+
+    next();
+
+    Expression rhsExpr = primaryExpr();
+    expr.setTarget(rhsExpr);
+    expr.setEnd(rhsExpr.getEnd());
+
+    return expr;
+  }
+
   Expression primaryExpr() {
     Token peek = peek();
 
@@ -766,12 +992,18 @@ public class ChimeraParser {
       case HEX_SHORT:
         return hexExpr();
 
-      default:
-        ErroneousExpr expr = new ErroneousExpr();
-        expr.setToken(next());
-        expr.setStart(peek.location());
-        expr.setEnd(peek.end());
+      case BRACKET_OPEN:
+        next();
+        Expression expr = logicOr();
+        expect(BRACKET_CLOSE);
         return expr;
+
+      default:
+        ErroneousExpr err = new ErroneousExpr();
+        err.setToken(next());
+        err.setStart(peek.location());
+        err.setEnd(peek.end());
+        return err;
     }
   }
 
@@ -838,14 +1070,21 @@ public class ChimeraParser {
 
     NumberLiteral num = new NumberLiteral();
     num.setStart(numberToken.location());
-    num.setEnd(numberToken.location());
+    num.setEnd(numberToken.end());
     num.setValue(number);
+    num.setUnit(Unit.NONE);
 
     Unit unit;
     Token peek = peek();
 
+    // Ensure no whitespace between number and next token
+    if (peek.location().cursor() != numberToken.end().cursor()) {
+      return num;
+    }
+
     if (peek.type() == PERCENT) {
       unit = Unit.PERCENT;
+      num.setEnd(peek.end());
       next();
     } else if (peek.type() == ID) {
       switch (peek.value()) {
@@ -873,17 +1112,34 @@ public class ChimeraParser {
           unit = Unit.M;
           next();
           break;
+        case "deg":
+          unit = Unit.DEG;
+          next();
+          break;
+        case "rad":
+          unit = Unit.RAD;
+          next();
+          break;
+        case "grad":
+          unit = Unit.GRAD;
+          next();
+          break;
+        case "turn":
+          unit = Unit.TURN;
+          next();
+          break;
 
         default:
+          errors.error(peek.location(), "Unknown/unsupported measurement %s", peek.value());
           return num;
       }
+
+      num.setEnd(peek.end());
     } else {
       return num;
     }
 
     num.setUnit(unit);
-    num.setEnd(lastReadToken().end());
-
     return num;
   }
 

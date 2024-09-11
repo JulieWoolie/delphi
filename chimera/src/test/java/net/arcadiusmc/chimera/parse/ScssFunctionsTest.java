@@ -8,6 +8,7 @@ import net.arcadiusmc.chimera.parse.ast.Expression;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.NamedColor;
+import net.arcadiusmc.dom.style.Primitive;
 import org.junit.jupiter.api.Test;
 
 public class ScssFunctionsTest {
@@ -58,14 +59,70 @@ public class ScssFunctionsTest {
     assertEquals(dg, c);
   }
 
+  @Test
+  void testHsl() {
+    Color c = parseColor("hsl(360deg 50% 20%)");
+    Color control = Color.hsv(1f, .5f, .2f);
+    assertEquals(control, c);
+
+    c = parseColor("hsl(1turn 100% 100%)");
+    control = Color.hsv(1f, 1f, 1f);
+    assertEquals(control, c);
+  }
+
+  @Test
+  void testHsla() {
+    Color c = parseColor("hsla(1turn 100% 100% 0.5)");
+    Color control = Color.hsva(1f, 1f, 1f, 0.5f);
+    assertEquals(control, c);
+  }
+
+  @Test
+  void testSqrt() {
+    assertEvaluatesFloat("sqrt(1654)", (float) Math.sqrt(1654));
+    assertEvaluatesFloat("sqrt(7 * 7)", 7);
+  }
+
+  @Test
+  void testMaxMin() {
+    assertEvaluatesFloat("max(1, 2)", 2);
+    assertEvaluatesFloat("max(2, 1)", 2);
+
+    assertEvaluatesFloat("min(1, 2)", 1);
+    assertEvaluatesFloat("min(2, 1)", 1);
+  }
+
+  @Test
+  void testClamp() {
+    assertEvaluatesFloat("clamp(10, 20, 100)", 20);
+    assertEvaluatesFloat("clamp(10, 5, 100)", 10);
+    assertEvaluatesFloat("clamp(10, 500, 100)", 100);
+  }
+
+  void assertEvaluatesFloat(String str, float expected) {
+    Primitive prim = parsePrim(str);
+    assertEquals(expected, prim.getValue());
+  }
+
+  Primitive parsePrim(String str) {
+    ChimeraParser parser = Tests.parser(str);
+    Expression expr = parser.expr();
+
+    ChimeraContext ctx = parser.createContext();
+    Scope scope = Scope.createTopLevel();
+
+    Object o = expr.evaluate(ctx, scope);
+
+    return assertInstanceOf(Primitive.class, o);
+  }
+
   Color parseColor(String str) {
     ChimeraParser parser = Tests.parser(str);
     Expression expr = parser.expr();
 
-    ChimeraContext ctx = new ChimeraContext(parser.getStream().getInput());
-    ctx.setErrors(parser.getErrors());
+    ChimeraContext ctx = parser.createContext();
 
-    Object o = expr.evaluate(ctx);
+    Object o = expr.evaluate(ctx, Scope.createTopLevel());
     return assertInstanceOf(Color.class, o);
   }
 }

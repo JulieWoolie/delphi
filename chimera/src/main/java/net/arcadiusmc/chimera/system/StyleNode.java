@@ -2,24 +2,28 @@ package net.arcadiusmc.chimera.system;
 
 import lombok.Getter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
+import net.arcadiusmc.chimera.Property;
 import net.arcadiusmc.chimera.PropertySet;
+import net.arcadiusmc.chimera.PropertySet.PropertyIterator;
 import net.arcadiusmc.chimera.ReadonlyProperties;
+import net.arcadiusmc.chimera.StyleUpdateCallbacks;
+import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.dom.Node;
 
 @Getter
 public class StyleNode {
 
-  private final Node domNode;
-  private final StyleSystem system;
+  final Node domNode;
+  final StyleObjectModel system;
 
-  private final PropertySet styleSet;
-  private final ReadonlyProperties currentStyle;
+  final PropertySet styleSet;
+  final ReadonlyProperties currentStyle;
 
-  private final ComputedStyleSet computedSet;
+  final ComputedStyleSet computedSet;
 
   ElementStyleNode parent;
 
-  public StyleNode(Node domNode, StyleSystem system) {
+  public StyleNode(Node domNode, StyleObjectModel system) {
     this.domNode = domNode;
     this.system = system;
 
@@ -27,5 +31,52 @@ public class StyleNode {
     this.currentStyle = new ReadonlyProperties(styleSet);
 
     this.computedSet = new ComputedStyleSet();
+  }
+
+  public void updateStyle() {
+    PropertySet newSet = new PropertySet();
+    applyCascading(newSet);
+
+    int changes = styleSet.setAll(newSet);
+    if (changes == 0) {
+      return;
+    }
+
+    computedSet.putAll(styleSet);
+    triggerCallback(changes);
+  }
+
+  void triggerCallback(int changes) {
+    StyleUpdateCallbacks updateCallbacks = system.updateCallbacks;
+    if (updateCallbacks == null) {
+      return;
+    }
+
+    updateCallbacks.styleUpdated(this, changes);
+  }
+
+  void applyCascading(PropertySet out) {
+    if (parent == null) {
+      return;
+    }
+
+    PropertySet parentSet = parent.getStyleSet();
+    PropertyIterator iterator = parentSet.iterator();
+
+    while (iterator.hasNext()) {
+      iterator.next();
+
+      Property<Object> prop = iterator.property();
+
+      if (!prop.isCascading() /*&& !(node instanceof ElementStyleNode)*/) {
+        continue;
+      }
+      if (out.has(prop)) {
+        continue;
+      }
+
+      Value<Object> value = iterator.value();
+      out.setValue(prop, value);
+    }
   }
 }

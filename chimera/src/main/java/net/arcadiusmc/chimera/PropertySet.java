@@ -50,7 +50,7 @@ public final class PropertySet {
   }
 
   public int putAll(PropertySet from) {
-    RuleIterator it = from.iterator();
+    PropertyIterator it = from.iterator();
     int dirtyBits = 0;
 
     while (it.hasNext()) {
@@ -132,7 +132,7 @@ public final class PropertySet {
   }
 
   public String toParseString() {
-    RuleIterator it = iterator();
+    PropertyIterator it = iterator();
 
     if (!it.hasNext()) {
       return "";
@@ -256,11 +256,11 @@ public final class PropertySet {
     return values[i];
   }
 
-  public RuleIterator iterator() {
-    return new RuleIterator();
+  public PropertyIterator iterator() {
+    return new PropertyIterator();
   }
 
-  public class RuleIterator {
+  public class PropertyIterator {
 
     int index = 0;
     int currentId = -1;

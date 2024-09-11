@@ -2,6 +2,7 @@ package net.arcadiusmc.chimera.parse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.PrimitiveRect;
 import net.arcadiusmc.chimera.Properties;
@@ -53,47 +54,44 @@ public final class Chimera {
     return compiled;
   }
 
-  public static void evaluateVariables(List<VariableDecl> list, ChimeraContext ctx) {
+  public static void evaluateVariables(List<VariableDecl> list, ChimeraContext ctx, Scope scope) {
     for (VariableDecl variableDecl : list) {
-      if (variableDecl.getValue() == null) {
-        continue;
-      }
-
-      Object value = variableDecl.getValue().evaluate(ctx);
-      if (value == null) {
-        continue;
-      }
-
-      ctx.getVariables().put(variableDecl.getName().getValue(), value);
+      variableDecl.execute(ctx, scope);
     }
   }
 
   public static ChimeraStylesheet compileSheet(SheetStatement stat, ChimeraContext ctx) {
-    evaluateVariables(stat.getVariableDeclarations(), ctx);
+    Scope scope = Scope.createTopLevel();
+    evaluateVariables(stat.getVariableDeclarations(), ctx, scope);
 
     List<Rule> rules = new ArrayList<>(stat.getRules().size());
 
     for (int i = 0; i < stat.getRules().size(); i++) {
-      compileRule(stat.getRules().get(i), ctx, null, rules);
+      compileRule(stat.getRules().get(i), ctx, scope, null, rules);
     }
 
     return new ChimeraStylesheet(rules.toArray(Rule[]::new));
   }
 
   public static void compileInline(InlineStyleStatement stat, PropertySet out, ChimeraContext ctx) {
+    Scope scope = Scope.createTopLevel();
+
     for (PropertyStatement property : stat.getProperties()) {
-      compileProperty(property, ctx, out);
+      compileProperty(property, ctx, scope, out);
     }
   }
 
   public static void compileRule(
       RuleStatement stat,
       ChimeraContext ctx,
+      Scope scope,
       Selector prefix,
       List<Rule> out
   ) {
+    scope = scope.pushFrame();
+
     Selector selector = stat.getSelector().compile(ctx.getErrors());
-    PropertySet set = compileProperties(stat.getProperties(), ctx);
+    PropertySet set = compileProperties(stat.getProperties(), ctx, scope);
 
     if (prefix != null) {
       SelectorNode n1 = new SelectorNode();
@@ -108,18 +106,19 @@ public final class Chimera {
     out.add(new Rule(selector, set));
 
     for (RuleStatement nestedRule : stat.getNestedRules()) {
-      compileRule(nestedRule, ctx, selector, out);
+      compileRule(nestedRule, ctx, scope, selector, out);
     }
   }
 
   public static PropertySet compileProperties(
       List<PropertyStatement> properties,
-      ChimeraContext ctx
+      ChimeraContext ctx,
+      Scope scope
   ) {
     PropertySet set = new PropertySet();
 
     for (PropertyStatement propertyStat : properties) {
-      compileProperty(propertyStat, ctx, set);
+      compileProperty(propertyStat, ctx, scope, set);
     }
 
     return set;
@@ -128,6 +127,7 @@ public final class Chimera {
   private static void compileProperty(
       PropertyStatement propertyStat,
       ChimeraContext ctx,
+      Scope scope,
       PropertySet set
   ) {
 
@@ -150,13 +150,13 @@ public final class Chimera {
       return;
     }
 
-    Object value = valExpr.evaluate(ctx);
+    Object value = valExpr.evaluate(ctx, scope);
     String input = ctx.getInput(valExpr.getStart(), propertyStat.getEnd());
 
     Value<Object> sval = coerceCssValue(
         input,
         propertyStat.getImportant() != null,
-        property.getType(),
+        property,
         value,
         ctx.getErrors(),
         valExpr.getStart()
@@ -172,11 +172,12 @@ public final class Chimera {
   public static <T> Value<T> coerceCssValue(
       String input,
       boolean important,
-      Class<T> type,
+      Property<T> property,
       Object value,
       CompilerErrors errors,
       Location l
   ) {
+    Class<T> type = property.getType();
     value = tryCoerceValue(type, value);
 
     Value<T> sval = new Value<>();
@@ -184,7 +185,15 @@ public final class Chimera {
     sval.setImportant(important);
 
     if (type.isInstance(value)) {
-      sval.setValue(type.cast(value));
+      T tval = type.cast(value);
+
+      Optional<String> errorOpt = property.validateValue(tval);
+      if (errorOpt.isPresent()) {
+        errors.error(l, "Invalid value for property %s: %s", property.getKey(), errorOpt.get());
+        tval = property.getDefaultValue();
+      }
+
+      sval.setValue(tval);
       sval.setType(ValueType.EXPLICIT);
       return sval;
     }
@@ -204,9 +213,11 @@ public final class Chimera {
           sval.setType(ValueType.AUTO);
         }
       }
+
+      return sval;
     }
 
-    errors.error(l, "Invalid value for property");
+    errors.error(l, "Invalid value for property %s", property.getKey());
     return null;
   }
 

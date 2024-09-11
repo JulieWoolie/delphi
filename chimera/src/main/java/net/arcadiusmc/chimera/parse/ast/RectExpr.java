@@ -6,6 +6,7 @@ import net.arcadiusmc.chimera.PrimitiveRect;
 import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
 import net.arcadiusmc.chimera.parse.Location;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Primitive;
 
 @Getter @Setter
@@ -17,11 +18,11 @@ public class RectExpr extends Expression {
   private Expression left;
 
   @Override
-  public Object evaluate(ChimeraContext ctx) {
-    Primitive topRes = Chimera.coerceValue(Primitive.class, top);
-    Primitive rightRes = Chimera.coerceValue(Primitive.class, right);
-    Primitive bottomRes = Chimera.coerceValue(Primitive.class, bottom);
-    Primitive leftRes = Chimera.coerceValue(Primitive.class, left);
+  public Object evaluate(ChimeraContext ctx, Scope scope) {
+    Primitive topRes = Chimera.coerceValue(Primitive.class, top.evaluate(ctx, scope));
+    Primitive rightRes = Chimera.coerceValue(Primitive.class, right.evaluate(ctx, scope));
+    Primitive bottomRes = Chimera.coerceValue(Primitive.class, bottom.evaluate(ctx, scope));
+    Primitive leftRes = Chimera.coerceValue(Primitive.class, left.evaluate(ctx, scope));
 
     topRes = reportInvalid(topRes, "top", top.getStart(), ctx);
     rightRes = reportInvalid(rightRes, "right", right.getStart(), ctx);

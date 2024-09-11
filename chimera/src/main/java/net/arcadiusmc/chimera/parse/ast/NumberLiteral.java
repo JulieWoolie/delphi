@@ -4,6 +4,7 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
 
@@ -14,7 +15,7 @@ public class NumberLiteral extends Expression {
   private Unit unit = Unit.NONE;
 
   @Override
-  public Primitive evaluate(ChimeraContext ctx) {
+  public Primitive evaluate(ChimeraContext ctx, Scope scope) {
     Unit unit = Objects.requireNonNullElse(this.unit, Unit.NONE);
     return Primitive.create(value.floatValue(), unit);
   }
