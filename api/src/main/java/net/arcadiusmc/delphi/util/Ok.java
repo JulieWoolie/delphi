@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 
 final class Ok<T, E> implements Result<T, E> {
 
+  @SuppressWarnings("rawtypes")
+  public static final Ok NOTHING = new Ok<>(Nothing.INSTANCE);
+
   private final T value;
 
   public Ok(T value) {

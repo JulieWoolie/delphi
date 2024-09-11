@@ -117,6 +117,15 @@ public sealed interface Result<T, E> permits Err, Ok {
   }
 
   /**
+   * Get the successful 'nothing' result. A result which is successful but has no return value.
+   * @return Empty successful result.
+   */
+  @SuppressWarnings("unchecked")
+  static <E> Result<Nothing, E> nothing() {
+    return Ok.NOTHING;
+  }
+
+  /**
    * Gets the value of the result.
    *
    * @return An optional containing the value of this result, if it's not an error, or an empty
