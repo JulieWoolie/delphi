@@ -303,6 +303,40 @@ public class DelphiElement extends DelphiNode implements Element {
   }
 
   @Override
+  public String getTextContent() {
+    StringBuilder builder = new StringBuilder();
+    appendTextContent(builder);
+    return builder.toString();
+  }
+
+  private void appendTextContent(StringBuilder builder) {
+    for (DelphiNode child : children) {
+      if (child instanceof Text txt) {
+        builder.append(txt.getTextContent());
+        continue;
+      }
+      if (child instanceof DelphiElement el) {
+        el.appendTextContent(builder);
+      }
+    }
+  }
+
+  @Override
+  public void setTextContent(String content) {
+    Node last = lastChild();
+    while (last != null) {
+      removeChild(last);
+      last = lastChild();
+    }
+
+    if (Strings.isNullOrEmpty(content)) {
+      return;
+    }
+
+    appendText(content);
+  }
+
+  @Override
   public void forEachDescendant(@NotNull Consumer<Node> consumer) {
     Objects.requireNonNull(consumer, "Null consumer");
     if (children.isEmpty()) {
