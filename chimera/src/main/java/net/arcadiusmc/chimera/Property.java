@@ -1,6 +1,7 @@
 package net.arcadiusmc.chimera;
 
 import java.util.Objects;
+import java.util.Optional;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,6 +12,7 @@ public final class Property<T> {
   private final T defaultValue;
   private final boolean cascading;
   private final int dirtyBits;
+  private final PropertyValidator<T> validator;
 
   int id;
   String key;
@@ -22,7 +24,8 @@ public final class Property<T> {
       boolean layoutAffecting,
       boolean contentAffecting,
       boolean visualAffecting,
-      boolean cascading
+      boolean cascading,
+      PropertyValidator<T> validator
   ) {
     Objects.requireNonNull(type, "Null type");
     Objects.requireNonNull(defaultValue, "Null default value");
@@ -30,6 +33,7 @@ public final class Property<T> {
     this.type = type;
     this.defaultValue = defaultValue;
     this.cascading = cascading;
+    this.validator = validator;
 
     int m = 0;
 
@@ -50,5 +54,13 @@ public final class Property<T> {
     PropertyBuilder<T> builder = new PropertyBuilder<>();
     builder.type(type);
     return builder;
+  }
+
+  public Optional<String> validateValue(T value) {
+    if (validator == null) {
+      return Optional.empty();
+    }
+
+    return validator.validate(value);
   }
 }
