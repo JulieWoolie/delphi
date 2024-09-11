@@ -2,6 +2,7 @@ package net.arcadiusmc.delphidom.parser;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -40,9 +41,11 @@ public class DocumentSaxParser extends DefaultHandler {
   static final String OPTION_ELEMENT = "option";
   static final String OPTIONS_ELEMENT = "options";
   static final String STYLE_ELEMENT = "style";
+  static final String J_CLASS_ELEMENT = "java-object";
 
   static final String ATTR_WIDTH = "width";
   static final String ATTR_HEIGHT = "height";
+  static final String ATTR_J_CLASS = "class-name";
 
   private final ViewResources resources;
 
@@ -342,6 +345,49 @@ public class DocumentSaxParser extends DefaultHandler {
             .ifError(this::error);
       }
 
+      case J_CLASS_ELEMENT -> {
+        beginIgnoringChildren(J_CLASS_ELEMENT);
+
+        String className = validateAttribute(name, ATTR_J_CLASS, attributes);
+        if (Strings.isNullOrEmpty(className)) {
+          return;
+        }
+
+        if (callbacks == null) {
+          return;
+        }
+
+        callbacks.loadDomClass(document, className).ifError(e -> {
+          if (e instanceof ClassNotFoundException) {
+            error("Class not found: %s", className);
+            return;
+          }
+
+          if (e instanceof NoSuchMethodException) {
+            error(
+                """
+                Failed to find any valid class entry points.
+                Requires one of the following:
+                 - public static void onDomInitialize(Document) method
+                 - public constructor with a single document parameter
+                 - public empty constructor"""
+            );
+
+            return;
+          }
+
+          SAXParseException exc = new SAXParseException("Failed to invoke class entry point", locator);
+
+          if (e instanceof InvocationTargetException target) {
+            exc.initCause(target.getCause());
+          } else {
+            exc.initCause(e);
+          }
+
+          error(exc);
+        });
+      }
+
       default -> {
         // :shrug: idk, it's not a valid header element, so it doesn't really matter
         // but should it be logged? I don't care
@@ -350,17 +396,17 @@ public class DocumentSaxParser extends DefaultHandler {
   }
 
   @Override
-  public void warning(SAXParseException e) throws SAXException {
+  public void warning(SAXParseException e) {
     saxException(Level.WARN, e);
   }
 
   @Override
-  public void error(SAXParseException e) throws SAXException {
+  public void error(SAXParseException e) {
     saxException(Level.ERROR, e);
   }
 
   @Override
-  public void fatalError(SAXParseException e) throws SAXException {
+  public void fatalError(SAXParseException e) {
     saxException(Level.ERROR, e);
   }
 

@@ -3,3 +3,4 @@ main: "net.arcadiusmc.delphiplugin.DelphiPlugin"
 api-version: "1.21"
 version: "1.0"
 bootstrapper: "net.arcadiusmc.delphiplugin.DelphiBootstrapper"
+has-open-classloader: true

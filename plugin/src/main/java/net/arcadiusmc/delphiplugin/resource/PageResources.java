@@ -55,7 +55,6 @@ import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -214,7 +213,7 @@ public class PageResources implements ViewResources {
     DocumentSaxParser handler = new DocumentSaxParser(this);
     handler.setListener(DelphiDocument.ERROR_LISTENER);
     handler.setView(view);
-    handler.setCallbacks(pluginName -> Bukkit.getPluginManager().isPluginEnabled(pluginName));
+    handler.setCallbacks(new SaxCallbacks());
 
     try {
       parser.parse(source, handler);
