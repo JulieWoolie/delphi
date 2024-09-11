@@ -7,6 +7,10 @@ import org.jetbrains.annotations.Nullable;
 
 public interface StylePropertiesReadonly {
 
+  @Nullable String getWidth();
+
+  @Nullable String getHeight();
+
   @Nullable String getMaxWidth();
 
   @Nullable String getMaxHeight();

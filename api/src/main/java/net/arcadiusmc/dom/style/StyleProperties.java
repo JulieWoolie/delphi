@@ -174,6 +174,34 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setScale(@Nullable Primitive value);
 
   /**
+   * Set the {@code width} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setWidth(@Nullable String value);
+
+  /**
+   * Set the {@code width} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setWidth(@Nullable Primitive value);
+
+  /**
+   * Set the {@code height} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setHeight(@Nullable String value);
+
+  /**
+   * Set the {@code height} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setHeight(@Nullable Primitive value);
+
+  /**
    * Set the {@code max-width} property.
    * @param value Value
    * @return {@code this}
