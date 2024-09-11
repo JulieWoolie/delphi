@@ -98,9 +98,24 @@ public interface DocumentView {
   void moveTo(@NotNull Location location);
 
   /**
+   * Moves the page to the specified {@code location}.
+   * <p>
+   * The view ill be moved so the bottom middle is at the specified {@code location}.
+   * <p>
+   * If {@code #changeRotation} is set to {@code true}, the specified {@code location}'s
+   * yaw and pitch will become the screen's rotation.
+   *
+   * @param location New location
+   * @param changeRotation {@code true}, to change the screen's rotation, {@code false} otherwise
+   *
+   * @throws NullPointerException If {@code location} is {@code null}
+   */
+  void moveTo(@NotNull Location location, boolean changeRotation);
+
+  /**
    * Moves the page to the specified {@code position} in the specified {@code world}.
    * <p>
-   * The view will be moved so the bottom middle as the specified {@code position}
+   * The view will be moved so the bottom middle is at the specified {@code position}
    *
    * @param world New world
    * @param position New position
@@ -112,7 +127,7 @@ public interface DocumentView {
   /**
    * Moves the page to the specified {@code position}.
    * <p>
-   * The view will be moved so the bottom middle as the specified {@code position}
+   * The view will be moved so the bottom middle is at the specified {@code position}
    *
    * @param position New position
    *
