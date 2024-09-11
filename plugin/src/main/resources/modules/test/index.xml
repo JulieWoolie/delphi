@@ -8,7 +8,7 @@
   </header>
   <body>
     <h1 class="title shadowed">Hello, world!</h1>
-    <div class="shadowed mt-2" style="color: gold;">This basically works</div>
+    <h2 class="shadowed mt-2" style="color: gold;">This basically works</h2>
 
     <button class="mt-2 mr-2">
       <item src="./item.json" />
