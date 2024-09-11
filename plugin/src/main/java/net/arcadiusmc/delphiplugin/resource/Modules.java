@@ -100,7 +100,7 @@ public class Modules implements DelphiResources {
       return;
     }
 
-    defaultStyle = PageResources.parseSheet(buf, DEFAULT_STYLE, null);
+    defaultStyle = PageResources.parseSheet(buf, DEFAULT_STYLE);
     defaultStyle.setFlags(ChimeraStylesheet.FLAG_DEFAULT_STYLE);
 
     for (int i = 0; i < defaultStyle.getLength(); i++) {

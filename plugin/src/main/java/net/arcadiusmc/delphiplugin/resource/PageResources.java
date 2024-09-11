@@ -22,7 +22,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -269,13 +268,12 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
-    return Result.ok(parseSheet(buf, path.toString(), null));
+    return Result.ok(parseSheet(buf, path.toString()));
   }
 
   static ChimeraStylesheet parseSheet(
       StringBuffer buf,
-      String sourceName,
-      Map<String, Object> variables
+      String sourceName
   ) {
     ChimeraParser parser = new ChimeraParser(buf);
 
@@ -291,10 +289,6 @@ public class PageResources implements ViewResources {
 
     ChimeraContext ctx = new ChimeraContext(buf);
     ctx.setErrors(errors);
-
-    if (variables != null) {
-      ctx.setVariables(variables);
-    }
 
     return Chimera.compileSheet(statement, ctx);
   }
@@ -323,7 +317,7 @@ public class PageResources implements ViewResources {
     @Override
     public @NotNull Stylesheet parseStylesheet(@NotNull String string) {
       Objects.requireNonNull(string, "Null string");
-      return parseSheet(new StringBuffer(string), "<stylesheet>", null);
+      return parseSheet(new StringBuffer(string), "<stylesheet>");
     }
 
     @Override
