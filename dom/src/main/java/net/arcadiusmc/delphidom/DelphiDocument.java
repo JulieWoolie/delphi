@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
-import net.arcadiusmc.chimera.system.StyleSystem;
+import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphidom.event.AttributeMutation;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
@@ -65,8 +65,8 @@ public class DelphiDocument implements Document {
   @Getter @Setter
   ExtendedView view;
 
-  @Getter @Setter
-  StyleSystem styles;
+  @Getter
+  final StyleObjectModel styles;
 
   public DelphiDocument() {
     this.globalTarget = new EventListenerList();
@@ -84,6 +84,9 @@ public class DelphiDocument implements Document {
     globalTarget.addEventListener(EventTypes.MODIFY_ATTR, attrListener);
     globalTarget.addEventListener(EventTypes.APPEND_CHILD, mutationListener);
     globalTarget.addEventListener(EventTypes.REMOVE_CHILD, mutationListener);
+
+    styles = new StyleObjectModel(this);
+    styles.initialize();
   }
 
   public void setBody(DelphiElement body) {
@@ -373,7 +376,7 @@ public class DelphiDocument implements Document {
     return styles.getInlineStyle(el);
   }
 
-  public StylePropertiesReadonly getCurrentStyle(DelphiElement el) {
+  public StylePropertiesReadonly getCurrentStyle(DelphiNode el) {
     if (styles == null) {
       return null;
     }
