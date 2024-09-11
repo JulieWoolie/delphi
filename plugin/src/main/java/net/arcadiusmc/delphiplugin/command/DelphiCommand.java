@@ -52,7 +52,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -61,10 +61,8 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("UnstableApiUsage")
 public class DelphiCommand {
 
-  static final Component PREFIX = LegacyComponentSerializer.builder()
-      .hexColors()
-      .build()
-      .deserialize("§8[§c§lD§#ff6347§le§#ff7139§ll§#ff802b§lp§#ff8e1c§lh§#ff9c0e§li§8]");
+  static final Component PREFIX = MiniMessage.miniMessage()
+      .deserialize("<dark_gray>[<b><gradient:gold:red>Delphi</gradient></b>]");
 
   static final CommandExceptionType NOP = new CommandExceptionType() {};
 
