@@ -1,0 +1,76 @@
+$text-color: white;
+$bg-color: black;
+
+.inline {
+  display: inline;
+}
+.block {
+  display: block;
+}
+
+.mb-2 {
+  margin-bottom: 2px;
+}
+.mt-2 {
+  margin-top: 2px;
+}
+.ml-1 {
+  margin-left: 1px;
+}
+
+.halfsize {
+  scale: 0.8
+}
+
+.shadowed {
+  text-shadow: true;
+}
+
+.title {
+  color: gold;
+  text-shadow: true;
+}
+
+.equipment-box {
+  border: 1px;
+  border-color: white;
+  background-color: $bg-color;
+  padding: 1px;
+  padding-left: 3px;
+  min-width: 75vw;
+}
+
+:root {
+  color: $text-color;
+  background-color: $bg-color;
+  padding: 5px;
+}
+
+.ent-info {
+  color: $text-color;
+  text-shadow: true;
+  margin-left: 1px;
+}
+.info-field {
+  color: yellow;
+  text-shadow: true;
+}
+.btn-remove:hover {
+  background-color: darken(crimson, 25%);
+  border-color: darken(crimson, 50%);
+}
+.btn-remove {
+  background-color: darken(crimson, 50%);
+  border-color: darken(crimson, 75%);
+}
+.btn {
+  color: white;
+}
+
+.titleflex {
+  display: flex;
+}
+
+.exitbutton {
+  margin-left: 3px;
+}

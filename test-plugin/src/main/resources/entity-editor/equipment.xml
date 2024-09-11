@@ -1,0 +1,51 @@
+<page>
+  <header>
+    <style src="./style.scss"/>
+    <java-object class-name="net.arcadiusmc.delphitest.menu.EquipmentEditorKt"/>
+  </header>
+  <body>
+    <div id="title-section">
+      <div class="titleflex">
+        <h1 class="title">Entity Equipment</h1>
+        <button class="mt-2 btn-remove exitbutton" action="close">X</button>
+      </div>
+
+      <div class="info-field">UUID: <div class="inline halfsize ent-info" id="entity-id" /></div>
+      <div class="info-field">Type: <div class="inline halfsize ent-info" id="entity-type" /></div>
+    </div>
+
+    <div id="content-section">
+      <div class="mb-2 inline equipment-box" id="helmet-div">
+        <item id="helmet-slot" />
+        Helmet
+
+        <button class="ml-1 btn-remove" id="helmet-btn-remove">Remove</button>
+        <button class="ml-1" id="helmet-btn-set">Set</button>
+      </div>
+
+      <div class="mb-2 inline equipment-box" id="chestplate-div">
+        <item id="chestplate-slot" />
+        Chestplate
+
+        <button class="ml-1 btn-remove" id="chestplate-btn-remove">Remove</button>
+        <button class="ml-1" id="chestplate-btn-set">Set</button>
+      </div>
+
+      <div class="mb-2 inline equipment-box" id="leggings-div">
+        <item id="leggings-slot" />
+        Leggings
+
+        <button class="ml-1 btn-remove" id="leggings-btn-remove">Remove</button>
+        <button class="ml-1" id="leggings-btn-set">Set</button>
+      </div>
+
+      <div class="mb-2 inline equipment-box" id="boots-div">
+        <item id="boots-slot" />
+        Boots
+
+        <button class="ml-1 btn-remove" id="boots-btn-remove">Remove</button>
+        <button class="ml-1" id="boots-btn-set">Set</button>
+      </div>
+    </div>
+  </body>
+</page>
