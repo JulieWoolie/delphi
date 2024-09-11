@@ -7,11 +7,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
+import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Visitor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -25,10 +27,10 @@ public final class Debug {
   private Debug() {}
 
   private static final Logger LOGGER = Loggers.getLogger();
-  public static boolean debugOutlines = LOGGER.isDebugEnabled();
+  public static boolean debugOutlines = false;
   static final float POINT_DIST = 0.12f;
 
-  public static Path dumpDebugTree(String fileName, PageView view) {
+  public static Path dumpDebugTree(String fileName, PageView view, @Nullable Element target) {
     Path dir;
     ClassLoader loader = Debug.class.getClassLoader();
 
@@ -51,14 +53,18 @@ public final class Debug {
 
     RenderTreePrint print = new RenderTreePrint(view);
 
-    print.nlIndent().append("<page>");
-    print.indent++;
+    if (target == null) {
+      print.nlIndent().append("<page>");
+      print.indent++;
 
-    print.appendHeader();
-    Visitor.visit(view.getDocument().getBody(), print);
+      print.appendHeader();
+      Visitor.visit(view.getDocument().getBody(), print);
 
-    print.indent--;
-    print.nlIndent().append("</page>");
+      print.indent--;
+      print.nlIndent().append("</page>");
+    } else {
+      Visitor.visit(target, print);
+    }
 
     String string = print.toString();
 

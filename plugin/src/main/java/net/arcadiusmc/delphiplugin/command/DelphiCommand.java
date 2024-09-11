@@ -15,6 +15,7 @@ import static net.arcadiusmc.delphi.resource.DelphiException.ERR_NO_FILE;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SAX_PARSER_INIT;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -46,9 +47,12 @@ import net.arcadiusmc.delphiplugin.PageManager;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.SessionManager;
 import net.arcadiusmc.delphiplugin.resource.Modules;
+import net.arcadiusmc.dom.Element;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -56,6 +60,11 @@ import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DelphiCommand {
+
+  static final Component PREFIX = LegacyComponentSerializer.builder()
+      .hexColors()
+      .build()
+      .deserialize("§8[§c§lD§#ff6347§le§#ff7139§ll§#ff802b§lp§#ff8e1c§lh§#ff9c0e§li§8]");
 
   static final CommandExceptionType NOP = new CommandExceptionType() {};
 
@@ -67,6 +76,9 @@ public class DelphiCommand {
 
   static final TranslatableExceptionType DUMP_FAIL
       = new TranslatableExceptionType("delphi.error.debugDumpFail");
+
+  static final TranslatableExceptionType DEBUG_NO_TARGET
+      = new TranslatableExceptionType("delphi.error.debugNoTarget");
 
   static final TranslatableExceptionType NO_FILE
       = new TranslatableExceptionType("delphi.error.noSuchFile");
@@ -106,15 +118,14 @@ public class DelphiCommand {
     literal.then(open());
     literal.then(close());
 
-    literal.then(
-        literal("debug")
-            .requires(stack -> stack.getSender().hasPermission(Permissions.DEBUG))
-            .then(dumpInfo())
-            .then(toggleDebugLines())
-            .build()
-    );
+    literal.then(debugArguments());
 
     return literal.build();
+  }
+
+  private static Component prefixTranslatable(String message, TextColor color, Component... args) {
+    TranslatableComponent msg = Component.translatable(message, color, args);
+    return Component.text().append(PREFIX, Component.space(), msg).build();
   }
 
   private static PageView getAnyTargeted(CommandContext<CommandSourceStack> context)
@@ -142,7 +153,7 @@ public class DelphiCommand {
               view.close();
 
               context.getSource().getSender().sendMessage(
-                  Component.translatable("delphi.closed.targeted", NamedTextColor.GRAY)
+                  prefixTranslatable("delphi.closed.targeted", NamedTextColor.GRAY)
               );
               return SINGLE_SUCCESS;
             })
@@ -173,14 +184,14 @@ public class DelphiCommand {
 
                   if (playerCount == 0) {
                     sender.sendMessage(
-                        Component.translatable("delphi.closed.all.for.none", NamedTextColor.GRAY)
+                        prefixTranslatable("delphi.closed.all.for.none", NamedTextColor.GRAY)
                     );
 
                     return SINGLE_SUCCESS;
                   }
 
                   sender.sendMessage(
-                      Component.translatable(
+                      prefixTranslatable(
                           "delphi.closed.all.for",
                           NamedTextColor.GRAY,
                           Component.text(playerCount),
@@ -195,7 +206,7 @@ public class DelphiCommand {
               getPlugin().getSessions().closeAllSessions();
 
               c.getSource().getSender().sendMessage(
-                  Component.translatable("delphi.closed.all", NamedTextColor.GRAY)
+                  prefixTranslatable("delphi.closed.all", NamedTextColor.GRAY)
               );
               return SINGLE_SUCCESS;
             })
@@ -203,38 +214,61 @@ public class DelphiCommand {
         .build();
   }
 
-  private static LiteralCommandNode<CommandSourceStack> dumpInfo() {
-    return Commands.literal("dump-xml-info")
-        .executes(context -> {
-          PageView view = getAnyTargeted(context);
-          Path path = Debug.dumpDebugTree("target-view-dump", view);
-
-          if (path == null) {
-            throw DUMP_FAIL.create();
-          }
-
-          context.getSource().getSender().sendMessage(
-              Component.translatable(
-                  "delphi.debug.dumpedXml",
-                  NamedTextColor.GRAY,
-                  Component.text(path.toString())
-              )
-          );
-          return SINGLE_SUCCESS;
-        })
+  private static LiteralCommandNode<CommandSourceStack> debugArguments() {
+    return literal("debug")
+        .requires(stack -> stack.getSender().hasPermission(Permissions.DEBUG))
+        .then(literal("dump-page-xml")
+            .executes(dumpCommand("page-dump", false))
+        )
+        .then(literal("dump-targeted-element-xml")
+            .executes(dumpCommand("target-element-dump", true))
+        )
+        .then(toggleDebugLines())
         .build();
   }
 
+  private static Command<CommandSourceStack> dumpCommand(String fname, boolean targetElement) {
+    return context -> {
+      PageView view = getAnyTargeted(context);
+      Element target;
+
+      if (targetElement) {
+        target = view.getDocument().getHoveredElement();
+
+        if (target == null) {
+          throw DEBUG_NO_TARGET.create();
+        }
+      } else {
+        target = null;
+      }
+
+      Path path = Debug.dumpDebugTree(fname, view, target);
+
+      if (path == null) {
+        throw DUMP_FAIL.create();
+      }
+
+      context.getSource().getSender().sendMessage(
+          prefixTranslatable(
+              "delphi.debug.dumpedXml",
+              NamedTextColor.GRAY,
+              Component.text(path.toString())
+          )
+      );
+      return SINGLE_SUCCESS;
+    };
+  }
+
   private static LiteralCommandNode<CommandSourceStack> toggleDebugLines() {
-    return Commands.literal("toggle-debug-outlines")
+    return Commands.literal("toggle-outlines")
         .executes(c -> {
           boolean state = Debug.debugOutlines;
-          TranslatableComponent text;
+          Component text;
 
           if (state) {
-            text = Component.translatable("delphi.debug.outlineToggle.off", NamedTextColor.GRAY);
+            text = prefixTranslatable("delphi.debug.outlineToggle.off", NamedTextColor.GRAY);
           } else {
-            text = Component.translatable("delphi.debug.outlineToggle.on", NamedTextColor.YELLOW);
+            text = prefixTranslatable("delphi.debug.outlineToggle.on", NamedTextColor.YELLOW);
           }
 
           c.getSource().getSender().sendMessage(text);
@@ -270,7 +304,7 @@ public class DelphiCommand {
 
     if (result.isSuccess()) {
       c.getSource().getSender().sendMessage(
-          Component.translatable("delphi.docOpened", NamedTextColor.GRAY)
+          prefixTranslatable("delphi.docOpened", NamedTextColor.GRAY)
       );
 
       return SINGLE_SUCCESS;
