@@ -2,6 +2,7 @@ package net.arcadiusmc.delphi.resource;
 
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,35 @@ public interface DocumentContext {
    * @return New style sheet builder
    */
   @NotNull StylesheetBuilder newStylesheet();
+
+  /**
+   * Parse a stylesheet from a string.
+   * <p>
+   * This function does <i>not</i> throw any parsing exceptions, rather it makes it best
+   * attempt at parsing the input and logs any errors in the console.
+   *
+   * @param string Stylesheet string
+   *
+   * @return Parsed stylesheet
+   *
+   * @throws NullPointerException If {@code string} is {@code null}
+   */
+  @NotNull Stylesheet parseStylesheet(@NotNull String string);
+
+  /**
+   * Parse a document from a string
+   * <p>
+   * Attempts to parse a document from a string input. If this method fails to parse the specified
+   * {@code string}, a {@link DelphiException} is thrown. Uses similar error codes to
+   * {@link ViewResources#loadDocument(String)}
+   *
+   * @param string Document source
+   * @return Parsed document
+   *
+   * @throws DelphiException If the specified {@code string} could not be parsed
+   * @throws NullPointerException If {@code string} is {@code null}
+   */
+  @NotNull Document parseDocument(@NotNull String string) throws DelphiException;
 
   /**
    * Get the player the document is being opened for.
