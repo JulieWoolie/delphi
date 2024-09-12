@@ -90,6 +90,8 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Getter
   private boolean selected = false;
+
+  @Getter
   private boolean closed = false;
 
   @Getter @Setter

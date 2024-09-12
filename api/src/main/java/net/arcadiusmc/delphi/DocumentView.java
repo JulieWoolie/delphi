@@ -70,6 +70,12 @@ public interface DocumentView {
   void close();
 
   /**
+   * Test if the view is closed
+   * @return {@code true}, if the view has been closed, {@code false} if it's open.
+   */
+  boolean isClosed();
+
+  /**
    * Tests if this view is currently being looked at by the player.
    *
    * @return {@code true}, if {@link #getPlayer()} is currently looking at the view,
