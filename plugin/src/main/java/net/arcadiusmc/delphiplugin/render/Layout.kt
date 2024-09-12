@@ -91,10 +91,10 @@ fun computePrimitive(v: ValueOrAuto, maxSize: Float, screenSize: Vector2f): Floa
 
 fun applyStandardProperties(out: FullStyle, set: ComputedStyleSet) {
   // Colors
-  out.textColor = set.color
-  out.backgroundColor = set.backgroundColor
-  out.borderColor = set.borderColor
-  out.outlineColor = set.outlineColor
+  out.textColor = FullStyle.fromDelphiColor(set.color)
+  out.backgroundColor = FullStyle.fromDelphiColor(set.backgroundColor)
+  out.borderColor = FullStyle.fromDelphiColor(set.borderColor)
+  out.outlineColor = FullStyle.fromDelphiColor(set.outlineColor)
 
   // Text options
   out.textShadowed = set.textShadow

@@ -3,11 +3,11 @@ package net.arcadiusmc.delphiplugin.render;
 import net.arcadiusmc.chimera.Properties;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.dom.style.AlignItems;
-import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
+import org.bukkit.Color;
 import org.joml.Vector2f;
 
 public class FullStyle {
@@ -17,10 +17,10 @@ public class FullStyle {
   public final Rect outline = new Rect();
   public final Rect margin = new Rect();
 
-  public Color textColor = Properties.COLOR.getDefaultValue();
-  public Color backgroundColor = Properties.BACKGROUND_COLOR.getDefaultValue();
-  public Color borderColor = Properties.BORDER_COLOR.getDefaultValue();
-  public Color outlineColor = Properties.OUTLINE_COLOR.getDefaultValue();
+  public Color textColor = fromDelphiColor(Properties.COLOR.getDefaultValue());
+  public Color backgroundColor = fromDelphiColor(Properties.BACKGROUND_COLOR.getDefaultValue());
+  public Color borderColor = fromDelphiColor(Properties.BORDER_COLOR.getDefaultValue());
+  public Color outlineColor = fromDelphiColor(Properties.OUTLINE_COLOR.getDefaultValue());
 
   public boolean textShadowed;
   public boolean bold;
@@ -42,4 +42,8 @@ public class FullStyle {
   public FlexWrap flexWrap = FlexWrap.DEFAULT;
   public JustifyContent justify = JustifyContent.DEFAULT;
   public int order = 0;
+
+  public static Color fromDelphiColor(net.arcadiusmc.dom.style.Color c) {
+    return Color.fromARGB(c.getAlpha(), c.getRed(), c.getGreen(), c.getBlue());
+  }
 }

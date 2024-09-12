@@ -148,27 +148,29 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   private void spawnScreenInteraction() {
     killScreenInteraction();
 
-    Vector3f bl = screen.getLowerLeft();
-    Vector3f br = screen.getLowerRight();
-    Vector3f ul = screen.getUpperLeft();
-    Vector3f ur = screen.getUpperRight();
-
-    Vector3f min = new Vector3f(bl);
-    Vector3f max = new Vector3f(bl);
-    Vector3f center = screen.center();
-
-    min.min(br).min(ul).min(ur);
-    max.max(br).max(ul).max(ur);
-
-    float height = max.y - min.y;
-    float width = Math.max(max.x - min.x, max.z - min.z);
-
-    Location loc = new Location(world, center.x, min.y, center.z);
+    Location loc = getSpawnInteractionLocation();
 
     interaction = world.spawn(loc, Interaction.class);
     interaction.setPersistent(false);
+
+    configureInteractionSize();
+  }
+
+  private void configureInteractionSize() {
+    if (interaction == null) {
+      return;
+    }
+
+    float height = screen.boundingBoxSize.y;
+    float width = Math.max(screen.boundingBoxSize.x, screen.boundingBoxSize.z);
+
     interaction.setInteractionWidth(width);
     interaction.setInteractionHeight(height);
+  }
+
+  private Location getSpawnInteractionLocation() {
+    Vector3f center = screen.center();
+    return new Location(world, center.x, screen.boundingBoxMin.y, center.z);
   }
 
   private void killScreenInteraction() {
@@ -249,7 +251,6 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       return;
     }
 
-    kill();
     screen.translate(off);
 
     if (l != null) {
@@ -273,7 +274,13 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       setWorld(world);
     }
 
-    spawn();
+    renderRoot.spawnRecursive();
+
+    if (interaction != null && !interaction.isDead()) {
+      Location loc = getSpawnInteractionLocation();
+      interaction.teleport(loc);
+      configureInteractionSize();
+    }
   }
 
   public void initializeDocument(DelphiDocument document) {

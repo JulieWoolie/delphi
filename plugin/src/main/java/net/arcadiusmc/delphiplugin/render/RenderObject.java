@@ -14,8 +14,8 @@ import net.arcadiusmc.delphiplugin.HideUtil;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
-import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Display.Brightness;
@@ -367,6 +367,7 @@ public abstract class RenderObject {
 
     if (layer.entity != null && !layer.entity.isDead()) {
       display = (TextDisplay) layer.entity;
+      display.teleport(location);
     } else {
       killLayerEntity(layer);
 

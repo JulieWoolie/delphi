@@ -1,13 +1,13 @@
 package net.arcadiusmc.delphiplugin.render;
 
 import java.util.Objects;
-import net.arcadiusmc.dom.style.Color;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 

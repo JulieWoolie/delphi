@@ -101,6 +101,7 @@ public class ContentRenderObject extends RenderObject {
       view.addEntity(display);
     } else {
       display = content.entity;
+      display.teleport(location);
 
       if (contentDirty && ec != null) {
         ec.applyContentTo(display, style);
