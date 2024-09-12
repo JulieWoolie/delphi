@@ -1,11 +1,14 @@
 package net.arcadiusmc.delphitest.menu
 
+import net.arcadiusmc.delphitest.DelphiTestPlugin
+import net.arcadiusmc.delphitest.MoveToEntityTask
 import net.arcadiusmc.dom.Document
 import net.arcadiusmc.dom.Element
 import net.arcadiusmc.dom.ItemElement
 import net.arcadiusmc.dom.event.EventTypes
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.plugin.java.JavaPlugin
 
 private val SLOTS: Map<String, EquipmentSlot> = mapOf(
   "helmet" to EquipmentSlot.HEAD,
@@ -20,6 +23,12 @@ public fun onDomInitialize(document: Document) {
 
   document.addEventListener(EventTypes.DOM_LOADED) {
     onDomLoaded(it.document, state)
+
+    if (entity != null) {
+      val task = MoveToEntityTask(entity, it.document.view)
+      val plugin = JavaPlugin.getPlugin(DelphiTestPlugin::class.java)
+      plugin.server.scheduler.runTaskTimer(plugin, task, 1, 1)
+    }
   }
 }
 
