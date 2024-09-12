@@ -18,10 +18,22 @@ public interface Screen {
   float getWidth();
 
   /**
+   * Get the actual width of the screen in world space size
+   * @return Actual screen width
+   */
+  float getWorldWidth();
+
+  /**
    * Gets the height of the screen
    * @return Screen height
    */
   float getHeight();
+
+  /**
+   * Get the actual height of the screen in the world space size
+   * @return Actual screen height
+   */
+  float getWorldHeight();
 
   /**
    * Gets the normal of the screen's plane

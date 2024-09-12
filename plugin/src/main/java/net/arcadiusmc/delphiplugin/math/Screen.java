@@ -33,6 +33,10 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   public final Quaternionf leftRotation = new Quaternionf();
   public final Quaternionf rightRotation = new Quaternionf();
 
+  public final Vector3f boundingBoxSize = new Vector3f();
+  public final Vector3f boundingBoxMin = new Vector3f();
+  public final Vector3f boundingBoxMax = new Vector3f();
+
   public static void lookInDirection(Quaternionf lrot, Vector3f dir) {
     // I've definitely fucked up some order of operations here,
     // because why is the global up = -1
@@ -108,6 +112,11 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     worldDimensions.y = udDif.length();
 
     worldDimensions.div(dimensions, screenScale);
+
+    // Calculate bounding box
+    boundingBoxMin.set(loLeft).min(loRight).min(hiLeft).min(hiRight);
+    boundingBoxMax.set(loLeft).max(loRight).max(hiLeft).max(hiRight);
+    boundingBoxMax.sub(boundingBoxMin, boundingBoxSize);
   }
 
   void findPoints() {
@@ -221,6 +230,16 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   }
 
   @Override
+  public float getWorldWidth() {
+    return worldDimensions.x;
+  }
+
+  @Override
+  public float getWorldHeight() {
+    return worldDimensions.y;
+  }
+
+  @Override
   public Vector3f normal() {
     return new Vector3f(normal);
   }
@@ -299,5 +318,8 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
     nlIndent(builder, indent).append("hi-left: ").append(hiLeft);
     nlIndent(builder, indent).append("lo-right: ").append(loRight);
     nlIndent(builder, indent).append("hi-right: ").append(hiRight);
+    nlIndent(builder, indent).append("boundingbox.min: ").append(boundingBoxMin);
+    nlIndent(builder, indent).append("boundingbox.max: ").append(boundingBoxMax);
+    nlIndent(builder, indent).append("boundingbox.size: ").append(boundingBoxSize);
   }
 }
