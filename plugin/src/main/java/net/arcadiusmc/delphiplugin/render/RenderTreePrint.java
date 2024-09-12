@@ -121,6 +121,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
     screen.appendInfo(builder, indent);
     indent--;
 
+    nlIndent();
+
     appendListeners("document-", doc.getDocumentListeners());
     appendListeners("global-", doc.getGlobalTarget());
 
