@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.arcadiusmc.chimera.parse.ast.Expression;
-import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.NamedColor;
 import net.arcadiusmc.dom.style.Primitive;
@@ -27,23 +26,23 @@ public class ScssFunctionsTest {
     assertEquals(100, c.getGreen());
     assertEquals(100, c.getBlue());
 
-    assertThrows(ParserException.class, () -> parseColor("rgb(255)"));
-    assertThrows(ParserException.class, () -> parseColor("rgb(255 255)"));
-    assertThrows(ParserException.class, () -> parseColor("rgb(255 255 300)"));
-    assertThrows(ParserException.class, () -> parseColor("rgb(255 255 255 255)"));
+    assertThrows(ChimeraException.class, () -> parseColor("rgb(255)"));
+    assertThrows(ChimeraException.class, () -> parseColor("rgb(255 255)"));
+    assertThrows(ChimeraException.class, () -> parseColor("rgb(255 255 300)"));
+    assertThrows(ChimeraException.class, () -> parseColor("rgb(255 255 255 255)"));
   }
 
   @Test
   void testBrighten() {
-    Color c = parseColor("brighten(green 0.25)");
+    Color c = parseColor("lighten(green 0.25)");
     Color bg = NamedColor.GREEN.brighten(0.25f);
 
     assertEquals(bg, c);
 
-    c = parseColor("brighten(green 25%)");
+    c = parseColor("lighten(green 25%)");
     assertEquals(bg, c);
 
-    c = parseColor("brighten(green)");
+    c = parseColor("lighten(green)");
     bg = NamedColor.GREEN.brighten();
     assertEquals(bg, c);
   }

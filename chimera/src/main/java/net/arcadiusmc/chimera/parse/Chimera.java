@@ -1,6 +1,5 @@
 package net.arcadiusmc.chimera.parse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
@@ -8,7 +7,6 @@ import net.arcadiusmc.chimera.PrimitiveRect;
 import net.arcadiusmc.chimera.Properties;
 import net.arcadiusmc.chimera.Property;
 import net.arcadiusmc.chimera.PropertySet;
-import net.arcadiusmc.chimera.Rule;
 import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.chimera.Value.ValueType;
 import net.arcadiusmc.chimera.parse.ast.Expression;
@@ -16,13 +14,9 @@ import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
-import net.arcadiusmc.chimera.parse.ast.RuleStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
-import net.arcadiusmc.chimera.parse.ast.VariableDecl;
-import net.arcadiusmc.chimera.selector.RegularSelector;
 import net.arcadiusmc.chimera.selector.Selector;
-import net.arcadiusmc.chimera.selector.SelectorNode;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.style.AlignItems;
 import net.arcadiusmc.dom.style.DisplayType;
@@ -54,60 +48,16 @@ public final class Chimera {
     return compiled;
   }
 
-  public static void evaluateVariables(List<VariableDecl> list, ChimeraContext ctx, Scope scope) {
-    for (VariableDecl variableDecl : list) {
-      variableDecl.execute(ctx, scope);
-    }
-  }
-
   public static ChimeraStylesheet compileSheet(SheetStatement stat, ChimeraContext ctx) {
     Scope scope = Scope.createTopLevel();
-    evaluateVariables(stat.getVariableDeclarations(), ctx, scope);
-
-    List<Rule> rules = new ArrayList<>(stat.getRules().size());
-
-    for (int i = 0; i < stat.getRules().size(); i++) {
-      compileRule(stat.getRules().get(i), ctx, scope, null, rules);
-    }
-
-    return new ChimeraStylesheet(rules.toArray(Rule[]::new));
+    Interpreter inter = new Interpreter(ctx, scope);
+    return inter.sheet(stat);
   }
 
   public static void compileInline(InlineStyleStatement stat, PropertySet out, ChimeraContext ctx) {
     Scope scope = Scope.createTopLevel();
-
-    for (PropertyStatement property : stat.getProperties()) {
-      compileProperty(property, ctx, scope, out);
-    }
-  }
-
-  public static void compileRule(
-      RuleStatement stat,
-      ChimeraContext ctx,
-      Scope scope,
-      Selector prefix,
-      List<Rule> out
-  ) {
-    scope = scope.pushFrame();
-
-    Selector selector = stat.getSelector().compile(ctx.getErrors());
-    PropertySet set = compileProperties(stat.getProperties(), ctx, scope);
-
-    if (prefix != null) {
-      SelectorNode n1 = new SelectorNode();
-      SelectorNode n2 = new SelectorNode();
-
-      n1.setSelector(prefix);
-      n2.setSelector(selector);
-
-      selector = new RegularSelector(new SelectorNode[] {n1, n2});
-    }
-
-    out.add(new Rule(selector, set));
-
-    for (RuleStatement nestedRule : stat.getNestedRules()) {
-      compileRule(nestedRule, ctx, scope, selector, out);
-    }
+    Interpreter inter = new Interpreter(ctx, scope);
+    inter.inline(stat, out);
   }
 
   public static PropertySet compileProperties(
@@ -231,7 +181,7 @@ public final class Chimera {
     return type.cast(coerced);
   }
 
-  private static <T> Object tryCoerceValue(Class<T> type, Object object) {
+  public static <T> Object tryCoerceValue(Class<T> type, Object object) {
     if (type.isInstance(object)) {
       return type.cast(object);
     }

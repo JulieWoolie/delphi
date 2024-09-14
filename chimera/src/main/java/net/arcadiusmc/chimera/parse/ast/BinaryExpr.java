@@ -28,6 +28,12 @@ public class BinaryExpr extends Expression {
   static final BooleanBinaryOperator AND = (x, y) -> x & y;
   static final BooleanBinaryOperator OR = (x, y) -> x | y;
 
+  static final FloatBinaryOperator ADD      = Float::sum;
+  static final FloatBinaryOperator SUBTRACT = (x, y) -> x - y;
+  static final FloatBinaryOperator MULTIPLY = (x, y) -> x * y;
+  static final FloatBinaryOperator DIVIDE   = (x, y) -> x / y;
+  static final FloatBinaryOperator MODULO   = (x, y) -> x % y;
+
   private BinaryOp op;
   private Expression lhs;
   private Expression rhs;
@@ -46,14 +52,14 @@ public class BinaryExpr extends Expression {
       case OR -> booleanOp(lv, rv, OR);
       case AND -> booleanOp(lv, rv, AND);
 
-      case DIV -> applyNumbers(err, lv, rv, NumberOp.DIVIDE);
-      case MOD -> applyNumbers(err, lv, rv, NumberOp.MODULO);
-      case MUL -> applyNumbers(err, lv, rv, NumberOp.MULTIPLY);
+      case DIV -> applyNumbers(err, lv, rv, DIVIDE);
+      case MOD -> applyNumbers(err, lv, rv, MODULO);
+      case MUL -> applyNumbers(err, lv, rv, MULTIPLY);
 
       case LT, GT, GTE, LTE -> runCompare(err, lv, rv);
 
-      case PLUS -> stringConcatOrNumber(err, lv, rv, NumberOp.ADD, CONCAT);
-      case MINUS -> stringConcatOrNumber(err, lv, rv, NumberOp.SUBTRACT, CONCAT_DASH);
+      case PLUS -> stringConcatOrNumber(err, lv, rv, ADD, CONCAT);
+      case MINUS -> stringConcatOrNumber(err, lv, rv, SUBTRACT, CONCAT_DASH);
     };
   }
 
@@ -217,41 +223,7 @@ public class BinaryExpr extends Expression {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.binary(this, context);
-  }
-
-  enum NumberOp implements FloatBinaryOperator {
-    ADD {
-      @Override
-      public float apply(float x, float y) {
-        return x + y;
-      }
-    },
-    SUBTRACT {
-      @Override
-      public float apply(float x, float y) {
-        return x - y;
-      }
-    },
-    MULTIPLY {
-      @Override
-      public float apply(float x, float y) {
-        return x * y;
-      }
-    },
-    DIVIDE {
-      @Override
-      public float apply(float x, float y) {
-        return x / y;
-      }
-    },
-    MODULO {
-      @Override
-      public float apply(float x, float y) {
-        return x % y;
-      }
-    },
-    ;
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.binary(this);
   }
 }

@@ -26,34 +26,55 @@ public class RegularSelector implements Selector {
       return false;
     }
 
-    if (!nodes[nodes.length - 1].test(root, el)) {
-      return false;
-    }
+    int idx = nodes.length - 1;
+    Combinator combinator = null;
 
-    if (nodes.length < 2) {
-      return true;
-    }
+    while (idx >= 0) {
+      SelectorNode node = nodes[idx--];
 
-    int nodeIndex = nodes.length - 2;
-    Element next = el;
+      if (combinator != null) {
+        el = combinator.findNextMatching(root, el, node);
 
-    while (nodeIndex >= 0) {
-      SelectorNode node = nodes[nodeIndex--];
-      next = node.combinator.findNextMatching(root, next, node);
-
-      if (next == null) {
+        if (el == null) {
+          return false;
+        }
+      } else if (!node.test(root, el)) {
         return false;
       }
+
+      combinator = node.combinator;
     }
 
     return true;
+//
+//    if (!nodes[nodes.length - 1].test(root, el)) {
+//      return false;
+//    }
+//
+//    if (nodes.length < 2) {
+//      return true;
+//    }
+//
+//    int nodeIndex = nodes.length - 2;
+//    Element next = el;
+//
+//    while (nodeIndex >= 0) {
+//      SelectorNode node = nodes[nodeIndex--];
+//      next = node.combinator.findNextMatching(root, next, node);
+//
+//      if (next == null) {
+//        return false;
+//      }
+//    }
+//
+//    return true;
   }
 
   @Override
   public void append(StringBuilder builder) {
     for (int i = 0; i < nodes.length; i++) {
       SelectorNode node = nodes[i];
-      node.append(builder, i != (nodes.length - 1));
+      node.append(builder, i != 0);
     }
   }
 

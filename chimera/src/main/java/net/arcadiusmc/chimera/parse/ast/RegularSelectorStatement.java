@@ -16,8 +16,8 @@ public class RegularSelectorStatement extends SelectorExpression {
   private final List<SelectorNodeStatement> nodes = new ArrayList<>();
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.selector(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.selector(this);
   }
 
   public Selector compile(CompilerErrors errors) {

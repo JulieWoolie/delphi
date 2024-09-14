@@ -2,7 +2,6 @@ package net.arcadiusmc.chimera.parse;
 
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
-import net.arcadiusmc.dom.ParserException;
 
 public final class Tests {
   private Tests() {}
@@ -13,7 +12,7 @@ public final class Tests {
     CompilerErrors errors = parser.getErrors();
     errors.setSourceName("test-src.scss");
     errors.setListener(error -> {
-      throw new ParserException(error.getFormattedError());
+      throw new ChimeraException(error);
     });
 
     return parser;

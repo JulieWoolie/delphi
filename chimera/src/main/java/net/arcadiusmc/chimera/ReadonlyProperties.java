@@ -57,6 +57,26 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
+  public @Nullable String getPadding() {
+    return get(Properties.PADDING);
+  }
+
+  @Override
+  public @Nullable String getMargin() {
+    return get(Properties.MARGIN);
+  }
+
+  @Override
+  public @Nullable String getOutline() {
+    return get(Properties.OUTLINE);
+  }
+
+  @Override
+  public @Nullable String getBorder() {
+    return get(Properties.BORDER);
+  }
+
+  @Override
   public @Nullable String getPaddingLeft() {
     return get(Properties.PADDING_LEFT);
   }

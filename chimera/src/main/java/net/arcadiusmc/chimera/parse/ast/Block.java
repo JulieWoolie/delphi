@@ -9,10 +9,9 @@ import lombok.Setter;
 public class Block extends Statement {
 
   private final List<Statement> statements = new ArrayList<>();
-  private boolean propertyDeclAllowed = true;
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return null;
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.blockStatement(this);
   }
 }

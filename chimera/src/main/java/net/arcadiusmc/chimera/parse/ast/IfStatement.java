@@ -11,7 +11,7 @@ public class IfStatement extends Statement {
   private Statement elseBody;
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return null;
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.ifStatement(this);
   }
 }

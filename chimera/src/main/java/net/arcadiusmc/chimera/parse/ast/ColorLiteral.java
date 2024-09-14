@@ -17,7 +17,7 @@ public class ColorLiteral extends Expression {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.colorLiteral(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.colorLiteral(this);
   }
 }

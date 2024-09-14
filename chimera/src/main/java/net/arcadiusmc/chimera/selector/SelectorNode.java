@@ -11,6 +11,13 @@ public class SelectorNode implements Selector {
   Selector selector = Selector.MATCH_ALL;
   Combinator combinator = Combinator.DESCENDANT;
 
+  public SelectorNode copy() {
+    var node = new SelectorNode();
+    node.combinator = combinator;
+    node.selector = selector;
+    return node;
+  }
+
   @Override
   public boolean test(Element root, Element el) {
     return selector.test(root, el);
@@ -18,15 +25,15 @@ public class SelectorNode implements Selector {
 
   @Override
   public void append(StringBuilder builder) {
-    append(builder, false);
+    append(builder, combinator != Combinator.DESCENDANT);
   }
 
   public void append(StringBuilder builder, boolean appendCombinator) {
-    selector.append(builder);
-
     if (appendCombinator) {
       combinator.append(builder);
     }
+
+    selector.append(builder);
   }
 
   @Override

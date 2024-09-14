@@ -13,7 +13,7 @@ public class FunctionStatement extends Statement {
   private Block body;
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
+  public <R> R visit(NodeVisitor<R> visitor) {
     return null;
   }
 
@@ -26,7 +26,7 @@ public class FunctionStatement extends Statement {
     private Expression defaultValue;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
+    public <R> R visit(NodeVisitor<R> visitor) {
       return null;
     }
   }

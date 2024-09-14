@@ -4,13 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class RuleStatement extends Statement {
+public class ImportStatement extends Statement {
 
-  private SelectorExpression selector;
-  private Block body;
+  private StringLiteral importPath;
 
   @Override
   public <R> R visit(NodeVisitor<R> visitor) {
-    return visitor.rule(this);
+    return visitor.importStatement(this);
   }
 }

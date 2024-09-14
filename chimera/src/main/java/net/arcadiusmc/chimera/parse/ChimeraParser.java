@@ -1,7 +1,18 @@
 package net.arcadiusmc.chimera.parse;
 
+import static net.arcadiusmc.chimera.parse.Token.AMPERSAND;
 import static net.arcadiusmc.chimera.parse.Token.ANGLE_LEFT;
 import static net.arcadiusmc.chimera.parse.Token.ANGLE_RIGHT;
+import static net.arcadiusmc.chimera.parse.Token.AT_BREAK;
+import static net.arcadiusmc.chimera.parse.Token.AT_CONTINUE;
+import static net.arcadiusmc.chimera.parse.Token.AT_DEBUG;
+import static net.arcadiusmc.chimera.parse.Token.AT_ELSE;
+import static net.arcadiusmc.chimera.parse.Token.AT_ERROR;
+import static net.arcadiusmc.chimera.parse.Token.AT_IF;
+import static net.arcadiusmc.chimera.parse.Token.AT_IMPORT;
+import static net.arcadiusmc.chimera.parse.Token.AT_PRINT;
+import static net.arcadiusmc.chimera.parse.Token.AT_RETURN;
+import static net.arcadiusmc.chimera.parse.Token.AT_WARN;
 import static net.arcadiusmc.chimera.parse.Token.BRACKET_CLOSE;
 import static net.arcadiusmc.chimera.parse.Token.BRACKET_OPEN;
 import static net.arcadiusmc.chimera.parse.Token.CARET_EQ;
@@ -47,15 +58,20 @@ import lombok.Getter;
 import net.arcadiusmc.chimera.parse.TokenStream.ParseMode;
 import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
 import net.arcadiusmc.chimera.parse.ast.BinaryOp;
+import net.arcadiusmc.chimera.parse.ast.Block;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
 import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
+import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
+import net.arcadiusmc.chimera.parse.ast.IfStatement;
+import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.LogStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
@@ -70,12 +86,14 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.EvenOdd;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.EvenOddKeyword;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorNodeStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
+import net.arcadiusmc.chimera.parse.ast.Statement;
 import net.arcadiusmc.chimera.parse.ast.StringLiteral;
 import net.arcadiusmc.chimera.parse.ast.UnaryExpr;
 import net.arcadiusmc.chimera.parse.ast.UnaryOp;
@@ -86,6 +104,7 @@ import net.arcadiusmc.chimera.selector.Combinator;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.NamedColor;
 import net.arcadiusmc.dom.style.Primitive.Unit;
+import org.slf4j.event.Level;
 
 public class ChimeraParser {
 
@@ -114,7 +133,7 @@ public class ChimeraParser {
 
   public ParserScope scope() {
     if (scopeStack.isEmpty()) {
-      return ParserScope.REGULAR;
+      return ParserScope.TOP_LEVEL;
     }
 
     return scopeStack.peek();
@@ -226,10 +245,6 @@ public class ChimeraParser {
     stream.pushMode(parseMode);
   }
 
-  public Token lastReadToken() {
-    return stream.lastReadToken();
-  }
-
   private void skipWhitespace() {
     while (matches(WHITESPACE)) {
       next();
@@ -238,12 +253,90 @@ public class ChimeraParser {
 
   /* --------------------------- Selectors ---------------------------- */
 
+  boolean isSelectorNext() {
+    // .className
+    // #id
+    // [attr=value]
+    // > <selector>
+    // + <selector>
+    // & <selector>
+    // ~ <selector>
+    // *
+    // :pseudo-class
+    if (matches(DOT, HASHTAG, SQUARE_OPEN, ANGLE_RIGHT, PLUS, AMPERSAND, SQUIGLY, STAR, COLON)) {
+      return true;
+    }
+    if (!matches(ID)) {
+      return false;
+    }
+
+    // An ident followed by anything other than a ':'
+    // token is also considered a nested selector.
+    try (StreamState state = stream.saveState()) {
+      next();
+
+      if (!hasNext()) {
+        return false;
+      }
+      if (!matches(COLON)) {
+        return true;
+      }
+
+      var l = next().location();
+      if (!matches(ID)) {
+        return false;
+      }
+
+      next();
+      if (matches(SEMICOLON)) {
+        return false;
+      }
+
+      return matches(
+          SQUIG_OPEN,
+          DOT,
+          HASHTAG,
+          SQUARE_OPEN,
+          ANGLE_RIGHT,
+          PLUS,
+          SQUIGLY,
+          STAR,
+          COLON
+      );
+    }
+  }
+
   SelectorExpression selector() {
     pushMode(ParseMode.SELECTOR);
-    SelectorListStatement list = selectorList();
-    popMode();
+    ParserScope scope = scope();
 
-    return list;
+    pushScope(ParserScope.SELECTOR);
+
+    SelectorExpression expr;
+    skipWhitespace();
+
+    if (matches(AMPERSAND)) {
+      Token start = next();
+      SelectorListStatement list = selectorList();
+
+      NestedSelector nested = new NestedSelector();
+      nested.setStart(start.location());
+      nested.setEnd(list.getEnd());
+      nested.setSelector(list);
+
+      if (scope != ParserScope.RULE) {
+        error(start.location(), "Nesting operator not allowed here");
+      }
+
+      expr = nested;
+    } else {
+      expr = selectorList();
+    }
+
+    popMode();
+    popScope();
+
+    return expr;
   }
 
   SelectorListStatement selectorList() {
@@ -269,82 +362,43 @@ public class ChimeraParser {
   RegularSelectorStatement regularSelector() {
     RegularSelectorStatement stat = new RegularSelectorStatement();
 
-    SelectorNodeStatement nodeStat = new SelectorNodeStatement();
-    nodeStat.setCombinator(Combinator.DESCENDANT);
-
-    outer: while (true) {
-      Token p = peek();
-
-      if (stat.getStart() == null) {
-        stat.setStart(p.location());
-      }
-      if (nodeStat.getStart() == null) {
-        nodeStat.setStart(p.location());
+    while (true) {
+      SelectorNodeStatement node = selectorNode();
+      if (node == null) {
+        break;
       }
 
-      SelectorExpression expr;
-
-      switch (p.type()) {
-        case STAR -> {
-          next();
-          expr = new MatchAllExpr();
-        }
-        case DOT -> {
-          next();
-          skipUnexpectedWhitespace();
-
-          ClassNameExpr className = new ClassNameExpr();
-          className.setClassName(id());
-          expr = className;
-        }
-        case HASHTAG -> {
-          next();
-          skipUnexpectedWhitespace();
-
-          IdExpr id = new IdExpr();
-          id.setId(id());
-          expr = id;
-        }
-        case ID -> {
-          TagNameExpr tagName = new TagNameExpr();
-          tagName.setTagName(id());
-          expr = tagName;
-        }
-        case SQUARE_OPEN -> {
-          expr = attributeExpr();
-        }
-        case COLON -> {
-          expr = pseudoClass();
-        }
-
-        default -> {
-          break outer;
-        }
-      }
-
-      expr.setStart(p.location());
-      expr.setEnd(peek().location());
-
-      nodeStat.getExpressions().add(expr);
-      stat.setEnd(expr.getEnd());
-
-      if (matches(WHITESPACE, PLUS, SQUIGLY, ANGLE_RIGHT)) {
-        skipWhitespace();
-
-        Combinator combinator = combinator();
-        nodeStat.setCombinator(combinator);
-        stat.getNodes().add(nodeStat);
-        stat.setEnd(peek().location());
-
-        nodeStat = new SelectorNodeStatement();
-
-        skipWhitespace();
-      }
+      stat.getNodes().add(node);
     }
 
-    if (!nodeStat.getExpressions().isEmpty()){
-      nodeStat.setCombinator(Combinator.DESCENDANT);
-      stat.getNodes().add(nodeStat);
+    return stat;
+  }
+
+  SelectorNodeStatement selectorNode() {
+    SelectorNodeStatement stat = new SelectorNodeStatement();
+    stat.setStart(peek().location());
+
+    skipWhitespace();
+    Combinator combinator = combinator();
+    skipWhitespace();
+    stat.setCombinator(combinator);
+
+    int count = 0;
+
+    while (true) {
+      SelectorExpression expr = primarySelector();
+      if (expr == null) {
+        break;
+      }
+
+      stat.setEnd(expr.getEnd());
+      stat.getExpressions().add(expr);
+
+      count++;
+    }
+
+    if (count < 1) {
+      return null;
     }
 
     return stat;
@@ -369,24 +423,80 @@ public class ChimeraParser {
     };
   }
 
-  //
-  // Only call from selector():
-  //  1. This expects the first token to be '['
-  //  2. This expects the caller to set the returned node's start location
-  //
+  SelectorExpression primarySelector() {
+    Token t = peek();
+
+    switch (t.type()) {
+      case STAR -> {
+        next();
+        MatchAllExpr expr = new MatchAllExpr();
+        expr.setStart(t.end());
+        expr.setEnd(t.end());
+        return expr;
+      }
+      case DOT -> {
+        next();
+        skipUnexpectedWhitespace();
+
+        ClassNameExpr className = new ClassNameExpr();
+        Identifier id = id();
+
+        className.setClassName(id);
+        className.setStart(t.location());
+        className.setEnd(id.getEnd());
+
+        return className;
+      }
+      case HASHTAG -> {
+        next();
+        skipUnexpectedWhitespace();
+
+        IdExpr id = new IdExpr();
+        Identifier idVal = id();
+
+        id.setStart(t.location());
+        id.setId(idVal);
+        id.setEnd(idVal.getEnd());
+
+        return id;
+      }
+      case ID -> {
+        TagNameExpr tagName = new TagNameExpr();
+        Identifier id = id();
+
+        tagName.setTagName(id);
+        tagName.setStart(t.location());
+        tagName.setEnd(id.getEnd());
+
+        return tagName;
+      }
+      case SQUARE_OPEN -> {
+        return attributeExpr();
+      }
+      case COLON -> {
+        return pseudoClass();
+      }
+      default -> {
+        return null;
+      }
+    }
+  }
+
   AttributeExpr attributeExpr() {
-    next();
+    Token start = next();
 
     skipUnexpectedWhitespace();
 
     AttributeExpr expr = new AttributeExpr();
     expr.setAttributeName(id());
+    expr.setStart(start.location());
 
     skipUnexpectedWhitespace();
 
     if (matches(SQUARE_CLOSE)) {
-      next();
+      Token end = next();
       expr.setOperation(AttributeOperation.HAS);
+      expr.setEnd(end.end());
       return expr;
     }
 
@@ -414,22 +524,23 @@ public class ChimeraParser {
 
     skipUnexpectedWhitespace();
 
-    expect(SQUARE_CLOSE);
+    Token endToken = expect(SQUARE_CLOSE);
+    expr.setEnd(endToken.end());
 
     return expr;
   }
 
-  //
-  // Like the above method, expects to be called from within the selector() function
-  //
   SelectorExpression pseudoClass() {
-    next();
+    Token start = expect(COLON);
+
     skipUnexpectedWhitespace();
     Identifier className = id();
 
     if (!matches(BRACKET_OPEN)) {
       PseudoClassExpr classExpr = new PseudoClassExpr();
       classExpr.setPseudoClass(className);
+      classExpr.setEnd(className.getEnd());
+      classExpr.setStart(start.location());
       return classExpr;
     }
 
@@ -438,6 +549,7 @@ public class ChimeraParser {
 
     PseudoFunctionExpr expr = new PseudoFunctionExpr();
     expr.setFunctionName(className);
+    expr.setStart(start.location());
 
     String classNameString = className.getValue();
     if (classNameString.equalsIgnoreCase("is") || classNameString.equalsIgnoreCase("not")) {
@@ -448,7 +560,9 @@ public class ChimeraParser {
     }
 
     skipWhitespace();
-    expect(BRACKET_CLOSE);
+    Token endToken = expect(BRACKET_CLOSE);
+
+    expr.setEnd(endToken.end());
 
     return expr;
   }
@@ -562,17 +676,198 @@ public class ChimeraParser {
     stat.setStart(Location.START);
 
     while (hasNext()) {
-      if (matches(DOLLAR_SIGN)) {
-        VariableDecl decl = variableDecl();
-        stat.getVariableDeclarations().add(decl);
-        continue;
-      }
-
-      RuleStatement rule = rule();
-      stat.getRules().add(rule);
+      Statement statement = statement();
+      stat.getStatements().add(statement);
     }
 
     stat.setEnd(peek().location());
+    return stat;
+  }
+
+  /* --------------------------- Inline style ---------------------------- */
+
+  public InlineStyleStatement inlineStyle() {
+    InlineStyleStatement stat = new InlineStyleStatement();
+    stat.setStart(peek().location());
+
+    pushScope(ParserScope.INLINE);
+
+    while (hasNext()) {
+      PropertyStatement property = propertyStatement();
+      stat.getProperties().add(property);
+    }
+
+    popScope();
+
+    stat.setEnd(peek().location());
+    return stat;
+  }
+
+  /* --------------------------- Statements ---------------------------- */
+
+  void expectEndOfStatement() {
+    if (matches(SEMICOLON)) {
+      next();
+      return;
+    }
+
+    Token p = peek();
+    error("Expected ';' to end statement, found %s", p.info());
+  }
+
+  IfStatement ifStatement() {
+    Token start = expect(AT_IF);
+
+    IfStatement stat = new IfStatement();
+    stat.setStart(start.location());
+
+    Expression expr = expr();
+    stat.setCondition(expr);
+
+    if (matches(SQUIG_OPEN)) {
+      Block block = blockStatement();
+      stat.setBody(block);
+    }
+
+    if (matches(AT_ELSE)) {
+      next();
+      Block elseBody = blockStatement();
+      stat.setElseBody(elseBody);
+    }
+
+    return stat;
+  }
+
+  Block blockStatement() {
+    Block block = new Block();
+    Token start = expect(SQUIG_OPEN);
+
+    block.setStart(start.location());
+
+    while (hasNext() && !matches(SQUIG_CLOSE)) {
+      Statement statement = statement();
+      block.getStatements().add(statement);
+    }
+
+    Token end = expect(SQUIG_CLOSE);
+    block.setEnd(end.end());
+
+    return block;
+  }
+
+  LogStatement logStatement() {
+    Token t = peek();
+
+    LogStatement stat = new LogStatement();
+    stat.setStart(t.location());
+
+    switch (t.type()) {
+      case AT_PRINT:
+        stat.setName("print");
+        stat.setLevel(Level.INFO);
+        next();
+        break;
+      case AT_WARN:
+        stat.setName("warn");
+        stat.setLevel(Level.WARN);
+        next();
+        break;
+      case AT_ERROR:
+        stat.setName("error");
+        stat.setLevel(Level.ERROR);
+        next();
+        break;
+      case AT_DEBUG:
+        stat.setName("debug");
+        stat.setLevel(Level.DEBUG);
+        next();
+        break;
+
+      default:
+        expectedToken(t.location(), AT_PRINT, t.type());
+        stat.setEnd(t.end());
+        return stat;
+    }
+
+    if (matches(SEMICOLON)) {
+      next();
+      stat.setEnd(t.end());
+      return stat;
+    }
+
+    Expression expr = expr();
+    stat.setExpression(expr);
+
+    expectEndOfStatement();
+
+    return stat;
+  }
+
+  ControlFlowStatement controlFlowStatement() {
+    Token t = peek();
+    ControlFlow flow;
+
+    switch (t.type()) {
+      case AT_RETURN:
+        next();
+        flow = ControlFlow.RETURN;
+        break;
+      case AT_BREAK:
+        next();
+        flow = ControlFlow.BREAK;
+        break;
+      case AT_CONTINUE:
+        next();
+        flow = ControlFlow.CONTINUE;
+        break;
+
+      default:
+        expectedToken(t.location(), AT_RETURN, t.type());
+        return null;
+    }
+
+    ControlFlowStatement stat = new ControlFlowStatement();
+    stat.setStart(t.location());
+    stat.setFlowType(flow);
+
+    if (matches(SEMICOLON)) {
+      stat.setEnd(t.end());
+    } else if (peek().location().line() == t.location().line()) {
+      Expression expr = expr();
+      stat.setReturnValue(expr);
+    }
+
+    expectEndOfStatement();
+
+    if (flow == ControlFlow.RETURN) {
+      if (scope() != ParserScope.FUNCTION) {
+        error(t.location(), "@return not allowed here");
+      }
+    } else if (scope() != ParserScope.LOOP) {
+      if (flow == ControlFlow.CONTINUE) {
+        error(t.location(), "@continue not allowed here");
+      } else {
+        error(t.location(), "@break not allowed here");
+      }
+    }
+
+    return stat;
+  }
+
+  ImportStatement importStatement() {
+    Token start = expect(AT_IMPORT);
+
+    ImportStatement stat = new ImportStatement();
+    stat.setStart(start.location());
+
+    StringLiteral path = stringLiteral();
+    stat.setImportPath(path);
+    stat.setEnd(path.getEnd());
+
+    if (scope() != ParserScope.TOP_LEVEL) {
+      error(start.location(), "@import not allowed here");
+    }
+
     return stat;
   }
 
@@ -593,10 +888,9 @@ public class ChimeraParser {
 
     Expression value = expr();
     decl.setValue(value);
+    decl.setEnd(value.getEnd());
 
-    Token end = expect(SEMICOLON);
-    decl.setEnd(end.location());
-
+    expectEndOfStatement();
     return decl;
   }
 
@@ -607,50 +901,21 @@ public class ChimeraParser {
     stat.setStart(selector.getStart());
     stat.setSelector(selector);
 
-    expect(SQUIG_OPEN);
+    pushScope(ParserScope.RULE);
+    Block block = blockStatement();
+    popScope();
 
-    while (!matches(SQUIG_CLOSE)) {
-      PropertyStatement prop = propertyStatement(true);
-      stat.getProperties().add(prop);
+    stat.setBody(block);
 
-      if (matches(SEMICOLON)) {
-        next();
-      } else if (!matches(SQUIG_CLOSE)) {
-        expectedToken(peek().location(), SEMICOLON, peek().type());
-      }
+    ParserScope scope = scope();
+    if (scope != ParserScope.RULE && scope != ParserScope.TOP_LEVEL) {
+      error(stat.getStart(), "Style rule not allowed here");
     }
-
-    Token end = expect(SQUIG_CLOSE);
-    stat.setEnd(end.location());
 
     return stat;
   }
 
-  /* --------------------------- Inline style ---------------------------- */
-
-  public InlineStyleStatement inlineStyle() {
-    InlineStyleStatement stat = new InlineStyleStatement();
-    stat.setStart(peek().location());
-
-    while (hasNext()) {
-      PropertyStatement property = propertyStatement(false);
-      stat.getProperties().add(property);
-
-      if (hasNext()) {
-        expect(SEMICOLON);
-      }
-    }
-
-    stat.setEnd(peek().location());
-    return stat;
-  }
-
-  /* --------------------------- Statements ---------------------------- */
-
-
-  /* --------------------------- Expressions ---------------------------- */
-
-  PropertyStatement propertyStatement(boolean importantAllowed) {
+  PropertyStatement propertyStatement() {
     Identifier propertyName = id();
     expect(COLON);
 
@@ -667,9 +932,16 @@ public class ChimeraParser {
     ImportantMarker marker = importantMarker();
     stat.setImportant(marker);
 
-    if (marker != null && !importantAllowed) {
+    ParserScope scope = scope();
+
+    if (marker != null && scope != ParserScope.INLINE) {
       error(marker.getStart(), "'!important' not allowed here");
     }
+    if (scope != ParserScope.RULE && scope != ParserScope.INLINE) {
+      error(propertyName.getStart(), "Property declaration not allowed here");
+    }
+
+    expectEndOfStatement();
 
     return stat;
   }
@@ -695,6 +967,52 @@ public class ChimeraParser {
     return null;
   }
 
+  Statement statement() {
+    if (isSelectorNext()) {
+      return rule();
+    }
+
+    Token peek = peek();
+
+    return switch (peek.type()) {
+      case DOLLAR_SIGN -> variableDecl();
+      case AT_IF -> ifStatement();
+      case AT_PRINT, AT_DEBUG, AT_WARN, AT_ERROR -> logStatement();
+      case AT_RETURN, AT_BREAK, AT_CONTINUE -> controlFlowStatement();
+      case AT_IMPORT -> importStatement();
+
+      case ID -> {
+        if (scope() == ParserScope.TOP_LEVEL) {
+          yield rule();
+        }
+        yield propertyStatement();
+      }
+
+      default -> {
+        error(peek.location(), "Invalid/unsupported statement");
+        yield null;
+      }
+    };
+  }
+
+  /* --------------------------- Expressions ---------------------------- */
+
+  private boolean isNextExpression() {
+    return matches(
+        ID,
+        PLUS,
+        MINUS,
+        BRACKET_OPEN,
+        NUMBER,
+        INT,
+        STRING,
+        DOLLAR_SIGN,
+        HEX,
+        HEX_SHORT,
+        HEX_ALPHA
+    );
+  }
+
   private boolean isRectangleStart(Expression expr) {
     if (expr.getStart().line() != peek().location().line()) {
       return false;
@@ -705,8 +1023,11 @@ public class ChimeraParser {
     if (!hasNext()) {
       return false;
     }
+    if (!isNextExpression()) {
+      return false;
+    }
 
-    return scope() == ParserScope.REGULAR;
+    return scope() != ParserScope.CALL_EXPR;
   }
 
   public Expression expr() {
@@ -1078,7 +1399,7 @@ public class ChimeraParser {
     Token peek = peek();
 
     // Ensure no whitespace between number and next token
-    if (peek.location().cursor() != numberToken.end().cursor()) {
+    if (peek.location().cursor() != numberToken.end().cursor() || scope() == ParserScope.SELECTOR) {
       return num;
     }
 
@@ -1310,7 +1631,7 @@ public class ChimeraParser {
       next();
     }
 
-    pushScope(ParserScope.FUNCTION);
+    pushScope(ParserScope.CALL_EXPR);
 
     while (!matches(BRACKET_CLOSE) && hasNext()) {
       Expression argExpr = expr();
@@ -1333,7 +1654,13 @@ public class ChimeraParser {
   }
 
   enum ParserScope {
-    REGULAR,
-    FUNCTION
+    TOP_LEVEL,
+    RULE,
+    INLINE,
+    FUNCTION,
+    LOOP,
+    CALL_EXPR,
+    SELECTOR,
+    ;
   }
 }

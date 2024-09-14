@@ -84,6 +84,22 @@ public enum Combinator {
       return null;
     }
   },
+
+  NEST("&") {
+    @Override
+    Element findNextMatching(Element root, Element el, SelectorNode node) {
+      if (node.test(root, el)) {
+        return el;
+      }
+
+      return null;
+    }
+
+    @Override
+    void append(StringBuilder builder) {
+      // No-op
+    }
+  }
   ;
 
   private final String combinator;

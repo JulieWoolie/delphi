@@ -79,6 +79,7 @@ class TokenStreamTest {
     recognizeToken(Token.EQUAL_TO, "==");
     recognizeToken(Token.NOT_EQUAL_TO, "!=");
     recognizeToken(Token.SLASH, "/");
+    recognizeToken(Token.AMPERSAND, "&");
   }
 
   @Test
@@ -116,7 +117,36 @@ class TokenStreamTest {
     recognizeToken(Token.AT_PRINT, "@print");
     recognizeToken(Token.AT_IF, "@if");
     recognizeToken(Token.AT_ELSE, "@else");
+    recognizeToken(Token.AT_RETURN, "@return");
+    recognizeToken(Token.AT_IMPORT, "@import");
+    recognizeToken(Token.AT_BREAK, "@break");
+    recognizeToken(Token.AT_CONTINUE, "@continue");
     recognizeToken(Token.AT_ID, "@identifier-token");
+  }
+
+  @Test
+  void testSaveState() {
+    TokenStream stream = createStream("a b c d");
+    StreamState state = stream.saveState();
+
+    Token n = stream.next();
+    assertEquals(Token.ID, n.type());
+    assertEquals("a", n.value());
+
+    state.close();
+
+    n = stream.next();
+    assertEquals(Token.ID, n.type());
+    assertEquals("a", n.value());
+  }
+
+  private TokenStream createStream(String in) {
+    StringBuffer buf = new StringBuffer(in);
+    CompilerErrors errors = new CompilerErrors(buf);
+    errors.setSourceName("<test-src.scss>");
+    errors.setListener(error -> fail(error.getFormattedError()));
+
+    return new TokenStream(buf, errors);
   }
 
   private void recognizeToken(int ttype, String input) {

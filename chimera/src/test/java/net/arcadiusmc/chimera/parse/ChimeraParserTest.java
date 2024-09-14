@@ -4,21 +4,23 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.base.Strings;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.function.Consumer;
+import net.arcadiusmc.chimera.parse.ChimeraParser.ParserScope;
 import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
 import net.arcadiusmc.chimera.parse.ast.BinaryOp;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
 import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
+import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.IfStatement;
+import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
@@ -30,6 +32,7 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.AttributeExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.ClassNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorNodeStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
+import net.arcadiusmc.chimera.parse.ast.Statement;
 import net.arcadiusmc.chimera.parse.ast.UnaryExpr;
 import net.arcadiusmc.chimera.parse.ast.UnaryOp;
 import net.arcadiusmc.chimera.parse.ast.VariableDecl;
@@ -312,7 +315,7 @@ class ChimeraParserTest {
     NumberLiteral num = parseExpr("14", NumberLiteral.class);
     assertEquals(14, num.getValue());
 
-    num = parseExpr("14 px", NumberLiteral.class);
+    num = parseExpr("14px", NumberLiteral.class);
     assertEquals(14, num.getValue());
 
     NumberLiteral unit = parseExpr("14px", NumberLiteral.class);
@@ -400,23 +403,6 @@ class ChimeraParserTest {
         ChimeraParser::variableDecl,
         "Expected ';', but found end-of-input"
     );
-  }
-
-  @Test
-  void testSelector() {
-    RegularSelectorStatement selector = Tests.parser(".class").regularSelector();
-    assertInvalidSyntax(". class", ChimeraParser::regularSelector, "Unexpected whitespace");
-  }
-
-  @Test
-  void printAst() {
-    ChimeraParser parser = Tests.parser(DEFAULT_STYLE_TEST);
-    SheetStatement stylesheet = parser.stylesheet();
-
-    String str = stylesheet.toString();
-    Path out = Path.of("ast.xml").toAbsolutePath();
-
-    assertDoesNotThrow(() -> Files.writeString(out, str, StandardCharsets.UTF_8));
   }
 
   @Test
@@ -517,6 +503,95 @@ class ChimeraParserTest {
     assertEquals(BinaryOp.OR, expr.getOp());
   }
 
+  @Test
+  void testIf() {
+    IfStatement stat = parseStat(ParserScope.TOP_LEVEL, "@if true {}", IfStatement.class);
+    assertInstanceOf(KeywordLiteral.class, stat.getCondition());
+    assertNotNull(stat.getBody());
+  }
+
+  @Test
+  void testReturn() {
+    ControlFlowStatement stat = parseStat(
+        ParserScope.FUNCTION,
+        "@return;",
+        ControlFlowStatement.class
+    );
+
+    assertNull(stat.getReturnValue());
+
+    stat = parseStat(ParserScope.FUNCTION, "@return 14px;", ControlFlowStatement.class);
+    NumberLiteral ret = assertInstanceOf(NumberLiteral.class, stat.getReturnValue());
+
+    assertEquals(14, ret.getValue());
+    assertEquals(Unit.PX, ret.getUnit());
+
+    assertInvalidSyntax(
+        "@return;",
+        ChimeraParser::controlFlowStatement,
+        "@return not allowed here"
+    );
+
+    assertInvalidSyntax(
+        "@return",
+        p -> {
+          p.pushScope(ParserScope.FUNCTION);
+          p.controlFlowStatement();
+        },
+        "Expected ';' to end statement, found end-of-input"
+    );
+
+    assertInvalidSyntax(
+        "@return\n1px;",
+        p -> {
+          p.pushScope(ParserScope.FUNCTION);
+          p.controlFlowStatement();
+        },
+        "Expected ';' to end statement, found integer(1)"
+    );
+
+    assertDoesNotThrow(() -> parseStat(ParserScope.LOOP, "@break;", ControlFlowStatement.class));
+    assertDoesNotThrow(() -> parseStat(ParserScope.LOOP, "@continue;", ControlFlowStatement.class));
+  }
+
+  @Test
+  void testImport() {
+    ImportStatement stat = parseStat(
+        ParserScope.TOP_LEVEL,
+        "@import \"scss:color\";",
+        ImportStatement.class
+    );
+
+    assertEquals("scss:color", stat.getImportPath().getValue());
+  }
+
+  @Test
+  void testNesting() {
+    var parser = Tests.parser(
+        """
+        .class1 {
+          color: red;
+          background-color: green;
+          
+          .class2 {
+            color: green;
+          }
+          
+          &img {
+            color: blue;
+          }
+          
+          tagName {
+            color: cyan;
+          }
+        }
+        """
+    );
+
+    SheetStatement statement = parser.stylesheet();
+    System.out.println(statement);
+  }
+
   void assertNumberValue(Number num, Unit unit, Expression expr) {
     if (expr instanceof ErroneousExpr e) {
       fail("Erroneous expression result: token=" + e.getToken().info());
@@ -547,6 +622,15 @@ class ChimeraParserTest {
 
     KeywordLiteral literal = assertInstanceOf(KeywordLiteral.class, expr);
     assertEquals(keyword, literal.getKeyword());
+  }
+
+  static <T> T parseStat(ParserScope scope, String str, Class<T> t) {
+    ChimeraParser parser = Tests.parser(str);
+    parser.pushScope(scope);
+    Statement expr = parser.statement();
+    parser.popScope();
+
+    return assertInstanceOf(t, expr);
   }
 
   static <T> T parseExpr(String str, Class<T> t) {

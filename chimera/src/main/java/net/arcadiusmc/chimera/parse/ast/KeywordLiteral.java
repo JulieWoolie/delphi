@@ -16,7 +16,7 @@ public class KeywordLiteral extends Expression {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.keywordLiteral(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.keywordLiteral(this);
   }
 }

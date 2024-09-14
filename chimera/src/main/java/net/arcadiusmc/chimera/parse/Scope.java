@@ -5,8 +5,11 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.chimera.ChimeraSheetBuilder;
+import net.arcadiusmc.chimera.PropertySet;
 import net.arcadiusmc.chimera.function.ScssFunction;
 import net.arcadiusmc.chimera.function.ScssFunctions;
+import net.arcadiusmc.delphi.util.Nothing;
 
 @Getter @Setter
 public class Scope {
@@ -17,6 +20,12 @@ public class Scope {
 
   private final Map<String, ScssFunction> functionMap = new HashMap<>();
   private final Map<String, Scope> namespaces = new HashMap<>();
+
+  private PropertySet propertyOutput;
+  private Object controlFlowValue;
+  private ControlFlow controlFlow;
+
+  private ChimeraSheetBuilder sheetBuilder;
 
   public Scope(Scope parent) {
     this.parent = parent;
@@ -57,6 +66,20 @@ public class Scope {
 
   public Scope pushFrame() {
     return new Scope(this);
+  }
+
+  public boolean controlFlowBroken() {
+    return controlFlow != null;
+  }
+
+  public void clearReturnValue() {
+    this.controlFlow = null;
+    this.controlFlowValue = null;
+  }
+
+  public void setReturnValue(Object value) {
+    this.controlFlowValue = Objects.requireNonNullElse(value, Nothing.INSTANCE);
+    this.controlFlow = ControlFlow.RETURN;
   }
 
   public void putFunction(String functionName, ScssFunction function) {

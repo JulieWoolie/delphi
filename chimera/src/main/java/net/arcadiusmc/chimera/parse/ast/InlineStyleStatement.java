@@ -6,11 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class InlineStyleStatement extends Node {
+public class InlineStyleStatement extends Statement {
   private final List<PropertyStatement> properties = new ArrayList<>();
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.inlineStyle(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.inlineStyle(this);
   }
 }

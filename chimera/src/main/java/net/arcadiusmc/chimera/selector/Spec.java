@@ -15,7 +15,7 @@ public class Spec implements Comparable<Spec> {
 
   @Override
   public String toString() {
-    return idColumn + "-" + classColumn + "-" + typeColumn;
+    return "(" + idColumn + ", " + classColumn + ", " + typeColumn + ")";
   }
 
   @Override

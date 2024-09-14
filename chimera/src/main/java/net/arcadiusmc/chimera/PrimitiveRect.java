@@ -39,4 +39,9 @@ public class PrimitiveRect {
   ) {
     return new PrimitiveRect(top, right, bottom, left);
   }
+
+  @Override
+  public String toString() {
+    return top + " " + right + " " + bottom + " " + left;
+  }
 }

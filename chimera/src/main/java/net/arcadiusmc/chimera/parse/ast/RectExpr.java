@@ -24,15 +24,15 @@ public class RectExpr extends Expression {
     Primitive bottomRes = Chimera.coerceValue(Primitive.class, bottom.evaluate(ctx, scope));
     Primitive leftRes = Chimera.coerceValue(Primitive.class, left.evaluate(ctx, scope));
 
-    topRes = reportInvalid(topRes, "top", top.getStart(), ctx);
-    rightRes = reportInvalid(rightRes, "right", right.getStart(), ctx);
-    bottomRes = reportInvalid(bottomRes, "bottom", bottom.getStart(), ctx);
-    leftRes = reportInvalid(leftRes, "left", left.getStart(), ctx);
+    topRes = reportInvalidSide(topRes, "top", top.getStart(), ctx);
+    rightRes = reportInvalidSide(rightRes, "right", right.getStart(), ctx);
+    bottomRes = reportInvalidSide(bottomRes, "bottom", bottom.getStart(), ctx);
+    leftRes = reportInvalidSide(leftRes, "left", left.getStart(), ctx);
 
     return PrimitiveRect.create(topRes, rightRes, bottomRes, leftRes);
   }
 
-  Primitive reportInvalid(Primitive prim, String side, Location l, ChimeraContext ctx) {
+  Primitive reportInvalidSide(Primitive prim, String side, Location l, ChimeraContext ctx) {
     if (prim != null) {
       return prim;
     }
@@ -47,7 +47,7 @@ public class RectExpr extends Expression {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.rectangle(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.rectangle(this);
   }
 }

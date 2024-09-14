@@ -111,6 +111,12 @@ public class SelectorList implements Selector, Iterable<Selector> {
     return getCssString();
   }
 
+  public void addAll(SelectorList list) {
+    for (Selector selector : list) {
+      add(selector);
+    }
+  }
+
   public enum ListStyle {
     // Separate entries with commas
     COMMA_LIST,

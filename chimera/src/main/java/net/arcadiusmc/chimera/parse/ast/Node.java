@@ -12,12 +12,13 @@ public abstract class Node {
   private Location start;
   private Location end;
 
-  public abstract <R, C> R visit(NodeVisitor<R, C> visitor, C context);
+  public abstract <R> R visit(NodeVisitor<R> visitor);
 
   @Override
   public String toString() {
     XmlPrintVisitor visitor = new XmlPrintVisitor();
-    visit(visitor, null);
+    visitor.noComments = true;
+    visit(visitor);
     return visitor.toString();
   }
 }

@@ -16,8 +16,8 @@ public class SelectorListStatement extends SelectorExpression {
   private final List<RegularSelectorStatement> selectors = new ArrayList<>();
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.selectorGroup(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.selectorGroup(this);
   }
 
   @Override

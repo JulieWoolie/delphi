@@ -3,14 +3,19 @@ package net.arcadiusmc.chimera.parse;
 import java.util.List;
 import java.util.Map;
 import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
+import net.arcadiusmc.chimera.parse.ast.Block;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
 import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
+import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
+import net.arcadiusmc.chimera.parse.ast.IfStatement;
+import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.LogStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.Node;
 import net.arcadiusmc.chimera.parse.ast.NodeVisitor;
@@ -26,21 +31,25 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.ClassNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.EvenOddKeyword;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorNodeStatement;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
+import net.arcadiusmc.chimera.parse.ast.Statement;
 import net.arcadiusmc.chimera.parse.ast.StringLiteral;
 import net.arcadiusmc.chimera.parse.ast.UnaryExpr;
 import net.arcadiusmc.chimera.parse.ast.VariableDecl;
 import net.arcadiusmc.chimera.parse.ast.VariableExpr;
 
-public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
+public class XmlPrintVisitor implements NodeVisitor<Void> {
 
   private final StringBuilder builder = new StringBuilder();
   private int indent = 0;
+
+  public boolean noComments = false;
 
   private StringBuilder nlIndent() {
     if (builder.isEmpty()) {
@@ -51,6 +60,10 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   private StringBuilder comment(String comment) {
+    if (noComments) {
+      return builder;
+    }
+
     return nlIndent().append("<!-- ").append(comment).append(" -->");
   }
 
@@ -128,24 +141,24 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void variableExpr(VariableExpr expr, Void unused) {
+  public Void variableExpr(VariableExpr expr) {
     enterTag("variable-expr", expr);
-    expr.getVariableName().visit(this, unused);
+    expr.getVariableName().visit(this);
     exitTag("variable-expr");
     return null;
   }
 
   @Override
-  public Void variableDecl(VariableDecl decl, Void unused) {
+  public Void variableDecl(VariableDecl decl) {
     enterTag("variable-decl", decl);
 
     if (decl.getName() != null) {
       comment("variable name");
-      decl.getName().visit(this, unused);
+      decl.getName().visit(this);
     }
     if (decl.getValue() != null) {
       comment("value");
-      decl.getValue().visit(this, unused);
+      decl.getValue().visit(this);
     }
 
     exitTag("variable-decl");
@@ -153,29 +166,17 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void stringLiteral(StringLiteral expr, Void unused) {
+  public Void stringLiteral(StringLiteral expr) {
     voidTag("string-literal", expr, Map.of("value", expr.getValue()));
     return null;
   }
 
   @Override
-  public Void sheet(SheetStatement sheet, Void unused) {
+  public Void sheet(SheetStatement sheet) {
     enterTag("stylesheet", sheet);
 
-    List<VariableDecl> vars = sheet.getVariableDeclarations();
-    if (!vars.isEmpty()) {
-      comment("variables");
-      for (VariableDecl var : vars) {
-        var.visit(this, unused);
-      }
-    }
-
-    List<RuleStatement> rules = sheet.getRules();
-    if (!rules.isEmpty()) {
-      comment("rules");
-      for (RuleStatement rule : rules) {
-        rule.visit(this, unused);
-      }
+    for (Statement statement : sheet.getStatements()) {
+      statement.visit(this);
     }
 
     exitTag("stylesheet");
@@ -183,50 +184,34 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void rule(RuleStatement rule, Void unused) {
+  public Void rule(RuleStatement rule) {
     enterTag("rule", rule);
 
     if (rule.getSelector() != null) {
-      rule.getSelector().visit(this, unused);
+      rule.getSelector().visit(this);
     }
 
-    List<RuleStatement> nest = rule.getNestedRules();
-    if (!nest.isEmpty()) {
-      comment("nested rules");
-
-      for (RuleStatement ruleStatement : nest) {
-        ruleStatement.visit(this, unused);
-      }
-    }
-
-    List<PropertyStatement> properties = rule.getProperties();
-    if (!properties.isEmpty()) {
-      comment("properties");
-
-      for (PropertyStatement property : properties) {
-        property(property, unused);
-      }
-    }
+    rule.getBody().visit(this);
 
     exitTag("rule");
     return null;
   }
 
   @Override
-  public Void property(PropertyStatement prop, Void unused) {
+  public Void property(PropertyStatement prop) {
     enterTag("property", prop);
 
     comment("property name");
-    prop.getPropertyName().visit(this, unused);
+    prop.getPropertyName().visit(this);
 
     if (prop.getValue() != null) {
       comment("property value");
-      prop.getValue().visit(this, unused);
+      prop.getValue().visit(this);
     }
 
     if (prop.getImportant() != null) {
       comment("important");
-      important(prop.getImportant(), unused);
+      important(prop.getImportant());
     }
 
     exitTag("property");
@@ -234,24 +219,24 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void numberLiteral(NumberLiteral expr, Void unused) {
+  public Void numberLiteral(NumberLiteral expr) {
     voidTag("number", expr, Map.of("value", expr.getValue(), "unit", expr.getUnit()));
     return null;
   }
 
   @Override
-  public Void keywordLiteral(KeywordLiteral expr, Void unused) {
+  public Void keywordLiteral(KeywordLiteral expr) {
     voidTag("keyword", expr, Map.of("keyword", expr.getKeyword()));
     return null;
   }
 
   @Override
-  public Void inlineStyle(InlineStyleStatement inline, Void unused) {
+  public Void inlineStyle(InlineStyleStatement inline) {
     enterTag("inline-style", inline);
 
     List<PropertyStatement> properties = inline.getProperties();
     for (PropertyStatement property : properties) {
-      property.visit(this, unused);
+      property.visit(this);
     }
 
     exitTag("inline-style");
@@ -259,33 +244,33 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void identifier(Identifier expr, Void unused) {
+  public Void identifier(Identifier expr) {
     voidTag("identifier", expr, Map.of("value", expr.getValue()));
     return null;
   }
 
   @Override
-  public Void error(ErroneousExpr expr, Void unused) {
+  public Void error(ErroneousExpr expr) {
     voidTag("error", expr, Map.of("error-token", expr.getToken().info()));
     return null;
   }
 
   @Override
-  public Void colorLiteral(ColorLiteral expr, Void unused) {
+  public Void colorLiteral(ColorLiteral expr) {
     voidTag("color", expr, Map.of("value", expr.getColor()));
     return null;
   }
 
   @Override
-  public Void callExpr(CallExpr expr, Void unused) {
+  public Void callExpr(CallExpr expr) {
     enterTag("call", expr);
-    expr.getFunctionName().visit(this, unused);
+    expr.getFunctionName().visit(this);
 
     if (!expr.getArguments().isEmpty()) {
       comment("function arguments");
 
       for (Expression argument : expr.getArguments()) {
-        argument.visit(this, unused);
+        argument.visit(this);
       }
     }
 
@@ -294,11 +279,11 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void selector(RegularSelectorStatement selector, Void unused) {
+  public Void selector(RegularSelectorStatement selector) {
     enterTag("selector", selector);
 
     for (SelectorNodeStatement node : selector.getNodes()) {
-      node.visit(this, unused);
+      node.visit(this);
     }
 
     exitTag("selector");
@@ -306,11 +291,11 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void selectorGroup(SelectorListStatement group, Void unused) {
+  public Void selectorGroup(SelectorListStatement group) {
     enterTag("selector-group", group);
 
     for (RegularSelectorStatement selector : group.getSelectors()) {
-      selector(selector, unused);
+      selector(selector);
     }
 
     exitTag("selector-group");
@@ -318,23 +303,23 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void selectorMatchAll(MatchAllExpr expr, Void unused) {
+  public Void selectorMatchAll(MatchAllExpr expr) {
     voidTag("select-all", expr);
     return null;
   }
 
   @Override
-  public Void anb(AnbExpr expr, Void unused) {
+  public Void anb(AnbExpr expr) {
     enterTag("anb", expr);
 
     if (expr.getA() != null) {
       comment("A");
-      expr.getA().visit(this, unused);
+      expr.getA().visit(this);
     }
 
     if (expr.getB() != null) {
       comment("B");
-      expr.getB().visit(this, unused);
+      expr.getB().visit(this);
     }
 
     exitTag("anb");
@@ -342,29 +327,29 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void evenOdd(EvenOddKeyword expr, Void unused) {
+  public Void evenOdd(EvenOddKeyword expr) {
     voidTag("even-odd", expr, Map.of("value", expr.getEvenOdd()));
 
     return null;
   }
 
   @Override
-  public Void selectorPseudoFunction(PseudoFunctionExpr expr, Void unused) {
+  public Void selectorPseudoFunction(PseudoFunctionExpr expr) {
     enterTag("pseudo-function", expr);
 
     if (expr.getFunctionName() != null) {
       comment("function name");
-      expr.getFunctionName().visit(this, unused);
+      expr.getFunctionName().visit(this);
     }
 
     if (expr.getSelectorGroup() != null) {
       comment("selector group");
-      expr.getSelectorGroup().visit(this, unused);
+      expr.getSelectorGroup().visit(this);
     }
 
     if (expr.getIndex() != null) {
       comment("index expr");
-      expr.getIndex().visit(this, unused);
+      expr.getIndex().visit(this);
     }
 
     exitTag("pseudo-function");
@@ -372,24 +357,24 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void selectorPseudoClass(PseudoClassExpr expr, Void unused) {
+  public Void selectorPseudoClass(PseudoClassExpr expr) {
     enterTag("pseudo-class", expr);
 
-    expr.getPseudoClass().visit(this, unused);
+    expr.getPseudoClass().visit(this);
 
     exitTag("pseudo-class");
     return null;
   }
 
   @Override
-  public Void selectorAttribute(AttributeExpr expr, Void unused) {
+  public Void selectorAttribute(AttributeExpr expr) {
     enterTag("attribute", expr, Map.of("operation", expr.getOperation()));
 
-    expr.getAttributeName().visit(this, unused);
+    expr.getAttributeName().visit(this);
 
     if (expr.getValue() != null) {
       comment("value");
-      expr.getValue().visit(this, unused);
+      expr.getValue().visit(this);
     }
 
     exitTag("attribute");
@@ -397,35 +382,35 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void selectorId(IdExpr expr, Void unused) {
+  public Void selectorId(IdExpr expr) {
     enterTag("id-matcher", expr);
-    expr.getId().visit(this, unused);
+    expr.getId().visit(this);
     exitTag("id-matcher");
     return null;
   }
 
   @Override
-  public Void selectorClassName(ClassNameExpr expr, Void unused) {
+  public Void selectorClassName(ClassNameExpr expr) {
     enterTag("class-name", expr);
-    expr.getClassName().visit(this, unused);
+    expr.getClassName().visit(this);
     exitTag("class-name");
     return null;
   }
 
   @Override
-  public Void selectorTagName(TagNameExpr expr, Void unused) {
+  public Void selectorTagName(TagNameExpr expr) {
     enterTag("tag-name", expr);
-    expr.getTagName().visit(this, unused);
+    expr.getTagName().visit(this);
     exitTag("tag-name");
     return null;
   }
 
   @Override
-  public Void selectorNode(SelectorNodeStatement node, Void unused) {
+  public Void selectorNode(SelectorNodeStatement node) {
     enterTag("selector-node", node, Map.of("combinator", node.getCombinator()));
 
     for (SelectorExpression expression : node.getExpressions()) {
-      expression.visit(this, unused);
+      expression.visit(this);
     }
 
     exitTag("selector-node");
@@ -433,24 +418,32 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void rectangle(RectExpr expr, Void unused) {
+  public Void selectorNested(NestedSelector selector) {
+    enterTag("selector-nested", selector);
+    selector.getSelector().visit(this);
+    exitTag("selector-nested");
+    return null;
+  }
+
+  @Override
+  public Void rectangle(RectExpr expr) {
     enterTag("rectangle", expr);
 
     if (expr.getTop() != null) {
       comment("top");
-      expr.getTop().visit(this, unused);
+      expr.getTop().visit(this);
     }
     if (expr.getRight() != null) {
       comment("right");
-      expr.getRight().visit(this, unused);
+      expr.getRight().visit(this);
     }
     if (expr.getBottom() != null) {
       comment("bottom");
-      expr.getBottom().visit(this, unused);
+      expr.getBottom().visit(this);
     }
     if (expr.getLeft() != null) {
       comment("left");
-      expr.getLeft().visit(this, unused);
+      expr.getLeft().visit(this);
     }
 
     exitTag("rectangle");
@@ -458,17 +451,17 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void important(ImportantMarker marker, Void unused) {
+  public Void important(ImportantMarker marker) {
     voidTag("important", marker);
     return null;
   }
 
   @Override
-  public Void unary(UnaryExpr expr, Void unused) {
+  public Void unary(UnaryExpr expr) {
     enterTag("unary", expr, Map.of("operation", expr.getOp()));
 
     if (expr.getValue() != null) {
-      expr.getValue().visit(this, unused);
+      expr.getValue().visit(this);
     }
 
     exitTag("unary");
@@ -476,15 +469,15 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void namespaced(NamespaceExpr expr, Void unused) {
+  public Void namespaced(NamespaceExpr expr) {
     enterTag("namespaced", expr);
 
     if (expr.getNamespace() != null) {
-      identifier(expr.getNamespace(), unused);
+      identifier(expr.getNamespace());
     }
 
     if (expr.getTarget() != null) {
-      expr.getTarget().visit(this, unused);
+      expr.getTarget().visit(this);
     }
 
     exitTag("namespaced");
@@ -492,18 +485,77 @@ public class XmlPrintVisitor implements NodeVisitor<Void, Void> {
   }
 
   @Override
-  public Void binary(BinaryExpr expr, Void unused) {
+  public Void binary(BinaryExpr expr) {
     enterTag("binary", expr, Map.of("operation", expr.getOp()));
 
     if (expr.getLhs() != null) {
-      expr.getLhs().visit(this, unused);
+      expr.getLhs().visit(this);
     }
 
     if (expr.getRhs() != null) {
-      expr.getRhs().visit(this, unused);
+      expr.getRhs().visit(this);
     }
 
     exitTag("binary");
+    return null;
+  }
+
+  @Override
+  public Void returnStatement(ControlFlowStatement stat) {
+    if (stat.getReturnValue() == null) {
+      voidTag("return", stat);
+      return null;
+    }
+
+    enterTag("return", stat);
+    stat.getReturnValue().visit(this);
+    exitTag("return");
+
+    return null;
+  }
+
+  @Override
+  public Void logStatement(LogStatement statement) {
+    if (statement.getExpression() == null) {
+      voidTag("log", statement, Map.of("level", statement.getLevel(), "name", statement.getName()));
+      return null;
+    }
+
+    enterTag("log", statement, Map.of("level", statement.getLevel(), "name", statement.getName()));
+    statement.getExpression().visit(this);
+    exitTag("log");
+
+    return null;
+  }
+
+  @Override
+  public Void importStatement(ImportStatement statement) {
+    voidTag("import", statement, Map.of("path", statement.getImportPath()));
+    return null;
+  }
+
+  @Override
+  public Void ifStatement(IfStatement statement) {
+    enterTag("if", statement);
+
+    statement.getCondition().visit(this);
+    statement.getBody().visit(this);
+
+    if (statement.getElseBody() != null) {
+      statement.getElseBody().visit(this);
+    }
+
+    exitTag("if");
+    return null;
+  }
+
+  @Override
+  public Void blockStatement(Block block) {
+    enterTag("block", block);
+    for (Statement statement : block.getStatements()) {
+      statement.visit(this);
+    }
+    exitTag("block");
     return null;
   }
 

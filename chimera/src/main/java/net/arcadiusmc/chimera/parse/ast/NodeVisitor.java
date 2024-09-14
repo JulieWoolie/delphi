@@ -6,69 +6,88 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.ClassNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.EvenOddKeyword;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 
-public interface NodeVisitor<R, C> {
+public interface NodeVisitor<R> {
 
-  R variableExpr(VariableExpr expr, C c);
+  /* --------------------------- Expressions ---------------------------- */
 
-  R variableDecl(VariableDecl decl, C c);
+  R variableExpr(VariableExpr expr);
 
-  R stringLiteral(StringLiteral expr, C c);
+  R stringLiteral(StringLiteral expr);
 
-  R sheet(SheetStatement sheet, C c);
+  R numberLiteral(NumberLiteral expr);
 
-  R rule(RuleStatement rule, C c);
+  R keywordLiteral(KeywordLiteral expr);
 
-  R property(PropertyStatement prop, C c);
+  R inlineStyle(InlineStyleStatement inline);
 
-  R numberLiteral(NumberLiteral expr, C c);
+  R identifier(Identifier expr);
 
-  R keywordLiteral(KeywordLiteral expr, C c);
+  R error(ErroneousExpr expr);
 
-  R inlineStyle(InlineStyleStatement inline, C c);
+  R colorLiteral(ColorLiteral expr);
 
-  R identifier(Identifier expr, C c);
+  R callExpr(CallExpr expr);
 
-  R error(ErroneousExpr expr, C c);
+  R rectangle(RectExpr expr);
 
-  R colorLiteral(ColorLiteral expr, C c);
+  R important(ImportantMarker marker);
 
-  R callExpr(CallExpr expr, C c);
+  R unary(UnaryExpr expr);
 
-  R selector(RegularSelectorStatement selector, C c);
+  R namespaced(NamespaceExpr expr);
 
-  R selectorGroup(SelectorListStatement group, C c);
+  R binary(BinaryExpr expr);
 
-  R selectorMatchAll(MatchAllExpr expr, C c);
+  /* --------------------------- Selectors ---------------------------- */
 
-  R anb(AnbExpr expr, C c);
+  R selector(RegularSelectorStatement selector);
 
-  R evenOdd(EvenOddKeyword expr, C c);
+  R selectorGroup(SelectorListStatement group);
 
-  R selectorPseudoFunction(PseudoFunctionExpr expr, C c);
+  R selectorMatchAll(MatchAllExpr expr);
 
-  R selectorPseudoClass(PseudoClassExpr expr, C c);
+  R anb(AnbExpr expr);
 
-  R selectorAttribute(AttributeExpr expr, C c);
+  R evenOdd(EvenOddKeyword expr);
 
-  R selectorId(IdExpr expr, C c);
+  R selectorPseudoFunction(PseudoFunctionExpr expr);
 
-  R selectorClassName(ClassNameExpr expr, C c);
+  R selectorPseudoClass(PseudoClassExpr expr);
 
-  R selectorTagName(TagNameExpr expr, C c);
+  R selectorAttribute(AttributeExpr expr);
 
-  R selectorNode(SelectorNodeStatement node, C c);
+  R selectorId(IdExpr expr);
 
-  R rectangle(RectExpr expr, C c);
+  R selectorClassName(ClassNameExpr expr);
 
-  R important(ImportantMarker marker, C c);
+  R selectorTagName(TagNameExpr expr);
 
-  R unary(UnaryExpr expr, C c);
+  R selectorNode(SelectorNodeStatement node);
 
-  R namespaced(NamespaceExpr expr, C c);
+  R selectorNested(NestedSelector selector);
 
-  R binary(BinaryExpr expr, C c);
+  /* --------------------------- Statements ---------------------------- */
+
+  R variableDecl(VariableDecl decl);
+
+  R sheet(SheetStatement sheet);
+
+  R rule(RuleStatement rule);
+
+  R property(PropertyStatement prop);
+
+  R returnStatement(ControlFlowStatement stat);
+
+  R logStatement(LogStatement statement);
+
+  R importStatement(ImportStatement statement);
+
+  R ifStatement(IfStatement statement);
+
+  R blockStatement(Block block);
 }

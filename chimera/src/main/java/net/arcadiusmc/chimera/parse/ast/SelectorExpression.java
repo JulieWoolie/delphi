@@ -7,6 +7,7 @@ import net.arcadiusmc.chimera.selector.AnB;
 import net.arcadiusmc.chimera.selector.AttributeOperation;
 import net.arcadiusmc.chimera.selector.AttributeSelector;
 import net.arcadiusmc.chimera.selector.ClassNameSelector;
+import net.arcadiusmc.chimera.selector.Combinator;
 import net.arcadiusmc.chimera.selector.GroupedIndexSelector;
 import net.arcadiusmc.chimera.selector.IdSelector;
 import net.arcadiusmc.chimera.selector.IndexSelector;
@@ -15,6 +16,7 @@ import net.arcadiusmc.chimera.selector.PseudoClassSelector;
 import net.arcadiusmc.chimera.selector.PseudoFuncSelector;
 import net.arcadiusmc.chimera.selector.PseudoFunctions;
 import net.arcadiusmc.chimera.selector.Selector;
+import net.arcadiusmc.chimera.selector.SelectorNode;
 import net.arcadiusmc.chimera.selector.SimpleIndexSelector;
 import net.arcadiusmc.chimera.selector.TagNameSelector;
 
@@ -27,8 +29,8 @@ public abstract class SelectorExpression extends Node {
     private Identifier tagName;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorTagName(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorTagName(this);
     }
 
     @Override
@@ -42,8 +44,8 @@ public abstract class SelectorExpression extends Node {
     private Identifier className;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorClassName(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorClassName(this);
     }
 
     @Override
@@ -57,8 +59,8 @@ public abstract class SelectorExpression extends Node {
     private Identifier id;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorId(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorId(this);
     }
 
     @Override
@@ -74,8 +76,8 @@ public abstract class SelectorExpression extends Node {
     private StringLiteral value;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorAttribute(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorAttribute(this);
     }
 
     @Override
@@ -93,8 +95,8 @@ public abstract class SelectorExpression extends Node {
     private Identifier pseudoClass;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorPseudoClass(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorPseudoClass(this);
     }
 
     @Override
@@ -133,8 +135,8 @@ public abstract class SelectorExpression extends Node {
     private SelectorListStatement selectorGroup;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorPseudoFunction(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorPseudoFunction(this);
     }
 
     @Override
@@ -209,8 +211,8 @@ public abstract class SelectorExpression extends Node {
     private EvenOdd evenOdd;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.evenOdd(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.evenOdd(this);
     }
 
     @Override
@@ -232,8 +234,8 @@ public abstract class SelectorExpression extends Node {
     private NumberLiteral b;
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.anb(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.anb(this);
     }
 
     @Override
@@ -255,8 +257,8 @@ public abstract class SelectorExpression extends Node {
   public static class MatchAllExpr extends SelectorExpression {
 
     @Override
-    public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-      return visitor.selectorMatchAll(this, context);
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorMatchAll(this);
     }
 
     @Override
@@ -265,4 +267,27 @@ public abstract class SelectorExpression extends Node {
     }
   }
 
+  @Getter @Setter
+  public static class NestedSelector extends SelectorExpression {
+
+    private SelectorExpression selector;
+
+    @Override
+    public Selector compile(CompilerErrors errors) {
+      Selector selector = this.selector.compile(errors);
+      if (selector == null) {
+        return null;
+      }
+
+      SelectorNode node = new SelectorNode();
+      node.setCombinator(Combinator.NEST);
+      node.setSelector(selector);
+      return node;
+    }
+
+    @Override
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorNested(this);
+    }
+  }
 }

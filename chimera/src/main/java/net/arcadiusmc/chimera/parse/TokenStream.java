@@ -1,16 +1,9 @@
 package net.arcadiusmc.chimera.parse;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Stack;
 import lombok.Getter;
 
 public class TokenStream {
-
-  static final String DEBUG = "debug";
-  static final String PRINT = "print";
-  static final String ERROR = "error";
-  static final String IF = "if";
-  static final String FUNCTION = "function";
 
   static final int HEX_SHORT_LENGTH = 3;
   static final int HEX_LENGTH = 6;
@@ -35,11 +28,6 @@ public class TokenStream {
 
   private final Stack<ParseMode> modeStack = new Stack<>();
 
-  private ObjectArrayList<Token> tokenList = new ObjectArrayList<>();
-
-  @Getter
-  private int listReadIndex = -1;
-
   public TokenStream(StringBuffer input, CompilerErrors errors) {
     this.input = input;
     this.errors = errors;
@@ -47,12 +35,17 @@ public class TokenStream {
     this.currentChar = charAt(0);
   }
 
-  public Token lastReadToken() {
-    if (tokenList.isEmpty()) {
-      return null;
-    }
+  public StreamState saveState() {
+    return new StreamState(this, cursor, col, lineno, peeked, currentTokenStart);
+  }
 
-    return tokenList.getLast();
+  public void restoreState(StreamState state) {
+    this.cursor = state.cursor();
+    this.col = state.col();
+    this.lineno = state.lineno();
+    this.peeked = state.peeked();
+    this.currentTokenStart = state.lastTokenStart();
+    this.currentChar = charAt(cursor);
   }
 
   public CompilerErrors errors() {
@@ -203,31 +196,15 @@ public class TokenStream {
     if (peeked != null) {
       Token p = peeked;
       peeked = null;
-      tokenList.push(p);
       return p;
     }
 
-    if (listReadIndex != -1) {
-      if (listReadIndex >= tokenList.size()) {
-        listReadIndex = -1;
-      } else {
-        return tokenList.get(listReadIndex++);
-      }
-    }
-
-    Token t = readToken();
-    tokenList.push(t);
-
-    return t;
+    return readToken();
   }
 
   public Token peek() {
     if (peeked != null) {
       return peeked;
-    }
-
-    if (listReadIndex != -1 && listReadIndex < tokenList.size()) {
-      return tokenList.get(listReadIndex);
     }
 
     return peeked = readToken();
@@ -274,6 +251,7 @@ public class TokenStream {
       case '%' -> singleChar(Token.PERCENT);
       case '/' -> singleChar(Token.SLASH);
       case '+' -> singleChar(Token.PLUS);
+      case '&' -> singleChar(Token.AMPERSAND);
 
       case '@' -> {
         advance();
@@ -289,6 +267,10 @@ public class TokenStream {
             case "debug" -> token(Token.AT_DEBUG);
             case "error" -> token(Token.AT_ERROR);
             case "warn" -> token(Token.AT_WARN);
+            case "return" -> token(Token.AT_RETURN);
+            case "import" -> token(Token.AT_IMPORT);
+            case "break" -> token(Token.AT_BREAK);
+            case "continue" -> token(Token.AT_CONTINUE);
             default -> token(Token.AT_ID, id);
           };
         }

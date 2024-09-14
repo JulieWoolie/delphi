@@ -24,7 +24,7 @@ public class LogStatement extends Statement {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return null;
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.logStatement(this);
   }
 }

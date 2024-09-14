@@ -21,7 +21,7 @@ public class NumberLiteral extends Expression {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.numberLiteral(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.numberLiteral(this);
   }
 }

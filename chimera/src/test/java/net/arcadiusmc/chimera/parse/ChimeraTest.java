@@ -107,9 +107,104 @@ class ChimeraTest {
     assertEquals("a-b", evaluate("a - b", String.class));
   }
 
+  @Test
+  void testIf() {
+    var sheet = evaluateSheet("""
+        $variable: true;
+        
+        @if $variable {
+          .className {
+            color: red;
+            padding: 2px;
+          }
+        } @else {
+          .otherClass {
+            background-color: green;
+            margin: 4px;
+          }
+        }
+        """);
+
+    assertEquals(1, sheet.getLength());
+    var rule = sheet.getRule(0);
+
+    assertEquals("red", rule.getProperties().getColor());
+    assertEquals("2px", rule.getProperties().getPadding());
+  }
+
+  @Test
+  void testNesting() {
+    ChimeraStylesheet sheet = evaluateSheet(
+        """
+        .class1 {
+          &:hover {
+            div {}
+          }
+          :active {}
+          
+          &+:disabled {}
+        }
+        """
+    );
+
+    assertEquals(5, sheet.getLength());
+
+    Rule r1 = sheet.getRule(0);
+    Rule r2 = sheet.getRule(1);
+    Rule r3 = sheet.getRule(2);
+    Rule r4 = sheet.getRule(3);
+    Rule r5 = sheet.getRule(4);
+
+    assertEquals(".class1:hover div", r1.getSelector());
+    assertEquals(".class1:hover", r2.getSelector());
+    assertEquals(".class1 :active", r3.getSelector());
+    assertEquals(".class1 + :disabled", r4.getSelector());
+    assertEquals(".class1", r5.getSelector());
+  }
+
+  @Test
+  void testListNesting() {
+    ChimeraStylesheet sheet = evaluateSheet(
+        """
+        .class1, .class2 {
+          &div {}
+          
+          .colored {}
+        }
+        """
+    );
+  }
+
+  @Test
+  void testPrintStatements() {
+    ChimeraParser parser = new ChimeraParser(
+        """
+        @print 4px 23px;
+        @debug HelloDebug;
+        @error HelloError;
+        @warn HelloWarn;
+        """
+    );
+
+    CompilerErrors errors = parser.getErrors();
+    errors.setSourceName("test-src.scss");
+    errors.setListener(error -> {
+      System.out.println(error.getFormattedError());
+    });
+
+    var sheet = parser.stylesheet();
+    Chimera.compileSheet(sheet, parser.createContext());
+  }
+
   int strcmp(String s1, String s2) {
     int cmp = s1.compareTo(s2);
     return Integer.compare(cmp, 0);
+  }
+
+  ChimeraStylesheet evaluateSheet(String str) {
+    ChimeraParser parser = parser(str);
+    SheetStatement sheet = parser.stylesheet();
+    return Chimera.compileSheet(sheet, parser.createContext());
   }
 
   <T> T evaluate(String str, Class<T> type) {

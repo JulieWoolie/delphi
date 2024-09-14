@@ -19,8 +19,8 @@ public class SelectorNodeStatement extends SelectorExpression {
   private Combinator combinator;
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.selectorNode(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.selectorNode(this);
   }
 
   public SelectorNode compile(CompilerErrors errors) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import lombok.Getter;
 import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.selector.Selector;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
@@ -13,6 +14,7 @@ import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Getter
 public class ChimeraSheetBuilder implements StylesheetBuilder {
 
   private final @Nullable StyleObjectModel system;
@@ -24,6 +26,11 @@ public class ChimeraSheetBuilder implements StylesheetBuilder {
 
   public ChimeraSheetBuilder() {
     this(null);
+  }
+
+  public ChimeraSheetBuilder addRule(Rule rule) {
+    rules.add(rule);
+    return this;
   }
 
   @Override

@@ -12,7 +12,7 @@ public class PropertyStatement extends Statement {
   private ImportantMarker important;
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.property(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.property(this);
   }
 }

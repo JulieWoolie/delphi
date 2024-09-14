@@ -25,7 +25,7 @@ public class VariableDecl extends Statement {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.variableDecl(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.variableDecl(this);
   }
 }

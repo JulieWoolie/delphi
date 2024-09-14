@@ -62,8 +62,9 @@ public record Token(
   public static final int EQUAL_TO      = GTE + 1;
   public static final int NOT_EQUAL_TO  = EQUAL_TO + 1;
   public static final int SLASH         = NOT_EQUAL_TO + 1;
+  public static final int AMPERSAND     = SLASH + 1;
 
-  public static final int AT_DEBUG      = SLASH + 1;
+  public static final int AT_DEBUG      = AMPERSAND + 1;
   public static final int AT_PRINT      = AT_DEBUG + 1;
   public static final int AT_WARN       = AT_PRINT + 1;
   public static final int AT_ERROR      = AT_WARN + 1;
@@ -71,8 +72,12 @@ public record Token(
   public static final int AT_IF         = AT_FUNCTION + 1;
   public static final int AT_ELSE       = AT_IF + 1;
   public static final int AT_ID         = AT_ELSE + 1;
+  public static final int AT_IMPORT     = AT_ID + 1;
+  public static final int AT_BREAK      = AT_IMPORT + 1;
+  public static final int AT_CONTINUE   = AT_BREAK + 1;
+  public static final int AT_RETURN     = AT_CONTINUE + 1;
 
-  public static final int LAST_TOKEN = AT_ID;
+  public static final int LAST_TOKEN = AT_RETURN;
 
   public static String typeToString(int ttype) {
     return switch (ttype) {
@@ -101,6 +106,10 @@ public record Token(
       case AT_FUNCTION -> "'@function'";
       case AT_IF -> "'@if'";
       case AT_ELSE -> "'@else'";
+      case AT_IMPORT -> "'@import'";
+      case AT_BREAK -> "'@break'";
+      case AT_CONTINUE -> "'@continue'";
+      case AT_RETURN -> "'@return'";
       case AT_ID -> "@-identifier";
 
       case COLON -> "':'";
@@ -127,6 +136,7 @@ public record Token(
       case EQUAL_TO -> "'=='";
       case NOT_EQUAL_TO -> "'!='";
       case SLASH -> "'/'";
+      case AMPERSAND -> "'&'";
 
       case WALL_EQ -> "'|='";
       case SQUIG_EQ -> "'~='";

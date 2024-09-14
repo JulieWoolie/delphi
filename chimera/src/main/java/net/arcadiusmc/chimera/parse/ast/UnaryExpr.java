@@ -47,7 +47,7 @@ public class UnaryExpr extends Expression {
   }
 
   @Override
-  public <R, C> R visit(NodeVisitor<R, C> visitor, C context) {
-    return visitor.unary(this, context);
+  public <R> R visit(NodeVisitor<R> visitor) {
+    return visitor.unary(this);
   }
 }
