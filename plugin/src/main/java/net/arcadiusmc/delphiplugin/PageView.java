@@ -16,6 +16,7 @@ import net.arcadiusmc.chimera.DirtyBit;
 import net.arcadiusmc.chimera.StyleUpdateCallbacks;
 import net.arcadiusmc.chimera.system.StyleNode;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
+import net.arcadiusmc.delphi.event.DocumentCloseEvent;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphidom.ChatNode;
 import net.arcadiusmc.delphidom.DelphiDocument;
@@ -587,6 +588,9 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       EventImpl event = new EventImpl(EventTypes.DOM_CLOSING, document);
       event.initEvent(null, false, false);
       document.dispatchEvent(event);
+
+      DocumentCloseEvent bukkitEvent = new DocumentCloseEvent(player, this);
+      bukkitEvent.callEvent();
     }
 
     kill();

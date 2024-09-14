@@ -9,6 +9,7 @@ import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.event.DocumentOpenEvent;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.ResourceModule;
@@ -112,6 +113,9 @@ public class PageManager implements Delphi {
     EventImpl loaded = new EventImpl(EventTypes.DOM_LOADED, doc);
     loaded.initEvent(null, false, false);
     doc.dispatchEvent(loaded);
+
+    DocumentOpenEvent bukkitEvent = new DocumentOpenEvent(player, view);
+    bukkitEvent.callEvent();
 
     view.spawn();
 
