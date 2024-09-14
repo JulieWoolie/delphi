@@ -785,6 +785,10 @@ public class Interpreter implements NodeVisitor<Object> {
 
   @Override
   public Void returnStatement(ControlFlowStatement stat) {
+    if (stat.isInvalid()) {
+      return null;
+    }
+
     Expression expr = stat.getReturnValue();
 
     if (expr == null) {

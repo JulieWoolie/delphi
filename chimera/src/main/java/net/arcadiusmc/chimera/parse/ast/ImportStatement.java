@@ -7,6 +7,7 @@ import lombok.Setter;
 public class ImportStatement extends Statement {
 
   private StringLiteral importPath;
+  private boolean invalid = false;
 
   @Override
   public <R> R visit(NodeVisitor<R> visitor) {

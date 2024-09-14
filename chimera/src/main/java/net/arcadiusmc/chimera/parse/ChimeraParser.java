@@ -842,8 +842,11 @@ public class ChimeraParser {
     if (flow == ControlFlow.RETURN) {
       if (scope() != ParserScope.FUNCTION) {
         error(t.location(), "@return not allowed here");
+        stat.setInvalid(true);
       }
     } else if (scope() != ParserScope.LOOP) {
+      stat.setInvalid(true);
+
       if (flow == ControlFlow.CONTINUE) {
         error(t.location(), "@continue not allowed here");
       } else {
@@ -865,6 +868,7 @@ public class ChimeraParser {
     stat.setEnd(path.getEnd());
 
     if (scope() != ParserScope.TOP_LEVEL) {
+      stat.setInvalid(true);
       error(start.location(), "@import not allowed here");
     }
 
