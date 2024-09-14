@@ -2,10 +2,8 @@ package net.arcadiusmc.chimera.function;
 
 public interface ScssFunctions {
   // Color functions
-  ScssFunction RGB = new RgbFunction(false);
-  ScssFunction RGBA = new RgbFunction(true);
-  ScssFunction HSL = new HslFunction(false);
-  ScssFunction HSLA = new HslFunction(true);
+  ScssFunction RGB = new RgbFunction();
+  ScssFunction HSL = new HslFunction();
   ScssFunction BRIGHTEN = new BrightnessFunction(false);
   ScssFunction DARKEN = new BrightnessFunction(true);
 

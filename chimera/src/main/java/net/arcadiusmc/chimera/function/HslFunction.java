@@ -10,12 +10,6 @@ public class HslFunction implements ScssFunction {
 
   static final float MAX_DEG = Primitive.DEGREES_IN_CIRCLE;
 
-  private final boolean alphaAllowed;
-
-  public HslFunction(boolean alphaAllowed) {
-    this.alphaAllowed = alphaAllowed;
-  }
-
   @Override
   public Object invoke(ChimeraContext ctx, Argument[] arguments) {
     float h = getHue(arguments[0]);
@@ -27,7 +21,7 @@ public class HslFunction implements ScssFunction {
   }
 
   private float getAlpha(Argument[] arguments) {
-    if (!alphaAllowed) {
+    if (arguments.length < 4) {
       return 1.0f;
     }
 
@@ -74,6 +68,6 @@ public class HslFunction implements ScssFunction {
 
   @Override
   public Range<Integer> argumentCount() {
-    return alphaAllowed ? Range.is(4) : Range.is(3);
+    return Range.between(3, 4);
   }
 }

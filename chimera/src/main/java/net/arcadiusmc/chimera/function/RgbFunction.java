@@ -11,12 +11,6 @@ import org.apache.commons.lang3.Range;
 
 public class RgbFunction implements ScssFunction {
 
-  private final boolean alphaAllowed;
-
-  public RgbFunction(boolean alphaAllowed) {
-    this.alphaAllowed = alphaAllowed;
-  }
-
   @Override
   public Object invoke(ChimeraContext ctx, Argument[] arguments) {
     int red = toChannelValue(arguments[0]);
@@ -25,7 +19,7 @@ public class RgbFunction implements ScssFunction {
 
     int alpha;
 
-    if (alphaAllowed) {
+    if (arguments.length > 3) {
       Primitive a = arguments[3].primitive(0, Unit.NONE);
 
       if (a == null) {
@@ -74,10 +68,6 @@ public class RgbFunction implements ScssFunction {
 
   @Override
   public Range<Integer> argumentCount() {
-    if (alphaAllowed) {
-      return Range.is(4);
-    }
-
-    return Range.is(3);
+    return Range.between(3, 4);
   }
 }

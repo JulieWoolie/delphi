@@ -39,9 +39,9 @@ public class Scope {
     Scope scope = new Scope();
 
     scope.putFunction("rgb", ScssFunctions.RGB);
-    scope.putFunction("rgba", ScssFunctions.RGBA);
+    scope.putFunction("rgba", ScssFunctions.RGB);
     scope.putFunction("hsl", ScssFunctions.HSL);
-    scope.putFunction("hsla", ScssFunctions.HSLA);
+    scope.putFunction("hsla", ScssFunctions.HSL);
     scope.putFunction("lighten", ScssFunctions.BRIGHTEN);
     scope.putFunction("darken", ScssFunctions.DARKEN);
 
