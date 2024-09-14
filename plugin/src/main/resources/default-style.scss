@@ -136,14 +136,13 @@ button {
   border-color: $button-outline;
   padding: $button-padding;
   border: $button-padding;
-}
 
-button:hover {
-  background-color: $button-bg-hover;
-}
-
-button:active {
-  background-color: $button-bg-active;
+  &:hover {
+    background-color: $button-bg-hover;
+  }
+  &:active {
+    background-color: $button-bg-active;
+  }
 }
 
 /*
