@@ -22,6 +22,14 @@ public interface StylePropertiesReadonly {
 
   @Nullable String getMinHeight();
 
+  @Nullable String getPadding();
+
+  @Nullable String getMargin();
+
+  @Nullable String getOutline();
+
+  @Nullable String getBorder();
+
   @Nullable String getPaddingLeft();
 
   @Nullable String getPaddingRight();
