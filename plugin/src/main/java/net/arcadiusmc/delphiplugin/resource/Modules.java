@@ -105,7 +105,10 @@ public class Modules implements DelphiResources {
 
     for (int i = 0; i < defaultStyle.getLength(); i++) {
       Rule rule = defaultStyle.getRule(i);
-      rule.getSpec().set(0);
+
+      rule.getSpec().idColumn -= 10;
+      rule.getSpec().classColumn -= 10;
+      rule.getSpec().typeColumn -= 10;
     }
   }
 
