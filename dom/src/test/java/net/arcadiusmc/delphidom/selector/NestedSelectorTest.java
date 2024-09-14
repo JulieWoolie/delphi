@@ -51,6 +51,56 @@ public class NestedSelectorTest {
     assertTrue(regularSpec.compareTo(hoverSpec) < 0);
   }
 
+  @Test
+  void testSelectorList() {
+    Selector[] selectors = parseSelectors("u, ul, underlined { div {} }");
+    assertEquals(2, selectors.length);
+
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    DelphiElement u = doc.createElement("u");
+    DelphiElement ul = doc.createElement("ul");
+    DelphiElement underlined = doc.createElement("underlined");
+
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement div4 = doc.createElement("div");
+    DelphiElement span = doc.createElement("span");
+
+    u.appendChild(div1);
+    u.appendChild(span);
+
+    ul.appendChild(div2);
+    ul.appendChild(div3);
+
+    underlined.appendChild(div4);
+
+    body.appendChild(u);
+    body.appendChild(ul);
+    body.appendChild(underlined);
+
+    Selector first = selectors[0]; // :is(u, ul, underlined) div
+    Selector second = selectors[1]; // u, ul, underlined
+
+    assertTrue(second.test(null, u));
+    assertTrue(second.test(null, ul));
+    assertTrue(second.test(null, underlined));
+
+    assertFalse(second.test(null, div1));
+    assertFalse(second.test(null, div2));
+    assertFalse(second.test(null, div3));
+    assertFalse(second.test(null, div4));
+
+    assertTrue(first.test(null, div1));
+    assertTrue(first.test(null, div2));
+    assertTrue(first.test(null, div3));
+    assertTrue(first.test(null, div4));
+
+    assertFalse(first.test(null, span));
+  }
+
   static Selector[] parseSelectors(String str) {
     ChimeraParser parser = new ChimeraParser(str);
 
