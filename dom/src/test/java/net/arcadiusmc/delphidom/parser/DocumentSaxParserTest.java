@@ -15,6 +15,7 @@ import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ViewResources;
+import net.arcadiusmc.delphi.util.Nothing;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.dom.Attributes;
@@ -62,7 +63,17 @@ class DocumentSaxParserTest {
   @Test
   void pluginOptionTest() {
     DocumentSaxParser handler = createHandler();
-    handler.setCallbacks(pluginName -> false);
+    handler.setCallbacks(new ParserCallbacks() {
+      @Override
+      public boolean isPluginEnabled(String pluginName) {
+        return false;
+      }
+
+      @Override
+      public Result<Nothing, Exception> loadDomClass(Document document, String className) {
+        return null;
+      }
+    });
 
     InputSource in = getInput("test-pages/option/pl-req.xml");
 
