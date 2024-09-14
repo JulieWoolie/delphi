@@ -33,12 +33,14 @@ public class PlayerSession {
   }
 
   public void closeView(PageView view) {
-    if (!views.remove(view)) {
+    if (!views.contains(view)) {
       return;
     }
 
     view.onClose();
     view.setSession(null);
+
+    views.remove(view);
   }
 
   public void tick() {
