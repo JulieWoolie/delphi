@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.PrimitiveRect;
 import net.arcadiusmc.chimera.Properties;
 import net.arcadiusmc.chimera.PropertySet;
 import net.arcadiusmc.chimera.Rule;
@@ -105,6 +106,71 @@ class ChimeraTest {
 
     assertEquals("ab", evaluate("a + b", String.class));
     assertEquals("a-b", evaluate("a - b", String.class));
+  }
+
+  @Test
+  void testRectangle() {
+    ChimeraStylesheet sheet = evaluateSheet(
+        """
+        .test1 {
+          padding: 1px;
+        }
+        .test2 {
+          padding: 1px 2px;
+        }
+        .test3 {
+          padding: 1px 2px 3px;
+        }
+        .test4 {
+          padding: 1px 2px 3px 4px;
+        }
+        """
+    );
+
+    assertEquals(4, sheet.getLength());
+    PropertySet test1Set = sheet.getRule(0).getPropertySet();
+    PropertySet test2Set = sheet.getRule(1).getPropertySet();
+    PropertySet test3Set = sheet.getRule(2).getPropertySet();
+    PropertySet test4Set = sheet.getRule(3).getPropertySet();
+
+    PrimitiveRect rect1 = test1Set.getValue(Properties.PADDING);
+    PrimitiveRect rect2 = test2Set.getValue(Properties.PADDING);
+    PrimitiveRect rect3 = test3Set.getValue(Properties.PADDING);
+    PrimitiveRect rect4 = test4Set.getValue(Properties.PADDING);
+
+    assertNotNull(rect1);
+    assertNotNull(rect2);
+    assertNotNull(rect3);
+    assertNotNull(rect4);
+
+    Primitive px1 = Primitive.create(1, Unit.PX);
+    Primitive px2 = Primitive.create(2, Unit.PX);
+    Primitive px3 = Primitive.create(3, Unit.PX);
+    Primitive px4 = Primitive.create(4, Unit.PX);
+
+    // padding: 1px;
+    assertEquals(px1, rect1.getTop());
+    assertEquals(px1, rect1.getRight());
+    assertEquals(px1, rect1.getBottom());
+    assertEquals(px1, rect1.getLeft());
+
+    // padding: 1px 2px;
+    assertEquals(px1, rect2.getTop());
+    assertEquals(px2, rect2.getRight());
+    assertEquals(px1, rect2.getBottom());
+    assertEquals(px2, rect2.getLeft());
+
+    // padding: 1px 2px 3px;
+    assertEquals(px1, rect3.getTop());
+    assertEquals(px2, rect3.getRight());
+    assertEquals(px3, rect3.getBottom());
+    assertEquals(px2, rect3.getLeft());
+
+    // padding: 1px 2px 3px 4px;
+    assertEquals(px1, rect4.getTop());
+    assertEquals(px2, rect4.getRight());
+    assertEquals(px3, rect4.getBottom());
+    assertEquals(px4, rect4.getLeft());
   }
 
   @Test
@@ -218,6 +284,7 @@ class ChimeraTest {
     ChimeraContext ctx = parser.createContext();
     Scope scope = Scope.createTopLevel();
 
-    return expr1.evaluate(ctx, scope);
+    Interpreter inter = new Interpreter(ctx, scope);
+    return expr1.visit(inter);
   }
 }

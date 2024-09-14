@@ -1,19 +1,15 @@
 package net.arcadiusmc.chimera.parse;
 
-import java.util.List;
 import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.PrimitiveRect;
-import net.arcadiusmc.chimera.Properties;
 import net.arcadiusmc.chimera.Property;
 import net.arcadiusmc.chimera.PropertySet;
+import net.arcadiusmc.chimera.ScssList;
 import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.chimera.Value.ValueType;
-import net.arcadiusmc.chimera.parse.ast.Expression;
-import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
-import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.chimera.selector.Selector;
@@ -43,9 +39,7 @@ public final class Chimera {
       errors.error(parser.peek().location(), "Invalid selector. whole input was not consumed");
     }
 
-    Selector compiled = expr.compile(errors);
-
-    return compiled;
+    return expr.compile(errors);
   }
 
   public static ChimeraStylesheet compileSheet(SheetStatement stat, ChimeraContext ctx) {
@@ -58,65 +52,6 @@ public final class Chimera {
     Scope scope = Scope.createTopLevel();
     Interpreter inter = new Interpreter(ctx, scope);
     inter.inline(stat, out);
-  }
-
-  public static PropertySet compileProperties(
-      List<PropertyStatement> properties,
-      ChimeraContext ctx,
-      Scope scope
-  ) {
-    PropertySet set = new PropertySet();
-
-    for (PropertyStatement propertyStat : properties) {
-      compileProperty(propertyStat, ctx, scope, set);
-    }
-
-    return set;
-  }
-
-  private static void compileProperty(
-      PropertyStatement propertyStat,
-      ChimeraContext ctx,
-      Scope scope,
-      PropertySet set
-  ) {
-
-    Identifier propertyName = propertyStat.getPropertyName();
-    if (propertyName == null) {
-      return;
-    }
-
-    String name = propertyName.getValue().toLowerCase();
-    Property<Object> property = Properties.getByKey(name);
-
-    if (property == null) {
-      ctx.getErrors().error(propertyStat.getStart(), "Unknown/unsupported property %s", name);
-      return;
-    }
-
-    Expression valExpr = propertyStat.getValue();
-
-    if (valExpr == null) {
-      return;
-    }
-
-    Object value = valExpr.evaluate(ctx, scope);
-    String input = ctx.getInput(valExpr.getStart(), propertyStat.getEnd());
-
-    Value<Object> sval = coerceCssValue(
-        input,
-        propertyStat.getImportant() != null,
-        property,
-        value,
-        ctx.getErrors(),
-        valExpr.getStart()
-    );
-
-    if (sval == null) {
-      return;
-    }
-
-    set.setValue(property, sval);
   }
 
   public static <T> Value<T> coerceCssValue(
@@ -183,7 +118,11 @@ public final class Chimera {
 
   public static <T> Object tryCoerceValue(Class<T> type, Object object) {
     if (type.isInstance(object)) {
-      return type.cast(object);
+      return object;
+    }
+
+    if (type == PrimitiveRect.class) {
+      return tryCoerceRectangle(object, type);
     }
 
     if (object instanceof Primitive prim) {
@@ -193,10 +132,6 @@ public final class Chimera {
       if (type == Float.class) {
         return prim.getValue();
       }
-      if (type == PrimitiveRect.class) {
-        return PrimitiveRect.create(prim);
-      }
-
       return prim;
     }
 
@@ -204,6 +139,70 @@ public final class Chimera {
       return object;
     }
 
+    return fromKeyword(key, type);
+  }
+
+  private static Object tryCoerceRectangle(Object object, Class<?> type) {
+    if (object instanceof Primitive prim) {
+      return PrimitiveRect.create(prim);
+    }
+
+    if (object instanceof ScssList list) {
+      int len = list.getLength();
+
+      if (len > 4) {
+        return object;
+      }
+      if (len < 1) {
+        return object;
+      }
+
+      Primitive top;
+      Primitive right;
+      Primitive bottom;
+      Primitive left;
+
+      switch (len) {
+        case 1:
+          top = coerceValue(Primitive.class, list.get(0));
+          right = top;
+          bottom = top;
+          left = top;
+          break;
+
+        case 2:
+          top = coerceValue(Primitive.class, list.get(0));
+          right = coerceValue(Primitive.class, list.get(1));
+          bottom = top;
+          left = right;
+          break;
+
+        case 3:
+          top = coerceValue(Primitive.class, list.get(0));
+          right = coerceValue(Primitive.class, list.get(1));
+          bottom = coerceValue(Primitive.class, list.get(2));
+          left = right;
+          break;
+
+        default: // Guaranteed to be 4 here
+          top = coerceValue(Primitive.class, list.get(0));
+          right = coerceValue(Primitive.class, list.get(1));
+          bottom = coerceValue(Primitive.class, list.get(2));
+          left = coerceValue(Primitive.class, list.get(3));
+          break;
+      }
+
+      if (top == null || bottom == null || left == null || right == null) {
+        return object;
+      }
+
+      return PrimitiveRect.create(top, right, bottom, left);
+    }
+
+    return object;
+  }
+
+  private static Object fromKeyword(Keyword key, Class<?> type) {
     return switch (key) {
       case TRUE -> true;
       case FALSE -> false;

@@ -15,13 +15,13 @@ import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.LogStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.Node;
 import net.arcadiusmc.chimera.parse.ast.NodeVisitor;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
-import net.arcadiusmc.chimera.parse.ast.RectExpr;
 import net.arcadiusmc.chimera.parse.ast.RegularSelectorStatement;
 import net.arcadiusmc.chimera.parse.ast.RuleStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
@@ -426,27 +426,14 @@ public class XmlPrintVisitor implements NodeVisitor<Void> {
   }
 
   @Override
-  public Void rectangle(RectExpr expr) {
-    enterTag("rectangle", expr);
+  public Void listLiteral(ListLiteral expr) {
+    enterTag("list-literal", expr);
 
-    if (expr.getTop() != null) {
-      comment("top");
-      expr.getTop().visit(this);
-    }
-    if (expr.getRight() != null) {
-      comment("right");
-      expr.getRight().visit(this);
-    }
-    if (expr.getBottom() != null) {
-      comment("bottom");
-      expr.getBottom().visit(this);
-    }
-    if (expr.getLeft() != null) {
-      comment("left");
-      expr.getLeft().visit(this);
+    for (Expression value : expr.getValues()) {
+      value.visit(this);
     }
 
-    exitTag("rectangle");
+    exitTag("list-literal");
     return null;
   }
 

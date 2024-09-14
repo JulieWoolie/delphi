@@ -110,7 +110,8 @@ public class ScssFunctionsTest {
     ChimeraContext ctx = parser.createContext();
     Scope scope = Scope.createTopLevel();
 
-    Object o = expr.evaluate(ctx, scope);
+    Interpreter inter = new Interpreter(ctx, scope);
+    Object o = expr.visit(inter);
 
     return assertInstanceOf(Primitive.class, o);
   }
@@ -120,8 +121,9 @@ public class ScssFunctionsTest {
     Expression expr = parser.expr();
 
     ChimeraContext ctx = parser.createContext();
+    Interpreter inter = new Interpreter(ctx, Scope.createTopLevel());
+    Object o = expr.visit(inter);
 
-    Object o = expr.evaluate(ctx, Scope.createTopLevel());
     return assertInstanceOf(Color.class, o);
   }
 }

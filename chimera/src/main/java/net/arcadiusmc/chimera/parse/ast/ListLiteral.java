@@ -6,13 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class CallExpr extends Expression {
+public class ListLiteral extends Expression {
 
-  private Identifier functionName;
-  private final List<Expression> arguments = new ArrayList<>();
+  private final List<Expression> values = new ArrayList<>();
 
   @Override
   public <R> R visit(NodeVisitor<R> visitor) {
-    return visitor.callExpr(this);
+    return visitor.listLiteral(this);
   }
 }

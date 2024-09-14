@@ -24,6 +24,15 @@ public sealed interface Primitive permits PrimitiveImpl {
   /** One value constant */
   Primitive ONE = new PrimitiveImpl(1, Unit.NONE);
 
+  /** Not-A-Number constant */
+  Primitive NAN = new PrimitiveImpl(Float.NaN, Unit.NONE);
+
+  /** Positive Infinity constant */
+  Primitive INFINITY = new PrimitiveImpl(Float.POSITIVE_INFINITY, Unit.NONE);
+
+  /** Negative infinity constant */
+  Primitive NEGATIVE_INFINITY = new PrimitiveImpl(Float.NEGATIVE_INFINITY, Unit.NONE);
+
   /**
    * Creates a new primitive value.
    *
@@ -43,6 +52,15 @@ public sealed interface Primitive permits PrimitiveImpl {
       }
       if (base == 1.0f) {
         return ONE;
+      }
+      if (Float.isNaN(base)) {
+        return NAN;
+      }
+      if (base == Float.POSITIVE_INFINITY) {
+        return INFINITY;
+      }
+      if (base == Float.NEGATIVE_INFINITY) {
+        return NEGATIVE_INFINITY;
       }
     }
 

@@ -1,7 +1,10 @@
 package net.arcadiusmc.chimera.function;
 
+import static net.arcadiusmc.chimera.parse.Interpreter.testCompatibility;
+
 import net.arcadiusmc.chimera.parse.ChimeraContext;
-import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
+import net.arcadiusmc.chimera.parse.CompilerErrors;
+import net.arcadiusmc.chimera.parse.Interpreter;
 import net.arcadiusmc.dom.style.Primitive;
 import org.apache.commons.lang3.Range;
 
@@ -9,21 +12,33 @@ public class ClampFunction implements ScssFunction {
 
   @Override
   public Object invoke(ChimeraContext ctx, Argument[] arguments) {
-    Primitive minPrim = arguments[0].primitive();
-    Primitive valPrim = arguments[1].primitive();
-    Primitive maxPrim = arguments[2].primitive();
+    Argument a1 = arguments[0];
+    Argument a2 = arguments[1];
+    Argument a3 = arguments[2];
+
+    Primitive minPrim = a1.primitive();
+    Primitive valPrim = a2.primitive();
+    Primitive maxPrim = a3.primitive();
 
     if (minPrim == null || maxPrim == null || valPrim == null) {
       return null;
     }
 
-    float val = BinaryExpr.preEvalTranslate(valPrim);
-    float min = BinaryExpr.preEvalTranslate(minPrim);
-    float max = BinaryExpr.preEvalTranslate(maxPrim);
+    CompilerErrors errors = ctx.getErrors();
+    if (!testCompatibility(errors, a1.getLocation(), minPrim.getUnit(), valPrim.getUnit())) {
+      return null;
+    }
+    if (!testCompatibility(errors, a3.getLocation(), maxPrim.getUnit(), valPrim.getUnit())) {
+      return null;
+    }
+
+    float val = Interpreter.preEvalTranslate(valPrim);
+    float min = Interpreter.preEvalTranslate(minPrim);
+    float max = Interpreter.preEvalTranslate(maxPrim);
 
     float clamped = Math.clamp(val, min, max);
 
-    return BinaryExpr.postEval(clamped, valPrim.getUnit(), valPrim.getUnit());
+    return Interpreter.postEval(clamped, valPrim.getUnit(), valPrim.getUnit());
   }
 
   @Override

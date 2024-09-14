@@ -74,6 +74,15 @@ public final class PropertySet {
     return v != null;
   }
 
+  public <T> T getValue(Property<T> property) {
+    if (!has(property)) {
+      return property.getDefaultValue();
+    }
+
+    Value<T> val = values[property.id];
+    return val.getValue();
+  }
+
   public <T> Value<T> get(Property<T> property) {
     return orElse(property, property.getDefaultValue());
   }

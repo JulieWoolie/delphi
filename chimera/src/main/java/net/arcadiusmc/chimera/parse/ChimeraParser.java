@@ -71,11 +71,11 @@ import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.LogStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
-import net.arcadiusmc.chimera.parse.ast.RectExpr;
 import net.arcadiusmc.chimera.parse.ast.RegularSelectorStatement;
 import net.arcadiusmc.chimera.parse.ast.RuleStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
@@ -1009,11 +1009,12 @@ public class ChimeraParser {
         DOLLAR_SIGN,
         HEX,
         HEX_SHORT,
-        HEX_ALPHA
+        HEX_ALPHA,
+        SQUARE_OPEN
     );
   }
 
-  private boolean isRectangleStart(Expression expr) {
+  private boolean isArrayLiteralPart(Expression expr) {
     if (expr.getStart().line() != peek().location().line()) {
       return false;
     }
@@ -1031,59 +1032,27 @@ public class ChimeraParser {
   }
 
   public Expression expr() {
+    return listExpr();
+  }
+
+  Expression listExpr() {
     Expression expr = logicOr();
 
-    if (!isRectangleStart(expr)) {
+    if (!isArrayLiteralPart(expr)) {
       return expr;
     }
 
-    Expression[] rectParams = new Expression[4];
-    int count = 1;
+    ListLiteral literal = new ListLiteral();
+    literal.setStart(expr.getStart());
+    literal.getValues().add(expr);
 
-    rectParams[0] = expr;
-
-    while (peek().location().line() == expr.getStart().line() && !matches(SEMICOLON, BRACKET_CLOSE) && hasNext()) {
-      Expression e = logicOr();
-      rectParams[count++] = e;
-
-      if (count >= rectParams.length) {
-        break;
-      }
+    while (isArrayLiteralPart(expr)) {
+      expr = logicOr();
+      literal.setEnd(expr.getEnd());
+      literal.getValues().add(expr);
     }
 
-    RectExpr rect = new RectExpr();
-    rect.setStart(expr.getStart());
-    rect.setEnd(rectParams[count - 1].getEnd());
-
-    switch (count) {
-      case 1 -> {
-        rect.setTop(expr);
-        rect.setRight(expr);
-        rect.setBottom(expr);
-        rect.setLeft(expr);
-      }
-      case 2 -> {
-        rect.setTop(rectParams[1]);
-        rect.setRight(rectParams[0]);
-        rect.setBottom(rectParams[1]);
-        rect.setLeft(rectParams[0]);
-      }
-      case 3 -> {
-        rect.setTop(rectParams[0]);
-        rect.setRight(rectParams[1]);
-        rect.setBottom(rectParams[2]);
-        rect.setLeft(rectParams[1]);
-      }
-      case 4 -> {
-        rect.setTop(rectParams[0]);
-        rect.setRight(rectParams[1]);
-        rect.setBottom(rectParams[2]);
-        rect.setLeft(rectParams[3]);
-      }
-      default -> throw new IllegalStateException();
-    }
-
-    return rect;
+    return literal;
   }
 
   Expression logicOr() {
@@ -1319,6 +1288,9 @@ public class ChimeraParser {
         expect(BRACKET_CLOSE);
         return expr;
 
+      case SQUARE_OPEN:
+        return bracedListLiteral();
+
       default:
         ErroneousExpr err = new ErroneousExpr();
         err.setToken(next());
@@ -1326,6 +1298,27 @@ public class ChimeraParser {
         err.setEnd(peek.end());
         return err;
     }
+  }
+
+  Expression bracedListLiteral() {
+    ListLiteral literal = new ListLiteral();
+    Token start = expect(SQUARE_OPEN);
+
+    literal.setStart(start.location());
+
+    while (hasNext() && !matches(SQUARE_CLOSE)) {
+      Expression expr = logicOr();
+      literal.getValues().add(expr);
+
+      while (matches(COMMA)) {
+        next();
+      }
+    }
+
+    Token end = expect(SQUARE_CLOSE);
+    literal.setEnd(end.end());
+
+    return literal;
   }
 
   Expression hexExpr() {

@@ -9,9 +9,9 @@ public interface ScssFunctions {
 
   // f(x) functions
   ScssFunction SQRT = new MathFunction(Math::sqrt);
-  ScssFunction SIN = new MathFunction(Math::sin);
-  ScssFunction COS = new MathFunction(Math::cos);
-  ScssFunction TAN = new MathFunction(Math::tan);
+  ScssFunction SIN = new MathAngleUnaryFunction(Math::sin);
+  ScssFunction COS = new MathAngleUnaryFunction(Math::cos);
+  ScssFunction TAN = new MathAngleUnaryFunction(Math::tan);
   ScssFunction SIGN = new MathFunction(Math::signum);
   ScssFunction EXP = new MathFunction(Math::exp);
   ScssFunction ATAN = new MathFunction(Math::atan);

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -23,9 +22,9 @@ import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
-import net.arcadiusmc.chimera.parse.ast.RectExpr;
 import net.arcadiusmc.chimera.parse.ast.RegularSelectorStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.AttributeExpr;
@@ -406,39 +405,43 @@ class ChimeraParserTest {
   }
 
   @Test
-  void testRect() {
+  void testImplicitList() {
     ChimeraParser parser = Tests.parser("14px 10ch 6vw 2vh");
     Expression expr = parser.expr();
 
-    RectExpr rect = assertInstanceOf(RectExpr.class, expr);
+    ListLiteral rect = assertInstanceOf(ListLiteral.class, expr);
 
-    assertNumberValue(14, Unit.PX, rect.getTop());
-    assertNumberValue(10, Unit.CH, rect.getRight());
-    assertNumberValue(6, Unit.VW, rect.getBottom());
-    assertNumberValue(2, Unit.VH, rect.getLeft());
+    assertEquals(4, rect.getValues().size());
+    assertNumberValue(14, Unit.PX, rect.getValues().get(0));
+    assertNumberValue(10, Unit.CH, rect.getValues().get(1));
+    assertNumberValue(6, Unit.VW, rect.getValues().get(2));
+    assertNumberValue(2, Unit.VH, rect.getValues().get(3));
 
-    rect = parseExpr("14px 10px", RectExpr.class);
-    assertNumberValue(14, Unit.PX, rect.getLeft());
-    assertNumberValue(14, Unit.PX, rect.getRight());
-    assertNumberValue(10, Unit.PX, rect.getTop());
-    assertNumberValue(10, Unit.PX, rect.getBottom());
+    rect = parseExpr("14px 10px", ListLiteral.class);
+    assertEquals(2, rect.getValues().size());
+    assertNumberValue(14, Unit.PX, rect.getValues().get(0));
+    assertNumberValue(10, Unit.PX, rect.getValues().get(1));
 
-    assertSame(rect.getLeft(), rect.getRight());
-    assertSame(rect.getTop(), rect.getBottom());
+    rect = parseExpr("14px 10px 6px", ListLiteral.class);
+    assertEquals(3, rect.getValues().size());
+    assertNumberValue(14, Unit.PX, rect.getValues().get(0));
+    assertNumberValue(10, Unit.PX, rect.getValues().get(1));
+    assertNumberValue( 6, Unit.PX, rect.getValues().get(2));
 
-    rect = parseExpr("14px 10px 6px", RectExpr.class);
-    assertNumberValue(14, Unit.PX, rect.getTop());
-    assertNumberValue(10, Unit.PX, rect.getRight());
-    assertNumberValue( 6, Unit.PX, rect.getBottom());
-    assertNumberValue(10, Unit.PX, rect.getLeft());
+    rect = parseExpr("14px 10px; 5px", ListLiteral.class);
+    assertEquals(2, rect.getValues().size());
+    assertNumberValue(14, Unit.PX, rect.getValues().get(0));
+    assertNumberValue(10, Unit.PX, rect.getValues().get(1));
+  }
 
-    assertSame(rect.getLeft(), rect.getRight());
+  @Test
+  void testExplicitList() {
+    ListLiteral literal = parseExpr("[1px, 2px 4px]", ListLiteral.class);
+    assertEquals(3, literal.getValues().size());
 
-    rect = parseExpr("14px 10px; 5px", RectExpr.class);
-    assertNumberValue(14, Unit.PX, rect.getLeft());
-    assertNumberValue(14, Unit.PX, rect.getRight());
-    assertNumberValue(10, Unit.PX, rect.getTop());
-    assertNumberValue(10, Unit.PX, rect.getBottom());
+    assertNumberValue(1, Unit.PX, literal.getValues().get(0));
+    assertNumberValue(2, Unit.PX, literal.getValues().get(1));
+    assertNumberValue(4, Unit.PX, literal.getValues().get(2));
   }
 
   @Test

@@ -1,8 +1,8 @@
 package net.arcadiusmc.chimera.function;
 
-import static net.arcadiusmc.chimera.parse.ast.BinaryExpr.postEval;
-import static net.arcadiusmc.chimera.parse.ast.BinaryExpr.preEvalTranslate;
-import static net.arcadiusmc.chimera.parse.ast.BinaryExpr.testCompatability;
+import static net.arcadiusmc.chimera.parse.Interpreter.postEval;
+import static net.arcadiusmc.chimera.parse.Interpreter.preEvalTranslate;
+import static net.arcadiusmc.chimera.parse.Interpreter.testCompatibility;
 
 import java.util.function.DoubleBinaryOperator;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
@@ -30,7 +30,7 @@ public class MathBiFunction implements ScssFunction {
     Unit left = lhs.getUnit();
     Unit right = rhs.getUnit();
 
-    if (!testCompatability(ctx.getErrors(), arguments[0].getLocation(), left, right)) {
+    if (!testCompatibility(ctx.getErrors(), arguments[0].getLocation(), left, right)) {
       return null;
     }
 

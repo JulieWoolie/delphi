@@ -33,7 +33,7 @@ public interface NodeVisitor<R> {
 
   R callExpr(CallExpr expr);
 
-  R rectangle(RectExpr expr);
+  R listLiteral(ListLiteral expr);
 
   R important(ImportantMarker marker);
 

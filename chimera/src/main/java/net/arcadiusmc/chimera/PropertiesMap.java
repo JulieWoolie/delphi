@@ -6,6 +6,7 @@ import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
 import net.arcadiusmc.chimera.parse.ChimeraParser;
 import net.arcadiusmc.chimera.parse.CompilerErrors;
+import net.arcadiusmc.chimera.parse.Interpreter;
 import net.arcadiusmc.chimera.parse.Location;
 import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.chimera.parse.ast.Expression;
@@ -63,7 +64,9 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
       errors.error(marker.getStart(), "'!important' not allowed here");
     }
 
-    Object obj = expression.evaluate(ctx, scope);
+    Interpreter inter = new Interpreter(ctx, scope);
+    Object obj = expression.visit(inter);
+
     if (obj == null) {
       return;
     }

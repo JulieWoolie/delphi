@@ -17,7 +17,6 @@ public class FunctionStatement extends Statement {
     return null;
   }
 
-
   @Getter @Setter
   public static class FuncParameterStatement extends Statement {
 

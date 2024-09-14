@@ -13,11 +13,11 @@ import java.util.function.BinaryOperator;
 import lombok.Getter;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
-import net.arcadiusmc.chimera.PrimitiveRect;
 import net.arcadiusmc.chimera.Properties;
 import net.arcadiusmc.chimera.Property;
 import net.arcadiusmc.chimera.PropertySet;
 import net.arcadiusmc.chimera.Rule;
+import net.arcadiusmc.chimera.ScssList;
 import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.chimera.function.Argument;
 import net.arcadiusmc.chimera.function.ScssFunction;
@@ -36,12 +36,12 @@ import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
+import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.LogStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NodeVisitor;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
-import net.arcadiusmc.chimera.parse.ast.RectExpr;
 import net.arcadiusmc.chimera.parse.ast.RegularSelectorStatement;
 import net.arcadiusmc.chimera.parse.ast.RuleStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
@@ -343,37 +343,19 @@ public class Interpreter implements NodeVisitor<Object> {
   }
 
   @Override
-  public Object rectangle(RectExpr expr) {
-    var top = expr.getTop();
-    var right = expr.getRight();
-    var bottom = expr.getBottom();
-    var left = expr.getLeft();
+  public Object listLiteral(ListLiteral expr) {
+    ScssList list = new ScssList(expr.getValues().size());
 
-    Primitive topRes = Chimera.coerceValue(Primitive.class, top.visit(this));
-    Primitive rightRes = Chimera.coerceValue(Primitive.class, right.visit(this));
-    Primitive bottomRes = Chimera.coerceValue(Primitive.class, bottom.visit(this));
-    Primitive leftRes = Chimera.coerceValue(Primitive.class, left.visit(this));
+    for (Expression value : expr.getValues()) {
+      Object o = value.visit(this);
+      if (o == null) {
+        continue;
+      }
 
-    topRes = reportInvalidSide(topRes, "top", top.getStart());
-    rightRes = reportInvalidSide(rightRes, "right", right.getStart());
-    bottomRes = reportInvalidSide(bottomRes, "bottom", bottom.getStart());
-    leftRes = reportInvalidSide(leftRes, "left", left.getStart());
-
-    return PrimitiveRect.create(topRes, rightRes, bottomRes, leftRes);
-  }
-
-  Primitive reportInvalidSide(Primitive prim, String side, Location l) {
-    if (prim != null) {
-      return prim;
+      list.add(o);
     }
 
-    error(
-        l,
-        "Invalid expression for %s side. Must be a primitive, or a reference to a primitive",
-        side
-    );
-
-    return Primitive.ZERO;
+    return list;
   }
 
   @Override
@@ -497,7 +479,7 @@ public class Interpreter implements NodeVisitor<Object> {
     }
 
     if (l instanceof Primitive pl && r instanceof Primitive pr) {
-      if (!testCompatability(start, pl.getUnit(), pr.getUnit())) {
+      if (!testCompatibility(errors, start, pl.getUnit(), pr.getUnit())) {
         return COMPARISON_FAILED;
       }
 
@@ -549,7 +531,7 @@ public class Interpreter implements NodeVisitor<Object> {
       return Primitive.ZERO;
     }
 
-    testCompatability(start, pl.getUnit(), pr.getUnit());
+    testCompatibility(errors, start, pl.getUnit(), pr.getUnit());
 
     Unit left = pl.getUnit();
     Unit right = pr.getUnit();
@@ -562,12 +544,12 @@ public class Interpreter implements NodeVisitor<Object> {
     return postEval(result, left, right);
   }
 
-  boolean testCompatability(Location l, Unit left, Unit right) {
+  public static boolean testCompatibility(CompilerErrors errors, Location l, Unit left, Unit right) {
     if (areUnitsCompatible(left, right)) {
       return true;
     }
 
-    error(
+    errors.error(
         l,
         "Incompatible units %s and %s",
         left.getUnit(),
@@ -615,7 +597,7 @@ public class Interpreter implements NodeVisitor<Object> {
     return false;
   }
 
-  private static boolean isAngular(Unit u) {
+  public static boolean isAngular(Unit u) {
     return switch (u) {
       case DEG, RAD, GRAD, TURN -> true;
       default -> false;
