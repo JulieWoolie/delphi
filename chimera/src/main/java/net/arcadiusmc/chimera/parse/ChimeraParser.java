@@ -1350,7 +1350,15 @@ public class ChimeraParser {
         break;
 
       case HEX_ALPHA:
-        hexLiteral = t.value();
+        // Color constructor expects ARGB, input is expected to be RGBA,
+        // Need to flip some bits
+
+        String rgba = t.value();
+        assert rgba != null;
+
+        String alpha = rgba.substring(rgba.length() - 2);
+        hexLiteral = alpha + (rgba.substring(0, rgba.length() - 2));
+
         next();
         break;
 
