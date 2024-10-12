@@ -281,7 +281,9 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       setWorld(world);
     }
 
-    renderRoot.spawnRecursive();
+    if (renderRoot != null && renderRoot.isSpawned()) {
+      renderRoot.spawnRecursive();
+    }
 
     if (interaction != null && !interaction.isDead()) {
       Location loc = getSpawnInteractionLocation();
