@@ -1,13 +1,13 @@
 package net.arcadiusmc.delphiplugin;
 
-import java.util.List;
+import java.io.Reader;
 import lombok.Getter;
 import net.arcadiusmc.delphi.Delphi;
-import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.listeners.PlayerListener;
 import net.arcadiusmc.delphiplugin.listeners.PluginDisableListener;
 import net.arcadiusmc.delphiplugin.resource.Modules;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.ServicesManager;
@@ -24,19 +24,15 @@ public class DelphiPlugin extends JavaPlugin {
   public void onEnable() {
     this.sessions = new SessionManager(this);
     this.modules = new Modules(getDataPath().resolve("modules"));
-    this.manager = new PageManager(modules, sessions);
-
-    if (getSLF4JLogger().isDebugEnabled()) {
-      JarResourceModule jarResource = new JarResourceModule(getClassLoader(), "modules/test");
-      jarResource.setFilePaths(List.of("index.xml", "item.json", "style.scss"));
-      modules.registerModule("resource-test", jarResource);
-    }
+    this.manager = new PageManager(this, modules, sessions);
 
     sessions.startTicking();
 
     reloadConfig();
     registerEvents();
     Permissions.registerAll();
+
+    printVersions();
 
     ServicesManager services = getServer().getServicesManager();
     services.register(Delphi.class, manager, this, ServicePriority.Highest);
@@ -56,5 +52,25 @@ public class DelphiPlugin extends JavaPlugin {
   @Override
   public void onDisable() {
 
+  }
+
+  private void printVersions() {
+    Reader resource = getTextResource("versions.yml");
+
+    if (resource == null) {
+      return;
+    }
+
+    YamlConfiguration config = YamlConfiguration.loadConfiguration(resource);
+
+    String apiVersion = config.getString("api", "UNKNOWN");
+    String chimeraVersion = config.getString("chimera", "UNKNOWN");
+
+    getSLF4JLogger().info(
+        "Running delphi plugin: version={}, api-version={}, scss-engine-version={}",
+        getPluginMeta().getVersion(),
+        apiVersion,
+        chimeraVersion
+    );
   }
 }

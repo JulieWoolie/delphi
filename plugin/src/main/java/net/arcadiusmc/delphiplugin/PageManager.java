@@ -31,10 +31,12 @@ import org.joml.Vector3f;
 
 public class PageManager implements Delphi {
 
+  private final DelphiPlugin plugin;
   private final Modules modules;
   private final SessionManager sessions;
 
-  public PageManager(Modules modules, SessionManager sessions) {
+  public PageManager(DelphiPlugin plugin, Modules modules, SessionManager sessions) {
+    this.plugin = plugin;
     this.modules = modules;
     this.sessions = sessions;
   }
@@ -88,7 +90,7 @@ public class PageManager implements Delphi {
     PageResources resources = new PageResources(modules, moduleName, module);
     resources.setCwd(cwd);
 
-    PageView view = new PageView(player, path);
+    PageView view = new PageView(plugin, player, path);
     view.setResources(resources);
     resources.setView(view);
 

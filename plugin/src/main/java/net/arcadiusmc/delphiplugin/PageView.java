@@ -60,6 +60,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Transformation;
@@ -80,6 +81,8 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Getter
   private final Screen screen = new Screen();
+
+  private final DelphiPlugin plugin;
 
   public final Vector2f cursorScreen = new Vector2f();
   public final Vector3f cursorWorld = new Vector3f();
@@ -121,13 +124,15 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   private final List<Display> entities = new ArrayList<>();
   private Interaction interaction;
 
-  public PageView(Player player, ResourcePath path) {
+  public PageView(DelphiPlugin plugin, Player player, ResourcePath path) {
     Objects.requireNonNull(player, "Null player");
     Objects.requireNonNull(path, "Null path");
+    Objects.requireNonNull(plugin, "Null plugin");
 
     this.player = player;
     this.path = path;
     this.world = player.getWorld();
+    this.plugin = plugin;
   }
 
   public void spawn() {
@@ -153,6 +158,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     interaction = world.spawn(loc, Interaction.class);
     interaction.setPersistent(false);
+    handleEntityVisibility(interaction);
 
     configureInteractionSize();
   }
@@ -609,6 +615,12 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   public void addEntity(Display display) {
     entities.add(display);
     display.setPersistent(false);
+    handleEntityVisibility(display);
+  }
+
+  private void handleEntityVisibility(Entity entity) {
+    entity.setVisibleByDefault(false);
+    player.showEntity(plugin, entity);
   }
 
   public void tick() {
