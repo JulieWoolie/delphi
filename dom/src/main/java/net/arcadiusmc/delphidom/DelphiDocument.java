@@ -148,6 +148,8 @@ public class DelphiDocument implements Document {
 
     return switch (tagName) {
       case TagNames.ITEM -> new DelphiItemElement(this);
+      case TagNames.BUTTON -> new DelphiButtonElement(this);
+
       default -> new DelphiElement(this, tagName);
     };
   }
