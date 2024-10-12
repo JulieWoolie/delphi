@@ -299,6 +299,13 @@ public interface Element extends Node, EventTarget, DomQueryable {
   void removeChild(int childIndex) throws IndexOutOfBoundsException;
 
   /**
+   * Remove all child elements.
+   * <p>
+   * Children are removed 1 by 1 using the {@link #removeChild(Node)} method
+   */
+  void clearChildren();
+
+  /**
    * Gets an immutable list of child nodes
    * @return Child node list
    */

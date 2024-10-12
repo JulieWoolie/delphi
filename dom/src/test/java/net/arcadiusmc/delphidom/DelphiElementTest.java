@@ -248,6 +248,26 @@ class DelphiElementTest {
   }
 
   @Test
+  void clearChildren() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(div3);
+
+    assertEquals(3, body.children.size());
+
+    body.clearChildren();
+
+    assertEquals(0, body.children.size());
+  }
+
+  @Test
   void firstChild() {
     DelphiDocument doc = createDoc();
     DelphiElement div1 = doc.createElement("div");

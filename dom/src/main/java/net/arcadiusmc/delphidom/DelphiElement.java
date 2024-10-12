@@ -240,6 +240,20 @@ public class DelphiElement extends DelphiNode implements Element {
     node.setAdded(false);
 
     children.remove(childIndex);
+
+    for (int i = childIndex; i < children.size(); i++) {
+      DelphiNode el = children.get(i);
+      el.siblingIndex = i;
+    }
+  }
+
+  @Override
+  public void clearChildren() {
+    Node c;
+
+    while ((c = firstChild()) != null) {
+      removeChild(c);
+    }
   }
 
   public List<DelphiNode> childList() {
