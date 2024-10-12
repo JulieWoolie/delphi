@@ -1,2 +1,3 @@
 chimera: ${chimeraVersion}
 api: ${apiVersion}
+dom: ${domVersion}

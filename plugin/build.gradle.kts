@@ -46,7 +46,8 @@ tasks {
     filesMatching("versions.yml") {
       expand(mapOf(
         "chimeraVersion" to project(":chimera").version,
-        "apiVersion" to project(":api").version
+        "apiVersion" to project(":api").version,
+        "domVersion" to project(":dom").version
       ))
     }
   }
