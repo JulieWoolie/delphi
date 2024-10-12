@@ -23,6 +23,12 @@ public interface Delphi {
   DelphiResources getResources();
 
   /**
+   * Create a new document request.
+   * @return Created document request
+   */
+  DocumentRequest newRequest();
+
+  /**
    * Attempts to parse a path
    * @param string Parse string
    * @return Parse result, either successful, or an error with the error code

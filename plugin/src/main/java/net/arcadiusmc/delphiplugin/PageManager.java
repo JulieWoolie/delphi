@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.delphi.Delphi;
+import net.arcadiusmc.delphi.DocumentRequest;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.event.DocumentOpenEvent;
 import net.arcadiusmc.delphi.resource.DelphiException;
@@ -21,8 +22,10 @@ import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
+import net.arcadiusmc.delphiplugin.resource.RequestImpl;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -60,76 +63,26 @@ public class PageManager implements Delphi {
   }
 
   @Override
+  public DocumentRequest newRequest() {
+    return new RequestImpl(this);
+  }
+
+  @Override
   public Result<DocumentView, DelphiException> openDocument(
       @NotNull ResourcePath path,
       @NotNull Player player
   ) {
-    Objects.requireNonNull(path, "Null path");
-    Objects.requireNonNull(player, "Null player");
-
-    String moduleName = path.getModuleName();
-
-    Result<ResourceModule, DelphiException> moduleResult = modules.findModule(moduleName);
-
-    if (moduleResult.isError()) {
-      return Result.err(moduleResult);
-    }
-
-    // Won't throw, we returned above if error
-    ResourceModule module = moduleResult.getOrThrow();
-    ResourcePath cwd;
-
-    if (path.elementCount() > 0) {
-      int lastIndex = path.elementCount() - 1;
-      cwd = path.removeElement(lastIndex);
-    } else {
-      cwd = path;
-      path = path.addElement("index.xml");
-    }
-
-    PageResources resources = new PageResources(modules, moduleName, module);
-    resources.setCwd(cwd);
-
-    PageView view = new PageView(plugin, player, path);
-    view.setResources(resources);
-    resources.setView(view);
-
-    PlayerSession session = sessions.getOrCreateSession(player);
-    session.addView(view);
-
-    Result<DelphiDocument, DelphiException> res = resources.loadDocument(path, path.elements());
-
-    if (res.isError()) {
-      session.closeView(view);
-      return Result.err(res);
-    }
-
-    DelphiDocument doc = res.getOrThrow();
-
-    if (modules.getDefaultStyle() != null) {
-      doc.addStylesheet(modules.getDefaultStyle());
-    }
-
-    view.initializeDocument(doc);
-
-    EventImpl loaded = new EventImpl(EventTypes.DOM_LOADED, doc);
-    loaded.initEvent(null, false, false);
-    doc.dispatchEvent(loaded);
-
-    DocumentOpenEvent bukkitEvent = new DocumentOpenEvent(player, view);
-    bukkitEvent.callEvent();
-
-    view.spawn();
-
-    EventImpl event = new EventImpl(EventTypes.DOM_SPAWNED, doc);
-    event.initEvent(null, false, false);
-    doc.dispatchEvent(event);
-
-    return Result.ok(view);
+    RequestImpl req = new RequestImpl(this);
+    req.setPath(path);
+    req.setPlayer(player);
+    return openDocument(req);
   }
 
   @Override
-  public Result<DocumentView, DelphiException> openDocument(@NotNull String path, @NotNull Player player) {
+  public Result<DocumentView, DelphiException> openDocument(
+      @NotNull String path,
+      @NotNull Player player
+  ) {
     Objects.requireNonNull(path, "Null path");
     Objects.requireNonNull(player, "Null player");
 
@@ -205,5 +158,78 @@ public class PageManager implements Delphi {
   @Override
   public @NotNull StylesheetBuilder newStylesheetBuilder() {
     return new ChimeraSheetBuilder();
+  }
+
+  public Result<DocumentView, DelphiException> openDocument(RequestImpl request) {
+    ResourcePath path = request.getPath();
+    Player player = request.getPlayer();
+
+    Objects.requireNonNull(path, "Path not set");
+    Objects.requireNonNull(player, "Player not set");
+
+    String moduleName = path.getModuleName();
+
+    Result<ResourceModule, DelphiException> moduleResult = modules.findModule(moduleName);
+
+    if (moduleResult.isError()) {
+      return Result.err(moduleResult);
+    }
+
+    // Won't throw, we returned above if error
+    ResourceModule module = moduleResult.getOrThrow();
+    ResourcePath cwd;
+
+    if (path.elementCount() > 0) {
+      int lastIndex = path.elementCount() - 1;
+      cwd = path.removeElement(lastIndex);
+    } else {
+      cwd = path;
+      path = path.addElement("index.xml");
+    }
+
+    PageResources resources = new PageResources(modules, moduleName, module);
+    resources.setCwd(cwd);
+
+    PageView view = new PageView(plugin, player, path);
+    view.setResources(resources);
+    resources.setView(view);
+
+    PlayerSession session = sessions.getOrCreateSession(player);
+    session.addView(view);
+
+    Result<DelphiDocument, DelphiException> res = resources.loadDocument(path, path.elements());
+
+    if (res.isError()) {
+      session.closeView(view);
+      return Result.err(res);
+    }
+
+    DelphiDocument doc = res.getOrThrow();
+
+    if (modules.getDefaultStyle() != null) {
+      doc.addStylesheet(modules.getDefaultStyle());
+    }
+
+    view.initializeDocument(doc);
+
+    if (request.getSpawnLocation() != null) {
+      Location loc = request.getSpawnLocation();
+      view.moveTo(loc);
+    }
+
+    EventImpl loaded = new EventImpl(EventTypes.DOM_LOADED, doc);
+    loaded.initEvent(null, false, false);
+    doc.dispatchEvent(loaded);
+
+    DocumentOpenEvent bukkitEvent = new DocumentOpenEvent(player, view);
+    bukkitEvent.callEvent();
+
+    view.spawn();
+
+    EventImpl event = new EventImpl(EventTypes.DOM_SPAWNED, doc);
+    event.initEvent(null, false, false);
+    doc.dispatchEvent(event);
+
+    return Result.ok(view);
   }
 }

@@ -23,4 +23,13 @@ public final class DelphiProvider {
         "Delphi service not found"
     );
   }
+
+  /**
+   * Create a new document request.
+   * @return Created request
+   * @throws NullPointerException If no Delphi service exists yet
+   */
+  public static @NotNull DocumentRequest newRequest() {
+    return get().newRequest();
+  }
 }
