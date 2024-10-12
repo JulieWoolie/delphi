@@ -966,7 +966,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     @Override
     public void handleEvent(MutationEvent event) {
       ElementRenderObject parentObj
-          = (ElementRenderObject) getRenderObject((DelphiNode) event.getTarget());
+          = (ElementRenderObject) getRenderObject(event.getTarget());
 
       if (parentObj == null) {
         return;
@@ -975,13 +975,18 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       if (event.getType().equals(EventTypes.APPEND_CHILD)) {
         RenderObject tree = initRenderTree((DelphiNode) event.getNode());
         parentObj.addChild(tree, event.getMutationIndex());
-      } else {
-        RenderObject nodeObj = getRenderObject((DelphiNode) event.getNode());
-        RenderObject removed = parentObj.removeChild(nodeObj);
 
-        if (removed != null) {
-          removed.killRecursive();
+        if (parentObj.isSpawned()) {
+          tree.spawnRecursive();
         }
+      } else {
+        RenderObject nodeObj = getRenderObject(event.getNode());
+        if (nodeObj == null) {
+          return;
+        }
+
+        parentObj.removeChild(nodeObj);
+        nodeObj.killRecursive();
       }
 
       triggerUpdate();
