@@ -337,11 +337,7 @@ public class DelphiElement extends DelphiNode implements Element {
 
   @Override
   public void setTextContent(String content) {
-    Node last = lastChild();
-    while (last != null) {
-      removeChild(last);
-      last = lastChild();
-    }
+    clearChildren();
 
     if (Strings.isNullOrEmpty(content)) {
       return;
