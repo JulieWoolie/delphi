@@ -236,7 +236,7 @@ public abstract class RenderObject {
     applyScreenNormalOffsets();
 
     // Step 8 - Apply screen rotation and offset by height
-    applyScreenMetrics();
+    applyScreenRotationAndScale();
 
     // Step 9 - Apply transformations to entities
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
@@ -246,7 +246,7 @@ public abstract class RenderObject {
     this.spawned = true;
   }
   
-  private void applyScreenMetrics() {
+  private void applyScreenRotationAndScale() {
     Quaternionf lrot = screen.leftRotation;
     Quaternionf rrot = screen.rightRotation;
 

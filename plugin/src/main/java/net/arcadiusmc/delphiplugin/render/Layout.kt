@@ -26,7 +26,7 @@ fun measure(el: ElementRenderObject) {
   queue.addLast(el)
   addToQueue(queue, el)
 
-  val maxSize: Vector2f = Vector2f()
+  val parentSize: Vector2f = Vector2f()
   val screenSize: Vector2f = el.view.screen.dimensions
 
   fun computeRect(
@@ -36,15 +36,22 @@ fun measure(el: ElementRenderObject) {
     b: ValueOrAuto,
     l: ValueOrAuto
   ) {
-    rect.top = computePrimitive(t, maxSize.y, screenSize) ?: 0f
-    rect.right = computePrimitive(r, maxSize.x, screenSize) ?: 0f
-    rect.bottom = computePrimitive(b, maxSize.y, screenSize) ?: 0f
-    rect.left = computePrimitive(l, maxSize.x, screenSize) ?: 0f
+    rect.top = computePrimitive(t, parentSize.y, screenSize) ?: 0f
+    rect.right = computePrimitive(r, parentSize.x, screenSize) ?: 0f
+    rect.bottom = computePrimitive(b, parentSize.y, screenSize) ?: 0f
+    rect.left = computePrimitive(l, parentSize.x, screenSize) ?: 0f
   }
 
   while (queue.isNotEmpty()) {
     val e: RenderObject = queue.pollFirst()
-    maxSize(e, maxSize)
+
+    if (e.parent == null) {
+      parentSize.set(screenSize)
+    } else {
+      val p = e.parent
+      p.measureContent(parentSize)
+      p.clamp(parentSize)
+    }
 
     val out: FullStyle = e.style
     val set: ComputedStyleSet = e.styleSet
@@ -56,18 +63,18 @@ fun measure(el: ElementRenderObject) {
     computeRect(out.border, set.borderTop, set.borderRight, set.borderBottom, set.borderLeft)
     computeRect(out.outline, set.outlineTop, set.outlineRight, set.outlineBottom, set.outlineLeft)
 
-    out.maxSize.x = computePrimitive(set.maxWidth, maxSize.x, screenSize) ?: Float.MAX_VALUE
-    out.maxSize.y = computePrimitive(set.maxHeight, maxSize.y, screenSize) ?: Float.MAX_VALUE
-    out.minSize.x = computePrimitive(set.minWidth, maxSize.x, screenSize) ?: Float.MIN_VALUE
-    out.minSize.y = computePrimitive(set.minHeight, maxSize.y, screenSize) ?: Float.MIN_VALUE
-    out.setSize.x = computePrimitive(set.width, maxSize.x, screenSize) ?: 0f
-    out.setSize.y = computePrimitive(set.height, maxSize.y, screenSize) ?: 0f
-    out.scale.x = computePrimitive(set.scaleX, maxSize.x, screenSize) ?: 1f
-    out.scale.y = computePrimitive(set.scaleY, maxSize.y, screenSize) ?: 1f
+    out.maxSize.x = computePrimitive(set.maxWidth, parentSize.x, screenSize) ?: Float.MAX_VALUE
+    out.maxSize.y = computePrimitive(set.maxHeight, parentSize.y, screenSize) ?: Float.MAX_VALUE
+    out.minSize.x = computePrimitive(set.minWidth, parentSize.x, screenSize) ?: Float.MIN_VALUE
+    out.minSize.y = computePrimitive(set.minHeight, parentSize.y, screenSize) ?: Float.MIN_VALUE
+    out.setSize.x = computePrimitive(set.width, parentSize.x, screenSize) ?: 0f
+    out.setSize.y = computePrimitive(set.height, parentSize.y, screenSize) ?: 0f
+    out.scale.x = computePrimitive(set.scaleX, parentSize.x, screenSize) ?: 1f
+    out.scale.y = computePrimitive(set.scaleY, parentSize.y, screenSize) ?: 1f
   }
 }
 
-fun computePrimitive(v: ValueOrAuto, maxSize: Float, screenSize: Vector2f): Float? {
+fun computePrimitive(v: ValueOrAuto, parentSize: Float, screenSize: Vector2f): Float? {
   if (v.isAuto) {
     return null
   }
@@ -84,17 +91,17 @@ fun computePrimitive(v: ValueOrAuto, maxSize: Float, screenSize: Vector2f): Floa
     Primitive.Unit.VH -> (percent) * screenSize.y
     Primitive.Unit.M -> value
     Primitive.Unit.CM -> percent
-    Primitive.Unit.PERCENT -> percent * maxSize
+    Primitive.Unit.PERCENT -> percent * parentSize
     else -> null
   }
 }
 
 fun applyStandardProperties(out: FullStyle, set: ComputedStyleSet) {
   // Colors
-  out.textColor = FullStyle.fromDelphiColor(set.color)
-  out.backgroundColor = FullStyle.fromDelphiColor(set.backgroundColor)
-  out.borderColor = FullStyle.fromDelphiColor(set.borderColor)
-  out.outlineColor = FullStyle.fromDelphiColor(set.outlineColor)
+  out.textColor = FullStyle.toTextColor(set.color)
+  out.backgroundColor = FullStyle.toBukkitColor(set.backgroundColor)
+  out.borderColor = FullStyle.toBukkitColor(set.borderColor)
+  out.outlineColor = FullStyle.toBukkitColor(set.outlineColor)
 
   // Text options
   out.textShadowed = set.textShadow
@@ -233,7 +240,7 @@ fun layoutFlex(el: ElementRenderObject) {
   val alignItems = style.alignItems
 
   // Direction the content is aligned in,
-  val direction: FlexDirection = style.flexDirection
+  val flexDirection: FlexDirection = style.flexDirection
   val wrap: FlexWrap = style.flexWrap
 
   // Notes:
@@ -243,8 +250,11 @@ fun layoutFlex(el: ElementRenderObject) {
   //
   //
 
+  val direction: Vector2f = Vector2f()
+  val crossDirection: Vector2f = Vector2f()
+
   // TODO: Add support for column direction
-  if (direction != FlexDirection.ROW && direction != FlexDirection.ROW_REVERSE) {
+  if (flexDirection != FlexDirection.ROW && flexDirection != FlexDirection.ROW_REVERSE) {
     layoutFlow(el)
     return
   }
@@ -286,13 +296,13 @@ fun layoutFlex(el: ElementRenderObject) {
     lines = splitIntoLines(el)
 
     if (wrap == FlexWrap.WRAP_REVERSE) {
-      Collections.reverse(lines)
+      lines.reverse()
     }
   }
 
-  if (direction == FlexDirection.ROW_REVERSE) {
+  if (flexDirection == FlexDirection.ROW_REVERSE) {
     for (line in lines) {
-      Collections.reverse(line.objects)
+      line.objects.reverse()
     }
   }
 
@@ -304,7 +314,7 @@ fun layoutFlex(el: ElementRenderObject) {
   el.getContentStart(start)
 
   for (line in lines) {
-    val xDif = maxSize.x - line.size.x
+    val xDif = maxSize.x - line.size.x - el.style.padding.left
 
     if (justify == JustifyContent.CENTER) {
       advance.x = xDif * 0.5f;
@@ -314,18 +324,30 @@ fun layoutFlex(el: ElementRenderObject) {
       advance.x = 0.0f
     }
 
+    var firstOnLine = true
+
     for (obj in line.objects) {
       obj.getElementSize(childSize)
 
+      val leftMargin: Float
+
+      if (firstOnLine) {
+        leftMargin = 0.0f
+      } else {
+        leftMargin = obj.style.margin.left
+      }
+
+      firstOnLine = false
+
       childPos.set(start)
       childPos.x += advance.x
-      childPos.x += obj.style.margin.left
+      childPos.x += leftMargin
 
       childPos.y -= advance.y
 
       obj.moveTo(childPos)
 
-      advance.x += obj.style.margin.left + obj.style.margin.right + childSize.x
+      advance.x += leftMargin + obj.style.margin.right + childSize.x
     }
 
     advance.y += line.size.y + line.bottomMargin

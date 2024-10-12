@@ -4,10 +4,8 @@ import java.util.Objects;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,9 +36,5 @@ public final class TextUtil {
       return null;
     }
     return PLAIN.serialize(text.asComponent());
-  }
-
-  public static TextColor toTextColor(Color color) {
-    return TextColor.color(color.getRed(), color.getGreen(), color.getBlue());
   }
 }

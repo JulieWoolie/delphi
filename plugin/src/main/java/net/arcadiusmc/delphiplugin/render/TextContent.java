@@ -42,9 +42,7 @@ public abstract class TextContent implements ElementContent {
 
     Component result;
     boolean override = overrideStyle();
-    TextColor textColor = set.textColor == null
-        ? NamedTextColor.BLACK
-        : TextUtil.toTextColor(set.textColor);
+    TextColor textColor = set.textColor == null ? NamedTextColor.BLACK : set.textColor;
 
     if (override) {
       result = base.color(textColor);

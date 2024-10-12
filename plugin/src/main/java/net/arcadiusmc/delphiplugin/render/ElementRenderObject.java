@@ -55,12 +55,20 @@ public class ElementRenderObject extends RenderObject {
 
   @Override
   protected void measureContent(Vector2f out) {
-    out.set(contentSize);
+    float width = Math.max(contentSize.x, style.setSize.x);
+    float height = Math.max(contentSize.y, style.setSize.y);
+
+    out.x = width;
+    out.y = height;
   }
 
   @Override
   protected void applyContentExtension(Vector2f out) {
-    out.add(contentSize);
+    float width = Math.max(contentSize.x, style.setSize.x);
+    float height = Math.max(contentSize.y, style.setSize.y);
+
+    out.x += width;
+    out.y += height;
   }
 
   @Override

@@ -7,6 +7,7 @@ import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Color;
 import org.joml.Vector2f;
 
@@ -17,10 +18,10 @@ public class FullStyle {
   public final Rect outline = new Rect();
   public final Rect margin = new Rect();
 
-  public Color textColor = fromDelphiColor(Properties.COLOR.getDefaultValue());
-  public Color backgroundColor = fromDelphiColor(Properties.BACKGROUND_COLOR.getDefaultValue());
-  public Color borderColor = fromDelphiColor(Properties.BORDER_COLOR.getDefaultValue());
-  public Color outlineColor = fromDelphiColor(Properties.OUTLINE_COLOR.getDefaultValue());
+  public TextColor textColor = toTextColor(Properties.COLOR.getDefaultValue());
+  public Color backgroundColor = toBukkitColor(Properties.BACKGROUND_COLOR.getDefaultValue());
+  public Color borderColor = toBukkitColor(Properties.BORDER_COLOR.getDefaultValue());
+  public Color outlineColor = toBukkitColor(Properties.OUTLINE_COLOR.getDefaultValue());
 
   public boolean textShadowed;
   public boolean bold;
@@ -43,7 +44,11 @@ public class FullStyle {
   public JustifyContent justify = JustifyContent.DEFAULT;
   public int order = 0;
 
-  public static Color fromDelphiColor(net.arcadiusmc.dom.style.Color c) {
+  public static Color toBukkitColor(net.arcadiusmc.dom.style.Color c) {
     return Color.fromARGB(c.getAlpha(), c.getRed(), c.getGreen(), c.getBlue());
+  }
+
+  public static TextColor toTextColor(net.arcadiusmc.dom.style.Color color) {
+    return TextColor.color(color.rgb());
   }
 }
