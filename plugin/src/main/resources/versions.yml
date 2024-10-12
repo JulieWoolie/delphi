@@ -1,0 +1,2 @@
+chimera: ${chimeraVersion}
+api: ${apiVersion}
