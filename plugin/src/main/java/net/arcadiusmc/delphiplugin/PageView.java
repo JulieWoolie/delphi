@@ -56,6 +56,7 @@ import net.arcadiusmc.dom.event.MutationEvent;
 import net.arcadiusmc.dom.event.ScrollDirection;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -661,6 +662,20 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     obj.getBounds(rectangle);
 
     Debug.drawSelectionOutline(rectangle, this);
+
+    var margin = obj.getStyle().margin;
+    boolean hasMargin = margin.left > 0 || margin.right > 0 || margin.top > 0 || margin.bottom > 0;
+
+    if (!hasMargin) {
+      return;
+    }
+
+    rectangle.position.x -= margin.left;
+    rectangle.position.y += margin.top;
+    rectangle.size.x += margin.left + margin.right;
+    rectangle.size.y += margin.bottom + margin.top;
+
+    Debug.drawOutline(rectangle, this, Color.SILVER);
   }
 
   /* --------------------------- Selection and input ---------------------------- */
