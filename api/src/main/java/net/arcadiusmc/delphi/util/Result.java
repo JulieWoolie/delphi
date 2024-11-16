@@ -52,20 +52,6 @@ public sealed interface Result<T, E> permits Err, Ok {
   }
 
   /**
-   * Creates an erroneous result with the specified message and arguments.
-   * <p>
-   * Them message is formatted by calling {@link String#format(String, Object...)}
-   *
-   * @param string Base string format
-   * @param args Format arguments
-   *
-   * @return Created result
-   */
-  static <T> Result<T, String> formatted(String string, Object... args) {
-    return err(String.format(string, args));
-  }
-
-  /**
    * Creates a successful result with the specified non-{@code null} value.
    *
    * @param value Value
