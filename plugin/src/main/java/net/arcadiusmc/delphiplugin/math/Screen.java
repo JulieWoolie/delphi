@@ -11,7 +11,7 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   static final float EPSILON = 0.0000001f;
 
   final Vector2f dimensions = new Vector2f(0);
-  final Vector3f center = new Vector3f(0);
+  public final Vector3f center = new Vector3f(0);
 
   // The actual dimensions of the screen in world space
   final Vector2f worldDimensions = new Vector2f(0);
