@@ -69,7 +69,7 @@ public class PageResources implements ViewResources {
   @Getter
   private final String moduleName;
 
-  private final Modules modules;
+  private final PluginResources pluginResources;
 
   @Getter
   private final ResourceModule module;
@@ -80,8 +80,8 @@ public class PageResources implements ViewResources {
   @Setter @Getter
   private PageView view;
 
-  public PageResources(Modules modules, String moduleName, ResourceModule module) {
-    this.modules = modules;
+  public PageResources(PluginResources pluginResources, String moduleName, ResourceModule module) {
+    this.pluginResources = pluginResources;
     this.moduleName = moduleName;
     this.module = module;
   }
@@ -91,7 +91,7 @@ public class PageResources implements ViewResources {
 
     try {
       StringReader reader = new StringReader(uri);
-      PathParser<?> parser = new PathParser<>(modules, reader);
+      PathParser<?> parser = new PathParser<>(pluginResources, reader);
 
       parser.setModule(module);
       parser.setPath(ResourcePath.create(moduleName));
@@ -155,7 +155,7 @@ public class PageResources implements ViewResources {
       try {
         result = api.loadDocument(
             path,
-            new ContextImpl(view.getPlayer(), view, modules.getDefaultStyle(), this)
+            new ContextImpl(view.getPlayer(), view, pluginResources.getDefaultStyle(), this)
         );
       } catch (Exception t) {
         LOGGER.error("Module {} threw an error when attempting to load document",
@@ -243,7 +243,7 @@ public class PageResources implements ViewResources {
     }
 
     DelphiDocument doc = handler.getDocument();
-    doc.getStyles().setDefaultStyleSheet(modules.getDefaultStyle());
+    doc.getStyles().setDefaultStyleSheet(pluginResources.getDefaultStyle());
 
     return Result.ok(doc);
   }

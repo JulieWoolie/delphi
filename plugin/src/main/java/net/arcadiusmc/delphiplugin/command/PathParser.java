@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
-import net.arcadiusmc.delphiplugin.resource.Modules;
+import net.arcadiusmc.delphiplugin.resource.PluginResources;
 
 @Getter @Setter
 public class PathParser<S> implements SuggestionProvider<S> {
@@ -34,7 +34,7 @@ public class PathParser<S> implements SuggestionProvider<S> {
   static final char MODULE_SUFFIX = ':';
 
   private final StringReader reader;
-  private final Modules modules;
+  private final PluginResources pluginResources;
 
   private ResourcePath path;
   private ResourcePath suggestionsPath;
@@ -44,9 +44,9 @@ public class PathParser<S> implements SuggestionProvider<S> {
   private int suggestionsStart = -1;
   private SuggestionMode suggestionMode = null;
 
-  public PathParser(Modules modules, StringReader reader) {
+  public PathParser(PluginResources pluginResources, StringReader reader) {
     this.reader = reader;
-    this.modules = modules;
+    this.pluginResources = pluginResources;
   }
 
   private void suggest(int start, SuggestionMode mode) {
@@ -66,8 +66,8 @@ public class PathParser<S> implements SuggestionProvider<S> {
       throw EMPTY_MODULE.createWithContext(reader);
     }
 
-    if (this.modules != null) {
-      this.module = modules.findModule(moduleName)
+    if (this.pluginResources != null) {
+      this.module = pluginResources.findModule(moduleName)
           .getOrThrow(string -> {
             reader.setCursor(start);
             return UNKNOWN_MODULE.createWithContext(reader, moduleName);
@@ -265,11 +265,11 @@ public class PathParser<S> implements SuggestionProvider<S> {
 
     switch (suggestionMode) {
       case MODULE_NAMES -> {
-        if (this.modules == null) {
+        if (this.pluginResources == null) {
           return builder.buildFuture();
         }
 
-        return suggest(builder, modules.getModuleNames());
+        return suggest(builder, pluginResources.getModuleNames());
       }
       case COLON -> {
         builder.suggest(":");

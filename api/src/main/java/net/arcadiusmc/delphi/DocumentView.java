@@ -93,6 +93,27 @@ public interface DocumentView {
   void transform(@NotNull Transformation transformation);
 
   /**
+   * Set the current screen transformation.
+   * <p>
+   * The translation component of the specified transformation becomes the position of the center
+   * of the screen
+   *
+   * @param transformation New screen Transformation
+   * @throws NullPointerException If {@code transformation} is {@code null}
+   */
+  void setScreenTransform(@NotNull Transformation transformation);
+
+  /**
+   * Get the current screen transformation.
+   * <p>
+   * The returned transformation's translation component will be the screen center's position
+   *
+   * @return View screen's transformation
+   */
+  @NotNull
+  Transformation getScreenTransform();
+
+  /**
    * Moves the page to the specified {@code location}.
    * <p>
    * The view will be moved so the bottom middle is at the {@code location}.

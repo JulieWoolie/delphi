@@ -6,7 +6,8 @@ $button-bg: darken(gray, 20%);
 $button-bg-hover: lighten($button-bg, 20%);
 $button-bg-active: darken($button-bg, 25%);
 $button-padding: 1px;
-$body-bg: darken(white, 45%);
+$body-bg: white;
+$body-outline: darken(white, 50%);
 
 /* Background */
 
@@ -19,7 +20,7 @@ $body-bg: darken(white, 45%);
 
   outline: 1px;
   padding: 1.5px;
-  outline-color: darken($body-bg);
+  outline-color: $body-outline;
 }
 
 /* Text elements */

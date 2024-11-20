@@ -1,30 +1,36 @@
 package net.arcadiusmc.delphiplugin;
 
+import java.io.File;
 import java.io.Reader;
+import java.nio.file.Path;
 import lombok.Getter;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphiplugin.command.Permissions;
 import net.arcadiusmc.delphiplugin.listeners.PlayerListener;
 import net.arcadiusmc.delphiplugin.listeners.PluginDisableListener;
-import net.arcadiusmc.delphiplugin.resource.Modules;
+import net.arcadiusmc.delphiplugin.resource.FontMetrics;
+import net.arcadiusmc.delphiplugin.resource.PluginResources;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class DelphiPlugin extends JavaPlugin {
 
   private SessionManager sessions;
-  private Modules modules;
+  private PluginResources pluginResources;
   private PageManager manager;
+  private FontMetrics metrics;
 
   @Override
   public void onEnable() {
+    this.metrics = new FontMetrics(this);
     this.sessions = new SessionManager(this);
-    this.modules = new Modules(getDataPath().resolve("modules"));
-    this.manager = new PageManager(this, modules, sessions);
+    this.pluginResources = new PluginResources(getDataPath().resolve("modules"));
+    this.manager = new PageManager(this, pluginResources, sessions);
 
     sessions.startTicking();
 
@@ -46,7 +52,8 @@ public class DelphiPlugin extends JavaPlugin {
 
   @Override
   public void reloadConfig() {
-    modules.loadDefaultStyle();
+    pluginResources.loadDefaultStyle();
+    metrics.loadFonts();
   }
 
   @Override
@@ -74,5 +81,14 @@ public class DelphiPlugin extends JavaPlugin {
         apiVersion,
         chimeraVersion
     );
+  }
+
+  @Override
+  public @NotNull File getFile() {
+    return super.getFile();
+  }
+
+  public Path getJarPath() {
+    return getFile().toPath();
   }
 }

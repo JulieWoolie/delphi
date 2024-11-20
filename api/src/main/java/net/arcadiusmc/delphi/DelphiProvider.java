@@ -29,7 +29,7 @@ public final class DelphiProvider {
    * @return Created request
    * @throws NullPointerException If no Delphi service exists yet
    */
-  public static @NotNull DocumentRequest newRequest() {
-    return get().newRequest();
+  public static @NotNull DocumentViewBuilder newViewBuilder() {
+    return get().newViewBuilder();
   }
 }

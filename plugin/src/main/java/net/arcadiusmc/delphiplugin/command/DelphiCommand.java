@@ -46,7 +46,7 @@ import net.arcadiusmc.delphiplugin.DelphiPlugin;
 import net.arcadiusmc.delphiplugin.PageManager;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.SessionManager;
-import net.arcadiusmc.delphiplugin.resource.Modules;
+import net.arcadiusmc.delphiplugin.resource.PluginResources;
 import net.arcadiusmc.dom.Element;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -117,6 +117,7 @@ public class DelphiCommand {
     literal.then(close());
 
     literal.then(debugArguments());
+    literal.then(reloadConfig());
 
     return literal.build();
   }
@@ -141,6 +142,19 @@ public class DelphiCommand {
     }
 
     return (PageView) opt.get();
+  }
+
+  private static LiteralCommandNode<CommandSourceStack> reloadConfig() {
+    return literal("reload-config")
+        .executes(c -> {
+          getPlugin().reloadConfig();
+
+          c.getSource().getSender().sendMessage(
+              prefixTranslatable("delphi.reloadedConfig", NamedTextColor.GRAY)
+          );
+          return SINGLE_SUCCESS;
+        })
+        .build();
   }
 
   private static LiteralCommandNode<CommandSourceStack> close() {
@@ -338,7 +352,7 @@ public class DelphiCommand {
 
   static class PathType implements CustomArgumentType<ResourcePath, String> {
 
-    private Modules getModules() {
+    private PluginResources getModules() {
       ClassLoader loader = DelphiPlugin.class.getClassLoader();
 
       if (!(loader instanceof ConfiguredPluginClassLoader pluginLoader)) {
@@ -350,7 +364,7 @@ public class DelphiCommand {
         return null;
       }
 
-      return delphi.getModules();
+      return delphi.getPluginResources();
     }
 
     @Override

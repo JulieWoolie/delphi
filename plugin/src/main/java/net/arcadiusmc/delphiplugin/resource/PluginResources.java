@@ -42,9 +42,9 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-public class Modules implements DelphiResources {
+public class PluginResources implements DelphiResources {
 
-  static final String DEFAULT_STYLE = "default-style.scss";
+  static final String DEFAULT_STYLE = "data/default-style.scss";
 
   private static final Logger LOGGER = Loggers.getLogger("DelphiResources");
 
@@ -62,7 +62,7 @@ public class Modules implements DelphiResources {
 
   public DelphiPlugin plugin;
 
-  public Modules(Path directory) {
+  public PluginResources(Path directory) {
     this.directory = directory;
     ensureDirectoryExists();
   }
@@ -246,7 +246,11 @@ public class Modules implements DelphiResources {
       return zipProvider;
     }
 
-    return zipProvider = FileSystemProvider.installedProviders().stream()
+    return zipProvider = findZipProvider();
+  }
+
+  static FileSystemProvider findZipProvider() {
+    return FileSystemProvider.installedProviders().stream()
         .filter(provider -> provider.getScheme().equals("jar")) // JAR ???????
         .findFirst()
         .orElse(null);

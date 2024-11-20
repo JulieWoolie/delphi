@@ -26,7 +26,7 @@ public interface Delphi {
    * Create a new document request.
    * @return Created document request
    */
-  DocumentRequest newRequest();
+  DocumentViewBuilder newViewBuilder();
 
   /**
    * Attempts to parse a path

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * An interface representing a request for a document
  */
-public interface DocumentRequest {
+public interface DocumentViewBuilder {
 
   /**
    * Get the path the request will be sent to
@@ -28,7 +28,7 @@ public interface DocumentRequest {
    *
    * @throws NullPointerException If {@code path} is {@code null}
    */
-  DocumentRequest setPath(@NotNull ResourcePath path);
+  DocumentViewBuilder setPath(@NotNull ResourcePath path);
 
   /**
    * Set the resource path the document will be fetched from.
@@ -42,7 +42,7 @@ public interface DocumentRequest {
    * @throws NullPointerException If {@code path} is {@code null}.
    * @throws DelphiException If the {@code path} cannot be parsed.
    */
-  DocumentRequest setPath(@NotNull String path) throws DelphiException;
+  DocumentViewBuilder setPath(@NotNull String path) throws DelphiException;
 
   /**
    * Get the player the opened document will be linked to.
@@ -56,7 +56,7 @@ public interface DocumentRequest {
    * @return {@code this}
    * @throws NullPointerException If {@code player} is {@code null}
    */
-  DocumentRequest setPlayer(@NotNull Player player);
+  DocumentViewBuilder setPlayer(@NotNull Player player);
 
   /**
    * Get the set spawn location for the opened document.
@@ -77,7 +77,7 @@ public interface DocumentRequest {
    * @param location Spawn location
    * @return {@code this}
    */
-  DocumentRequest setSpawnLocation(@Nullable Location location);
+  DocumentViewBuilder setSpawnLocation(@Nullable Location location);
 
   /**
    * Send the page open request. Functions identically to

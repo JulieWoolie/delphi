@@ -3,6 +3,7 @@ package net.arcadiusmc.delphiplugin.render;
 import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE;
 import static net.arcadiusmc.delphiplugin.render.RenderObject.NIL_COLOR;
 
+import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -16,8 +17,7 @@ import org.joml.Vector2f;
 
 public abstract class TextContent implements ElementContent {
 
-  // 8 for character + 2 for descender space
-  public static final float LINE_HEIGHT = CHAR_PX_SIZE * (8 + 2);
+  public FontMetrics metrics;
 
   @Override
   public Display createEntity(World world, Location location) {
@@ -93,16 +93,20 @@ public abstract class TextContent implements ElementContent {
     }
 
     Component text = resolve(set);
-    TextMeasure measure = new TextMeasure();
-    TextUtil.FLATTENER.flatten(text, measure);
+    TextMeasure measure;
 
-    int lines = measure.lineBreaks;
-    if (measure.totalChars > 0) {
-      lines++;
+    if (metrics == null) {
+      measure = new SimpleTextMeasure();
+    } else {
+      measure = new MetricTextMeasure(metrics);
     }
 
-    out.x = (measure.longestLine) * CHAR_PX_SIZE;
-    out.y = lines * LINE_HEIGHT;
+    TextUtil.FLATTENER.flatten(text, measure);
+
+    measure.outputSize(out);
+
+    out.x *= CHAR_PX_SIZE;
+    out.y *= CHAR_PX_SIZE;
   }
 
   @Override
@@ -112,7 +116,6 @@ public abstract class TextContent implements ElementContent {
 
   @Override
   public void configureInitial(Layer layer, RenderObject element) {
-
   }
 
   @Override

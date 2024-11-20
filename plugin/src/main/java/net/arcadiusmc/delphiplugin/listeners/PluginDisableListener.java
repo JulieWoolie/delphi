@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
-import net.arcadiusmc.delphiplugin.resource.Modules;
-import net.arcadiusmc.delphiplugin.resource.Modules.RegisteredModule;
+import net.arcadiusmc.delphiplugin.resource.PluginResources;
+import net.arcadiusmc.delphiplugin.resource.PluginResources.RegisteredModule;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -27,9 +27,9 @@ public class PluginDisableListener implements Listener {
     }
 
     List<String> removed = new ArrayList<>();
-    Modules modules = plugin.getModules();
+    PluginResources pluginResources = plugin.getPluginResources();
 
-    for (RegisteredModule value : modules.getRegistered().values()) {
+    for (RegisteredModule value : pluginResources.getRegistered().values()) {
       if (!Objects.equals(eventPlugin, value.plugin())) {
         continue;
       }
@@ -38,7 +38,7 @@ public class PluginDisableListener implements Listener {
     }
 
     for (String moduleName : removed) {
-      modules.unregisterModule(moduleName);
+      pluginResources.unregisterModule(moduleName);
     }
   }
 }

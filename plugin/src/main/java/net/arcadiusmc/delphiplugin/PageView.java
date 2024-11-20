@@ -38,6 +38,7 @@ import net.arcadiusmc.delphiplugin.render.ItemContent;
 import net.arcadiusmc.delphiplugin.render.LayoutKt;
 import net.arcadiusmc.delphiplugin.render.RenderObject;
 import net.arcadiusmc.delphiplugin.render.StringContent;
+import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Document;
@@ -85,6 +86,9 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   private final DelphiPlugin plugin;
 
+  @Getter @Setter
+  private FontMetrics fontMetrics;
+
   public final Vector2f cursorScreen = new Vector2f();
   public final Vector3f cursorWorld = new Vector3f();
 
@@ -96,8 +100,8 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   @Getter
   private boolean selected = false;
 
-  @Getter
-  private boolean closed = false;
+  @Getter @Setter
+  private ViewState state = ViewState.UNLOADED;
 
   @Getter @Setter
   private World world;
@@ -147,7 +151,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     renderRoot.killRecursive();
     renderRoot.spawnRecursive();
 
-    closed = false;
+    state = ViewState.SPAWNED;
 
     spawnScreenInteraction();
   }
@@ -190,6 +194,22 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     interaction = null;
   }
 
+  public void killIfSpawned() {
+    if (state != ViewState.SPAWNED) {
+      return;
+    }
+
+    kill();
+  }
+
+  public void spawnIfSpawned() {
+    if (state != ViewState.SPAWNED) {
+      return;
+    }
+
+    spawn();
+  }
+
   public void kill() {
     for (Display entity : entities) {
       entity.remove();
@@ -200,12 +220,48 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   @Override
+  public boolean isClosed() {
+    return state == ViewState.CLOSED;
+  }
+
+  @Override
   public void transform(@NotNull Transformation transformation) {
     Objects.requireNonNull(transformation, "Null transformation");
 
-    kill();
+    if (state == ViewState.CLOSED) {
+      return;
+    }
+
+    killIfSpawned();
     screen.apply(transformation);
-    spawn();
+    spawnIfSpawned();
+  }
+
+  @Override
+  public void setScreenTransform(@NotNull Transformation transformation) {
+    if (state == ViewState.CLOSED) {
+      return;
+    }
+
+    killIfSpawned();
+
+    screen.center.set(transformation.getTranslation());
+    screen.scale.set(transformation.getScale());
+    screen.leftRotation.set(transformation.getLeftRotation());
+    screen.rightRotation.set(transformation.getRightRotation());
+    screen.recalculate();
+
+    spawnIfSpawned();
+  }
+
+  @Override
+  public @NotNull Transformation getScreenTransform() {
+    return new Transformation(
+        new Vector3f(),
+        new Quaternionf(screen.leftRotation),
+        new Vector3f(screen.scale),
+        new Quaternionf(screen.rightRotation)
+    );
   }
 
   @Override
@@ -251,6 +307,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   private void moveTo(World world, float x, float y, float z, Location l) {
+    if (state == ViewState.CLOSED) {
+      return;
+    }
+
     float h = screen.getHeight() * 0.5f;
     Vector3f off = new Vector3f(x, y + h, z);
     off.sub(screen.center());
@@ -266,9 +326,9 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
       Vector direction = l.getDirection();
       Vector3f dir = new Vector3f(
-          (float) direction.getX(),
-          (float) direction.getY(),
-          (float) direction.getZ()
+          (float) -direction.getX(),
+          (float) -direction.getY(),
+          (float) -direction.getZ()
       );
 
       Screen.lookInDirection(quaternion, dir);
@@ -302,7 +362,6 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     document.setView(this);
     parseScreenDimensions();
-    configureScreen();
 
     EventListenerList g = document.getGlobalTarget();
     MutationListener listener = new MutationListener();
@@ -324,9 +383,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
 
     document.getStyles().setUpdateCallbacks(this);
+    state = ViewState.LOADED;
   }
 
-  private void configureScreen() {
+  public void configureScreen() {
     Location location = player.getEyeLocation();
     Vector direction = location.getDirection();
 
@@ -403,12 +463,18 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     switch (node) {
       case Text text -> {
         ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
-        o.setContent(new StringContent(text.getTextContent()));
+        StringContent content = new StringContent(text.getTextContent());
+        content.metrics = fontMetrics;
+
+        o.setContent(content);
         obj = o;
       }
       case ChatNode chat -> {
         ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
-        o.setContent(new ComponentContent(chat.getContent()));
+        ComponentContent content = new ComponentContent(chat.getContent());
+        content.metrics = fontMetrics;
+
+        o.setContent(content);
         obj = o;
       }
       case DelphiItemElement item -> {
@@ -445,7 +511,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   private void triggerRealign() {
-    if (renderRoot == null || closed) {
+    if (renderRoot == null || state != ViewState.SPAWNED) {
       return;
     }
 
@@ -453,7 +519,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   private void triggerUpdate() {
-    if (renderRoot == null || closed) {
+    if (renderRoot == null || state != ViewState.SPAWNED) {
       return;
     }
 
@@ -466,7 +532,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public void styleUpdated(StyleNode styleNode, int changes) {
-    if (changes == 0 || closed) {
+    if (changes == 0 || state == ViewState.CLOSED) {
       return;
     }
 
@@ -505,7 +571,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public void contentChanged(DelphiNode node) {
-    if (closed) {
+    if (state == ViewState.CLOSED) {
       return;
     }
 
@@ -559,7 +625,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public void titleChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
-    if (closed) {
+    if (state == ViewState.CLOSED) {
       return;
     }
 
@@ -608,7 +674,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     renderObjects.clear();
     renderRoot = null;
 
-    closed = true;
+    state = ViewState.CLOSED;
   }
 
   public void removeEntity(Display entity) {
@@ -675,7 +741,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     rectangle.size.x += margin.left + margin.right;
     rectangle.size.y += margin.bottom + margin.top;
 
-    Debug.drawOutline(rectangle, this, Color.SILVER);
+    Debug.drawOutline(rectangle, this, Color.FUCHSIA);
   }
 
   /* --------------------------- Selection and input ---------------------------- */
@@ -982,10 +1048,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     @Override
     public void handleEvent(MutationEvent event) {
-      ElementRenderObject parentObj
-          = (ElementRenderObject) getRenderObject(event.getTarget());
+      Element parent = event.getTarget();
+      ElementRenderObject parentObj = (ElementRenderObject) getRenderObject(parent);
 
-      if (parentObj == null) {
+      if (parentObj == null || parent == null) {
         return;
       }
 
@@ -1002,8 +1068,18 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
           return;
         }
 
+        // Remove node and kill
         parentObj.removeChild(nodeObj);
         nodeObj.killRecursive();
+
+        // Update source indexes
+        for (Node child : parent.getChildren()) {
+          RenderObject childObj = getRenderObject(child);
+          if (childObj == null) {
+            continue;
+          }
+          childObj.setSourceIndex(child.getSiblingIndex());
+        }
       }
 
       triggerUpdate();

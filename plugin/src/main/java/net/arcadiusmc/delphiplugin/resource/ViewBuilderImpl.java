@@ -5,8 +5,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.Getter;
-import net.arcadiusmc.delphi.DocumentRequest;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.DocumentViewBuilder;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 @Getter
-public class RequestImpl implements DocumentRequest {
+public class ViewBuilderImpl implements DocumentViewBuilder {
 
   private static final Logger LOGGER = Loggers.getLogger("DocumentRequest");
 
@@ -30,19 +30,19 @@ public class RequestImpl implements DocumentRequest {
 
   private final PageManager manager;
 
-  public RequestImpl(PageManager manager) {
+  public ViewBuilderImpl(PageManager manager) {
     this.manager = manager;
   }
 
   @Override
-  public DocumentRequest setPath(@NotNull ResourcePath path) {
+  public DocumentViewBuilder setPath(@NotNull ResourcePath path) {
     Objects.requireNonNull(path, "Null path");
     this.path = path;
     return this;
   }
 
   @Override
-  public DocumentRequest setPath(@NotNull String path) throws DelphiException {
+  public DocumentViewBuilder setPath(@NotNull String path) throws DelphiException {
     Objects.requireNonNull(path, "Null path");
 
     try {
@@ -57,14 +57,14 @@ public class RequestImpl implements DocumentRequest {
   }
 
   @Override
-  public DocumentRequest setPlayer(@NotNull Player player) {
+  public DocumentViewBuilder setPlayer(@NotNull Player player) {
     Objects.requireNonNull(player, "Null player");
     this.player = player;
     return this;
   }
 
   @Override
-  public DocumentRequest setSpawnLocation(@Nullable Location location) {
+  public DocumentViewBuilder setSpawnLocation(@Nullable Location location) {
     this.spawnLocation = location;
     return this;
   }

@@ -8,8 +8,8 @@ import java.util.Objects;
 import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.delphi.Delphi;
-import net.arcadiusmc.delphi.DocumentRequest;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.DocumentViewBuilder;
 import net.arcadiusmc.delphi.event.DocumentOpenEvent;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
@@ -20,9 +20,9 @@ import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
-import net.arcadiusmc.delphiplugin.resource.Modules;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
-import net.arcadiusmc.delphiplugin.resource.RequestImpl;
+import net.arcadiusmc.delphiplugin.resource.PluginResources;
+import net.arcadiusmc.delphiplugin.resource.ViewBuilderImpl;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.bukkit.Location;
@@ -35,18 +35,18 @@ import org.joml.Vector3f;
 public class PageManager implements Delphi {
 
   private final DelphiPlugin plugin;
-  private final Modules modules;
+  private final PluginResources pluginResources;
   private final SessionManager sessions;
 
-  public PageManager(DelphiPlugin plugin, Modules modules, SessionManager sessions) {
+  public PageManager(DelphiPlugin plugin, PluginResources pluginResources, SessionManager sessions) {
     this.plugin = plugin;
-    this.modules = modules;
+    this.pluginResources = pluginResources;
     this.sessions = sessions;
   }
 
   @Override
   public Result<ResourcePath, DelphiException> parsePath(String string) {
-    PathParser<?> parser = new PathParser<>(modules, new StringReader(string));
+    PathParser<?> parser = new PathParser<>(pluginResources, new StringReader(string));
 
     try {
       parser.parse();
@@ -59,12 +59,12 @@ public class PageManager implements Delphi {
 
   @Override
   public DelphiResources getResources() {
-    return modules;
+    return pluginResources;
   }
 
   @Override
-  public DocumentRequest newRequest() {
-    return new RequestImpl(this);
+  public DocumentViewBuilder newViewBuilder() {
+    return new ViewBuilderImpl(this);
   }
 
   @Override
@@ -72,7 +72,7 @@ public class PageManager implements Delphi {
       @NotNull ResourcePath path,
       @NotNull Player player
   ) {
-    RequestImpl req = new RequestImpl(this);
+    ViewBuilderImpl req = new ViewBuilderImpl(this);
     req.setPath(path);
     req.setPlayer(player);
     return openDocument(req);
@@ -160,7 +160,7 @@ public class PageManager implements Delphi {
     return new ChimeraSheetBuilder();
   }
 
-  public Result<DocumentView, DelphiException> openDocument(RequestImpl request) {
+  public Result<DocumentView, DelphiException> openDocument(ViewBuilderImpl request) {
     ResourcePath path = request.getPath();
     Player player = request.getPlayer();
 
@@ -169,7 +169,7 @@ public class PageManager implements Delphi {
 
     String moduleName = path.getModuleName();
 
-    Result<ResourceModule, DelphiException> moduleResult = modules.findModule(moduleName);
+    Result<ResourceModule, DelphiException> moduleResult = pluginResources.findModule(moduleName);
 
     if (moduleResult.isError()) {
       return Result.err(moduleResult);
@@ -187,11 +187,12 @@ public class PageManager implements Delphi {
       path = path.addElement("index.xml");
     }
 
-    PageResources resources = new PageResources(modules, moduleName, module);
+    PageResources resources = new PageResources(pluginResources, moduleName, module);
     resources.setCwd(cwd);
 
     PageView view = new PageView(plugin, player, path);
     view.setResources(resources);
+    view.setFontMetrics(plugin.getMetrics());
     resources.setView(view);
 
     PlayerSession session = sessions.getOrCreateSession(player);
@@ -206,8 +207,8 @@ public class PageManager implements Delphi {
 
     DelphiDocument doc = res.getOrThrow();
 
-    if (modules.getDefaultStyle() != null) {
-      doc.addStylesheet(modules.getDefaultStyle());
+    if (pluginResources.getDefaultStyle() != null) {
+      doc.addStylesheet(pluginResources.getDefaultStyle());
     }
 
     view.initializeDocument(doc);
@@ -215,6 +216,8 @@ public class PageManager implements Delphi {
     if (request.getSpawnLocation() != null) {
       Location loc = request.getSpawnLocation();
       view.moveTo(loc);
+    } else {
+      view.configureScreen();
     }
 
     EventImpl loaded = new EventImpl(EventTypes.DOM_LOADED, doc);
