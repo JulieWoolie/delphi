@@ -8,6 +8,7 @@ import static net.arcadiusmc.chimera.parse.Token.AT_CONTINUE;
 import static net.arcadiusmc.chimera.parse.Token.AT_DEBUG;
 import static net.arcadiusmc.chimera.parse.Token.AT_ELSE;
 import static net.arcadiusmc.chimera.parse.Token.AT_ERROR;
+import static net.arcadiusmc.chimera.parse.Token.AT_FUNCTION;
 import static net.arcadiusmc.chimera.parse.Token.AT_IF;
 import static net.arcadiusmc.chimera.parse.Token.AT_IMPORT;
 import static net.arcadiusmc.chimera.parse.Token.AT_PRINT;
@@ -64,6 +65,8 @@ import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement;
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
@@ -710,9 +713,9 @@ public class ChimeraParser {
       next();
       return;
     }
-
+    
     Token p = peek();
-    error("Expected ';' to end statement, found %s", p.info());
+    error(p.location(), "Expected ';' to end statement, found %s", p.info());
   }
 
   IfStatement ifStatement() {
@@ -898,6 +901,60 @@ public class ChimeraParser {
     return decl;
   }
 
+  FunctionStatement functionStatement() {
+    Token start = expect(AT_FUNCTION);
+    FunctionStatement statement = new FunctionStatement();
+    statement.setStart(start.location());
+    statement.setFunctionName(id());
+
+    expect(BRACKET_OPEN);
+    boolean varargSet = false;
+
+    while (hasNext() && !matches(BRACKET_CLOSE)) {
+      while (matches(COMMA)) {
+        next();
+      }
+
+      FuncParameterStatement param = functionParameter();
+      statement.getParameters().add(param);
+
+      if (param.isVarargs()) {
+        if (varargSet) {
+          error(param.getStart(), "No more arguments allowed, varargs parameter declared");
+        }
+
+        varargSet = true;
+      }
+    }
+
+    expect(BRACKET_CLOSE);
+
+    Block block = blockStatement();
+    statement.setBody(block);
+    statement.setEnd(block.getEnd());
+
+    return statement;
+  }
+
+  FuncParameterStatement functionParameter() {
+    Token start = expect(DOLLAR_SIGN);
+    Identifier id = id();
+
+    FuncParameterStatement param = new FuncParameterStatement();
+    param.setStart(start.location());
+    param.setName(id);
+
+    if (matches(ELLIPSES)) {
+      next();
+      param.setVarargs(true);
+    } else if (matches(COLON)) {
+      Expression value = expr();
+      param.setDefaultValue(value);
+    }
+
+    return param;
+  }
+
   RuleStatement rule() {
     RuleStatement stat = new RuleStatement();
     SelectorExpression selector = selector();
@@ -984,6 +1041,7 @@ public class ChimeraParser {
       case AT_PRINT, AT_DEBUG, AT_WARN, AT_ERROR -> logStatement();
       case AT_RETURN, AT_BREAK, AT_CONTINUE -> controlFlowStatement();
       case AT_IMPORT -> importStatement();
+      case AT_FUNCTION -> functionStatement();
 
       case ID -> {
         if (scope() == ParserScope.TOP_LEVEL) {
