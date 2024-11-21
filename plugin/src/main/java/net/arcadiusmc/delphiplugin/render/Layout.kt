@@ -27,7 +27,7 @@ fun measure(el: ElementRenderObject) {
   addToQueue(queue, el)
 
   val parentSize: Vector2f = Vector2f()
-  val screenSize: Vector2f = el.view.screen.dimensions
+  val screenSize: Vector2f = el.system.view.screen.dimensions
 
   fun computeRect(
     rect: Rect,

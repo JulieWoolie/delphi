@@ -5,8 +5,6 @@ import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
-import net.arcadiusmc.delphiplugin.PageView;
-import net.arcadiusmc.delphiplugin.math.Screen;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.TextDisplay;
@@ -20,8 +18,8 @@ public class ContentRenderObject extends RenderObject {
   @Setter
   private boolean contentDirty = false;
 
-  public ContentRenderObject(PageView view, ComputedStyleSet style, Screen screen) {
-    super(view, style, screen);
+  public ContentRenderObject(RenderSystem system, ComputedStyleSet style) {
+    super(system, style);
   }
 
   public boolean isContentEmpty() {
@@ -98,7 +96,7 @@ public class ContentRenderObject extends RenderObject {
       ec.applyContentTo(display, style);
 
       content.entity = display;
-      view.addEntity(display);
+      system.addEntity(display);
     } else {
       display = content.entity;
       display.teleport(location);

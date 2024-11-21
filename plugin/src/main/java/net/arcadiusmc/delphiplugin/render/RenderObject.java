@@ -10,8 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphidom.Rect;
-import net.arcadiusmc.delphiplugin.HideUtil;
-import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.style.DisplayType;
@@ -39,7 +37,7 @@ public abstract class RenderObject {
   public static final org.bukkit.Color NIL_COLOR = org.bukkit.Color.fromARGB(0, 0, 0, 0);
 
   protected final Screen screen;
-  protected final PageView view;
+  protected final RenderSystem system;
 
   protected final ComputedStyleSet styleSet;
   protected final FullStyle style = new FullStyle();
@@ -57,22 +55,14 @@ public abstract class RenderObject {
   @Setter
   private int sourceIndex = 0;
 
-  public RenderObject(PageView view, ComputedStyleSet style, Screen screen) {
-    this.view = view;
-    this.screen = screen;
+  public RenderObject(RenderSystem system, ComputedStyleSet style) {
+    this.system = system;
+    this.screen = system.getView().getScreen();
     this.styleSet = style;
   }
 
   public static boolean isNotSpawned(Layer layer) {
     return layer == null || !layer.isSpawned();
-  }
-
-  public boolean hasSpawnedLayer(RenderLayer layer) {
-    return !isNotSpawned(layers[layer.ordinal()]);
-  }
-
-  private static boolean isNotZero(Rect v) {
-    return v.left > 0 || v.bottom > 0 || v.top > 0 || v.right > 0;
   }
 
   public void killRecursive() {
@@ -85,7 +75,7 @@ public abstract class RenderObject {
         continue;
       }
 
-      view.removeEntity(layer.entity);
+      system.removeEntity(layer.entity);
       layer.killEntity();
     }
 
@@ -185,8 +175,8 @@ public abstract class RenderObject {
   
   private Location getSpawnLocation() {
     Vector3f pos = new Vector3f();
-    view.getScreen().screenToWorld(position, pos);
-    return new Location(view.getWorld(), pos.x, pos.y, pos.z);
+    screen.screenToWorld(position, pos);
+    return new Location(system.getWorld(), pos.x, pos.y, pos.z);
   }
 
   public void spawnRecursive() {
@@ -214,13 +204,13 @@ public abstract class RenderObject {
       killLayerEntity(getLayer(RenderLayer.BACKGROUND));
     }
 
-    if (isNotZero(style.border) && style.borderColor.getAlpha() > 0) {
+    if (style.border.isNotZero() && style.borderColor.getAlpha() > 0) {
       createLayerEntity(RenderLayer.BORDER, location, style.borderColor, style.border);
     } else {
       killLayerEntity(getLayer(RenderLayer.BORDER));
     }
 
-    if (isNotZero(style.outline) && style.outlineColor.getAlpha() > 0) {
+    if (style.outline.isNotZero() && style.outlineColor.getAlpha() > 0) {
       createLayerEntity(RenderLayer.OUTLINE, location, style.outlineColor, style.outline);
     } else {
       killLayerEntity(getLayer(RenderLayer.OUTLINE));
@@ -348,7 +338,7 @@ public abstract class RenderObject {
       return;
     }
 
-    view.removeEntity(layer.entity);
+    system.removeEntity(layer.entity);
     layer.killEntity();
   }
 
@@ -374,20 +364,16 @@ public abstract class RenderObject {
       display = location.getWorld().spawn(location, TextDisplay.class);
 
       layer.entity = display;
-      view.addEntity(display);
+      system.addEntity(display);
     }
 
     if (color == null) {
       display.setBackgroundColor(NIL_COLOR);
     } else {
-      display.setBackgroundColor(toBukkit(color));
+      display.setBackgroundColor(color);
     }
 
     configureDisplay(display);
-  }
-
-  private org.bukkit.Color toBukkit(Color c) {
-    return org.bukkit.Color.fromARGB(c.getAlpha(), c.getRed(), c.getGreen(), c.getBlue());
   }
 
   protected void configureDisplay(Display display) {
@@ -395,10 +381,6 @@ public abstract class RenderObject {
 
     if (display instanceof TextDisplay td) {
       td.setSeeThrough(SEE_THROUGH);
-    }
-
-    if (style.display == DisplayType.NONE) {
-      HideUtil.hide(display);
     }
   }
 

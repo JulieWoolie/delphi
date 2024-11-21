@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import net.arcadiusmc.chimera.ComputedStyleSet;
-import net.arcadiusmc.delphiplugin.PageView;
-import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.style.DisplayType;
 import org.bukkit.Location;
 import org.joml.Vector2f;
@@ -30,8 +28,8 @@ public class ElementRenderObject extends RenderObject {
 
   protected final List<RenderObject> childObjects = new ArrayList<>();
 
-  public ElementRenderObject(PageView view, ComputedStyleSet style, Screen screen) {
-    super(view, style, screen);
+  public ElementRenderObject(RenderSystem system, ComputedStyleSet style) {
+    super(system, style);
   }
 
   @Override

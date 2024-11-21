@@ -116,7 +116,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     }
 
     nlIndent().append("world: ").append(view.getWorld().getName());
-    nlIndent().append("render-object-count: ").append(view.getRenderObjects().size());
+    nlIndent().append("render-object-count: ").append(view.getRenderer().getRenderObjects().size());
     nlIndent().append("module-name: ").append(view.getResources().getModuleName());
 
     ResourceModule module = view.getResources().getModule();
@@ -368,7 +368,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
   }
 
   private void appendInfo(DelphiNode node) {
-    RenderObject obj = view.getRenderObject(node);
+    RenderObject obj = view.getRenderer().getRenderObject(node);
 
     if (obj == null) {
       return;

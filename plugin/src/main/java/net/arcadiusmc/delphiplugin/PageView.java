@@ -4,64 +4,34 @@ import static net.arcadiusmc.delphidom.Consts.MAX_SCREEN_SIZE;
 import static net.arcadiusmc.delphidom.Consts.MIN_SCREEN_SIZE;
 
 import com.google.common.base.Strings;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.chimera.ComputedStyleSet;
-import net.arcadiusmc.chimera.DirtyBit;
-import net.arcadiusmc.chimera.StyleUpdateCallbacks;
-import net.arcadiusmc.chimera.system.StyleNode;
-import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.event.DocumentCloseEvent;
 import net.arcadiusmc.delphi.resource.ResourcePath;
-import net.arcadiusmc.delphidom.ChatNode;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
-import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
-import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
-import net.arcadiusmc.delphidom.event.MouseEventImpl;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
-import net.arcadiusmc.delphiplugin.render.ComponentContent;
-import net.arcadiusmc.delphiplugin.render.ContentRenderObject;
-import net.arcadiusmc.delphiplugin.render.ElementRenderObject;
-import net.arcadiusmc.delphiplugin.render.ItemContent;
-import net.arcadiusmc.delphiplugin.render.LayoutKt;
 import net.arcadiusmc.delphiplugin.render.RenderObject;
-import net.arcadiusmc.delphiplugin.render.StringContent;
+import net.arcadiusmc.delphiplugin.render.RenderSystem;
 import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
 import net.arcadiusmc.dom.Attributes;
-import net.arcadiusmc.dom.Document;
-import net.arcadiusmc.dom.Element;
-import net.arcadiusmc.dom.Node;
-import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.Options;
-import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;
 import net.arcadiusmc.dom.event.AttributeMutateEvent;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.event.MouseButton;
-import net.arcadiusmc.dom.event.MouseEvent;
-import net.arcadiusmc.dom.event.MutationEvent;
-import net.arcadiusmc.dom.event.ScrollDirection;
-import net.kyori.adventure.sound.Sound;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
@@ -72,11 +42,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class PageView implements ExtendedView, StyleUpdateCallbacks {
-
-  private static final Sound CLICK_SOUND = Sound.sound()
-      .type(org.bukkit.Sound.UI_BUTTON_CLICK)
-      .build();
+public class PageView implements ExtendedView {
 
   public static final int MAX_NO_PLAYER_TICKS = 1;
 
@@ -115,22 +81,14 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   @Getter
   private DelphiDocument document;
 
-  private DelphiElement hoveredNode = null;
-  private DelphiElement clickedNode = null;
-  private MouseButton clickedButton = MouseButton.NONE;
-  private int clickedNodeTicks = 0;
-  private Player clickedNodePlayer = null;
-  private Player hoveredNodePlayer = null;
-
   private int noPlayerTicks = 0;
 
   @Getter
-  private final Map<DelphiNode, RenderObject> renderObjects = new Object2ObjectOpenHashMap<>();
+  final RenderSystem renderer;
 
   @Getter
-  private ElementRenderObject renderRoot;
+  final PageInputSystem input;
 
-  private final List<Display> entities = new ArrayList<>();
   private Interaction interaction;
 
   public PageView(
@@ -151,21 +109,16 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     this.path = path;
     this.world = world;
     this.plugin = plugin;
+
+    this.renderer = new RenderSystem(this);
+    this.renderer.setWorld(world);
+
+    this.input = new PageInputSystem(this);
   }
 
   public void spawn() {
-    if (renderRoot == null) {
-      return;
-    }
-
-    renderRoot.moveTo(new Vector2f(0, screen.getHeight()));
-    LayoutKt.layout(renderRoot);
-
-    renderRoot.killRecursive();
-    renderRoot.spawnRecursive();
-
+    renderer.spawn();
     state = ViewState.SPAWNED;
-
     spawnScreenInteraction();
   }
 
@@ -224,11 +177,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   public void kill() {
-    for (Display entity : entities) {
-      entity.remove();
-    }
-
-    entities.clear();
+    renderer.kill();
     killScreenInteraction();
   }
 
@@ -353,11 +302,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     if (!Objects.equals(world, this.world)) {
       setWorld(world);
+      renderer.setWorld(world);
     }
 
-    if (renderRoot != null && renderRoot.isSpawned()) {
-      renderRoot.spawnRecursive();
-    }
+    renderer.screenMoved();
 
     if (interaction != null && !interaction.isDead()) {
       Location loc = getSpawnInteractionLocation();
@@ -377,25 +325,12 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     parseScreenDimensions();
 
     EventListenerList g = document.getGlobalTarget();
-    MutationListener listener = new MutationListener();
-    TooltipListener tooltipListener = new TooltipListener();
-
-    g.addEventListener(EventTypes.APPEND_CHILD, listener);
-    g.addEventListener(EventTypes.REMOVE_CHILD, listener);
-
     g.addEventListener(EventTypes.MODIFY_OPTION, new ScreenDimensionListener());
-
-    g.addEventListener(EventTypes.MOUSE_ENTER, tooltipListener);
-    g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
-    g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
-
     g.addEventListener(EventTypes.CLICK, new ButtonClickListener());
 
-    if (document.getBody() != null) {
-      renderRoot = (ElementRenderObject) initRenderTree(document.getBody());
-    }
+    renderer.init();
 
-    document.getStyles().setUpdateCallbacks(this);
+    document.getStyles().setUpdateCallbacks(renderer);
     state = ViewState.LOADED;
   }
 
@@ -468,151 +403,9 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     return Attributes.floatAttribute(value, MIN_SCREEN_SIZE, MAX_SCREEN_SIZE).orElse(def);
   }
 
-  private RenderObject initRenderTree(DelphiNode node) {
-    RenderObject obj;
-
-    StyleObjectModel styles = node.getDocument().getStyles();
-    StyleNode styleNode = styles.getStyleNode(node);
-
-    if (styleNode == null) {
-      styleNode = styles.createNode(node);
-    }
-
-    ComputedStyleSet styleSet = styleNode.getComputedSet();
-
-    switch (node) {
-      case Text text -> {
-        ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
-        StringContent content = new StringContent(text.getTextContent());
-        content.metrics = fontMetrics;
-
-        o.setContent(content);
-        obj = o;
-      }
-      case ChatNode chat -> {
-        ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
-        ComponentContent content = new ComponentContent(chat.getContent());
-        content.metrics = fontMetrics;
-
-        o.setContent(content);
-        obj = o;
-      }
-      case DelphiItemElement item -> {
-        ContentRenderObject o = new ContentRenderObject(this, styleSet, screen);
-        o.setContent(new ItemContent(item.getItemStack()));
-        obj = o;
-      }
-      default -> {
-        ElementRenderObject o = new ElementRenderObject(this, styleSet, screen);
-        DelphiElement el = (DelphiElement) node;
-
-        for (DelphiNode delphiNode : el.childList()) {
-          o.addChild(initRenderTree(delphiNode));
-        }
-
-        obj = o;
-      }
-    }
-
-    if (node.getParent() == null) {
-      obj.setSourceIndex(0);
-    } else {
-      obj.setSourceIndex(node.getSiblingIndex());
-    }
-
-    obj.setDepth(node.getDepth());
-
-    renderObjects.put(node, obj);
-    return obj;
-  }
-
-  public RenderObject getRenderObject(Node node) {
-    return renderObjects.get(node);
-  }
-
-  private void triggerRealign() {
-    if (renderRoot == null || state != ViewState.SPAWNED) {
-      return;
-    }
-
-    LayoutKt.layout(renderRoot);
-  }
-
-  private void triggerUpdate() {
-    if (renderRoot == null || state != ViewState.SPAWNED) {
-      return;
-    }
-
-    renderRoot.spawnRecursive();
-  }
-
-  private static boolean changed(int changes, DirtyBit bit) {
-    return (changes & bit.mask) == bit.mask;
-  }
-
-  @Override
-  public void styleUpdated(StyleNode styleNode, int changes) {
-    if (changes == 0 || state == ViewState.CLOSED) {
-      return;
-    }
-
-    RenderObject obj = getRenderObject(styleNode.getDomNode());
-    if (obj == null) {
-      return;
-    }
-
-    boolean respawn;
-
-    if (changed(changes, DirtyBit.CONTENT)) {
-      if (obj instanceof ContentRenderObject co) {
-        co.setContentDirty(true);
-        respawn = true;
-      } else {
-        respawn = false;
-      }
-    } else {
-      respawn = changed(changes, DirtyBit.VISUAL);
-    }
-
-    if (changed(changes, DirtyBit.LAYOUT)) {
-      if (obj instanceof ElementRenderObject el) {
-        el.sortChildren();
-      }
-      triggerRealign();
-
-      if (renderRoot != null) {
-        renderRoot.spawnRecursive();
-      }
-    } else if (respawn) {
-      LayoutKt.applyStandardProperties(obj.getStyle(), styleNode.getComputedSet());
-      obj.spawn();
-    }
-  }
-
   @Override
   public void contentChanged(DelphiNode node) {
-    if (state == ViewState.CLOSED) {
-      return;
-    }
-
-    ContentRenderObject obj = (ContentRenderObject) getRenderObject(node);
-    if (obj == null) {
-      return;
-    }
-
-    if (node instanceof Text text) {
-      StringContent content = new StringContent(text.getTextContent());
-      obj.setContent(content);
-    } else if (node instanceof ChatNode chat) {
-      ComponentContent content = new ComponentContent(chat.getContent());
-      obj.setContent(content);
-    } else if (node instanceof DelphiItemElement itemEl) {
-      ItemContent content = new ItemContent(itemEl.getItemStack());
-      obj.setContent(content);
-    }
-
-    obj.spawn();
-    triggerRealign();
+    renderer.contentChanged(node);
   }
 
   @Override
@@ -634,39 +427,12 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public void removeRenderElement(DelphiElement element) {
-    RenderObject obj = renderObjects.remove(element);
-
-    if (obj == null) {
-      return;
-    }
-
-    obj.kill();
+    renderer.removeRenderElement(element);
   }
 
   @Override
-  public void titleChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
-    if (state == ViewState.CLOSED) {
-      return;
-    }
-
-    if (old != null) {
-      RenderObject oldRender = getRenderObject(old);
-      if (oldRender != null) {
-        oldRender.killRecursive();
-      }
-    }
-
-    if (element == null || !element.hasFlag(NodeFlag.HOVERED)) {
-      return;
-    }
-
-    RenderObject obj = getRenderObject(titleNode);
-    if (obj == null) {
-      obj = initRenderTree(titleNode);
-    }
-
-    obj.moveTo(cursorScreen);
-    obj.spawnRecursive();
+  public void tooltipChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
+    renderer.tooltipChanged(element, old, titleNode);
   }
 
   @Override
@@ -693,25 +459,13 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       bukkitEvent.callEvent();
     }
 
-    kill();
-
-    renderObjects.clear();
-    renderRoot = null;
+    killScreenInteraction();
+    renderer.close();
 
     state = ViewState.CLOSED;
   }
 
-  public void removeEntity(Display entity) {
-    entities.remove(entity);
-  }
-
-  public void addEntity(Display display) {
-    entities.add(display);
-    display.setPersistent(false);
-    handleEntityVisibility(display);
-  }
-
-  private void handleEntityVisibility(Entity entity) {
+  public void handleEntityVisibility(Entity entity) {
     if (players.isServerPlayerSet()) {
       return;
     }
@@ -738,18 +492,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
 
     drawSelected();
-
-    if (clickedNodeTicks <= 0) {
-      return;
-    }
-
-    clickedNodeTicks--;
-
-    if (clickedNodeTicks > 0) {
-      return;
-    }
-
-    unselectClickedNode();
+    input.tick();
   }
 
   @Override
@@ -764,11 +507,11 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     Debug.drawScreen(screen, world);
 
-    if (hoveredNode == null) {
+    if (input.hoveredNode == null) {
       return;
     }
 
-    RenderObject obj = getRenderObject(hoveredNode);
+    RenderObject obj = renderer.getRenderObject(input.hoveredNode);
     if (obj == null) {
       return;
     }
@@ -797,7 +540,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   public void onInteract(Player player, MouseButton button, boolean shift) {
     selectedPlayer = player;
-    triggerClickEvent(player, button, shift);
+    input.triggerClickEvent(player, button, shift);
   }
 
   public void cursorMoveTo(Player player, Vector2f screenPos, Vector3f targetPos) {
@@ -810,226 +553,22 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     cursorScreen.set(screenPos);
     cursorWorld.set(targetPos);
 
-    updateSelectedNode(player);
+    input.updateSelectedNode(player);
   }
 
   public void onUnselect() {
     cursorScreen.set(-1);
     cursorWorld.set(-1);
     selectedPlayer = null;
-    unselectHovered();
+    input.unselectHovered();
   }
 
   public void onSelect(Player player, Vector2f screenPos, Vector3f targetPos) {
     cursorMoveTo(player, screenPos, targetPos);
   }
 
-  private MouseEventImpl fireMouseEvent(
-      String type,
-      Player player,
-      boolean shift,
-      MouseButton button,
-      DelphiElement target,
-      boolean bubbles,
-      boolean cancellable
-  ) {
-    MouseEventImpl event = new MouseEventImpl(type, document);
-    event.initEvent(
-        target,
-        bubbles,
-        cancellable,
-        player,
-        shift,
-        button,
-        ScrollDirection.NONE,
-        cursorScreen,
-        cursorWorld
-    );
-
-    target.dispatchEvent(event);
-    return event;
-  }
-
-  private void triggerClickEvent(Player player, MouseButton button, boolean shift) {
-    if (hoveredNode == null) {
-      return;
-    }
-
-    if (clickedNode != null && !Objects.equals(clickedNode, hoveredNode)) {
-      unselectClickedNode();
-    }
-
-    this.clickedButton = button;
-    this.clickedNodeTicks = Document.ACTIVE_TICKS;
-    this.clickedNode = hoveredNode;
-    this.clickedNodePlayer = player;
-
-    document.clicked = this.clickedNode;
-
-    hoveredNode.addFlag(NodeFlag.CLICKED);
-
-    MouseEvent event = fireMouseEvent(
-        EventTypes.CLICK,
-        player,
-        shift,
-        button,
-        clickedNode,
-        true,
-        true
-    );
-
-    if (event.isCancelled()) {
-      return;
-    }
-
-    if (clickedNode.getTagName().equals(TagNames.BUTTON)) {
-      player.playSound(CLICK_SOUND);
-    }
-  }
-
-  private void unselectClickedNode() {
-    if (clickedNode == null) {
-      return;
-    }
-
-    clickedNode.removeFlag(NodeFlag.CLICKED);
-
-    fireMouseEvent(
-        EventTypes.CLICK_EXPIRE,
-        clickedNodePlayer,
-        false,
-        clickedButton,
-        clickedNode,
-        false,
-        false
-    );
-
-    clickedNode = null;
-    clickedNodeTicks = 0;
-    clickedButton = MouseButton.NONE;
-    clickedNodePlayer = null;
-
-    document.clicked = null;
-  }
-
-  private void unselectHovered() {
-    if (this.hoveredNode == null) {
-      return;
-    }
-
-    propagateHoverState(false, hoveredNode);
-    fireMouseEvent(
-        EventTypes.MOUSE_LEAVE,
-        hoveredNodePlayer,
-        false,
-        MouseButton.NONE,
-        this.hoveredNode,
-        true,
-        false
-    );
-
-    this.hoveredNode = null;
-    this.hoveredNodePlayer = null;
-
-    document.hovered = null;
-  }
-
-  private void propagateHoverState(boolean state, DelphiNode node) {
-    DelphiNode p = node;
-
-    while (p != null) {
-      if (state) {
-        p.addFlag(NodeFlag.HOVERED);
-      } else {
-        p.removeFlag(NodeFlag.HOVERED);
-      }
-
-      DelphiElement parent = p.getParent();
-
-      if (parent == null) {
-        document.getStyles().updateDomStyle(p);
-      }
-
-      p = parent;
-    }
-  }
-
-  private void updateSelectedNode(Player player) {
-    DelphiElement contained = findCursorContainingNode();
-
-    if (contained == null) {
-      if (this.hoveredNode == null) {
-        return;
-      }
-
-      unselectHovered();
-      return;
-    }
-
-    if (Objects.equals(contained, hoveredNode)) {
-      fireMouseEvent(EventTypes.MOUSE_MOVE,
-          player,
-          false,
-          MouseButton.NONE,
-          this.hoveredNode,
-          false,
-          false
-      );
-
-      return;
-    }
-
-    unselectHovered();
-
-    this.hoveredNode = contained;
-    this.hoveredNodePlayer = player;
-
-    document.hovered = hoveredNode;
-    propagateHoverState(true, contained);
-
-    fireMouseEvent(EventTypes.MOUSE_ENTER, player, false, MouseButton.NONE, contained, true, false);
-  }
-
-  private DelphiElement findCursorContainingNode() {
-    DelphiElement p = document.getBody();
-
-    if (p == null) {
-      return null;
-    }
-
-    Rectangle rectangle = new Rectangle();
-
-    outer: while (true) {
-      if (p.getChildren().isEmpty()) {
-        return p;
-      }
-
-      for (DelphiNode child : p.childList()) {
-        if (!(child instanceof DelphiElement el)) {
-          continue;
-        }
-
-        RenderObject obj = getRenderObject(el);
-        if (obj == null) {
-          continue;
-        }
-
-        obj.getBounds(rectangle);
-
-        if (!rectangle.contains(cursorScreen)) {
-          continue;
-        }
-
-        p = el;
-        continue outer;
-      }
-
-      return p;
-    }
-  }
-
   void onPlayerRemoved(Player player) {
-    for (Display entity : entities) {
+    for (Entity entity : renderer.getEntities()) {
       player.hideEntity(plugin, entity);
     }
     if (interaction != null) {
@@ -1040,7 +579,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   void onPlayerAdded(Player player) {
-    for (Display entity : entities) {
+    for (Entity entity : renderer.getEntities()) {
       player.showEntity(plugin, entity);
     }
     if (interaction != null) {
@@ -1051,147 +590,6 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   /* --------------------------- sub classes ---------------------------- */
-
-  class ButtonClickListener implements EventListener.Typed<MouseEvent> {
-
-    static final String CLOSE = "close";
-    static final String CMD = "cmd:";
-    static final String PLAYER_CMD = "player-cmd:";
-
-    @Override
-    public void handleEvent(MouseEvent event) {
-      Element target = event.getTarget();
-      if (!target.getTagName().equals(TagNames.BUTTON)) {
-        return;
-      }
-
-      String action = target.getAttribute(Attributes.BUTTON_ACTION);
-      if (Strings.isNullOrEmpty(action)) {
-        return;
-      }
-
-      if (action.equalsIgnoreCase(CLOSE)) {
-        event.stopPropagation();
-        event.preventDefault();
-
-        close();
-
-        return;
-      }
-
-      Player player = event.getPlayer();
-
-      if (action.startsWith(CMD)) {
-        runCommand(player, Bukkit.getConsoleSender(), CMD, action);
-        return;
-      }
-      if (action.startsWith(PLAYER_CMD)) {
-        runCommand(player, player, PLAYER_CMD, action);
-      }
-    }
-
-    private void runCommand(Player player, CommandSender sender, String prefix, String cmd) {
-      String formatted = cmd.substring(prefix.length()).trim()
-          .replace("%player%", player.getName());
-
-      Bukkit.dispatchCommand(sender, formatted);
-    }
-  }
-
-  class TooltipListener implements EventListener.Typed<MouseEvent> {
-
-    @Override
-    public void handleEvent(MouseEvent event) {
-      final Element el = event.getTarget();
-
-      DelphiNode tooltip = (DelphiNode) el.getTooltip();
-
-      if (tooltip == null) {
-        return;
-      }
-
-      switch (event.getType()) {
-        case EventTypes.MOUSE_ENTER -> {
-          RenderObject obj = getRenderObject(tooltip);
-          if (obj == null) {
-            obj = initRenderTree(tooltip);
-          }
-
-          document.getStyles().updateDomStyle(tooltip);
-
-          obj.moveTo(event.getScreenPosition());
-
-          if (obj instanceof ElementRenderObject eObj) {
-            LayoutKt.layout(eObj);
-          }
-
-          obj.spawnRecursive();
-        }
-
-        case EventTypes.MOUSE_LEAVE -> {
-          RenderObject obj = getRenderObject(tooltip);
-
-          if (obj == null) {
-            return;
-          }
-
-          obj.killRecursive();
-        }
-
-        case EventTypes.MOUSE_MOVE -> {
-          RenderObject obj = getRenderObject(tooltip);
-          if (obj == null) {
-            return;
-          }
-
-          obj.moveTo(event.getScreenPosition());
-        }
-      }
-    }
-  }
-
-  class MutationListener implements EventListener.Typed<MutationEvent> {
-
-    @Override
-    public void handleEvent(MutationEvent event) {
-      Element parent = event.getTarget();
-      ElementRenderObject parentObj = (ElementRenderObject) getRenderObject(parent);
-
-      if (parentObj == null || parent == null) {
-        return;
-      }
-
-      if (event.getType().equals(EventTypes.APPEND_CHILD)) {
-        RenderObject tree = initRenderTree((DelphiNode) event.getNode());
-        parentObj.addChild(tree, event.getMutationIndex());
-
-        if (parentObj.isSpawned()) {
-          tree.spawnRecursive();
-        }
-      } else {
-        RenderObject nodeObj = getRenderObject(event.getNode());
-        if (nodeObj == null) {
-          return;
-        }
-
-        // Remove node and kill
-        parentObj.removeChild(nodeObj);
-        nodeObj.killRecursive();
-
-        // Update source indexes
-        for (Node child : parent.getChildren()) {
-          RenderObject childObj = getRenderObject(child);
-          if (childObj == null) {
-            continue;
-          }
-          childObj.setSourceIndex(child.getSiblingIndex());
-        }
-      }
-
-      triggerUpdate();
-      triggerRealign();
-    }
-  }
 
   class ScreenDimensionListener implements EventListener.Typed<AttributeMutateEvent> {
 
@@ -1225,10 +623,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       }
 
       screen.setDimensions(w, h);
-
-      if (renderRoot != null) {
-        renderRoot.moveTo(new Vector2f(0, h));
-      }
+      renderer.screenSizeChanged(h);
     }
   }
 }
