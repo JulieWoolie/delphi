@@ -12,7 +12,7 @@ class DelphiTestPlugin: JavaPlugin() {
   override fun onEnable() {
     val delphi = DelphiProvider.get()
     val jarMod = JarResourceModule(classLoader, "entity-editor")
-    jarMod.filePaths = listOf("equipment.xml")
+    jarMod.filePaths = listOf("equipment.xml", "test.xml")
     delphi.resources.registerModule("entity-editor", jarMod)
 
     val pl = server.pluginManager

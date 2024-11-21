@@ -5,7 +5,9 @@ import net.arcadiusmc.delphitest.MoveToEntityTask
 import net.arcadiusmc.dom.Document
 import net.arcadiusmc.dom.Element
 import net.arcadiusmc.dom.ItemElement
+import net.arcadiusmc.dom.event.EventListener
 import net.arcadiusmc.dom.event.EventTypes
+import net.arcadiusmc.dom.event.MouseEvent
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
@@ -17,18 +19,12 @@ private val SLOTS: Map<String, EquipmentSlot> = mapOf(
   "boots" to EquipmentSlot.FEET
 )
 
-public fun onDomInitialize(document: Document) {
+fun onDomInitialize(document: Document) {
   val entity = getEntity(document)
   val state = MenuState(entity)
 
   document.addEventListener(EventTypes.DOM_LOADED) {
     onDomLoaded(it.document, state)
-
-    if (entity != null) {
-      val task = MoveToEntityTask(entity, it.document.view)
-      val plugin = JavaPlugin.getPlugin(DelphiTestPlugin::class.java)
-      plugin.server.scheduler.runTaskTimer(plugin, task, 1, 1)
-    }
   }
 }
 
@@ -59,6 +55,12 @@ fun onDomLoaded(document: Document, state: MenuState) {
 
     controller.initialize()
   }
+
+  if (entity != null) {
+    val task = MoveToEntityTask(entity, document.view)
+    val plugin = JavaPlugin.getPlugin(DelphiTestPlugin::class.java)
+    plugin.server.scheduler.runTaskTimer(plugin, task, 1, 1)
+  }
 }
 
 class SlotController(val state: MenuState, val eqSlot: EquipmentSlot) {
@@ -80,10 +82,12 @@ class SlotController(val state: MenuState, val eqSlot: EquipmentSlot) {
       }
     }
     if (setButton != null) {
-      setButton!!.addEventListener(EventTypes.CLICK) {
-        val player = it.document.view.player
+      val listener: EventListener.Typed<MouseEvent> = EventListener.Typed {
+        val player = it.player
         onSetClick(player)
       }
+
+      setButton!!.addEventListener(EventTypes.CLICK, listener)
     }
   }
 

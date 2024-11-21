@@ -9,6 +9,7 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,7 +20,7 @@ class EntityEditorListener: Listener {
   private val logger: Logger = LoggerFactory.getLogger("EntityEditorListener")
   private val cooldownMap: MutableMap<UUID, Long> = HashMap()
 
-  @EventHandler
+  @EventHandler(ignoreCancelled = true)
   fun onEntityInteract(event: PlayerInteractEntityEvent) {
     val player = event.player
     val target = event.rightClicked
@@ -50,6 +51,11 @@ class EntityEditorListener: Listener {
     result.ifError {
       logger.error("Failed to open entity-editor:", it)
     }
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  fun onEntityDeath(event: EntityDeathEvent) {
+
   }
 
   private fun putOnCooldown(player: Player) {
