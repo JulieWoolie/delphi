@@ -9,6 +9,8 @@ import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement;
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
@@ -543,6 +545,32 @@ public class XmlPrintVisitor implements NodeVisitor<Void> {
       statement.visit(this);
     }
     exitTag("block");
+    return null;
+  }
+
+  @Override
+  public Void function(FunctionStatement statement) {
+    enterTag("function", statement, Map.of("name", statement.getFunctionName().getValue()));
+
+    for (FuncParameterStatement parameter : statement.getParameters()) {
+      parameter.visit(this);
+    }
+
+    statement.getBody().visit(this);
+    exitTag("function");
+    return null;
+  }
+
+  @Override
+  public Void functionParameter(FuncParameterStatement parameter) {
+    if (parameter.getDefaultValue() != null) {
+      enterTag("function-parameter", parameter, Map.of("varargs", parameter.isVarargs()));
+      parameter.getDefaultValue().visit(this);
+      exitTag("function-parameter");
+    } else {
+      voidTag("function-parameter", parameter, Map.of("varargs", parameter.isVarargs()));
+    }
+
     return null;
   }
 

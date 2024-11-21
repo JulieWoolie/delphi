@@ -30,6 +30,8 @@ import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement;
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
@@ -618,7 +620,29 @@ public class Interpreter implements NodeVisitor<Object> {
     }
 
     String name = decl.getName().getValue();
-    scope.putVariable(name, valueO);
+    Scope declaredIn = findDeclaredIn(name);
+
+    if (declaredIn == null) {
+      scope.putVariable(name, valueO);
+    } else {
+      declaredIn.putVariable(name, valueO);
+    }
+
+    return null;
+  }
+
+  private Scope findDeclaredIn(String variableName) {
+    Scope s = scope;
+    Object val;
+
+    while (s != null) {
+      val = s.getVariable(variableName);
+      if (val != null) {
+        return s;
+      }
+
+      s = s.getParent();
+    }
 
     return null;
   }
@@ -860,6 +884,23 @@ public class Interpreter implements NodeVisitor<Object> {
       }
     }
 
+    return null;
+  }
+
+  @Override
+  public Object function(FunctionStatement statement) {
+    String name = statement.getFunctionName().getValue();
+    if (scope.getFunction(name) != null) {
+      error(statement.getStart(), "Function already exists");
+    }
+
+
+
+    return null;
+  }
+
+  @Override
+  public Object functionParameter(FuncParameterStatement parameter) {
     return null;
   }
 }
