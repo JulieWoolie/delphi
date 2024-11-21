@@ -27,9 +27,7 @@ public class ScssList implements Iterable<Object> {
   }
 
   public void add(Object o) {
-    if (length >= values.length) {
-      values = ObjectArrays.forceCapacity(values, length + 10, values.length);
-    }
+    values = ObjectArrays.ensureCapacity(values, length + 10, values.length);
     values[length++] = o;
   }
 
