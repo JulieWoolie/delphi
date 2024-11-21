@@ -63,6 +63,12 @@ public class ItemContent implements ElementContent {
     float transY = layer.size.y * Y_OFF_MODIFIER * element.getStyle().scale.y * GLOBAL_SCALAR;
     layer.translate.y += transY;
     layer.translate.z += Z_OFF;
-    layer.leftRotation.rotateY(ROTATION);
+
+    //
+    // FIXME: Items, un-rotated, are mirrored and need the 180deg rotation applied to
+    //  them, but if they're rotated then any rotation of the screen's pitch causes
+    //  the item to rotate in the opposite direction as the rest of the screen.
+    //
+    //layer.leftRotation.rotateY(ROTATION);
   }
 }
