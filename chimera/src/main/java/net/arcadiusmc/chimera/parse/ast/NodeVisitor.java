@@ -1,5 +1,6 @@
 package net.arcadiusmc.chimera.parse.ast;
 
+import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.AnbExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.AttributeExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.ClassNameExpr;
@@ -90,4 +91,8 @@ public interface NodeVisitor<R> {
   R ifStatement(IfStatement statement);
 
   R blockStatement(Block block);
+
+  R function(FunctionStatement statement);
+
+  R functionParameter(FuncParameterStatement parameter);
 }

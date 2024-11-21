@@ -14,7 +14,7 @@ public class FunctionStatement extends Statement {
 
   @Override
   public <R> R visit(NodeVisitor<R> visitor) {
-    return null;
+    return visitor.function(this);
   }
 
   @Getter @Setter
@@ -26,7 +26,7 @@ public class FunctionStatement extends Statement {
 
     @Override
     public <R> R visit(NodeVisitor<R> visitor) {
-      return null;
+      return visitor.functionParameter(this);
     }
   }
 }
