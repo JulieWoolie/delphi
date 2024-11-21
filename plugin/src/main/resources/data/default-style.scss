@@ -2,12 +2,12 @@
 
 $button-color: white;
 $button-outline: black;
-$button-bg: darken(gray, 20%);
+$button-bg: #096cfe;
 $button-bg-hover: lighten($button-bg, 20%);
 $button-bg-active: darken($button-bg, 25%);
 $button-padding: 1px;
-$body-bg: white;
-$body-outline: darken(white, 50%);
+$body-bg: #1d1d1d;
+$body-outline: #121212;
 
 /* Background */
 
@@ -21,6 +21,7 @@ $body-outline: darken(white, 50%);
   outline: 1px;
   padding: 1.5px;
   outline-color: $body-outline;
+  color: white;
 }
 
 /* Text elements */
