@@ -6,6 +6,7 @@ import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
 import net.arcadiusmc.dom.event.ScrollDirection;
+import org.bukkit.entity.Player;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -19,6 +20,8 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
   Vector2f screenPosition;
   Vector3f worldPosition;
 
+  Player player;
+
   public MouseEventImpl(String type, DelphiDocument document) {
     super(type, document);
   }
@@ -27,6 +30,7 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
       DelphiElement target,
       boolean bubbles,
       boolean cancellable,
+      Player player,
       boolean shiftPressed,
       MouseButton button,
       ScrollDirection direction,
@@ -34,6 +38,7 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
       Vector3f worldPosition
   ) {
     super.initEvent(target, bubbles, cancellable);
+    this.player = player;
     this.shiftPressed = shiftPressed;
     this.button = button;
     this.scrollDirection = direction;

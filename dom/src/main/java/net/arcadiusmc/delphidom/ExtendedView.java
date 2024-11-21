@@ -8,5 +8,5 @@ public interface ExtendedView extends DocumentView {
 
   void removeRenderElement(DelphiElement element);
 
-  void titleChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode);
+  void tooltipChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode);
 }

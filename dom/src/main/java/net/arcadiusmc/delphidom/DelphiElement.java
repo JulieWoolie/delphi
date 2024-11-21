@@ -134,7 +134,7 @@ public class DelphiElement extends DelphiNode implements Element {
     }
 
     if (document.view != null) {
-      document.view.titleChanged(this, old, titleNode);
+      document.view.tooltipChanged(this, old, titleNode);
     }
   }
 
