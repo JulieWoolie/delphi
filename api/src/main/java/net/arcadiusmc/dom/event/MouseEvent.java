@@ -1,5 +1,6 @@
 package net.arcadiusmc.dom.event;
 
+import org.bukkit.entity.Player;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -45,4 +46,10 @@ public interface MouseEvent extends Event {
    * @return Cursor world position
    */
   Vector3f getWorldPosition();
+
+  /**
+   * Gets the player that caused this event
+   * @return Player
+   */
+  Player getPlayer();
 }

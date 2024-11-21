@@ -5,8 +5,8 @@ import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,14 +18,13 @@ import org.jetbrains.annotations.NotNull;
  * The Event is fired after the view is loaded, but before the entities that render the
  * view are spawned.
  */
-public class DocumentOpenEvent extends PlayerEvent {
+public class DocumentOpenEvent extends Event {
 
   private static final HandlerList handlerList = new HandlerList();
 
   private final DocumentView openedView;
 
-  public DocumentOpenEvent(@NotNull Player who, DocumentView view) {
-    super(who);
+  public DocumentOpenEvent(DocumentView view) {
     this.openedView = Objects.requireNonNull(view, "Null view");
   }
 

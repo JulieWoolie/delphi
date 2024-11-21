@@ -10,6 +10,7 @@ import net.arcadiusmc.chimera.PropertySet.PropertyIterator;
 import net.arcadiusmc.chimera.Rule;
 import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
+import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.resource.ApiModule;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
 import net.arcadiusmc.delphi.resource.IoModule;
@@ -30,6 +31,7 @@ import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
+import org.bukkit.entity.Player;
 import org.joml.Vector2f;
 
 public class RenderTreePrint extends XmlPrintVisitor {
@@ -97,7 +99,22 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append(COMMENT_START);
     indent++;
 
-    nlIndent().append("player-name: ").append(view.getPlayer().getName());
+    PlayerSet players = view.getPlayers();
+    if (players.isServerPlayerSet()) {
+      nlIndent().append("players: ").append("all");
+    } else if (players.isEmpty()) {
+      nlIndent().append("players: ").append("none");
+    } else {
+      nlIndent().append("players:");
+      indent++;
+
+      for (Player player : players) {
+        nlIndent().append("- ").append(player.getName());
+      }
+
+      indent--;
+    }
+
     nlIndent().append("world: ").append(view.getWorld().getName());
     nlIndent().append("render-object-count: ").append(view.getRenderObjects().size());
     nlIndent().append("module-name: ").append(view.getResources().getModuleName());

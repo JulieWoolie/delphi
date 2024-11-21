@@ -2,17 +2,22 @@ package net.arcadiusmc.delphiplugin.resource;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.Getter;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.DocumentViewBuilder;
+import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.Loggers;
-import net.arcadiusmc.delphiplugin.PageManager;
+import net.arcadiusmc.delphiplugin.AllPlayersSet;
+import net.arcadiusmc.delphiplugin.DelphiImpl;
+import net.arcadiusmc.delphiplugin.PlayerSetImpl;
 import net.arcadiusmc.delphiplugin.command.PathParser;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -25,12 +30,13 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
   private static final Logger LOGGER = Loggers.getLogger("DocumentRequest");
 
   private ResourcePath path;
-  private Player player;
+  private PlayerSet players = new AllPlayersSet();
   private Location spawnLocation;
+  private String instanceName;
 
-  private final PageManager manager;
+  private final DelphiImpl manager;
 
-  public ViewBuilderImpl(PageManager manager) {
+  public ViewBuilderImpl(DelphiImpl manager) {
     this.manager = manager;
   }
 
@@ -57,9 +63,62 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
   }
 
   @Override
+  public DocumentViewBuilder setInstanceName(@Nullable String instanceName) {
+    this.instanceName = instanceName;
+    return this;
+  }
+
+  @Override
   public DocumentViewBuilder setPlayer(@NotNull Player player) {
     Objects.requireNonNull(player, "Null player");
-    this.player = player;
+
+    this.players = new PlayerSetImpl();
+    this.players.add(player);
+
+    return this;
+  }
+
+  @Override
+  public DocumentViewBuilder setPlayers(@NotNull Collection<Player> players) {
+    Objects.requireNonNull(players, "Null players");
+    Validate.noNullElements(players, "players contained a null player");
+
+    PlayerSetImpl set = new PlayerSetImpl();
+    set.addAll(players);
+
+    this.players = set;
+
+    return this;
+  }
+
+  @Override
+  public DocumentViewBuilder addPlayers(@NotNull Collection<Player> players) {
+    Objects.requireNonNull(players, "Null players");
+    Validate.noNullElements(players, "players contained a null player");
+
+    if (this.players instanceof AllPlayersSet) {
+      return setPlayers(players);
+    }
+
+    this.players.addAll(players);
+    return this;
+  }
+
+  @Override
+  public DocumentViewBuilder addPlayer(@NotNull Player player) {
+    Objects.requireNonNull(player, "Null player");
+
+    if (players instanceof AllPlayersSet) {
+      return setPlayer(player);
+    }
+
+    this.players.add(player);
+    return this;
+  }
+
+  @Override
+  public DocumentViewBuilder allPlayers() {
+    this.players = new AllPlayersSet();
     return this;
   }
 
@@ -86,5 +145,20 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
           LOGGER.error("Failed to open document at {}", path, e);
         })
         .value();
+  }
+
+  public void validate() {
+    Objects.requireNonNull(path, "Null page path");
+
+    if (players.size() == 1) {
+      return;
+    }
+    if (spawnLocation != null) {
+      return;
+    }
+
+    throw new IllegalStateException(
+        "Cannot automatically determine page spawn, please call setSpawnLocation"
+    );
   }
 }

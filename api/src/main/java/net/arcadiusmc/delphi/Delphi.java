@@ -103,6 +103,14 @@ public interface Delphi {
   List<DocumentView> getOpenViews(@NotNull Player player);
 
   /**
+   * Get a document view by its instance name.
+   * @param instanceName Instance name
+   * @return An optional containing the document view with the specified {@code instanceName}, or an
+   *         empty optional, if no view with the specified name exists.
+   */
+  Optional<DocumentView> getByInstanceName(String instanceName);
+
+  /**
    * Gets all document views currently open
    * @return Unmodifiable open view list, may be empty.
    */
@@ -118,7 +126,7 @@ public interface Delphi {
    * @throws NullPointerException If {@code player} is {@code null}
    *
    * @apiNote This method will only return a selected view that belongs to the {@code player}
-   *          ({@link DocumentView#getPlayer()} is equal to the specified {@code player}).
+   *          ({@link DocumentView#getPlayers()} contains to the specified {@code player}).
    *
    * @see #getAnyTargetedView(Player) Accessing any view a player is looking at
    */

@@ -20,19 +20,19 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public class DelphiPlugin extends JavaPlugin {
 
-  private SessionManager sessions;
+  private ViewManager viewManager;
   private PluginResources pluginResources;
-  private PageManager manager;
+  private DelphiImpl manager;
   private FontMetrics metrics;
 
   @Override
   public void onEnable() {
     this.metrics = new FontMetrics(this);
-    this.sessions = new SessionManager(this);
+    this.viewManager = new ViewManager(this);
     this.pluginResources = new PluginResources(getDataPath().resolve("modules"));
-    this.manager = new PageManager(this, pluginResources, sessions);
+    this.manager = new DelphiImpl(this, pluginResources, viewManager);
 
-    sessions.startTicking();
+    viewManager.startTicking();
 
     reloadConfig();
     registerEvents();

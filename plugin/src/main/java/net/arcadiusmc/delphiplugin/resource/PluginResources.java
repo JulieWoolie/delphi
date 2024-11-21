@@ -38,6 +38,7 @@ import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
+import net.arcadiusmc.delphiplugin.PageView;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -298,7 +299,17 @@ public class PluginResources implements DelphiResources {
     }
 
     if (plugin != null) {
-      plugin.getSessions().closeAllWith(moduleName);
+      List<PageView> withModule = new ArrayList<>();
+      for (PageView openView : plugin.getViewManager().getOpenViews()) {
+        if (!openView.getPath().getModuleName().equals(found.name)) {
+          continue;
+        }
+        withModule.add(openView);
+      }
+
+      for (PageView view : withModule) {
+        view.close();
+      }
     }
 
     registered.remove(moduleName);

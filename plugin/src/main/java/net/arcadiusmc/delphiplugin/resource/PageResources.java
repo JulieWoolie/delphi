@@ -35,6 +35,7 @@ import net.arcadiusmc.chimera.parse.ChimeraParser;
 import net.arcadiusmc.chimera.parse.CompilerErrors;
 import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.resource.ApiModule;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DocumentContext;
@@ -55,7 +56,6 @@ import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -155,7 +155,7 @@ public class PageResources implements ViewResources {
       try {
         result = api.loadDocument(
             path,
-            new ContextImpl(view.getPlayer(), view, pluginResources.getDefaultStyle(), this)
+            new ContextImpl(view.getPlayers(), view, pluginResources.getDefaultStyle(), this)
         );
       } catch (Exception t) {
         LOGGER.error("Module {} threw an error when attempting to load document",
@@ -293,7 +293,7 @@ public class PageResources implements ViewResources {
   }
 
   record ContextImpl(
-      Player player,
+      PlayerSet players,
       PageView view,
       ChimeraStylesheet defaultSheet,
       PageResources resources
@@ -327,8 +327,8 @@ public class PageResources implements ViewResources {
     }
 
     @Override
-    public @NotNull Player getPlayer() {
-      return player;
+    public @NotNull PlayerSet getPlayers() {
+      return players;
     }
 
     @Override

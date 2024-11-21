@@ -101,6 +101,22 @@ public class DelphiException extends RuntimeException {
    */
   public static final int ERR_EMPTY_MODULE_NAME = 15;
 
+  /**
+   * Specified instance name is already in use
+   */
+  public static final int ERR_INSTANCE_NAME_USED = 16;
+
+  /**
+   * Illegal instance name used.
+   * <p>
+   * Illegal instance names:
+   * <ul>
+   *   <li>{@code targeted}</li>
+   *   <li>{@code all}</li>
+   * </ul>
+   */
+  public static final int ERR_ILLEGAL_INSTANCE_NAME = 17;
+
   private final int code;
 
   public DelphiException(int code) {
@@ -129,7 +145,6 @@ public class DelphiException extends RuntimeException {
   public String getCodeString() {
     return codeToString(code);
   }
-
 
   public String getBaseMessage() {
     return super.getMessage();
@@ -163,6 +178,8 @@ public class DelphiException extends RuntimeException {
       case ERR_MODULE_ZIP_ACCESS_DENIED -> "ERR_MODULE_ZIP_ACCESS_DENIED";
       case ERR_MODULE_ERROR -> "ERR_MODULE_ERROR";
       case ERR_EMPTY_MODULE_NAME -> "ERR_EMPTY_MODULE_NAME";
+      case ERR_INSTANCE_NAME_USED -> "ERR_INSTANCE_NAME_USED";
+      case ERR_ILLEGAL_INSTANCE_NAME -> "ERR_ILLEGAL_INSTANCE_NAME";
       default -> "ERR_UNKNOWN";
     };
   }

@@ -15,8 +15,12 @@ public class DelphiBootstrapper implements PluginBootstrap {
     LocaleLoader.load();
 
     context.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
-      LiteralCommandNode<CommandSourceStack> literal = DelphiCommand.createCommand();
-      event.registrar().register(literal);
+      try {
+        LiteralCommandNode<CommandSourceStack> literal = DelphiCommand.createCommand();
+        event.registrar().register(literal);
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
     });
   }
 }

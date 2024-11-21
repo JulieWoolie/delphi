@@ -5,6 +5,8 @@ import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_ACCESS_DENIED;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_DOC_PARSE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_ILLEGAL_INSTANCE_NAME;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_INSTANCE_NAME_USED;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_IO_ERROR;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MISSING_PLUGINS;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_DIRECTORY_NOT_FOUND;
@@ -19,8 +21,10 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -31,21 +35,30 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
+import io.papermc.paper.command.brigadier.argument.resolvers.FinePositionResolver;
+import io.papermc.paper.command.brigadier.argument.resolvers.PlayerProfileListResolver;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import net.arcadiusmc.delphi.DelphiProvider;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.DocumentViewBuilder;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphiplugin.Debug;
+import net.arcadiusmc.delphiplugin.DelphiImpl;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
-import net.arcadiusmc.delphiplugin.PageManager;
 import net.arcadiusmc.delphiplugin.PageView;
-import net.arcadiusmc.delphiplugin.SessionManager;
+import net.arcadiusmc.delphiplugin.ViewManager;
 import net.arcadiusmc.delphiplugin.resource.PluginResources;
 import net.arcadiusmc.dom.Element;
 import net.kyori.adventure.text.Component;
@@ -53,7 +66,8 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -108,6 +122,18 @@ public class DelphiCommand {
   static final TranslatableExceptionType MODULE_ACCESS_DENIED
       = new TranslatableExceptionType("delphi.error.moduleAccess");
 
+  static final TranslatableExceptionType INSTANCE_NAME_IN_USE
+      = new TranslatableExceptionType("delphi.error.instanceNameUsed");
+
+  static final TranslatableExceptionType VIEW_NOT_FOUND
+      = new TranslatableExceptionType("delphi.error.viewNotFound");
+
+  static final TranslatableExceptionType REQUIRES_LOCATION
+      = new TranslatableExceptionType("delphi.error.requiresLocation");
+
+  static final TranslatableExceptionType ILLEGAL_INSTANCE_NAME
+      = new TranslatableExceptionType("delphi.error.instanceNameIllegal");
+
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
 
@@ -134,7 +160,7 @@ public class DelphiCommand {
       throw ONLY_PLAYERS.create();
     }
 
-    PageManager pages = getPlugin().getManager();
+    DelphiImpl pages = getPlugin().getManager();
     Optional<DocumentView> opt = pages.getAnyTargetedView(player);
 
     if (opt.isEmpty()) {
@@ -159,7 +185,22 @@ public class DelphiCommand {
 
   private static LiteralCommandNode<CommandSourceStack> close() {
     return literal("close")
-        .then(literal("target")
+        .then(argument("instance name", new InstanceNameType())
+            .executes(c -> {
+              PageView view = c.getArgument("instance name", PageView.class);
+              view.close();
+
+              c.getSource().getSender().sendMessage(
+                  prefixTranslatable("delphi.closed.named",
+                      NamedTextColor.GRAY,
+                      Component.text(view.getInstanceName())
+                  )
+              );
+              return SINGLE_SUCCESS;
+            })
+        )
+
+        .then(literal("targeted")
             .executes(context -> {
               PageView view = getAnyTargeted(context);
               view.close();
@@ -171,51 +212,13 @@ public class DelphiCommand {
             })
         )
         .then(literal("all")
-            .then(argument("players", ArgumentTypes.players())
-                .executes(c -> {
-                  PlayerSelectorArgumentResolver resolver
-                      = c.getArgument("players", PlayerSelectorArgumentResolver.class);
-
-                  List<Player> players = resolver.resolve(c.getSource());
-                  SessionManager manager = getPlugin().getSessions();
-
-                  int playerCount = 0;
-                  int closedCount = 0;
-
-                  for (Player player : players) {
-                    int closed = manager.endSession(player.getUniqueId());
-                    if (closed < 1) {
-                      continue;
-                    }
-
-                    playerCount++;
-                    closedCount += closed;
-                  }
-
-                  CommandSender sender = c.getSource().getSender();
-
-                  if (playerCount == 0) {
-                    sender.sendMessage(
-                        prefixTranslatable("delphi.closed.all.for.none", NamedTextColor.GRAY)
-                    );
-
-                    return SINGLE_SUCCESS;
-                  }
-
-                  sender.sendMessage(
-                      prefixTranslatable(
-                          "delphi.closed.all.for",
-                          NamedTextColor.GRAY,
-                          Component.text(playerCount),
-                          Component.text(closedCount)
-                      )
-                  );
-                  return SINGLE_SUCCESS;
-                })
-            )
-
             .executes(c -> {
-              getPlugin().getSessions().closeAllSessions();
+              ViewManager views = getPlugin().getViewManager();
+              List<PageView> viewList = new ArrayList<>(views.getOpenViews());
+
+              for (PageView view : viewList) {
+                view.close();
+              }
 
               c.getSource().getSender().sendMessage(
                   prefixTranslatable("delphi.closed.all", NamedTextColor.GRAY)
@@ -293,26 +296,105 @@ public class DelphiCommand {
 
   private static LiteralCommandNode<CommandSourceStack> open() {
     return Commands.literal("open")
-        .then(argument("player", ArgumentTypes.player())
-            .then(argument("path", new PathType())
-                .executes(DelphiCommand::openDocument)
-            )
+        .then(argument("player", ArgumentTypes.players())
+            .then(createOpenPath(false))
+        )
+        .then(literal("all-players")
+            .then(createOpenPath(true))
         )
         .build();
   }
 
-  private static int openDocument(CommandContext<CommandSourceStack> c)
-      throws CommandSyntaxException
-  {
-    DelphiPlugin pl = getPlugin();
+  private static RequiredArgumentBuilder<CommandSourceStack, ?> createOpenPath(boolean allPlayers) {
+    return argument("path", new PathType())
+        .executes(c -> openDocument(c, allPlayers, false, false, false))
+
+        .then(argument("instance name", StringArgumentType.word())
+            .executes(c -> openDocument(c, allPlayers, true, false, false))
+        )
+
+        .then(argument("position", ArgumentTypes.finePosition())
+            .executes(c -> openDocument(c, allPlayers, false, true, false))
+
+            .then(argument("instance name", StringArgumentType.word())
+                .executes(c -> openDocument(c, allPlayers, true, true, false))
+            )
+
+            .then(argument("yaw", FloatArgumentType.floatArg())
+                .then(argument("pitch", FloatArgumentType.floatArg())
+                    .executes(c -> openDocument(c, allPlayers, false, true, true))
+
+                    .then(argument("instance name", StringArgumentType.word())
+                        .executes(c -> openDocument(c, allPlayers, true, true, true))
+                    )
+                )
+            )
+        );
+  }
+
+  private static int openDocument(
+      CommandContext<CommandSourceStack> c,
+      boolean allPlayers,
+      boolean hasInstanceName,
+      boolean hasPosition,
+      boolean hasRotation
+  ) throws CommandSyntaxException {
+    CommandSourceStack stack = c.getSource();
+
     ResourcePath path = getPath(c);
+    String instanceName;
+    Location location;
+    Collection<Player> players;
 
-    PlayerSelectorArgumentResolver resolver
-        = c.getArgument("player", PlayerSelectorArgumentResolver.class);
+    if (allPlayers) {
+      players = (Collection<Player>) Bukkit.getOnlinePlayers();
+    } else {
+      PlayerSelectorArgumentResolver resolver
+          = c.getArgument("player", PlayerSelectorArgumentResolver.class);
+      players = resolver.resolve(stack);
+    }
 
-    List<Player> player = resolver.resolve(c.getSource());
-    Result<DocumentView, DelphiException> result
-        = pl.getManager().openDocument(path, player.getFirst());
+    if (hasInstanceName) {
+      instanceName = c.getArgument("instance name", String.class);
+    } else {
+      instanceName = null;
+    }
+
+    if (hasPosition) {
+      FinePositionResolver posResolver = c.getArgument("position", FinePositionResolver.class);
+      FinePosition pos = posResolver.resolve(stack);
+      location = new Location(stack.getLocation().getWorld(), pos.x(), pos.y(), pos.z());
+
+      if (hasRotation) {
+        float yaw = c.getArgument("yaw", Float.class);
+        float pitch = c.getArgument("pitch", Float.class);
+
+        location.setYaw(yaw);
+        location.setPitch(pitch);
+      }
+    } else {
+      if (players.size() != 1 || allPlayers) {
+        throw REQUIRES_LOCATION.create();
+      }
+
+      location = null;
+    }
+
+    DocumentViewBuilder builder = DelphiProvider.newViewBuilder()
+        .setPath(path)
+        .setInstanceName(instanceName);
+
+    if (allPlayers) {
+      builder.allPlayers();
+    } else {
+      builder.setPlayers( players);
+    }
+
+    if (location != null) {
+      builder.setSpawnLocation(location);
+    }
+
+    Result<DocumentView, DelphiException> result = builder.open();
 
     if (result.isSuccess()) {
       c.getSource().getSender().sendMessage(
@@ -338,6 +420,8 @@ public class DelphiCommand {
       case ERR_MODULE_UNKNOWN -> PathParser.UNKNOWN_MODULE.create(exc.getBaseMessage());
       case ERR_MODULE_DIRECTORY_NOT_FOUND -> NO_MODULE_DIR.create();
       case ERR_MODULE_ZIP_ACCESS_DENIED -> MODULE_ACCESS_DENIED.create();
+      case ERR_INSTANCE_NAME_USED -> INSTANCE_NAME_IN_USE.create(exc.getBaseMessage());
+      case ERR_ILLEGAL_INSTANCE_NAME -> ILLEGAL_INSTANCE_NAME.create(exc.getBaseMessage());
       default -> new CommandSyntaxException(NOP, new LiteralMessage(exc.getMessage()));
     };
   }
@@ -350,7 +434,50 @@ public class DelphiCommand {
     return context.getArgument("path", ResourcePath.class);
   }
 
-  static class PathType implements CustomArgumentType<ResourcePath, String> {
+  static class InstanceNameType implements CustomArgumentType<DocumentView, String> {
+
+    private final StringArgumentType argType = StringArgumentType.word();
+
+    @Override
+    public @NotNull DocumentView parse(@NotNull StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      String string = argType.parse(reader);
+      DelphiImpl manager = getPlugin().getManager();
+
+      return manager.getByInstanceName(string).orElseThrow(() -> {
+        reader.setCursor(start);
+        return VIEW_NOT_FOUND.createWithContext(reader, start);
+      });
+    }
+
+    @Override
+    public @NotNull <S> CompletableFuture<Suggestions> listSuggestions(
+        @NotNull CommandContext<S> context,
+        @NotNull SuggestionsBuilder builder
+    ) {
+      Set<String> keys = getPlugin().getViewManager().getByInstanceName().keySet();
+      String token = builder.getRemainingLowerCase();
+
+      for (String key : keys) {
+        String lkey = key.toLowerCase(Locale.ROOT);
+
+        if (!lkey.contains(token)) {
+          continue;
+        }
+
+        builder.suggest(key);
+      }
+
+      return builder.buildFuture();
+    }
+
+    @Override
+    public @NotNull ArgumentType<String> getNativeType() {
+      return argType;
+    }
+  }
+
+  static class PathType implements CustomArgumentType<ResourcePath, PlayerProfileListResolver> {
 
     private PluginResources getModules() {
       ClassLoader loader = DelphiPlugin.class.getClassLoader();
@@ -375,8 +502,8 @@ public class DelphiCommand {
     }
 
     @Override
-    public @NotNull ArgumentType<String> getNativeType() {
-      return StringArgumentType.greedyString();
+    public @NotNull ArgumentType<PlayerProfileListResolver> getNativeType() {
+      return ArgumentTypes.playerProfiles();
     }
 
     @Override

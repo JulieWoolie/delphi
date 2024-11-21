@@ -16,6 +16,7 @@ import net.arcadiusmc.chimera.DirtyBit;
 import net.arcadiusmc.chimera.StyleUpdateCallbacks;
 import net.arcadiusmc.chimera.system.StyleNode;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
+import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.event.DocumentCloseEvent;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphidom.ChatNode;
@@ -24,7 +25,6 @@ import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
-import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
@@ -71,20 +71,22 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.slf4j.Logger;
 
 public class PageView implements ExtendedView, StyleUpdateCallbacks {
-
-  private static final Logger LOGGER = Loggers.getLogger("DocumentView");
 
   private static final Sound CLICK_SOUND = Sound.sound()
       .type(org.bukkit.Sound.UI_BUTTON_CLICK)
       .build();
 
+  public static final int MAX_NO_PLAYER_TICKS = 1;
+
   @Getter
   private final Screen screen = new Screen();
 
   private final DelphiPlugin plugin;
+
+  @Getter
+  private final String instanceName;
 
   @Getter @Setter
   private FontMetrics fontMetrics;
@@ -93,12 +95,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   public final Vector3f cursorWorld = new Vector3f();
 
   @Getter
-  private final Player player;
-  @Setter @Getter
-  private PlayerSession session;
+  private final PlayerSet players;
 
   @Getter
-  private boolean selected = false;
+  private Player selectedPlayer = null;
 
   @Getter @Setter
   private ViewState state = ViewState.UNLOADED;
@@ -119,6 +119,10 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   private DelphiElement clickedNode = null;
   private MouseButton clickedButton = MouseButton.NONE;
   private int clickedNodeTicks = 0;
+  private Player clickedNodePlayer = null;
+  private Player hoveredNodePlayer = null;
+
+  private int noPlayerTicks = 0;
 
   @Getter
   private final Map<DelphiNode, RenderObject> renderObjects = new Object2ObjectOpenHashMap<>();
@@ -129,14 +133,23 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   private final List<Display> entities = new ArrayList<>();
   private Interaction interaction;
 
-  public PageView(DelphiPlugin plugin, Player player, ResourcePath path) {
-    Objects.requireNonNull(player, "Null player");
+  public PageView(
+      DelphiPlugin plugin,
+      String instanceName,
+      World world,
+      PlayerSet players,
+      ResourcePath path
+  ) {
+    Objects.requireNonNull(players, "Null player");
+    Objects.requireNonNull(world, "Null world");
     Objects.requireNonNull(path, "Null path");
     Objects.requireNonNull(plugin, "Null plugin");
+    Objects.requireNonNull(instanceName, "Null instance name");
 
-    this.player = player;
+    this.players = players;
+    this.instanceName = instanceName;
     this.path = path;
-    this.world = player.getWorld();
+    this.world = world;
     this.plugin = plugin;
   }
 
@@ -387,6 +400,13 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   public void configureScreen() {
+    if (players.size() != 1) {
+      throw new IllegalStateException(
+          "Cannot automatically position the screen with more than 1 player"
+      );
+    }
+
+    Player player = players.iterator().next();
     Location location = player.getEyeLocation();
     Vector direction = location.getDirection();
 
@@ -597,7 +617,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public Vector2f getCursorScreenPosition() {
-    if (!selected) {
+    if (selectedPlayer == null) {
       return null;
     }
 
@@ -606,7 +626,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public Vector3f getCursorWorldPosition() {
-    if (!selected) {
+    if (selectedPlayer == null) {
       return null;
     }
     return new Vector3f(cursorWorld);
@@ -651,11 +671,16 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   @Override
   public void close() {
-    if (session != null) {
-      session.closeView(this);
-    } else {
-      onClose();
+    if (state == ViewState.CLOSED) {
+      return;
     }
+
+    if (players.isEmpty()) {
+      return;
+    }
+
+    onClose();
+    plugin.getViewManager().removeView(this);
   }
 
   public void onClose() {
@@ -664,12 +689,11 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
       event.initEvent(null, false, false);
       document.dispatchEvent(event);
 
-      DocumentCloseEvent bukkitEvent = new DocumentCloseEvent(player, this);
+      DocumentCloseEvent bukkitEvent = new DocumentCloseEvent(this);
       bukkitEvent.callEvent();
     }
 
     kill();
-    setSession(null);
 
     renderObjects.clear();
     renderRoot = null;
@@ -688,11 +712,31 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
   }
 
   private void handleEntityVisibility(Entity entity) {
+    if (players.isServerPlayerSet()) {
+      return;
+    }
+
     entity.setVisibleByDefault(false);
-    player.showEntity(plugin, entity);
+
+    for (Player player : players) {
+      player.showEntity(plugin, entity);
+    }
   }
 
   public void tick() {
+    if (!players.isServerPlayerSet()) {
+      if (players.isEmpty()) {
+        noPlayerTicks++;
+
+        if (noPlayerTicks > MAX_NO_PLAYER_TICKS) {
+          close();
+          return;
+        }
+      } else {
+        noPlayerTicks = 0;
+      }
+    }
+
     drawSelected();
 
     if (clickedNodeTicks <= 0) {
@@ -706,6 +750,11 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
 
     unselectClickedNode();
+  }
+
+  @Override
+  public boolean isSelected() {
+    return selectedPlayer != null;
   }
 
   private void drawSelected() {
@@ -746,13 +795,13 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
   /* --------------------------- Selection and input ---------------------------- */
 
-  public void onInteract(MouseButton button, boolean shift) {
-    triggerClickEvent(button, shift);
-    selected = true;
+  public void onInteract(Player player, MouseButton button, boolean shift) {
+    selectedPlayer = player;
+    triggerClickEvent(player, button, shift);
   }
 
-  public void cursorMoveTo(Vector2f screenPos, Vector3f targetPos) {
-    selected = true;
+  public void cursorMoveTo(Player player, Vector2f screenPos, Vector3f targetPos) {
+    selectedPlayer = player;
 
     if (screenPos.equals(this.cursorScreen)) {
       return;
@@ -761,23 +810,23 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     cursorScreen.set(screenPos);
     cursorWorld.set(targetPos);
 
-    updateSelectedNode();
+    updateSelectedNode(player);
   }
 
   public void onUnselect() {
     cursorScreen.set(-1);
     cursorWorld.set(-1);
-    selected = false;
+    selectedPlayer = null;
     unselectHovered();
   }
 
-  public void onSelect(Vector2f screenPos, Vector3f targetPos) {
-    cursorMoveTo(screenPos, targetPos);
-    selected = true;
+  public void onSelect(Player player, Vector2f screenPos, Vector3f targetPos) {
+    cursorMoveTo(player, screenPos, targetPos);
   }
 
   private MouseEventImpl fireMouseEvent(
       String type,
+      Player player,
       boolean shift,
       MouseButton button,
       DelphiElement target,
@@ -789,6 +838,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
         target,
         bubbles,
         cancellable,
+        player,
         shift,
         button,
         ScrollDirection.NONE,
@@ -800,7 +850,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     return event;
   }
 
-  private void triggerClickEvent(MouseButton button, boolean shift) {
+  private void triggerClickEvent(Player player, MouseButton button, boolean shift) {
     if (hoveredNode == null) {
       return;
     }
@@ -812,6 +862,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     this.clickedButton = button;
     this.clickedNodeTicks = Document.ACTIVE_TICKS;
     this.clickedNode = hoveredNode;
+    this.clickedNodePlayer = player;
 
     document.clicked = this.clickedNode;
 
@@ -819,6 +870,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     MouseEvent event = fireMouseEvent(
         EventTypes.CLICK,
+        player,
         shift,
         button,
         clickedNode,
@@ -842,11 +894,20 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
 
     clickedNode.removeFlag(NodeFlag.CLICKED);
 
-    fireMouseEvent(EventTypes.CLICK_EXPIRE, false, clickedButton, clickedNode, false, false);
+    fireMouseEvent(
+        EventTypes.CLICK_EXPIRE,
+        clickedNodePlayer,
+        false,
+        clickedButton,
+        clickedNode,
+        false,
+        false
+    );
 
     clickedNode = null;
     clickedNodeTicks = 0;
     clickedButton = MouseButton.NONE;
+    clickedNodePlayer = null;
 
     document.clicked = null;
   }
@@ -857,8 +918,19 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
 
     propagateHoverState(false, hoveredNode);
-    fireMouseEvent(EventTypes.MOUSE_LEAVE, false, MouseButton.NONE, this.hoveredNode, true, false);
+    fireMouseEvent(
+        EventTypes.MOUSE_LEAVE,
+        hoveredNodePlayer,
+        false,
+        MouseButton.NONE,
+        this.hoveredNode,
+        true,
+        false
+    );
+
     this.hoveredNode = null;
+    this.hoveredNodePlayer = null;
+
     document.hovered = null;
   }
 
@@ -882,7 +954,7 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
   }
 
-  private void updateSelectedNode() {
+  private void updateSelectedNode(Player player) {
     DelphiElement contained = findCursorContainingNode();
 
     if (contained == null) {
@@ -895,17 +967,27 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
 
     if (Objects.equals(contained, hoveredNode)) {
-      fireMouseEvent(EventTypes.MOUSE_MOVE, false, MouseButton.NONE, this.hoveredNode, false, false);
+      fireMouseEvent(EventTypes.MOUSE_MOVE,
+          player,
+          false,
+          MouseButton.NONE,
+          this.hoveredNode,
+          false,
+          false
+      );
+
       return;
     }
 
     unselectHovered();
 
     this.hoveredNode = contained;
+    this.hoveredNodePlayer = player;
+
     document.hovered = hoveredNode;
     propagateHoverState(true, contained);
 
-    fireMouseEvent(EventTypes.MOUSE_ENTER, false, MouseButton.NONE, contained, true, false);
+    fireMouseEvent(EventTypes.MOUSE_ENTER, player, false, MouseButton.NONE, contained, true, false);
   }
 
   private DelphiElement findCursorContainingNode() {
@@ -946,6 +1028,28 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
     }
   }
 
+  void onPlayerRemoved(Player player) {
+    for (Display entity : entities) {
+      player.hideEntity(plugin, entity);
+    }
+    if (interaction != null) {
+      player.hideEntity(plugin, interaction);
+    }
+
+    plugin.getViewManager().playerRemoved(this, player);
+  }
+
+  void onPlayerAdded(Player player) {
+    for (Display entity : entities) {
+      player.showEntity(plugin, entity);
+    }
+    if (interaction != null) {
+      player.showEntity(plugin, interaction);
+    }
+
+    plugin.getViewManager().playerAdded(this, player);
+  }
+
   /* --------------------------- sub classes ---------------------------- */
 
   class ButtonClickListener implements EventListener.Typed<MouseEvent> {
@@ -975,16 +1079,18 @@ public class PageView implements ExtendedView, StyleUpdateCallbacks {
         return;
       }
 
+      Player player = event.getPlayer();
+
       if (action.startsWith(CMD)) {
-        runCommand(Bukkit.getConsoleSender(), CMD, action);
+        runCommand(player, Bukkit.getConsoleSender(), CMD, action);
         return;
       }
       if (action.startsWith(PLAYER_CMD)) {
-        runCommand(player, PLAYER_CMD, action);
+        runCommand(player, player, PLAYER_CMD, action);
       }
     }
 
-    private void runCommand(CommandSender sender, String prefix, String cmd) {
+    private void runCommand(Player player, CommandSender sender, String prefix, String cmd) {
       String formatted = cmd.substring(prefix.length()).trim()
           .replace("%player%", player.getName());
 

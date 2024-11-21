@@ -1,10 +1,10 @@
 package net.arcadiusmc.delphi.resource;
 
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -66,7 +66,7 @@ public interface DocumentContext {
    * Get the player the document is being opened for.
    * @return Player
    */
-  @NotNull Player getPlayer();
+  @NotNull PlayerSet getPlayers();
 
   /**
    * Get the document view.

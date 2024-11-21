@@ -5,7 +5,6 @@ import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.dom.Document;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
@@ -27,6 +26,16 @@ public interface DocumentView {
    * @return View Screen
    */
   Screen getScreen();
+
+  /**
+   * Get the instance name of this view.
+   * <p>
+   * Instance names are unique names given to each page used to differentiate
+   * them from other open pages of the same module or same resource path.
+   *
+   * @return Instance name
+   */
+  String getInstanceName();
 
   /**
    * Gets the position of the player's cursor in screen coordinates.
@@ -53,10 +62,10 @@ public interface DocumentView {
   ViewResources getResources();
 
   /**
-   * Gets the player this view belongs to
-   * @return View player
+   * Gets the players this view belongs to
+   * @return View players
    */
-  Player getPlayer();
+  PlayerSet getPlayers();
 
   /**
    * Gets the world the view is spawned in.

@@ -1,10 +1,13 @@
 package net.arcadiusmc.delphiplugin.listeners;
 
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
 import net.arcadiusmc.delphiplugin.PageView;
-import net.arcadiusmc.delphiplugin.PlayerSession;
+import net.arcadiusmc.delphiplugin.ViewManager;
+import net.arcadiusmc.delphiplugin.ViewManager.ViewEntry;
 import net.arcadiusmc.dom.event.MouseButton;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -16,8 +19,11 @@ import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.slf4j.Logger;
 
 public class PlayerListener implements Listener {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   private final DelphiPlugin plugin;
 
@@ -28,7 +34,17 @@ public class PlayerListener implements Listener {
   @EventHandler
   public void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
-    plugin.getSessions().endSession(player.getUniqueId());
+    ViewManager views = plugin.getViewManager();
+    ViewEntry entry = views.getByPlayer().remove(player);
+
+    if (entry == null) {
+      return;
+    }
+
+    List<PageView> viewList = new ArrayList<>(entry.views);
+    for (PageView pageView : viewList) {
+      pageView.getPlayers().remove(player);
+    }
   }
 
   @EventHandler
@@ -76,22 +92,20 @@ public class PlayerListener implements Listener {
   }
 
   private void tryInteract(Player player, Cancellable event, MouseButton button) {
-    Optional<PlayerSession> opt = plugin.getSessions().getSession(player.getUniqueId());
+    ViewManager views = plugin.getViewManager();
+    ViewEntry entry = views.getByPlayer().get(player);
 
-    if (opt.isEmpty()) {
+    if (entry == null) {
       return;
     }
-
-    PlayerSession session = opt.get();
-    PageView selected = session.getSelectedView();
-
+    PageView selected = entry.selected;
     if (selected == null) {
       return;
     }
 
     boolean shift = player.isSneaking();
 
-    selected.onInteract(button, shift);
+    selected.onInteract(player, button, shift);
     event.setCancelled(true);
   }
 }

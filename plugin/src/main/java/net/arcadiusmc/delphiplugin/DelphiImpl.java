@@ -1,15 +1,19 @@
 package net.arcadiusmc.delphiplugin;
 
+import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.DocumentViewBuilder;
+import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.event.DocumentOpenEvent;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
@@ -18,6 +22,7 @@ import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.event.EventImpl;
+import net.arcadiusmc.delphiplugin.ViewManager.ViewEntry;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.delphiplugin.math.RayScan;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
@@ -32,16 +37,18 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class PageManager implements Delphi {
+public class DelphiImpl implements Delphi {
+
+  static final Set<String> ILLEGAL_INSTANCE_NAMES = Set.of("targeted", "all");
 
   private final DelphiPlugin plugin;
   private final PluginResources pluginResources;
-  private final SessionManager sessions;
+  private final ViewManager views;
 
-  public PageManager(DelphiPlugin plugin, PluginResources pluginResources, SessionManager sessions) {
+  public DelphiImpl(DelphiPlugin plugin, PluginResources pluginResources, ViewManager views) {
     this.plugin = plugin;
     this.pluginResources = pluginResources;
-    this.sessions = sessions;
+    this.views = views;
   }
 
   @Override
@@ -90,29 +97,37 @@ public class PageManager implements Delphi {
   }
 
   @Override
+  public Optional<DocumentView> getByInstanceName(String instanceName) {
+    return Optional.ofNullable(views.getByInstanceName().get(instanceName));
+  }
+
+  @Override
   public List<DocumentView> getOpenViews(@NotNull Player player) {
     Objects.requireNonNull(player, "Null player");
 
-    return sessions.getSession(player.getUniqueId())
-        .map(session -> new ArrayList<DocumentView>(session.getViews()))
-        .orElseGet(ArrayList::new);
+    ViewEntry entry = views.getByPlayer().get(player);
+    if (entry == null) {
+      return ObjectLists.emptyList();
+    }
+
+    return Collections.unmodifiableList(entry.views);
   }
 
   @Override
   public List<DocumentView> getAllViews() {
-    List<DocumentView> views = new ArrayList<>();
-
-    for (PlayerSession session : sessions.getSessions()) {
-      views.addAll(session.getViews());
-    }
-
-    return views;
+    return Collections.unmodifiableList(this.views.getOpenViews());
   }
 
   @Override
   public Optional<DocumentView> getSelectedView(@NotNull Player player) {
     Objects.requireNonNull(player, "Null player");
-    return sessions.getSession(player.getUniqueId()).map(PlayerSession::getSelectedView);
+    ViewEntry entry = views.getByPlayer().get(player);
+
+    if (entry == null) {
+      return Optional.empty();
+    }
+
+    return Optional.ofNullable(entry.selected);
   }
 
   @Override
@@ -128,28 +143,26 @@ public class PageManager implements Delphi {
     float closestDistSq = Float.MAX_VALUE;
     PageView closest = null;
 
-    for (PlayerSession session : sessions.getSessions()) {
-      for (PageView view : session.getViews()) {
-        if (!view.getWorld().equals(world)) {
-          continue;
-        }
-
-        if (!view.getScreen().castRay(ray, hitOut, screenOut)) {
-          continue;
-        }
-
-        float distSq = hitOut.distanceSquared(ray.getOrigin());
-        if (distSq >= ray.getMaxLengthSq()) {
-          continue;
-        }
-
-        if (distSq >= closestDistSq) {
-          continue;
-        }
-
-        closestDistSq = distSq;
-        closest = view;
+    for (PageView view : views.getOpenViews()) {
+      if (!view.getWorld().equals(world)) {
+        continue;
       }
+
+      if (!view.getScreen().castRay(ray, hitOut, screenOut)) {
+        continue;
+      }
+
+      float distSq = hitOut.distanceSquared(ray.getOrigin());
+      if (distSq >= ray.getMaxLengthSq()) {
+        continue;
+      }
+
+      if (distSq >= closestDistSq) {
+        continue;
+      }
+
+      closestDistSq = distSq;
+      closest = view;
     }
 
     return Optional.ofNullable(closest);
@@ -160,15 +173,16 @@ public class PageManager implements Delphi {
     return new ChimeraSheetBuilder();
   }
 
-  public Result<DocumentView, DelphiException> openDocument(ViewBuilderImpl request) {
-    ResourcePath path = request.getPath();
-    Player player = request.getPlayer();
+  public Result<DocumentView, DelphiException> openDocument(ViewBuilderImpl builder) {
+    builder.validate();
 
-    Objects.requireNonNull(path, "Path not set");
-    Objects.requireNonNull(player, "Player not set");
+    ResourcePath path = builder.getPath();
+    PlayerSet players = builder.getPlayers();
+    Location loc = builder.getSpawnLocation();
+
+    assert path != null;
 
     String moduleName = path.getModuleName();
-
     Result<ResourceModule, DelphiException> moduleResult = pluginResources.findModule(moduleName);
 
     if (moduleResult.isError()) {
@@ -190,18 +204,41 @@ public class PageManager implements Delphi {
     PageResources resources = new PageResources(pluginResources, moduleName, module);
     resources.setCwd(cwd);
 
-    PageView view = new PageView(plugin, player, path);
+    World world;
+    if (loc != null) {
+      world = loc.getWorld();
+    } else {
+      world = players.iterator().next().getWorld();
+    }
+
+    String instanceName;
+    if (Strings.isNullOrEmpty(builder.getInstanceName())) {
+      instanceName = views.generateInstanceName();
+    } else {
+      instanceName = builder.getInstanceName();
+
+      if (ILLEGAL_INSTANCE_NAMES.contains(instanceName)) {
+        return Result.err(
+            new DelphiException(DelphiException.ERR_ILLEGAL_INSTANCE_NAME, instanceName)
+        );
+      }
+    }
+
+    if (views.getByInstanceName().containsKey(instanceName)) {
+      return Result.err(new DelphiException(DelphiException.ERR_INSTANCE_NAME_USED, instanceName));
+    }
+
+    PageView view = new PageView(plugin, instanceName, world, players, path);
     view.setResources(resources);
     view.setFontMetrics(plugin.getMetrics());
     resources.setView(view);
 
-    PlayerSession session = sessions.getOrCreateSession(player);
-    session.addView(view);
+    views.addView(view);
 
     Result<DelphiDocument, DelphiException> res = resources.loadDocument(path, path.elements());
 
     if (res.isError()) {
-      session.closeView(view);
+      views.removeView(view);
       return Result.err(res);
     }
 
@@ -213,8 +250,7 @@ public class PageManager implements Delphi {
 
     view.initializeDocument(doc);
 
-    if (request.getSpawnLocation() != null) {
-      Location loc = request.getSpawnLocation();
+    if (loc != null) {
       view.moveTo(loc);
     } else {
       view.configureScreen();
@@ -224,7 +260,7 @@ public class PageManager implements Delphi {
     loaded.initEvent(null, false, false);
     doc.dispatchEvent(loaded);
 
-    DocumentOpenEvent bukkitEvent = new DocumentOpenEvent(player, view);
+    DocumentOpenEvent bukkitEvent = new DocumentOpenEvent(view);
     bukkitEvent.callEvent();
 
     view.spawn();
