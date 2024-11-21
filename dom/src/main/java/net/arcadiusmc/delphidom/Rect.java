@@ -31,6 +31,10 @@ public class Rect {
     bottom = f;
   }
 
+  public boolean isNotZero() {
+    return left > 0 || bottom > 0 || top > 0 || right > 0;
+  }
+
   @Override
   public String toString() {
     return String.format("(left=%f, top=%f, bottom=%f, right=%f)", left, top, bottom, right);
