@@ -1,0 +1,82 @@
+ ==== LAYOUT PROCEDURE ====
+
+PASS 1: Intrinsic Measurement
+  Measure every style property that can be measured (everything that
+  isn't 'auto' or a percent value.), this also includes node content,
+  if present.
+  This pass is done bottom to top
+
+PASS 2: Resolve parent based sizes, if possible
+  Iterate from root downwards, attempt to resolve all possible relative
+  sizes (% unit values)
+
+PASS 3: Layout
+  Iterate from the bottom up and apply the appropriate layout algorithms
+  for each element. Skip content nodes, and nodes without child objects.
+
+  As this step is being executed, the sizes of each element will be set
+  as well. This means, this will require an additional step after to
+  finally resolve all %-based values. (I think)
+
+  Use the appropriate algorithm for each layout mode:
+  - 'display: flex' - Flex layout
+  - 'position: absolute' - Position Layout
+  - Otherwise: Flow layout
+
+
+  == FLOW ==
+  Split elements into 'lines' of elements. Iterate over child elements.
+  If element is 'display: inline' it is part of the current line.
+  If the currentLineWidth + element.size.x + element.margin.x() is
+  greater than maxWidth => line break.
+  If 'display: inline-block' => line break after element.
+  If 'position: absolute' => skip, do not include in line.
+
+  When iterating over elements, keep track of the largest margin
+  separately. This is because all elements will sit on the same
+  baseline, but the margin of each on the bottom can vary, and the
+  largest margin becomes the line's bottom margin.
+
+  After all elements are split into lines, lay them out in the way
+  specified by the lines. Include bottom margin when moving from 1 line
+  to another.
+
+
+  == POSITION ==
+  Move current element to position specified by 'left', and 'top'
+  properties, ignore all existing elements and do not count element in
+  parent element's size measurement.
+
+
+  == FLEX ==
+  Create a vec2 mainDir, and a vec2 crossDir with values appropriate
+  to the 'flex-direction' property. 'flex-direction: row | row-reverse'
+  mean mainDir = (1, 0), crossDir = (0, 1), and 'column |
+  column-reverse' means mainDir = (0, 1), crossDir = (1, 0)
+
+PASS 4: Post Processing
+  This pass is performed in the same order as PASS 3: Layout. This step
+  involves applying post layout operations like handling 'margin: auto'
+  properties.
+
+
+  == FLOW ==
+  After Flow layout is conducted, measure element size (if width was not
+  explicitly set) and re-iterate over 'display: block' elements to apply
+  any 'auto' margin values. Left and right margins determine the x-axis
+  layout of the element, if both are 'auto', then the
+  x margins = (parentContentArea.x - elementSize.x) / 2.
+  Otherwise, the auto margin = parentContentArea.x - elementSize.x
+  - oppositeMargin. The other 2 margins determine the vertical
+  layout of the element. For these calculations, we'll need a
+  variable, N, which is equal to parentContentArea.y - usedSpace.y
+  + elementSize.y.
+  If both 'top' and 'bottom' are 'auto', then
+  y margin = (N - elementSize.y) / 2
+  Otherwise, the auto margin = N - elementSize.y.
+
+SOURCES / DOCS / TUTORIALS:
+  https://www.quirksmode.org/css/flexbox-algorithm.html
+  https://www.w3.org/TR/css-flexbox-1/
+  https://tchayen.com/how-to-write-a-flexbox-layout-engine
+  https://css-tricks.com/snippets/css/a-guide-to-flexbox/
