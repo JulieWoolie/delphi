@@ -18,19 +18,19 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphiplugin.command.PathParser.SuggestionMode;
-import net.arcadiusmc.delphiplugin.resource.Modules;
+import net.arcadiusmc.delphiplugin.resource.PluginResources;
 import org.junit.jupiter.api.Test;
 
 class PathParserTest {
 
   static final File file;
   static final Path path;
-  static final Modules modules;
+  static final PluginResources PLUGIN_RESOURCES;
 
   static {
     file = new File(PathParserTest.class.getClassLoader().getResource("test-modules").getFile());
     path = file.toPath();
-    modules = new Modules(path);
+    PLUGIN_RESOURCES = new PluginResources(path);
   }
 
   @Test
@@ -51,7 +51,7 @@ class PathParserTest {
 
   void assertSuggestions(String string, List<String> expected) {
     StringReader reader = new StringReader(string);
-    PathParser<?> parser = new PathParser<>(modules, reader);
+    PathParser<?> parser = new PathParser<>(PLUGIN_RESOURCES, reader);
 
     try {
       parser.parse();
@@ -82,7 +82,7 @@ class PathParserTest {
 
   void assertSuggestionMode(String string, SuggestionMode mode) {
     StringReader reader = new StringReader(string);
-    PathParser<?> parser = new PathParser<>(modules, reader);
+    PathParser<?> parser = new PathParser<>(PLUGIN_RESOURCES, reader);
 
     try {
       parser.parse();
@@ -186,7 +186,7 @@ class PathParserTest {
 
   ResourcePath assertValidPath(String path, Consumer<PathParser<?>> setup, ReaderExec exec) {
     StringReader reader = new StringReader(path);
-    PathParser<?> parser = new PathParser<>(modules, reader);
+    PathParser<?> parser = new PathParser<>(PLUGIN_RESOURCES, reader);
 
     parser.setPath(ResourcePath.create("module"));
 

@@ -17,21 +17,21 @@ import net.arcadiusmc.delphi.resource.ZipModule;
 import net.arcadiusmc.delphi.util.Result;
 import org.junit.jupiter.api.Test;
 
-class ModulesTest {
+class PluginResourcesTest {
 
   static final File file;
   static final Path path;
-  static final Modules modules;
+  static final PluginResources PLUGIN_RESOURCES;
 
   static {
-    file = new File(ModulesTest.class.getClassLoader().getResource("test-modules").getFile());
+    file = new File(PluginResourcesTest.class.getClassLoader().getResource("test-modules").getFile());
     path = file.toPath();
-    modules = new Modules(path);
+    PLUGIN_RESOURCES = new PluginResources(path);
   }
 
   @Test
   void testModulePathList() {
-    Result<ResourceModule, DelphiException> opt = modules.findModule("module");
+    Result<ResourceModule, DelphiException> opt = PLUGIN_RESOURCES.findModule("module");
     assertTrue(opt.isSuccess());
 
     DirectoryModule module = assertInstanceOf(DirectoryModule.class, opt.getOrThrow());
@@ -57,7 +57,7 @@ class ModulesTest {
 
   @Test
   void testZipModule() {
-    Result<ResourceModule, DelphiException> opt = modules.findModule("zipped");
+    Result<ResourceModule, DelphiException> opt = PLUGIN_RESOURCES.findModule("zipped");
     assertTrue(opt.isSuccess());
 
     ZipModule module = assertInstanceOf(ZipModule.class, opt.getOrThrow());
@@ -68,7 +68,7 @@ class ModulesTest {
 
   @Test
   void testRegularModule() {
-    Result<ResourceModule, DelphiException> opt = modules.findModule("module");
+    Result<ResourceModule, DelphiException> opt = PLUGIN_RESOURCES.findModule("module");
     assertTrue(opt.isSuccess());
 
     DirectoryModule val = assertInstanceOf(DirectoryModule.class, opt.getOrThrow());
