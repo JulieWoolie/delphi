@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
+import net.arcadiusmc.delphiplugin.render.FontMeasureCallback;
 import net.arcadiusmc.delphiplugin.render.FontMeasureOutput;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.Style;
@@ -26,7 +27,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
 import org.slf4j.Logger;
 
-public class FontMetrics {
+public class FontMetrics implements FontMeasureCallback {
 
   private static final Logger LOGGER = Loggers.getLogger();
 

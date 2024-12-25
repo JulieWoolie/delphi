@@ -1,12 +1,13 @@
 package net.arcadiusmc.delphiplugin.math;
 
+import net.arcadiusmc.delphiplugin.render.RenderScreen;
 import org.bukkit.util.Transformation;
 import org.joml.Intersectionf;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class Screen implements net.arcadiusmc.delphi.Screen {
+public class Screen implements RenderScreen {
 
   static final float EPSILON = 0.0000001f;
 
@@ -218,6 +219,26 @@ public class Screen implements net.arcadiusmc.delphi.Screen {
   }
 
   /* --------------------------- API impl ---------------------------- */
+
+  @Override
+  public Quaternionf getLeftRotation() {
+    return leftRotation;
+  }
+
+  @Override
+  public Quaternionf getRightRotation() {
+    return rightRotation;
+  }
+
+  @Override
+  public Vector2f getScreenScale() {
+    return screenScale;
+  }
+
+  @Override
+  public Vector3f getScale() {
+    return scale;
+  }
 
   @Override
   public float getWidth() {

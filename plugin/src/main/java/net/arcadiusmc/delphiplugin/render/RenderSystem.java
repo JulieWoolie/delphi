@@ -15,14 +15,14 @@ import net.arcadiusmc.delphidom.ChatNode;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
+import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
-import net.arcadiusmc.delphidom.event.EventListenerList;
-import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.event.EventListener;
+import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.event.MouseEvent;
 import net.arcadiusmc.dom.event.MutationEvent;
@@ -34,29 +34,32 @@ import org.joml.Vector2f;
 @Getter @Setter
 public class RenderSystem implements StyleUpdateCallbacks {
 
-  final PageView view;
+  final ExtendedView view;
+  final RenderScreen screen;
+
   private World world;
   private boolean active;
+  private FontMeasureCallback fontMetrics;
 
   private final List<Entity> entities = new ObjectArrayList<>();
 
   private final Map<DelphiNode, RenderObject> renderObjects = new Object2ObjectOpenHashMap<>();
   private ElementRenderObject renderRoot = null;
 
-  public RenderSystem(PageView view) {
+  public RenderSystem(ExtendedView view, RenderScreen screen) {
     this.view = view;
+    this.screen = screen;
   }
 
   public void init() {
     active = true;
 
-    DelphiElement body = view.getDocument().getBody();
+    DelphiElement body = (DelphiElement) view.getDocument().getBody();
     if (body != null) {
       renderRoot = (ElementRenderObject) initRenderTree(body);
     }
 
-
-    EventListenerList g = view.getDocument().getGlobalTarget();
+    EventTarget g = view.getDocument().getGlobalTarget();
     MutationListener listener = new MutationListener();
     TooltipListener tooltipListener = new TooltipListener();
 
@@ -142,7 +145,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       case Text text -> {
         ContentRenderObject o = new ContentRenderObject(this, styleSet);
         StringContent content = new StringContent(text.getTextContent());
-        content.metrics = view.getFontMetrics();
+        content.metrics = fontMetrics;
 
         o.setContent(content);
         obj = o;
@@ -150,7 +153,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       case ChatNode chat -> {
         ContentRenderObject o = new ContentRenderObject(this, styleSet);
         ComponentContent content = new ComponentContent(chat.getContent());
-        content.metrics = view.getFontMetrics();
+        content.metrics = fontMetrics;
 
         o.setContent(content);
         obj = o;
@@ -279,7 +282,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       obj = initRenderTree(titleNode);
     }
 
-    obj.moveTo(view.cursorScreen);
+    obj.moveTo(view.getCursorScreen());
     obj.spawnRecursive();
   }
 
@@ -300,7 +303,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
   }
 
   public DelphiElement findCursorContainingNode(Vector2f cursorScreen) {
-    DelphiElement p = view.getDocument().getBody();
+    DelphiElement p = (DelphiElement) view.getDocument().getBody();
 
     if (p == null) {
       return null;

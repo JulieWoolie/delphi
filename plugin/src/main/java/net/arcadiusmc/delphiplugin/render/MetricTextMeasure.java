@@ -1,14 +1,13 @@
 package net.arcadiusmc.delphiplugin.render;
 
-import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import org.jetbrains.annotations.NotNull;
 
 public class MetricTextMeasure extends TextMeasure {
 
-  private final FontMetrics metrics;
+  private final FontMeasureCallback metrics;
   private final FontMeasureOutput output;
 
-  public MetricTextMeasure(FontMetrics metrics) {
+  public MetricTextMeasure(FontMeasureCallback metrics) {
     this.metrics = metrics;
     this.output = new FontMeasureOutput();
   }

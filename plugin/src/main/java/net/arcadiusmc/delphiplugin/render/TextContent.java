@@ -3,7 +3,6 @@ package net.arcadiusmc.delphiplugin.render;
 import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE;
 import static net.arcadiusmc.delphiplugin.render.RenderObject.NIL_COLOR;
 
-import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -17,7 +16,7 @@ import org.joml.Vector2f;
 
 public abstract class TextContent implements ElementContent {
 
-  public FontMetrics metrics;
+  public FontMeasureCallback metrics;
 
   @Override
   public Display createEntity(World world, Location location) {

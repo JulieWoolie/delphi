@@ -4,14 +4,11 @@ import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE;
 import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphiplugin.render.RenderLayer.LAYER_COUNT;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphiplugin.math.Rectangle;
-import net.arcadiusmc.delphiplugin.math.Screen;
 import net.arcadiusmc.dom.style.DisplayType;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -36,13 +33,15 @@ public abstract class RenderObject {
 
   public static final org.bukkit.Color NIL_COLOR = org.bukkit.Color.fromARGB(0, 0, 0, 0);
 
-  protected final Screen screen;
+  protected final RenderScreen screen;
   protected final RenderSystem system;
 
   protected final ComputedStyleSet styleSet;
   protected final FullStyle style = new FullStyle();
 
   protected final Vector2f position = new Vector2f(0);
+  public final Vector2f size = new Vector2f(0);
+
   private boolean spawned;
 
   @Setter
@@ -57,7 +56,7 @@ public abstract class RenderObject {
 
   public RenderObject(RenderSystem system, ComputedStyleSet style) {
     this.system = system;
-    this.screen = system.getView().getScreen();
+    this.screen = system.getScreen();
     this.styleSet = style;
   }
 
@@ -237,17 +236,17 @@ public abstract class RenderObject {
   }
   
   private void applyScreenRotationAndScale() {
-    Quaternionf lrot = screen.leftRotation;
-    Quaternionf rrot = screen.rightRotation;
+    Quaternionf lrot = screen.getLeftRotation();
+    Quaternionf rrot = screen.getRightRotation();
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
       layer.translate.z += layer.depth;
 
-      layer.size.mul(screen.screenScale);
-      layer.scale.mul(screen.scale);
-      layer.translate.x *= screen.screenScale.x;
-      layer.translate.y *= screen.screenScale.y;
+      layer.size.mul(screen.getScreenScale());
+      layer.scale.mul(screen.getScale());
+      layer.translate.x *= screen.getScreenScale().x;
+      layer.translate.y *= screen.getScreenScale().y;
 
       // Perform rotation
       lrot.transform(layer.translate, layer.rotatedTranslate);
@@ -421,81 +420,10 @@ public abstract class RenderObject {
   }
 
   LayerIterator layerIterator(LayerDirection direction) {
-    return new LayerIterator(direction.modifier, direction.start);
+    return new LayerIterator(this.layers, direction.modifier, direction.start);
   }
 
   public boolean ignoreDisplay() {
     return false;
-  }
-
-  public interface LayerOp {
-    void accept(Layer layer, int iteratedCount);
-  }
-
-  class LayerIterator implements Iterator<Layer> {
-
-    private int dir;
-    private int index;
-
-    @Getter
-    private int count;
-
-    public LayerIterator(int dir, int index) {
-      this.dir = dir;
-      this.index = index;
-    }
-
-    private boolean inBounds(int idx) {
-      return idx >= 0 && idx < LAYER_COUNT;
-    }
-
-    @Override
-    public boolean hasNext() {
-      if (!inBounds(index)) {
-        return false;
-      }
-
-      while (inBounds(index)) {
-        Layer layer = layers[index];
-
-        if (isNotSpawned(layer)) {
-          index += dir;
-          continue;
-        }
-
-        return true;
-      }
-
-      return false;
-    }
-
-    @Override
-    public Layer next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-
-      Layer l = layers[index];
-      index += dir;
-      count++;
-
-      return l;
-    }
-  }
-
-  enum LayerDirection {
-    /** Starts from {@link RenderLayer#CONTENT}, moves towards {@link RenderLayer#OUTLINE} */
-    FORWARD (0, 1),
-
-    /** Starts from {@link RenderLayer#OUTLINE}, moves towards {@link RenderLayer#CONTENT} */
-    BACKWARD (LAYER_COUNT - 1, -1);
-
-    final int start;
-    final int modifier;
-
-    LayerDirection(int start, int modifier) {
-      this.start = start;
-      this.modifier = modifier;
-    }
   }
 }

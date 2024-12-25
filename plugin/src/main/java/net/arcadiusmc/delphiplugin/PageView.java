@@ -57,7 +57,9 @@ public class PageView implements ExtendedView {
   @Getter @Setter
   private FontMetrics fontMetrics;
 
+  @Getter
   public final Vector2f cursorScreen = new Vector2f();
+  @Getter
   public final Vector3f cursorWorld = new Vector3f();
 
   @Getter
@@ -110,8 +112,9 @@ public class PageView implements ExtendedView {
     this.world = world;
     this.plugin = plugin;
 
-    this.renderer = new RenderSystem(this);
+    this.renderer = new RenderSystem(this, screen);
     this.renderer.setWorld(world);
+    this.renderer.setFontMetrics(fontMetrics);
 
     this.input = new PageInputSystem(this);
   }
