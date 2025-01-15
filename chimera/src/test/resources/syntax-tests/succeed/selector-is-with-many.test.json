@@ -1,0 +1,4 @@
+{
+  "should-succeed": true,
+  "scss": ":is(.target, .target-2, tag-name) {}"
+}

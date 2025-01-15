@@ -1,0 +1,12 @@
+{
+  "should-succeed": true,
+
+  "expected-outputs": [
+    {
+      "level": "error",
+      "message": "Expected ';' to end statement, found '}'",
+      "line": 3,
+      "column": 1
+    }
+  ]
+}

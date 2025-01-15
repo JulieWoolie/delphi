@@ -1,0 +1,4 @@
+{
+  "should-succeed": true,
+  "scss": ":is(.target,) {}"
+}
