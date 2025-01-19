@@ -13,13 +13,11 @@ import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SCHEMA_ERROR;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SYNTAX;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
@@ -48,7 +46,6 @@ import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.parser.DocumentSaxParser;
 import net.arcadiusmc.delphidom.parser.PluginMissingException;
-import net.arcadiusmc.delphiplugin.ItemCodec;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.dom.Document;
@@ -56,6 +53,7 @@ import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -124,21 +122,31 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
-    JsonElement element;
+    JsonObject obj;
 
     try {
-      element = JsonParser.parseString(buf.toString());
+      var element = JsonParser.parseString(buf.toString());
+      if (!(element instanceof JsonObject o)) {
+        return Result.err(new DelphiException(ERR_SYNTAX, "Not a JSON object: " + element));
+      }
+      obj = o;
     } catch (JsonSyntaxException exc) {
       return Result.err(new DelphiException(ERR_SYNTAX, exc));
     }
 
-    DataResult<ItemStack> dataResult = ItemCodec.NMS_CODEC.parse(JsonOps.INSTANCE, element);
+    // This should be public API in UnsafeValues but the --brilliant-- (read: downright stupid)
+    // devs of Paper put it as a public function in CraftMagicNumbers but not in the API
+    // Hopefully this changes. If not, we go back to using ItemCodec.NMS_CODEC
+    CraftMagicNumbers unsafe = CraftMagicNumbers.INSTANCE;
+    ItemStack item;
 
-    if (dataResult.hasResultOrPartial()) {
-      return dataResult.resultOrPartial().map(Result::<ItemStack, DelphiException>ok).get();
+    try {
+      item = unsafe.deserializeItemFromJson(obj);
+    } catch (IllegalArgumentException exc) {
+      return Result.err(new DelphiException(ERR_SCHEMA_ERROR, exc));
     }
 
-    return Result.err(new DelphiException(ERR_SCHEMA_ERROR, dataResult.error().get().message()));
+    return Result.ok(item);
   }
 
   @Override
