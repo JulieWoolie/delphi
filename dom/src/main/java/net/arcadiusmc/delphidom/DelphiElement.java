@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
@@ -44,6 +45,9 @@ public class DelphiElement extends DelphiNode implements Element {
 
   @Getter
   DelphiNode titleNode;
+
+  ClassList classList;
+  boolean listUpdatesSupressed = false;
 
   public DelphiElement(DelphiDocument document, String tagName) {
     super(document);
@@ -106,6 +110,10 @@ public class DelphiElement extends DelphiNode implements Element {
       attributes.put(key, value);
     }
 
+    if (key.equals(Attributes.CLASS) && classList != null && !listUpdatesSupressed) {
+      ClassList.copyFromElement(classList);
+    }
+
     document.attributeChanged(this, key, previousValue, value);
   }
 
@@ -117,6 +125,19 @@ public class DelphiElement extends DelphiNode implements Element {
   @Override
   public Set<Entry<String, String>> getAttributeEntries() {
     return Collections.unmodifiableSet(attributes.entrySet());
+  }
+
+  @NotNull
+  @Override
+  public List<String> getClassList() {
+    if (classList != null) {
+      return classList;
+    }
+
+    classList = new ClassList(this, new ArrayList<>());
+    ClassList.copyFromElement(classList);
+
+    return classList;
   }
 
   @Override
@@ -515,5 +536,18 @@ public class DelphiElement extends DelphiNode implements Element {
     builder.append("/>");
 
     return builder.toString();
+  }
+
+  void classListChanged() {
+    listUpdatesSupressed = true;
+    try {
+      StringJoiner joiner = new StringJoiner(" ");
+      for (String s : classList.strings) {
+        joiner.add(s);
+      }
+      setAttribute(Attributes.CLASS, joiner.toString());
+    } finally {
+      listUpdatesSupressed = false;
+    }
   }
 }

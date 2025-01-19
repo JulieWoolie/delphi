@@ -1,13 +1,8 @@
 package net.arcadiusmc.dom;
 
-import com.google.common.base.Strings;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
@@ -121,40 +116,13 @@ public interface Element extends Node, EventTarget, DomQueryable {
 
   /**
    * Gets the element's class array list.
+   * <p>
+   * Any modifications made to the returned array will be reflected in
+   * the element's {@code class} attribute and {@link #getCurrentStyle()}
+   *
    * @return An array list containing all the classes of this element.
    */
-  default @NotNull List<String> getClassList() {
-    String str = getClassName();
-
-    if (Strings.isNullOrEmpty(str)) {
-      return new ArrayList<>();
-    }
-
-    String[] split = str.split("\\s+");
-    List<String> stringList = new ArrayList<>();
-
-    Collections.addAll(stringList, split);
-
-    return stringList;
-  }
-
-  /**
-   * Sets the element's class list.
-   * @param classList Class list, or {@code null}, to remove classes.
-   */
-  default void setClassList(@Nullable Collection<String> classList) {
-    if (classList == null) {
-      setAttribute(Attributes.CLASS, null);
-      return;
-    }
-
-    StringJoiner joiner = new StringJoiner(" ");
-    for (String s : classList) {
-      joiner.add(s);
-    }
-
-    setAttribute(Attributes.CLASS, joiner.toString());
-  }
+  @NotNull List<String> getClassList();
 
   /**
    * Gets the element's tag name.
