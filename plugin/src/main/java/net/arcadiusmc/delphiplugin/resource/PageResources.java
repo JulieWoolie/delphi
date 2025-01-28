@@ -140,6 +140,12 @@ public class PageResources implements ViewResources {
     CraftMagicNumbers unsafe = CraftMagicNumbers.INSTANCE;
     ItemStack item;
 
+    // If this is not check, will throw error, a DataVersion must
+    // always be present
+    if (!obj.has("DataVersion")) {
+      obj.addProperty("DataVersion", unsafe.getDataVersion());
+    }
+
     try {
       item = unsafe.deserializeItemFromJson(obj);
     } catch (IllegalArgumentException exc) {
