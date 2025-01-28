@@ -282,7 +282,11 @@ public class ComputedStyleSet {
   }
 
   private static ValueOrAuto getPrimitive(PropertySet set, Property<Primitive> property) {
-    Value<Primitive> v = set.get(property);
+    Value<Primitive> v = set.orNull(property);
+
+    if (v == null) {
+      return ValueOrAuto.AUTO;
+    }
 
     if (v.getType() == ValueType.AUTO) {
       return ValueOrAuto.AUTO;
