@@ -276,7 +276,7 @@ public class NLayout {
     if (v.primitive().getUnit() != Unit.PERCENT) {
       return current;
     }
-    return v.primitive().getValue() * parent;
+    return v.primitive().getValue() * 0.01f * parent;
   }
 
   private static float clamp(float v, float lower, float upper) {
