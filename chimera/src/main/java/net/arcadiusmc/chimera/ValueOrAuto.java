@@ -33,4 +33,13 @@ public record ValueOrAuto(Primitive primitive) {
   public boolean isPrimitive() {
     return primitive != null;
   }
+
+  @Override
+  public String toString() {
+    if (isAuto()) {
+      return "AUTO";
+    }
+
+    return primitive.toString();
+  }
 }
