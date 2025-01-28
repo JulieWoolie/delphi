@@ -2,6 +2,7 @@ package net.arcadiusmc.chimera;
 
 import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE;
 import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE_RECT;
+import static net.arcadiusmc.chimera.PropertyValidator.SCALAR;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
@@ -111,7 +112,7 @@ public final class Properties {
       .defaultValue(Primitive.create(1))
       .cascading(true)
       .layoutAffecting(true)
-      .validator(NON_ANGLE)
+      .validator(SCALAR)
       .build();
 
   public static final Property<Primitive> WIDTH = Property.builder(Primitive.class)

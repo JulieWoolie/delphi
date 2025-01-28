@@ -12,6 +12,13 @@ public interface PropertyValidator<T> {
     };
   };
 
+  PropertyValidator<Primitive> SCALAR = value -> {
+    return switch (value.getUnit()) {
+      case PERCENT, NONE -> Optional.empty();
+      default -> Optional.of("The 'scale' property only allows % measurements");
+    };
+  };
+
   PropertyValidator<PrimitiveRect> NON_ANGLE_RECT = rect -> {
     return NON_ANGLE.validate(rect.getTop())
         .or(() -> NON_ANGLE.validate(rect.getRight()))
