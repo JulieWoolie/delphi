@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.command.Permissions;
-import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
-import net.arcadiusmc.delphiplugin.render.RenderTreePrint;
+import net.arcadiusmc.delphirender.RenderTreePrint;
+import net.arcadiusmc.delphirender.math.Rectangle;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Visitor;
 import org.bukkit.Bukkit;
@@ -51,7 +51,7 @@ public final class Debug {
 
     Path dumpFile = dir.resolve(fileName + ".xml");
 
-    RenderTreePrint print = new RenderTreePrint(view);
+    RenderTreePrint print = new RenderTreePrint(view, view.renderer);
 
     if (target == null) {
       print.nlIndent().append("<page>");
@@ -76,10 +76,6 @@ public final class Debug {
     }
 
     return dumpFile;
-  }
-
-  public static void drawSelectionOutline(Rectangle rectangle, PageView view) {
-    drawOutline(rectangle, view, Color.RED);
   }
 
   public static void drawScreen(Screen screen, World world) {

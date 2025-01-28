@@ -1,6 +1,6 @@
 package net.arcadiusmc.delphiplugin.math;
 
-import net.arcadiusmc.delphiplugin.render.RenderScreen;
+import net.arcadiusmc.delphirender.RenderScreen;
 import org.bukkit.util.Transformation;
 import org.joml.Intersectionf;
 import org.joml.Quaternionf;

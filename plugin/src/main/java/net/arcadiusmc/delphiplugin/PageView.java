@@ -16,12 +16,13 @@ import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
-import net.arcadiusmc.delphiplugin.math.Rectangle;
 import net.arcadiusmc.delphiplugin.math.Screen;
-import net.arcadiusmc.delphiplugin.render.RenderObject;
-import net.arcadiusmc.delphiplugin.render.RenderSystem;
 import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
+import net.arcadiusmc.delphirender.RenderSystem;
+import net.arcadiusmc.delphirender.math.Rectangle;
+import net.arcadiusmc.delphirender.tree.ElementRenderElement;
+import net.arcadiusmc.delphirender.tree.RenderElement;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.event.AttributeAction;
@@ -514,29 +515,42 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    RenderObject obj = renderer.getRenderObject(input.hoveredNode);
+    RenderElement obj = renderer.getRenderElement(input.hoveredNode);
     if (obj == null) {
       return;
     }
 
+    ElementRenderElement root = renderer.getRenderRoot();
     Rectangle rectangle = new Rectangle();
+
+    drawDebug(rectangle, root, obj);
+  }
+
+  private void drawDebug(Rectangle rectangle, RenderElement obj, RenderElement hovered) {
     obj.getBounds(rectangle);
 
-    Debug.drawSelectionOutline(rectangle, this);
+    Color elColor = obj == hovered ? Color.RED : Color.GRAY;
+    Color marginColor = obj == hovered ? Color.FUCHSIA : Color.OLIVE;
+
+    Debug.drawOutline(rectangle, this, elColor);
 
     var margin = obj.getStyle().margin;
     boolean hasMargin = margin.left > 0 || margin.right > 0 || margin.top > 0 || margin.bottom > 0;
 
-    if (!hasMargin) {
-      return;
+    if (hasMargin) {
+      rectangle.position.x -= margin.left;
+      rectangle.position.y += margin.top;
+      rectangle.size.x += margin.left + margin.right;
+      rectangle.size.y += margin.bottom + margin.top;
+
+      Debug.drawOutline(rectangle, this, marginColor);
     }
 
-    rectangle.position.x -= margin.left;
-    rectangle.position.y += margin.top;
-    rectangle.size.x += margin.left + margin.right;
-    rectangle.size.y += margin.bottom + margin.top;
-
-    Debug.drawOutline(rectangle, this, Color.FUCHSIA);
+    if (obj instanceof ElementRenderElement el) {
+      for (RenderElement child : el.getChildren()) {
+        drawDebug(rectangle, child, hovered);
+      }
+    }
   }
 
   /* --------------------------- Selection and input ---------------------------- */

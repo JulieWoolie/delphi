@@ -3,12 +3,12 @@ import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 plugins {
   java
   id("io.freefair.lombok") version "8.6"
-  id("io.papermc.paperweight.userdev") version "1.7.1"
+  id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
   id("com.github.johnrengelman.shadow") version "8.1.1"
   kotlin("jvm") version "2.0.0"
 }
 
-val minecraftVersion = "1.21"
+val minecraftVersion = "1.21.4"
 val pluginBaseName = "delphi-papermc"
 
 version = "$minecraftVersion-1.0.0"
@@ -24,8 +24,7 @@ dependencies {
   implementation(project(":dom"))
   implementation(project(":chimera"))
   implementation(project(":api"))
-
-  //implementation(kotlin("stdlib"))
+  implementation(project(":render"))
 
   paperweight.paperDevBundle("$minecraftVersion-R0.1-SNAPSHOT")
 }
