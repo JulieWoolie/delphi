@@ -5,7 +5,7 @@ import static net.arcadiusmc.delphidom.Consts.ITEM_SPRITE_SIZE;
 
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.Layer;
-import net.arcadiusmc.delphirender.dom.RenderObject;
+import net.arcadiusmc.delphirender.tree.RenderElement;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
@@ -60,11 +60,11 @@ public class ItemContent implements ElementContent {
   }
 
   @Override
-  public void configureInitial(Layer layer, RenderObject element) {
+  public void configureInitial(Layer layer, RenderElement element) {
     layer.scale.z = Z_SCALE;
 
-    float transY = layer.size.y * Y_OFF_MODIFIER * element.getStyle().scale.y * GLOBAL_SCALAR;
-    layer.translate.y += transY;
+//    float transY = layer.size.y * Y_OFF_MODIFIER * element.getStyle().scale.y * GLOBAL_SCALAR;
+//    layer.translate.y += transY;
     layer.translate.z += Z_OFF;
 
     //

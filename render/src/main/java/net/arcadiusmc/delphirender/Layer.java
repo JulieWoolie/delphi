@@ -1,6 +1,6 @@
 package net.arcadiusmc.delphirender;
 
-import static net.arcadiusmc.delphirender.dom.RenderObject.NIL_COLOR;
+import static net.arcadiusmc.delphirender.content.TextContent.NIL_COLOR;
 
 import java.util.Objects;
 import net.arcadiusmc.delphidom.Rect;
@@ -23,18 +23,14 @@ public class Layer {
   public boolean alwaysSpawn;
   public Color color;
 
-  public final Vector3f translate = new Vector3f();
-  public final Vector3f rotatedTranslate = new Vector3f();
+  public final Vector3f translate = new Vector3f(0);
+  public final Vector3f rotatedTranslate = new Vector3f(0);
   public final Quaternionf leftRotation = new Quaternionf();
-  public final Vector3f scale = new Vector3f();
+  public final Vector3f scale = new Vector3f(1);
   public final Quaternionf rightRotation = new Quaternionf();
 
   public Layer() {
-
-  }
-
-  public static boolean isNotSpawned(Layer layer) {
-    return layer == null || !layer.isSpawned();
+    nullify();
   }
 
   public void nullify() {
@@ -73,6 +69,7 @@ public class Layer {
 
   public void spawn(Location location, World w) {
     entity = w.spawn(location, TextDisplay.class);
+    updateEntity();
   }
 
   public void updateTransform() {

@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphirender.layout;
 
-import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE;
+import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE_X;
+import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphidom.Consts.LEN0_PX;
 import static net.arcadiusmc.delphirender.FullStyle.UNSET;
 import static net.arcadiusmc.delphirender.FullStyle.toBukkitColor;
@@ -8,18 +9,21 @@ import static net.arcadiusmc.delphirender.FullStyle.toTextColor;
 
 import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.chimera.ValueOrAuto;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.RenderSystem;
-import net.arcadiusmc.delphirender.content.ElementContent;
 import net.arcadiusmc.delphirender.tree.ContentRenderElement;
 import net.arcadiusmc.delphirender.tree.ElementRenderElement;
 import net.arcadiusmc.delphirender.tree.RenderElement;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
 import org.joml.Vector2f;
+import org.slf4j.Logger;
 
 public class NLayout {
+  private static final Logger LOGGER = Loggers.getLogger();
+
   /*
    * ==== LAYOUT PROCEDURE ====
    *
@@ -105,9 +109,207 @@ public class NLayout {
    *   https://css-tricks.com/snippets/css/a-guide-to-flexbox/
    */
 
-  public static void reflow(RenderElement element) {
-    pass1_intrinsicMeasurement(element);
-    pass2_topdownMeasurement(element);
+  public static void nlayout(RenderElement element) {
+    measure(element);
+    layout(element);
+  }
+
+  private static void layout(RenderElement element) {
+    if (!(element instanceof ElementRenderElement el)) {
+      return;
+    }
+
+    for (RenderElement child : el.getChildren()) {
+      layout(child);
+    }
+
+    LayoutStyle s = getLayoutStyle(el);
+
+    s.firstLayoutPass(el);
+    s.secondLayoutPass(el);
+  }
+
+  private static boolean measure(RenderElement element) {
+    FullStyle style = element.getStyle();
+    ComputedStyleSet comp = element.getStyleSet();
+
+    style.size.set(UNSET);
+    element.size.set(UNSET);
+
+    applyBasicStyle(style, comp);
+
+    RenderSystem system = element.getSystem();
+    Vector2f screenSize = new Vector2f();
+    Vector2f parentSize = new Vector2f();
+    Vector2f parentScale = new Vector2f(1);
+
+    system.getScreen().getDimensions(screenSize);
+    boolean canResolvePercents;
+
+    if (element.parent == null) {
+      parentSize.set(screenSize);
+      canResolvePercents = true;
+    } else {
+      parentScale.set(element.parent.getStyle().scale);
+
+      if (element.parent.getStyle().size.x != UNSET) {
+        parentSize.set(element.parent.getStyle().size);
+        canResolvePercents = true;
+      } else {
+        parentSize.set(screenSize);
+        canResolvePercents = false;
+      }
+    }
+
+    style.size.x = resolveValue(comp.width, UNSET, parentSize.x, screenSize);
+    style.size.y = resolveValue(comp.height, UNSET, parentSize.y, screenSize);
+
+    style.scale.x = resolveValue(comp.scaleX, 1.0f, parentScale.x, parentScale);
+    style.scale.y = resolveValue(comp.scaleY, 1.0f, parentScale.y, parentScale);
+
+    style.minSize.x = resolveValue(comp.minWidth, UNSET, parentSize.x, screenSize);
+    style.minSize.y = resolveValue(comp.minHeight, UNSET, parentSize.y, screenSize);
+    style.maxSize.x = resolveValue(comp.maxWidth, UNSET, parentSize.x, screenSize);
+    style.maxSize.y = resolveValue(comp.maxHeight, UNSET, parentSize.y, screenSize);
+
+    style.margin.top = resolveValue(comp.marginTop, 0, parentSize.y, screenSize);
+    style.margin.right = resolveValue(comp.marginRight, 0, parentSize.x, screenSize);
+    style.margin.bottom = resolveValue(comp.marginBottom, 0, parentSize.y, screenSize);
+    style.margin.left = resolveValue(comp.marginLeft, 0, parentSize.x, screenSize);
+
+    style.outline.top = resolveValue(comp.outlineTop, 0, parentSize.y, screenSize);
+    style.outline.right = resolveValue(comp.outlineRight, 0, parentSize.x, screenSize);
+    style.outline.bottom = resolveValue(comp.outlineBottom, 0, parentSize.y, screenSize);
+    style.outline.left = resolveValue(comp.outlineLeft, 0, parentSize.x, screenSize);
+
+    style.border.top = resolveValue(comp.borderTop, 0, parentSize.y, screenSize);
+    style.border.right = resolveValue(comp.borderRight, 0, parentSize.x, screenSize);
+    style.border.bottom = resolveValue(comp.borderBottom, 0, parentSize.y, screenSize);
+    style.border.left = resolveValue(comp.borderLeft, 0, parentSize.x, screenSize);
+
+    style.padding.top = resolveValue(comp.paddingTop, 0, parentSize.y, screenSize);
+    style.padding.right = resolveValue(comp.paddingRight, 0, parentSize.x, screenSize);
+    style.padding.bottom = resolveValue(comp.paddingBottom, 0, parentSize.y, screenSize);
+    style.padding.left = resolveValue(comp.paddingLeft, 0, parentSize.x, screenSize);
+
+    if (element instanceof ContentRenderElement ce) {
+      Vector2f measuredContentSize = new Vector2f();
+      ce.getContent().measureContent(measuredContentSize, style);
+      measuredContentSize.mul(GLOBAL_SCALAR);
+      measuredContentSize.mul(style.scale);
+
+      if (style.size.x == UNSET) {
+        style.size.x = measuredContentSize.x;
+      }
+      if (style.size.y == UNSET) {
+        style.size.y = measuredContentSize.y;
+      }
+    } else if (element instanceof ElementRenderElement el) {
+      boolean needsIteration = false;
+      for (RenderElement child : el.getChildren()) {
+        needsIteration |= !measure(child);
+      }
+
+      if (needsIteration) {
+        LayoutStyle lStyle = getLayoutStyle(el);
+        Vector2f measuredSize = new Vector2f();
+        lStyle.measure(el, measuredSize);
+
+        if (style.size.x == UNSET) {
+          style.size.x = measuredSize.x;
+        }
+        if (style.size.y == UNSET) {
+          style.size.y = measuredSize.y;
+        }
+
+        for (RenderElement child : el.getChildren()) {
+          resolvePercents(child);
+        }
+      }
+    }
+
+    applyMeasuredSize(element, element.size);
+
+    return canResolvePercents;
+  }
+
+  private static void resolvePercents(RenderElement element) {
+    FullStyle style = element.getStyle();
+    ComputedStyleSet comp = element.getStyleSet();
+
+    Vector2f parentSize = new Vector2f();
+    parentSize.set(element.getStyle().size);
+
+    style.size.x = resolveIfPercent(comp.width, style.size.x, parentSize.x);
+    style.size.y = resolveIfPercent(comp.height, style.size.y, parentSize.y);
+
+    style.minSize.x = resolveIfPercent(comp.minWidth, style.minSize.x, parentSize.x);
+    style.minSize.y = resolveIfPercent(comp.minHeight, style.minSize.y, parentSize.y);
+    style.maxSize.x = resolveIfPercent(comp.maxWidth, style.maxSize.x, parentSize.x);
+    style.maxSize.y = resolveIfPercent(comp.maxHeight, style.maxSize.y, parentSize.y);
+
+    style.margin.top = resolveIfPercent(comp.marginTop, style.margin.top, parentSize.y);
+    style.margin.right = resolveIfPercent(comp.marginRight, style.margin.right, parentSize.x);
+    style.margin.bottom = resolveIfPercent(comp.marginBottom, style.margin.bottom, parentSize.y);
+    style.margin.left = resolveIfPercent(comp.marginLeft, style.margin.left, parentSize.x);
+
+    style.outline.top = resolveIfPercent(comp.outlineTop, style.outline.top, parentSize.y);
+    style.outline.right = resolveIfPercent(comp.outlineRight, style.outline.right, parentSize.x);
+    style.outline.bottom = resolveIfPercent(comp.outlineBottom, style.outline.bottom, parentSize.y);
+    style.outline.left = resolveIfPercent(comp.outlineLeft, style.outline.left, parentSize.x);
+
+    style.border.top = resolveIfPercent(comp.borderTop, style.border.top, parentSize.y);
+    style.border.right = resolveIfPercent(comp.borderRight, style.border.right, parentSize.x);
+    style.border.bottom = resolveIfPercent(comp.borderBottom, style.border.bottom, parentSize.y);
+    style.border.left = resolveIfPercent(comp.borderLeft, style.border.left, parentSize.x);
+
+    style.padding.top = resolveIfPercent(comp.paddingTop, style.padding.top, parentSize.y);
+    style.padding.right = resolveIfPercent(comp.paddingRight, style.padding.right, parentSize.x);
+    style.padding.bottom = resolveIfPercent(comp.paddingBottom, style.padding.bottom, parentSize.y);
+    style.padding.left = resolveIfPercent(comp.paddingLeft, style.padding.left, parentSize.x);
+  }
+
+  private static float resolveIfPercent(ValueOrAuto v, float current, float parent) {
+    if (v.isAuto()) {
+      return current;
+    }
+    if (v.primitive().getUnit() != Unit.PERCENT) {
+      return current;
+    }
+    return v.primitive().getValue() * parent;
+  }
+
+  private static float clamp(float v, float lower, float upper) {
+    float min = lower == UNSET ? Float.MIN_VALUE : lower;
+    float max = upper == UNSET ? Float.MAX_VALUE : upper;
+    return Math.clamp(v, min, max);
+  }
+
+  private static void applyMeasuredSize(RenderElement element, Vector2f out) {
+    FullStyle style = element.getStyle();
+    Rect rect = new Rect();
+
+    out.x = 0;
+    out.y = 0;
+
+    if (style.size.x != UNSET) {
+      out.x = clamp(style.size.x, style.minSize.x, style.maxSize.x);
+    }
+    if (style.size.y != UNSET) {
+      out.y = clamp(style.size.y, style.minSize.y, style.maxSize.y);
+    }
+
+    rect.set(style.outline).max(0.0f);
+    out.x += rect.x();
+    out.y += rect.y();
+
+    rect.set(style.border).max(0.0f);
+    out.x += rect.x();
+    out.y += rect.y();
+
+    rect.set(style.padding).max(0.0f);
+    out.x += rect.x();
+    out.y += rect.y();
   }
 
   public static void applyBasicStyle(FullStyle style, ComputedStyleSet styleSet) {
@@ -133,93 +335,20 @@ public class NLayout {
     style.order = styleSet.order;
   }
 
-  /* ----------------- Pass 1: Measurement ----------------- */
-
-  public static void pass1_intrinsicMeasurement(RenderElement element) {
-    if (element instanceof ElementRenderElement el) {
-      for (RenderElement child : el.getChildren()) {
-        pass1_intrinsicMeasurement(child);
-      }
-    }
-
-    Vector2f screenSize = element.getSystem().getScreen().getDimensions();
-
-    FullStyle style = element.getStyle();
-    ComputedStyleSet styleSet = element.getStyleSet();
-
-    applyBasicStyle(style, styleSet);
-
-    style.margin.left = resolveValue(styleSet.marginLeft, UNSET, screenSize);
-    style.margin.top = resolveValue(styleSet.marginTop, UNSET, screenSize);
-    style.margin.right = resolveValue(styleSet.marginRight, UNSET, screenSize);
-    style.margin.bottom = resolveValue(styleSet.marginBottom, UNSET, screenSize);
-
-    style.outline.left = resolveValue(styleSet.outlineLeft, 0f, screenSize);
-    style.outline.top = resolveValue(styleSet.outlineTop, 0f, screenSize);
-    style.outline.right = resolveValue(styleSet.outlineRight, 0f, screenSize);
-    style.outline.bottom = resolveValue(styleSet.outlineBottom, 0f, screenSize);
-
-    style.border.left = resolveValue(styleSet.borderLeft, 0f, screenSize);
-    style.border.top = resolveValue(styleSet.borderTop, 0f, screenSize);
-    style.border.right = resolveValue(styleSet.borderRight, 0f, screenSize);
-    style.border.bottom = resolveValue(styleSet.borderBottom, 0f, screenSize);
-
-    style.padding.left = resolveValue(styleSet.paddingLeft, 0f, screenSize);
-    style.padding.top = resolveValue(styleSet.paddingTop, 0f, screenSize);
-    style.padding.right = resolveValue(styleSet.paddingRight, 0f, screenSize);
-    style.padding.bottom = resolveValue(styleSet.paddingBottom, 0f, screenSize);
-
-    style.scale.x = resolveValue(styleSet.scaleX, 1.0f, screenSize);
-    style.scale.y = resolveValue(styleSet.scaleY, 1.0f, screenSize);
-
-    style.size.x = resolveValue(styleSet.width, UNSET, screenSize);
-    style.size.y = resolveValue(styleSet.height, UNSET, screenSize);
-
-    style.minSize.x = resolveValue(styleSet.minWidth, UNSET, screenSize);
-    style.minSize.y = resolveValue(styleSet.minHeight, UNSET, screenSize);
-
-    style.maxSize.x = resolveValue(styleSet.maxWidth, UNSET, screenSize);
-    style.maxSize.y = resolveValue(styleSet.maxHeight, UNSET, screenSize);
-
-    if (element instanceof ContentRenderElement content) {
-      measureContent(content);
-    }
-  }
-
-  private static void measureContent(ContentRenderElement element) {
-    Vector2f out = new Vector2f();
-    ElementContent content = element.getContent();
-    FullStyle style = element.getStyle();
-
-    if (content != null) {
-      content.measureContent(out, style);
-    }
-
-    Rect r = new Rect().set(style.outline).max(0.0f);
-    out.x += r.x();
-    out.y += r.y();
-
-    r.set(style.border).max(0.0f);
-    out.x += r.x();
-    out.y += r.y();
-
-    r.set(style.padding).max(0.0f);
-    out.x += r.x();
-    out.y += r.y();
-
-    element.size.set(out);
+  private static LayoutStyle getLayoutStyle(ElementRenderElement ele) {
+    return Layouts.FLOW;
   }
 
   private static float resolvePrimitive(Primitive prim, float parentSize, Vector2f screenSize) {
-    float percent = prim.getValue() * 100.0f;
+    float percent = prim.getValue() * 0.01f;
     float value = prim.getValue();
 
     return switch (prim.getUnit()) {
       case NONE, M -> value;
-      case PX -> value * CHAR_PX_SIZE;
+      case PX -> value * CHAR_PX_SIZE_X;
       case CH -> value * LEN0_PX;
-      case VW -> (percent) * screenSize.x;
-      case VH -> (percent) * screenSize.y;
+      case VW -> percent * screenSize.x;
+      case VH -> percent * screenSize.y;
       case CM -> percent;
 
       case PERCENT -> {
@@ -231,10 +360,6 @@ public class NLayout {
 
       default -> UNSET;
     };
-  }
-
-  private static float resolveValue(ValueOrAuto valueOrAuto, float auto, Vector2f screenSize) {
-    return resolveValue(valueOrAuto, auto, UNSET, screenSize);
   }
 
   private static float resolveValue(
@@ -255,6 +380,7 @@ public class NLayout {
 
   public static void pass2_topdownMeasurement(RenderElement element) {
     Vector2f parentSize = new Vector2f();
+    Vector2f screenSize = element.getScreen().getDimensions();
     RenderSystem system = element.getSystem();
 
     if (element.parent == null) {
@@ -266,7 +392,37 @@ public class NLayout {
     ComputedStyleSet styleSet = element.getStyleSet();
     FullStyle style = element.getStyle();
 
+    style.margin.left = resolveValue(styleSet.marginLeft, UNSET, parentSize.x, screenSize);
+    style.margin.top = resolveValue(styleSet.marginTop, UNSET, parentSize.y, screenSize);
+    style.margin.right = resolveValue(styleSet.marginRight, UNSET, parentSize.x, screenSize);
+    style.margin.bottom = resolveValue(styleSet.marginBottom, UNSET, parentSize.y, screenSize);
 
+    style.outline.left = resolveValue(styleSet.outlineLeft, 0f, parentSize.x, screenSize);
+    style.outline.top = resolveValue(styleSet.outlineTop, 0f, parentSize.y, screenSize);
+    style.outline.right = resolveValue(styleSet.outlineRight, 0f, parentSize.x, screenSize);
+    style.outline.bottom = resolveValue(styleSet.outlineBottom, 0f, parentSize.y, screenSize);
+
+    style.border.left = resolveValue(styleSet.borderLeft, 0f, parentSize.x, screenSize);
+    style.border.top = resolveValue(styleSet.borderTop, 0f, parentSize.y, screenSize);
+    style.border.right = resolveValue(styleSet.borderRight, 0f, parentSize.x, screenSize);
+    style.border.bottom = resolveValue(styleSet.borderBottom, 0f, parentSize.y, screenSize);
+
+    style.padding.left = resolveValue(styleSet.paddingLeft, 0f, parentSize.x, screenSize);
+    style.padding.top = resolveValue(styleSet.paddingTop, 0f, parentSize.y, screenSize);
+    style.padding.right = resolveValue(styleSet.paddingRight, 0f, parentSize.x, screenSize);
+    style.padding.bottom = resolveValue(styleSet.paddingBottom, 0f, parentSize.y, screenSize);
+
+    style.scale.x = resolveValue(styleSet.scaleX, 1.0f, parentSize.x, screenSize);
+    style.scale.y = resolveValue(styleSet.scaleY, 1.0f, parentSize.y, screenSize);
+
+    style.size.x = resolveValue(styleSet.width, UNSET, parentSize.x, screenSize);
+    style.size.y = resolveValue(styleSet.height, UNSET, parentSize.y, screenSize);
+
+    style.minSize.x = resolveValue(styleSet.minWidth, UNSET, parentSize.x, screenSize);
+    style.minSize.y = resolveValue(styleSet.minHeight, UNSET, parentSize.y, screenSize);
+
+    style.maxSize.x = resolveValue(styleSet.maxWidth, UNSET, parentSize.x, screenSize);
+    style.maxSize.y = resolveValue(styleSet.maxHeight, UNSET, parentSize.y, screenSize);
 
     if (element instanceof ElementRenderElement el) {
       for (RenderElement child : el.getChildren()) {
@@ -275,10 +431,19 @@ public class NLayout {
     }
   }
 
-  public static boolean isPercent(ValueOrAuto auto) {
-    if (auto.isAuto()) {
-      return false;
+  /* ----------------- PASS 3: Layout ----------------- */
+
+  public static void pass3_layout(RenderElement element) {
+    if (!(element instanceof ElementRenderElement el)) {
+      return;
     }
-    return auto.primitive().getUnit() == Unit.PERCENT;
+
+    for (RenderElement child : el.getChildren()) {
+      pass3_layout(child);
+    }
+
+    LayoutStyle style = getLayoutStyle(el);
+    style.firstLayoutPass(el);
+    style.secondLayoutPass(el);
   }
 }

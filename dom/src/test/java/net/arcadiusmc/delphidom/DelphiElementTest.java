@@ -17,11 +17,16 @@ import org.junit.jupiter.api.Test;
 class DelphiElementTest {
 
   @Test
-  void setAttribute() {
+  void should_throw_when_nullAttributeName() {
     DelphiDocument doc = createDoc();
     DelphiElement div = doc.createElement("div");
-
     assertThrows(NullPointerException.class, () -> div.setAttribute(null, "hello"));
+  }
+
+  @Test
+  void should_changeAttribute_when_set() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div = doc.createElement("div");
 
     String attr = "foo";
     String val = "bar";
@@ -29,9 +34,19 @@ class DelphiElementTest {
     assertDoesNotThrow(() -> div.setAttribute(attr, val));
     String gotten = div.getAttribute(attr);
     assertEquals(val, gotten);
+  }
 
+  @Test
+  void should_returnNull_when_attrSetToNull() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div = doc.createElement("div");
+
+    String attr = "foo";
+
+    div.setAttribute(attr, "bar");
     div.setAttribute(attr, null);
-    gotten = div.getAttribute(attr);
+
+    String gotten = div.getAttribute(attr);
 
     assertNull(gotten);
   }
@@ -268,14 +283,13 @@ class DelphiElementTest {
   }
 
   @Test
-  void firstChild() {
+  void firstChild_should_return_when_childrenPresent() {
     DelphiDocument doc = createDoc();
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
     DelphiElement div3 = doc.createElement("div");
 
     DelphiElement body = doc.getBody();
-    assertNull(body.firstChild());
 
     body.appendChild(div1);
     body.appendChild(div2);
@@ -285,20 +299,35 @@ class DelphiElementTest {
   }
 
   @Test
-  void lastChild() {
+  void firstChild_should_returnNull_when_noChildren() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    assertNull(body.firstChild());
+  }
+
+  @Test
+  void lastChild_should_return_when_childrenPresent() {
     DelphiDocument doc = createDoc();
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
     DelphiElement div3 = doc.createElement("div");
 
     DelphiElement body = doc.getBody();
-    assertNull(body.lastChild());
 
     body.appendChild(div1);
     body.appendChild(div2);
     body.appendChild(div3);
 
     assertEquals(div3, body.lastChild());
+  }
+
+  @Test
+  void lastChild_should_returnNull_when_noChildren() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    assertNull(body.lastChild());
   }
 
   @Test

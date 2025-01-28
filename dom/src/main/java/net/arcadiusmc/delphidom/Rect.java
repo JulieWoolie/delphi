@@ -10,11 +10,12 @@ public class Rect {
   public float bottom = 0;
   public float right = 0;
 
-  public void set(Rect rect) {
+  public Rect set(Rect rect) {
     this.left = rect.left;
     this.top = rect.top;
     this.bottom = rect.bottom;
     this.right = rect.right;
+    return this;
   }
 
   public void set(float left, float top, float bottom, float right) {
@@ -45,5 +46,29 @@ public class Rect {
     top *= scalar;
     bottom *= scalar;
     right *= scalar;
+  }
+
+  public float x() {
+    return left + right;
+  }
+
+  public float y() {
+    return top + bottom;
+  }
+
+  public Rect min(float v) {
+    left = Math.min(left, v);
+    top = Math.min(top, v);
+    bottom  = Math.min(bottom, v);
+    right = Math.min(right, v);
+    return this;
+  }
+
+  public Rect max(float v) {
+    left = Math.max(left, v);
+    top = Math.max(top, v);
+    bottom  = Math.max(bottom, v);
+    right = Math.max(right, v);
+    return this;
   }
 }

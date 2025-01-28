@@ -2,7 +2,7 @@ package net.arcadiusmc.delphirender.content;
 
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.Layer;
-import net.arcadiusmc.delphirender.dom.RenderObject;
+import net.arcadiusmc.delphirender.tree.RenderElement;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
@@ -20,5 +20,5 @@ public interface ElementContent {
 
   boolean isEmpty();
 
-  void configureInitial(Layer layer, RenderObject element);
+  void configureInitial(Layer layer, RenderElement element);
 }

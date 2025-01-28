@@ -1,6 +1,8 @@
 package net.arcadiusmc.delphirender.tree;
 
-import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE;
+import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE_X;
+import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE_Y;
+import static net.arcadiusmc.delphidom.Consts.GLOBAL_SCALAR;
 import static net.arcadiusmc.delphirender.RenderLayer.BACKGROUND;
 import static net.arcadiusmc.delphirender.RenderLayer.BORDER;
 import static net.arcadiusmc.delphirender.RenderLayer.LAYER_COUNT;
@@ -9,12 +11,14 @@ import static net.arcadiusmc.delphirender.RenderLayer.OUTLINE;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
+import net.arcadiusmc.delphidom.Consts;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.Layer;
 import net.arcadiusmc.delphirender.RenderLayer;
 import net.arcadiusmc.delphirender.RenderScreen;
 import net.arcadiusmc.delphirender.RenderSystem;
+import net.arcadiusmc.delphirender.math.Rectangle;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
@@ -29,6 +33,8 @@ public abstract class RenderElement {
 
   static final Brightness BRIGHTNESS = new Brightness(15, 15);
   public static final boolean SEE_THROUGH = false;
+
+  static final int CONTENT_LAYER = 3;
 
   // Macro layer = A single element
   // Micro layer = A single layer of an element (eg: content, background, outline)
@@ -61,9 +67,24 @@ public abstract class RenderElement {
     this.layers = createLayers();
   }
 
+  public void getBounds(Rectangle rectangle) {
+    rectangle.position.y = position.y - size.y;
+    rectangle.position.x = position.x;
+    rectangle.size.x = size.x;
+    rectangle.size.y = size.y;
+  }
+
+  public void getContentStart(Vector2f out) {
+    float leftOffset = style.padding.left + style.outline.left + style.border.left;
+    float topOffset = style.padding.top - style.outline.top - style.border.top;
+
+    out.x = position.x + leftOffset;
+    out.y = position.y - topOffset;
+  }
+
   /* ----------------- LAYERS ----------------- */
 
-  private Layer[] createLayers() {
+  protected Layer[] createLayers() {
     Layer[] layers = new Layer[3];
     for (int i = 0; i < layers.length; i++) {
       layers[i] = new Layer();
@@ -77,12 +98,24 @@ public abstract class RenderElement {
 
   private void set(RenderLayer layer, Rect borderSize, boolean alwaysSpawn, Color color) {
     Layer l = layers[layer.ordinal()];
+
     l.borderSize.set(borderSize);
+    l.borderSize.mul(GLOBAL_SCALAR);
+
+    l.borderSize.top *= style.scale.y;
+    l.borderSize.bottom *= style.scale.y;
+    l.borderSize.left *= style.scale.x;
+    l.borderSize.right *= style.scale.x;
+
     l.alwaysSpawn = alwaysSpawn;
     l.color = color;
   }
 
   public void configure() {
+    for (Layer layer : layers) {
+      layer.nullify();
+    }
+
     set(OUTLINE, style.outline, false, style.outlineColor);
     set(BORDER, style.border, false, style.borderColor);
     set(BACKGROUND, style.padding, true, style.backgroundColor);
@@ -118,20 +151,25 @@ public abstract class RenderElement {
     Quaternionf lrot = screen.getLeftRotation();
     Quaternionf rrot = screen.getRightRotation();
 
-    Vector2f screenScale = screen.getScreenScale();
-    Vector3f scale = screen.getScale();
+    Vector2f screenDimScale = screen.getScreenScale();
+    Vector3f screenWorldScale = screen.getScale();
 
-    for (Layer layer : layers) {
+    for (int i = 0; i < layers.length; i++) {
+      Layer layer = layers[i];
+
+      if (i != CONTENT_LAYER) {
+        layer.scale.x = EMPTY_TD_BLOCK_SIZE_X * layer.size.x;
+        layer.scale.y = EMPTY_TD_BLOCK_SIZE_Y * layer.size.y;
+      }
+
       layer.translate.y -= layer.size.y;
-
-      layer.scale.x = EMPTY_TD_BLOCK_SIZE * layer.size.x;
-      layer.scale.y = EMPTY_TD_BLOCK_SIZE * layer.size.y;
+      layer.translate.x += layer.size.x * 0.5f;
 
       // Add calculated values
-      layer.size.mul(screenScale);
-      layer.scale.mul(scale);
-      layer.translate.x *= screenScale.x;
-      layer.translate.y *= screenScale.y;
+      layer.size.mul(screenDimScale);
+      layer.scale.mul(screenWorldScale);
+      layer.translate.x *= screenDimScale.x;
+      layer.translate.y *= screenDimScale.y;
 
       // Perform rotation
       lrot.transform(layer.translate, layer.rotatedTranslate);
@@ -158,6 +196,16 @@ public abstract class RenderElement {
   public void moveTo(float x, float y) {
     position.x = x;
     position.y = y;
+
+    Location spawn = getSpawnLocation();
+
+    for (Layer layer : layers) {
+      if (!layer.isSpawned()) {
+        continue;
+      }
+
+      layer.entity.teleport(spawn);
+    }
   }
 
   public void spawnRecursive() {
@@ -168,18 +216,25 @@ public abstract class RenderElement {
     kill();
   }
 
+  protected Location getSpawnLocation() {
+    Vector3f pos = new Vector3f();
+    screen.screenToWorld(this.position, pos);
+
+    return new Location(system.getWorld(), pos.x, pos.y, pos.z);
+  }
+
   public void spawn() {
     configure();
     project();
 
-    Vector3f pos = new Vector3f();
-    screen.screenToWorld(this.position, pos);
-    Location spawnLocation = new Location(system.getWorld(), pos.x, pos.y, pos.z);
+    Location spawnLocation = getSpawnLocation();
 
-    spawnContent(spawnLocation);
-    int spawnCount = 0;
+    boolean spawnedContent = spawnContent(spawnLocation);
+    int spawnCount = spawnedContent ? 1 : 0;
 
-    for (Layer layer : layers) {
+    for (int i = 0; i < layers.length; i++) {
+      Layer layer = layers[i];
+
       if (!layer.shouldSpawn()) {
         if (layer.isSpawned()) {
           system.removeEntity(layer.entity);
@@ -194,10 +249,17 @@ public abstract class RenderElement {
         layer.updateTransform();
         spawnCount++;
 
+        if (i != CONTENT_LAYER && layer.entity instanceof TextDisplay td) {
+          td.text(Consts.EMPTY_CONTENT);
+          td.setTextOpacity(Consts.EMPTY_TEXT_OPACITY);
+        }
+
         continue;
       }
 
-      layer.spawn(spawnLocation, spawnLocation.getWorld());
+      if (i != CONTENT_LAYER) {
+        layer.spawn(spawnLocation, spawnLocation.getWorld());
+      }
 
       if (layer.entity == null) {
         continue;
@@ -213,8 +275,8 @@ public abstract class RenderElement {
     spawned = spawnCount > 0;
   }
 
-  protected void spawnContent(Location location) {
-
+  protected boolean spawnContent(Location location) {
+    return false;
   }
 
   protected void configureEntity(Display display) {

@@ -71,6 +71,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DelphiCommand {
@@ -404,7 +406,14 @@ public class DelphiCommand {
       return SINGLE_SUCCESS;
     }
 
-    throw toCommandError(result.error().get());
+    DelphiException error = result.error().get();
+    Logger logger = LoggerFactory.getLogger("DelphiCommand");
+
+    if (logger.isDebugEnabled() || error.getCode() == ERR_UNKNOWN) {
+      logger.error("Error opening page with path {}, instanceName={}", path, instanceName, error);
+    }
+
+    throw toCommandError(error);
   }
 
   private static CommandSyntaxException toCommandError(DelphiException exc) {

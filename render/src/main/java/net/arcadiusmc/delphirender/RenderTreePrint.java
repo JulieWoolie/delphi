@@ -24,17 +24,20 @@ import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.XmlPrintVisitor;
 import net.arcadiusmc.delphidom.event.EventListenerList;
-import net.arcadiusmc.delphirender.dom.ContentRenderObject;
-import net.arcadiusmc.delphirender.dom.ElementRenderObject;
-import net.arcadiusmc.delphirender.dom.RenderObject;
+import net.arcadiusmc.delphirender.tree.ContentRenderElement;
+import net.arcadiusmc.delphirender.tree.ElementRenderElement;
+import net.arcadiusmc.delphirender.tree.RenderElement;
 import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.joml.Vector2f;
+import org.bukkit.entity.TextDisplay;
 
 public class RenderTreePrint extends XmlPrintVisitor {
 
@@ -120,7 +123,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     }
 
     nlIndent().append("world: ").append(view.getWorld().getName());
-    nlIndent().append("render-object-count: ").append(system.getRenderObjects().size());
+    nlIndent().append("render-object-count: ").append(system.getRenderElements().size());
     nlIndent().append("module-name: ").append(view.getResources().getModuleName());
 
     ResourceModule module = view.getResources().getModule();
@@ -182,7 +185,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("display: DisplayType.").append(style.display);
 
     nlIndent().append("scale: ").append(style.scale);
-    nlIndent().append("set-size: ").append(style.setSize);
+    nlIndent().append("set-size: ").append(style.size);
     nlIndent().append("min-size: ").append(style.minSize);
     nlIndent().append("max-size: ").append(style.maxSize);
 
@@ -248,28 +251,22 @@ public class RenderTreePrint extends XmlPrintVisitor {
     indent--;
   }
 
-  private void appendRenderObjectComment(DelphiNode node, RenderObject re) {
+  private void appendRenderElementComment(DelphiNode node, RenderElement re) {
     nlIndent().append("render-element:");
     indent++;
 
+    nlIndent().append("element-type: ").append(re.getClass().getSimpleName());
     nlIndent().append("parent-set: ").append(re.parent != null);
 
-    if (re instanceof ContentRenderObject co) {
+    if (re instanceof ContentRenderElement co) {
       nlIndent().append("content: ").append(co.getContent());
       nlIndent().append("content-dirty: ").append(co.isContentDirty());
-    } else if (re instanceof ElementRenderObject er) {
-      nlIndent().append("element-object-size: ").append(er.contentSize);
-      nlIndent().append("child-count: ").append(er.childObjects.size());
+    } else if (re instanceof ElementRenderElement er) {
+//      nlIndent().append("element-object-size: ").append(er.contentSize);
+//      nlIndent().append("child-count: ").append(er.childObjects.size());
     }
 
-    Vector2f vector = new Vector2f();
-
-    re.getElementSize(vector);
-    nlIndent().append("size: ").append(vector);
-
-    re.getContentStart(vector);
-    nlIndent().append("content-start: ").append(vector);
-
+    nlIndent().append("size: ").append(re.size);
     nlIndent().append("position: ").append(re.getPosition());
     nlIndent().append("depth: ").append(re.getDepth());
 
@@ -310,28 +307,51 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
     indent++;
 
-    for (Layer layer : re.getLayers()) {
-      if (RenderObject.isNotSpawned(layer)) {
+    for (int i = 0; i < re.getLayers().length; i++) {
+      Layer layer = re.getLayers()[i];
+
+      if (!layer.isSpawned()) {
         continue;
       }
 
-      nlIndent().append("layer[").append(layer.layer).append("]:");
+      String label = switch (i) {
+        case 0 -> "OUTLINE";
+        case 1 -> "BORDER";
+        case 2 -> "BACKGROUND";
+        case 3 -> "CONTENT";
+        default -> "UNKNOWN";
+      };
+
+      nlIndent()
+          .append("layer[")
+          .append(label)
+          .append("]:");
+
       indent++;
 
       nlIndent().append("size: ").append(layer.size);
       nlIndent().append("border-size: ").append(layer.borderSize);
-      nlIndent().append("depth: ").append(layer.depth);
       nlIndent().append("scale: ").append(layer.scale);
       nlIndent().append("translate: ").append(layer.translate);
 
+      Display entity = layer.entity;
       nlIndent().append("entity-position: ")
           .append('(')
-          .append(layer.entity.getX())
+          .append(entity.getX())
           .append(' ')
-          .append(layer.entity.getY())
+          .append(entity.getY())
           .append(' ')
-          .append(layer.entity.getZ())
+          .append(entity.getZ())
           .append(')');
+
+      if (entity instanceof TextDisplay td) {
+        nlIndent().append("entity-text: ").append(GsonComponentSerializer.gson().serialize(td.text()));
+      }
+      if (entity instanceof ItemDisplay id) {
+        nlIndent().append("entity-item: ").append(id.getItemStack());
+      }
+
+      nlIndent().append("spawned-entity-type: ").append(entity.getType().key());
 
       indent--;
     }
@@ -372,7 +392,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
   }
 
   private void appendInfo(DelphiNode node) {
-    RenderObject obj = system.getRenderObject(node);
+    RenderElement obj = system.getRenderElement(node);
 
     if (obj == null) {
       return;
@@ -381,7 +401,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append(COMMENT_START);
     indent++;
 
-    appendRenderObjectComment(node, obj);
+    appendRenderElementComment(node, obj);
 
     indent--;
     nlIndent().append(COMMENT_END);

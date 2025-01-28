@@ -1,7 +1,7 @@
 package net.arcadiusmc.delphirender.content;
 
-import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE;
-import static net.arcadiusmc.delphirender.dom.RenderObject.NIL_COLOR;
+import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE_X;
+import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE_Y;
 
 import net.arcadiusmc.delphirender.FontMeasureCallback;
 import net.arcadiusmc.delphirender.FullStyle;
@@ -10,12 +10,13 @@ import net.arcadiusmc.delphirender.MetricTextMeasure;
 import net.arcadiusmc.delphirender.SimpleTextMeasure;
 import net.arcadiusmc.delphirender.TextMeasure;
 import net.arcadiusmc.delphirender.TextUtil;
-import net.arcadiusmc.delphirender.dom.RenderObject;
+import net.arcadiusmc.delphirender.tree.RenderElement;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
@@ -23,6 +24,8 @@ import org.bukkit.entity.TextDisplay;
 import org.joml.Vector2f;
 
 public abstract class TextContent implements ElementContent {
+
+  public static final Color NIL_COLOR = Color.fromARGB(0);
 
   public FontMeasureCallback metrics;
 
@@ -112,8 +115,8 @@ public abstract class TextContent implements ElementContent {
 
     measure.outputSize(out);
 
-    out.x *= CHAR_PX_SIZE;
-    out.y *= CHAR_PX_SIZE;
+    out.x *= CHAR_PX_SIZE_X;
+    out.y *= CHAR_PX_SIZE_Y;
   }
 
   @Override
@@ -122,7 +125,7 @@ public abstract class TextContent implements ElementContent {
   }
 
   @Override
-  public void configureInitial(Layer layer, RenderObject element) {
+  public void configureInitial(Layer layer, RenderElement element) {
   }
 
   @Override
