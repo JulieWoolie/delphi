@@ -9,6 +9,7 @@ import static net.arcadiusmc.chimera.Properties.BORDER_COLOR;
 import static net.arcadiusmc.chimera.Properties.BORDER_LEFT;
 import static net.arcadiusmc.chimera.Properties.BORDER_RIGHT;
 import static net.arcadiusmc.chimera.Properties.BORDER_TOP;
+import static net.arcadiusmc.chimera.Properties.BOX_SIZING;
 import static net.arcadiusmc.chimera.Properties.COLOR;
 import static net.arcadiusmc.chimera.Properties.DISPLAY;
 import static net.arcadiusmc.chimera.Properties.FLEX_DIRECTION;
@@ -48,6 +49,7 @@ import static net.arcadiusmc.chimera.Properties.Z_INDEX;
 import lombok.ToString;
 import net.arcadiusmc.chimera.Value.ValueType;
 import net.arcadiusmc.dom.style.AlignItems;
+import net.arcadiusmc.dom.style.BoxSizing;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
@@ -109,6 +111,7 @@ public class ComputedStyleSet {
   public FlexWrap flexWrap;
   public JustifyContent justifyContent;
   public int order;
+  public BoxSizing boxSizing;
 
   public ComputedStyleSet() {
     clear();
@@ -165,6 +168,7 @@ public class ComputedStyleSet {
     flexWrap = FlexWrap.DEFAULT;
     justifyContent = JustifyContent.DEFAULT;
     order = 0;
+    boxSizing = BoxSizing.CONTENT_BOX;
   }
   
   public void putAll(PropertySet set) {
@@ -199,6 +203,7 @@ public class ComputedStyleSet {
     flexWrap = getExplicit(set, FLEX_WRAP);
     justifyContent = getExplicit(set, JUSTIFY_CONTENT);
     order = getExplicit(set, ORDER);
+    boxSizing = getExplicit(set, BOX_SIZING);
 
     // Padding
     PrimitiveRect rect = getExplicit(set, PADDING);

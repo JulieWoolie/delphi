@@ -733,6 +733,20 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setOrder(@Nullable Integer value);
 
   /**
+   * Set the {@code box-sizing} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBoxSizing(@Nullable BoxSizing value);
+
+  /**
+   * Set the {@code box-sizing} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setBoxSizing(@Nullable String value);
+
+  /**
    * Set the value of a CSS property.
    *
    * @param propertyName CSS property name

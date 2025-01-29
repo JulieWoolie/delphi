@@ -119,6 +119,12 @@ public interface StylePropertiesReadonly {
   @Nullable String getOrder();
 
   /**
+   * Get the {@code box-sizing} property value.
+   * @return Box sizing, or {@code content-box} if not set.
+   */
+  @Nullable String getBoxSizing();
+
+  /**
    * Get a set of CSS property names that are explicitly set
    * by this property set.
    *

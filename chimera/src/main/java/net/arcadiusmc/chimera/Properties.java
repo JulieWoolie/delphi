@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.util.Map;
 import java.util.Objects;
 import net.arcadiusmc.dom.style.AlignItems;
+import net.arcadiusmc.dom.style.BoxSizing;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
@@ -332,6 +333,14 @@ public final class Properties {
       .defaultValue(0)
       .cascading(false)
       .layoutAffecting(true)
+      .build();
+
+  public static final Property<BoxSizing> BOX_SIZING = Property.builder(BoxSizing.class)
+      .defaultValue(BoxSizing.CONTENT_BOX)
+      .cascading(false)
+      .layoutAffecting(true)
+      .contentAffecting(false)
+      .visualAffecting(true)
       .build();
 
   static {

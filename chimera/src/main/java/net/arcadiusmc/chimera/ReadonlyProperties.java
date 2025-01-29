@@ -247,6 +247,11 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
+  public @Nullable String getBoxSizing() {
+    return get(Properties.BOX_SIZING);
+  }
+
+  @Override
   public @Nullable String getPropertyValue(String propertyName) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return null;

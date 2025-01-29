@@ -333,6 +333,7 @@ public class NLayout {
     style.flexWrap = styleSet.flexWrap;
     style.justify = styleSet.justifyContent;
     style.order = styleSet.order;
+    style.boxSizing = styleSet.boxSizing;
   }
 
   private static LayoutStyle getLayoutStyle(ElementRenderElement ele) {

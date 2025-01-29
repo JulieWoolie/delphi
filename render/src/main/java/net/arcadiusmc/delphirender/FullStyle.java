@@ -3,6 +3,7 @@ package net.arcadiusmc.delphirender;
 import net.arcadiusmc.chimera.Properties;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.dom.style.AlignItems;
+import net.arcadiusmc.dom.style.BoxSizing;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
@@ -45,6 +46,7 @@ public class FullStyle {
   public FlexWrap flexWrap = FlexWrap.DEFAULT;
   public JustifyContent justify = JustifyContent.DEFAULT;
   public int order = 0;
+  public BoxSizing boxSizing = BoxSizing.CONTENT_BOX;
 
   public static Color toBukkitColor(net.arcadiusmc.dom.style.Color c) {
     return Color.fromARGB(c.getAlpha(), c.getRed(), c.getGreen(), c.getBlue());

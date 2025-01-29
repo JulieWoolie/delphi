@@ -13,6 +13,7 @@ import net.arcadiusmc.chimera.parse.ast.Expression;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.dom.style.AlignItems;
+import net.arcadiusmc.dom.style.BoxSizing;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
@@ -712,6 +713,18 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   @Override
   public PropertiesMap setOrder(@Nullable Integer value) {
     set(Properties.ORDER, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setBoxSizing(@Nullable BoxSizing value) {
+    set(Properties.BOX_SIZING, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setBoxSizing(@Nullable String value) {
+    parse(Properties.BOX_SIZING, value);
     return triggerChange();
   }
 
