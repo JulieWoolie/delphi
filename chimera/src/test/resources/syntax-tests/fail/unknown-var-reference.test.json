@@ -1,0 +1,13 @@
+{
+  "scss": "$doesNotExist",
+  "parser-call": "expr",
+  "expected": "null",
+  "expected-outputs": [
+    {
+      "level": "error",
+      "message": "Unknown variable doesNotExist",
+      "line": 1,
+      "column": 0
+    }
+  ]
+}

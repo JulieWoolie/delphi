@@ -1,0 +1,11 @@
+{
+  "scss": "@assert 1 == 2;",
+  "parser-call": "execute",
+
+  "expected-outputs": [
+    {
+      "message": "Failed assert: 1 == 2",
+      "level": "error"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "parser-call": "execute",
+  "scss": "@if false { @assert false : 'inside false'; }"
+}

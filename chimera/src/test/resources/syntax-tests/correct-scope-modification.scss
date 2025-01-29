@@ -1,0 +1,7 @@
+$var1: 34535cm;
+
+@if true {
+  $var1: 10px;
+}
+
+@assert $var1 == 10px : "Value of variable was not changed within if statement :(";

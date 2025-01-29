@@ -1,0 +1,9 @@
+{
+  "parser-call": "execute",
+  "expected-outputs": [
+    {
+      "level": "debug",
+      "message": "@debug:4 inside else"
+    }
+  ]
+}

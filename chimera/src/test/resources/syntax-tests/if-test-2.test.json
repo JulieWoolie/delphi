@@ -1,0 +1,11 @@
+{
+  "parser-call": "execute",
+  "scss": "@if true { @debug 'inside true'; }",
+
+  "expected-outputs": [
+    {
+      "level": "debug",
+      "message": "@debug:1 inside true"
+    }
+  ]
+}

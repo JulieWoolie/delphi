@@ -1,0 +1,5 @@
+{
+  "scss": ".class-name",
+  "parser-call": "selector",
+  "expected": ".class-name"
+}

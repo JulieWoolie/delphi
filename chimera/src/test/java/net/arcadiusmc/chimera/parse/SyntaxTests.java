@@ -1,5 +1,6 @@
 package net.arcadiusmc.chimera.parse;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.gson.JsonArray;
@@ -16,7 +17,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import net.arcadiusmc.chimera.parse.ast.SheetStatement;
+import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.function.Executable;
@@ -71,9 +73,26 @@ public class SyntaxTests {
         String fname = path.getFileName().toString();
 
         test.fileName = path;
-        test.expectedResult = obj.get("should-succeed").getAsBoolean();
         test.displayName = relPath + fname.replace(SUFFIX, "");
         test.errors = loadErrors(obj);
+
+        if (obj.has("should-succeed")) {
+          test.expectedResult = obj.get("should-succeed").getAsBoolean();
+        } else {
+          test.expectedResult = null;
+        }
+
+        if (obj.has("parser-call")) {
+          test.parserCall = obj.get("parser-call").getAsString();
+        } else {
+          test.parserCall = "";
+        }
+
+        if (obj.has("expected")) {
+          test.resultString = obj.get("expected").getAsString();
+        } else {
+          test.resultString = null;
+        }
 
         if (obj.has("scss")) {
           test.scssSource = obj.get("scss").getAsString();
@@ -175,8 +194,11 @@ public class SyntaxTests {
   static class LoadedSyntaxTest implements Executable {
 
     String displayName = "test";
-    boolean expectedResult = true;
+    Boolean expectedResult = null;
     Path fileName;
+
+    String parserCall;
+    String resultString;
 
     String scssSource = "";
 
@@ -185,6 +207,7 @@ public class SyntaxTests {
 
     public void execute() throws Exception {
       ChimeraParser parser = new ChimeraParser(scssSource);
+      parser.getErrors().setSourceName(displayName);
 
       parser.getErrors().setListener(error -> {
         if (errors == null) {
@@ -205,17 +228,61 @@ public class SyntaxTests {
         err.validate(error);
       });
 
+      Object output;
+
       try {
-        SheetStatement statement = parser.stylesheet();
+        switch (parserCall) {
+          case "" -> output = parser.stylesheet();
 
-        System.out.printf("Ran test \"%s\", result=\n", displayName);
-        System.out.println(statement);
+          case "execute" -> {
+            var sheet = parser.stylesheet();
 
-        if (expectedResult) {
-          return;
+            ChimeraContext ctx = parser.createContext();
+            ctx.setIgnoringAsserts(false);
+
+            Interpreter intr = new Interpreter(ctx, Scope.createTopLevel());
+
+            output = sheet.visit(intr);
+          }
+
+          case "selector" -> {
+            SelectorExpression selector = parser.selector();
+            CompilerErrors errors = parser.getErrors();
+            output = selector.compile(errors);
+          }
+
+          case "expr" -> {
+            Expression expr = parser.expr();
+
+            ChimeraContext ctx = parser.createContext();
+            ctx.setIgnoringAsserts(false);
+
+            Interpreter intr = new Interpreter(ctx, Scope.createTopLevel());
+
+            output = expr.visit(intr);
+          }
+          case "statement" -> output = parser.statement();
+
+          default -> {
+            output = null;
+            fail("Invalid parser call: " + parserCall);
+          }
         }
 
-        fail("Passed when expected to fail");
+        System.out.printf("Ran test \"%s\"\n", displayName);
+
+        if (resultString != null) {
+          String outputStr = String.valueOf(output);
+          assertEquals(resultString, outputStr, "Output did not match expected");
+        }
+
+        if (expectedResult != null) {
+          if (expectedResult) {
+            return;
+          }
+
+          fail("Passed when expected to fail");
+        }
       } catch (ChimeraException exception) {
         if (!expectedResult) {
           return;

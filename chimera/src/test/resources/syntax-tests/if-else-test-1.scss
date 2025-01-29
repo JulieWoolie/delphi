@@ -1,0 +1,5 @@
+@if false {
+  @assert false : "Should not have entered if statement";
+} @else {
+  @debug 'inside else';
+}
