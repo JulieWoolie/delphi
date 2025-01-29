@@ -14,7 +14,7 @@ public final class Property<T> {
   private final int dirtyBits;
   private final PropertyValidator<T> validator;
 
-  int id;
+  int id = -1;
   String key;
 
   @Builder

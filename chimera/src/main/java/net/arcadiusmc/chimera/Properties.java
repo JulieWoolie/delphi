@@ -371,6 +371,8 @@ public final class Properties {
     register("justify-content",   JUSTIFY_CONTENT);
     register("order",             ORDER);
 
+    register("box-sizing",        BOX_SIZING);
+
     register("border-color",      BORDER_COLOR);
     register("display",           DISPLAY);
     register("text-shadow",       TEXT_SHADOW);
