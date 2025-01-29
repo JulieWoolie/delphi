@@ -11,6 +11,8 @@ public class ChimeraContext {
 
   private final StringBuffer input;
 
+  private boolean ignoringAsserts = true;
+
   public ChimeraContext(StringBuffer input) {
     this.input = input;
   }

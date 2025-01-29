@@ -2,6 +2,7 @@ package net.arcadiusmc.chimera.parse;
 
 import java.util.List;
 import java.util.Map;
+import net.arcadiusmc.chimera.parse.ast.AssertStatement;
 import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
 import net.arcadiusmc.chimera.parse.ast.Block;
 import net.arcadiusmc.chimera.parse.ast.CallExpr;
@@ -571,6 +572,17 @@ public class XmlPrintVisitor implements NodeVisitor<Void> {
       voidTag("function-parameter", parameter, Map.of("varargs", parameter.isVarargs()));
     }
 
+    return null;
+  }
+
+  @Override
+  public Void assertStatement(AssertStatement statement) {
+    enterTag("assert-statement", statement);
+    statement.getCondition().visit(this);
+    if (statement.getMessage() != null) {
+      statement.getMessage().visit(this);
+    }
+    exitTag("assert-statement");
     return null;
   }
 

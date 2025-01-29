@@ -22,6 +22,7 @@ import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.chimera.function.Argument;
 import net.arcadiusmc.chimera.function.ScssFunction;
 import net.arcadiusmc.chimera.function.ScssInvocationException;
+import net.arcadiusmc.chimera.parse.ast.AssertStatement;
 import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
 import net.arcadiusmc.chimera.parse.ast.BinaryOp;
 import net.arcadiusmc.chimera.parse.ast.Block;
@@ -901,6 +902,31 @@ public class Interpreter implements NodeVisitor<Object> {
 
   @Override
   public Object functionParameter(FuncParameterStatement parameter) {
+    return null;
+  }
+
+  @Override
+  public Object assertStatement(AssertStatement statement) {
+    if (context.isIgnoringAsserts()) {
+      return null;
+    }
+
+    Object value = statement.getCondition().visit(this);
+    Boolean b = Chimera.coerceValue(Boolean.class, value);
+
+    if (b != null && b) {
+      return null;
+    }
+
+    if (statement.getMessage() != null) {
+      Object message = statement.getMessage().visit(this);
+      error(statement.getStart(), String.valueOf(message));
+    } else {
+      Expression cond = statement.getCondition();
+      String input = context.getInput(cond.getStart(), cond.getEnd());
+      error(statement.getStart(), "Failed assert: " + input);
+    }
+
     return null;
   }
 }

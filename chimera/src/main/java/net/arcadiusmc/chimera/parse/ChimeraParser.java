@@ -3,6 +3,7 @@ package net.arcadiusmc.chimera.parse;
 import static net.arcadiusmc.chimera.parse.Token.AMPERSAND;
 import static net.arcadiusmc.chimera.parse.Token.ANGLE_LEFT;
 import static net.arcadiusmc.chimera.parse.Token.ANGLE_RIGHT;
+import static net.arcadiusmc.chimera.parse.Token.AT_ASSERT;
 import static net.arcadiusmc.chimera.parse.Token.AT_BREAK;
 import static net.arcadiusmc.chimera.parse.Token.AT_CONTINUE;
 import static net.arcadiusmc.chimera.parse.Token.AT_DEBUG;
@@ -57,6 +58,7 @@ import java.util.Objects;
 import java.util.Stack;
 import lombok.Getter;
 import net.arcadiusmc.chimera.parse.TokenStream.ParseMode;
+import net.arcadiusmc.chimera.parse.ast.AssertStatement;
 import net.arcadiusmc.chimera.parse.ast.BinaryExpr;
 import net.arcadiusmc.chimera.parse.ast.BinaryOp;
 import net.arcadiusmc.chimera.parse.ast.Block;
@@ -901,6 +903,27 @@ public class ChimeraParser {
     return decl;
   }
 
+  AssertStatement assertStatement() {
+    Token start = expect(AT_ASSERT);
+    AssertStatement stat = new AssertStatement();
+    stat.setStart(start.location());
+
+    Expression condition = expr();
+    stat.setCondition(condition);
+    stat.setEnd(condition.getEnd());
+
+    if (matches(COLON)) {
+      next();
+      Expression message = expr();
+      stat.setMessage(message);
+      stat.setEnd(message.getEnd());
+    }
+
+    expectEndOfStatement();
+
+    return stat;
+  }
+
   FunctionStatement functionStatement() {
     Token start = expect(AT_FUNCTION);
     FunctionStatement statement = new FunctionStatement();
@@ -1042,6 +1065,7 @@ public class ChimeraParser {
       case AT_RETURN, AT_BREAK, AT_CONTINUE -> controlFlowStatement();
       case AT_IMPORT -> importStatement();
       case AT_FUNCTION -> functionStatement();
+      case AT_ASSERT -> assertStatement();
 
       case ID -> {
         if (scope() == ParserScope.TOP_LEVEL) {

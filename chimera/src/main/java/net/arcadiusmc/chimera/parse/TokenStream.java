@@ -271,6 +271,7 @@ public class TokenStream {
             case "import" -> token(Token.AT_IMPORT);
             case "break" -> token(Token.AT_BREAK);
             case "continue" -> token(Token.AT_CONTINUE);
+            case "assert" -> token(Token.AT_ASSERT);
             default -> token(Token.AT_ID, id);
           };
         }
