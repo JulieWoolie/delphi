@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphidom;
 
 import lombok.EqualsAndHashCode;
+import org.joml.Vector2f;
 
 @EqualsAndHashCode
 public class Rect {
@@ -9,6 +10,18 @@ public class Rect {
   public float top = 0;
   public float bottom = 0;
   public float right = 0;
+
+  public Rect() {
+  }
+
+  public Rect(float value) {
+    set(value);
+  }
+
+  public Rect(Rect o) {
+    set(o);
+  }
+
 
   public Rect set(Rect rect) {
     this.left = rect.left;
@@ -38,14 +51,27 @@ public class Rect {
 
   @Override
   public String toString() {
-    return String.format("(left=%f, top=%f, bottom=%f, right=%f)", left, top, bottom, right);
+    if (!isNotZero()) {
+      return "(empty edges)";
+    }
+
+    return String.format("(left=%f, top=%f, bottom=%f, right=%f, x=%f, y=%f)", left, top, bottom, right, x(), y());
   }
 
-  public void mul(float scalar) {
+  public Rect mul(float scalar) {
     left *= scalar;
     top *= scalar;
     bottom *= scalar;
     right *= scalar;
+    return this;
+  }
+
+  public Rect mul(Vector2f v) {
+    left *= v.x;
+    top *= v.y;
+    bottom *= v.y;
+    right *= v.x;
+    return this;
   }
 
   public float x() {

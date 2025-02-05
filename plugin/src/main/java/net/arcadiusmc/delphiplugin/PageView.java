@@ -14,6 +14,7 @@ import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
+import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphiplugin.math.Screen;
@@ -21,8 +22,8 @@ import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.arcadiusmc.delphiplugin.resource.PageResources;
 import net.arcadiusmc.delphirender.RenderSystem;
 import net.arcadiusmc.delphirender.math.Rectangle;
-import net.arcadiusmc.delphirender.tree.ElementRenderElement;
-import net.arcadiusmc.delphirender.tree.RenderElement;
+import net.arcadiusmc.delphirender.object.ElementRenderObject;
+import net.arcadiusmc.delphirender.object.RenderObject;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.event.AttributeAction;
@@ -515,18 +516,18 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    RenderElement obj = renderer.getRenderElement(input.hoveredNode);
+    RenderObject obj = renderer.getRenderElement(input.hoveredNode);
     if (obj == null) {
       return;
     }
 
-    ElementRenderElement root = renderer.getRenderRoot();
+    ElementRenderObject root = renderer.getRenderRoot();
     Rectangle rectangle = new Rectangle();
 
     drawDebug(rectangle, root, obj);
   }
 
-  private void drawDebug(Rectangle rectangle, RenderElement obj, RenderElement hovered) {
+  private void drawDebug(Rectangle rectangle, RenderObject obj, RenderObject hovered) {
     obj.getBounds(rectangle);
 
     Color elColor = obj == hovered ? Color.RED : Color.GRAY;
@@ -534,7 +535,13 @@ public class PageView implements ExtendedView {
 
     Debug.drawOutline(rectangle, this, elColor);
 
-    var margin = obj.getStyle().margin;
+    Rect margin;
+    if (obj instanceof ElementRenderObject el) {
+      margin = el.style.margin;
+    } else {
+      margin = new Rect(0f);
+    }
+
     boolean hasMargin = margin.left > 0 || margin.right > 0 || margin.top > 0 || margin.bottom > 0;
 
     if (hasMargin) {
@@ -546,8 +553,8 @@ public class PageView implements ExtendedView {
       Debug.drawOutline(rectangle, this, marginColor);
     }
 
-    if (obj instanceof ElementRenderElement el) {
-      for (RenderElement child : el.getChildren()) {
+    if (obj instanceof ElementRenderObject el) {
+      for (RenderObject child : el.getChildObjects()) {
         drawDebug(rectangle, child, hovered);
       }
     }

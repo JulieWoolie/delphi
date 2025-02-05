@@ -5,6 +5,8 @@ import net.arcadiusmc.dom.ComponentNode;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.Visitor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class XmlPrintVisitor implements Visitor {
 
@@ -61,12 +63,25 @@ public class XmlPrintVisitor implements Visitor {
 
   @Override
   public void enterComponent(ComponentNode node) {
-    nlIndent().append("<chat-component text=\"unknown\"/>");
+    nlIndent().append("<chat-component>");
+    indent++;
+
+    String gson;
+    Component content = node.getContent();
+
+    if (content == null) {
+      gson = "";
+    } else {
+      gson = GsonComponentSerializer.gson().serialize(content);
+    }
+
+    nlIndent().append(gson);
   }
 
   @Override
   public void exitComponent(ComponentNode node) {
-
+    indent--;
+    nlIndent().append("</chat-component>");
   }
 
   @Override

@@ -27,7 +27,7 @@ public final class Debug {
   private Debug() {}
 
   private static final Logger LOGGER = Loggers.getLogger();
-  public static boolean debugOutlines = false;
+  public static boolean debugOutlines = LOGGER.isDebugEnabled();
   static final float POINT_DIST = 0.12f;
 
   public static Path dumpDebugTree(String fileName, PageView view, @Nullable Element target) {

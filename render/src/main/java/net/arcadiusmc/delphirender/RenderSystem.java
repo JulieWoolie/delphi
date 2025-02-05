@@ -1,5 +1,7 @@
 package net.arcadiusmc.delphirender;
 
+import static net.arcadiusmc.delphirender.object.RenderObject.MACRO_LAYER_DEPTH;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
@@ -17,14 +19,13 @@ import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
-import net.arcadiusmc.delphirender.content.ComponentContent;
-import net.arcadiusmc.delphirender.content.ItemContent;
-import net.arcadiusmc.delphirender.content.StringContent;
 import net.arcadiusmc.delphirender.layout.NLayout;
 import net.arcadiusmc.delphirender.math.Rectangle;
-import net.arcadiusmc.delphirender.tree.ContentRenderElement;
-import net.arcadiusmc.delphirender.tree.ElementRenderElement;
-import net.arcadiusmc.delphirender.tree.RenderElement;
+import net.arcadiusmc.delphirender.object.ComponentRenderObject;
+import net.arcadiusmc.delphirender.object.ElementRenderObject;
+import net.arcadiusmc.delphirender.object.ItemRenderObject;
+import net.arcadiusmc.delphirender.object.RenderObject;
+import net.arcadiusmc.delphirender.object.StringRenderObject;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
@@ -50,8 +51,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
   private final List<Entity> entities = new ObjectArrayList<>();
 
-  private final Map<DelphiNode, RenderElement> RenderElements = new Object2ObjectOpenHashMap<>();
-  private ElementRenderElement renderRoot = null;
+  private final Map<DelphiNode, RenderObject> renderElements = new Object2ObjectOpenHashMap<>();
+  private ElementRenderObject renderRoot = null;
 
   public RenderSystem(ExtendedView view, RenderScreen screen) {
     this.view = view;
@@ -63,7 +64,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     DelphiElement body = (DelphiElement) view.getDocument().getBody();
     if (body != null) {
-      renderRoot = (ElementRenderElement) initRenderTree(body);
+      renderRoot = (ElementRenderObject) initRenderTree(body);
     }
 
     EventTarget g = view.getDocument().getGlobalTarget();
@@ -81,7 +82,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
   public void close() {
     kill();
 
-    RenderElements.clear();
+    renderElements.clear();
     renderRoot = null;
     active = false;
   }
@@ -92,7 +93,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     renderRoot.moveTo(new Vector2f(0, view.getScreen().getHeight()));
-    NLayout.nlayout(renderRoot);
+    NLayout.layout(renderRoot);
 
     renderRoot.killRecursive();
     renderRoot.spawnRecursive();
@@ -111,7 +112,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    NLayout.nlayout(renderRoot);
+    NLayout.layout(renderRoot);
   }
 
   private void triggerUpdate() {
@@ -122,22 +123,29 @@ public class RenderSystem implements StyleUpdateCallbacks {
     renderRoot.spawnRecursive();
   }
 
-  public RenderElement getRenderElement(Node node) {
-    return RenderElements.get(node);
+  public RenderObject getRenderElement(Node node) {
+    return renderElements.get(node);
   }
 
   public void removeRenderElement(DelphiElement element) {
-    RenderElement obj = RenderElements.remove(element);
+    RenderObject obj = renderElements.remove(element);
 
     if (obj == null) {
       return;
     }
 
     obj.kill();
+
+    ElementRenderObject parent = obj.parent;
+    if (parent == null) {
+      return;
+    }
+
+    parent.removeChild(obj);
   }
 
-  public RenderElement initRenderTree(DelphiNode node) {
-    RenderElement obj;
+  public RenderObject initRenderTree(DelphiNode node) {
+    RenderObject obj;
 
     StyleObjectModel styles = node.getDocument().getStyles();
     StyleNode styleNode = styles.getStyleNode(node);
@@ -147,55 +155,56 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     ComputedStyleSet styleSet = styleNode.getComputedSet();
+    float depth = ((float) node.getDepth()) * MACRO_LAYER_DEPTH;
 
     switch (node) {
       case Text text -> {
-        ContentRenderElement o = new ContentRenderElement(this, styleSet);
-        StringContent content = new StringContent(text.getTextContent());
-        content.metrics = fontMetrics;
-
-        o.setContent(content);
-        obj = o;
+        StringRenderObject stringObj = new StringRenderObject(this);
+        stringObj.content = text.getTextContent();
+        obj = stringObj;
       }
       case ChatNode chat -> {
-        ContentRenderElement o = new ContentRenderElement(this, styleSet);
-        ComponentContent content = new ComponentContent(chat.getContent());
-        content.metrics = fontMetrics;
+        ElementRenderObject el = new ElementRenderObject(this, styleSet);
+        ComponentRenderObject comp = new ComponentRenderObject(this);
 
-        o.setContent(content);
-        obj = o;
+        comp.text = chat.getContent();
+        comp.depth = depth;
+        el.addChild(0, comp);
+
+        obj = el;
       }
       case DelphiItemElement item -> {
-        ContentRenderElement o = new ContentRenderElement(this, styleSet);
-        o.setContent(new ItemContent(item.getItemStack()));
-        obj = o;
+        ElementRenderObject el = new ElementRenderObject(this, styleSet);
+        ItemRenderObject itemObj = new ItemRenderObject(this);
+
+        itemObj.item = item.getItemStack();
+        itemObj.depth = depth;
+        el.addChild(0, itemObj);
+
+        obj = el;
       }
       default -> {
-        ElementRenderElement o = new ElementRenderElement(this, styleSet);
+        ElementRenderObject o = new ElementRenderObject(this, styleSet);
         DelphiElement el = (DelphiElement) node;
 
         for (DelphiNode delphiNode : el.childList()) {
-          o.addChild(initRenderTree(delphiNode), o.getChildren().size());
+          o.addChild(o.getChildObjects().size(), initRenderTree(delphiNode));
         }
 
         obj = o;
       }
     }
 
-    if (node.getParent() == null) {
-      obj.domIndex = 0;
-    } else {
-      obj.domIndex = node.getSiblingIndex();
-    }
+    obj.depth = MACRO_LAYER_DEPTH * node.getDepth();
+    obj.domIndex = node.getSiblingIndex();
 
-    obj.setDepth(node.getDepth());
+    renderElements.put(node, obj);
 
-    RenderElements.put(node, obj);
     return obj;
   }
 
   public void screenMoved() {
-    if (renderRoot != null && renderRoot.isSpawned()) {
+    if (renderRoot != null && renderRoot.spawned) {
       renderRoot.spawnRecursive();
     }
   }
@@ -210,7 +219,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    RenderElement obj = getRenderElement(styleNode.getDomNode());
+    RenderObject obj = getRenderElement(styleNode.getDomNode());
     if (obj == null) {
       return;
     }
@@ -218,28 +227,26 @@ public class RenderSystem implements StyleUpdateCallbacks {
     boolean respawn;
 
     if (changed(changes, DirtyBit.CONTENT)) {
-      if (obj instanceof ContentRenderElement co) {
-        co.setContentDirty(true);
-        respawn = true;
-      } else {
-        respawn = false;
-      }
+      respawn = true;
     } else {
       respawn = changed(changes, DirtyBit.VISUAL);
     }
 
     if (changed(changes, DirtyBit.LAYOUT)) {
-      if (obj instanceof ElementRenderElement el) {
+      if (obj instanceof ElementRenderObject el) {
         el.sortChildren();
       }
+
       triggerRealign();
 
       if (renderRoot != null) {
         renderRoot.spawnRecursive();
       }
     } else if (respawn) {
-      NLayout.applyBasicStyle(obj.getStyle(), styleNode.getComputedSet());
-      obj.spawn();
+      if (obj instanceof ElementRenderObject er) {
+        NLayout.applyBasicStyle(er.style, styleNode.getComputedSet());
+      }
+      obj.spawnRecursive();
     }
   }
 
@@ -248,24 +255,27 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    ContentRenderElement obj = (ContentRenderElement) getRenderElement(node);
+    RenderObject obj = getRenderElement(node);
+
     if (obj == null) {
       return;
     }
 
     if (node instanceof Text text) {
-      StringContent content = new StringContent(text.getTextContent());
-      obj.setContent(content);
+      StringRenderObject stringObj = (StringRenderObject) obj;
+      stringObj.content = text.getTextContent();
     } else if (node instanceof ChatNode chat) {
-      ComponentContent content = new ComponentContent(chat.getContent());
-      obj.setContent(content);
+      ElementRenderObject el = (ElementRenderObject) obj;
+      ComponentRenderObject comp = el.onlyChild();
+      comp.text = chat.getContent();
     } else if (node instanceof DelphiItemElement itemEl) {
-      ItemContent content = new ItemContent(itemEl.getItemStack());
-      obj.setContent(content);
+      ElementRenderObject el = (ElementRenderObject) obj;
+      ItemRenderObject item = el.onlyChild();
+      item.item = itemEl.getItemStack();
     }
 
-    obj.spawn();
     triggerRealign();
+    obj.spawn();
   }
 
   public void tooltipChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
@@ -274,7 +284,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     if (old != null) {
-      RenderElement oldRender = getRenderElement(old);
+      RenderObject oldRender = getRenderElement(old);
       if (oldRender != null) {
         oldRender.killRecursive();
       }
@@ -284,7 +294,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    RenderElement obj = getRenderElement(titleNode);
+    RenderObject obj = getRenderElement(titleNode);
     if (obj == null) {
       obj = initRenderTree(titleNode);
     }
@@ -328,7 +338,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
           continue;
         }
 
-        RenderElement obj = getRenderElement(el);
+        RenderObject obj = getRenderElement(el);
         if (obj == null) {
           continue;
         }
@@ -360,7 +370,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
       switch (event.getType()) {
         case EventTypes.MOUSE_ENTER -> {
-          RenderElement obj = getRenderElement(tooltip);
+          RenderObject obj = getRenderElement(tooltip);
           if (obj == null) {
             obj = initRenderTree(tooltip);
           }
@@ -368,15 +378,15 @@ public class RenderSystem implements StyleUpdateCallbacks {
           el.getDocument().getStyles().updateDomStyle(tooltip);
           obj.moveTo(event.getScreenPosition());
 
-          if (obj instanceof ElementRenderElement eObj) {
-            NLayout.nlayout(eObj);
+          if (obj instanceof ElementRenderObject eObj) {
+            NLayout.layout(eObj);
           }
 
           obj.spawnRecursive();
         }
 
         case EventTypes.MOUSE_LEAVE -> {
-          RenderElement obj = getRenderElement(tooltip);
+          RenderObject obj = getRenderElement(tooltip);
 
           if (obj == null) {
             return;
@@ -386,7 +396,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         }
 
         case EventTypes.MOUSE_MOVE -> {
-          RenderElement obj = getRenderElement(tooltip);
+          RenderObject obj = getRenderElement(tooltip);
           if (obj == null) {
             return;
           }
@@ -402,21 +412,21 @@ public class RenderSystem implements StyleUpdateCallbacks {
     @Override
     public void handleEvent(MutationEvent event) {
       Element parent = event.getTarget();
-      ElementRenderElement parentObj = (ElementRenderElement) getRenderElement(parent);
+      ElementRenderObject parentObj = (ElementRenderObject) getRenderElement(parent);
 
       if (parentObj == null || parent == null) {
         return;
       }
 
       if (event.getType().equals(EventTypes.APPEND_CHILD)) {
-        RenderElement tree = initRenderTree((DelphiNode) event.getNode());
-        parentObj.addChild(tree, event.getMutationIndex());
+        RenderObject tree = initRenderTree((DelphiNode) event.getNode());
+        parentObj.addChild(event.getMutationIndex(), tree);
 
-        if (parentObj.isSpawned()) {
+        if (parentObj.spawned) {
           tree.spawnRecursive();
         }
       } else {
-        RenderElement nodeObj = getRenderElement(event.getNode());
+        RenderObject nodeObj = getRenderElement(event.getNode());
         if (nodeObj == null) {
           return;
         }
@@ -427,7 +437,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
         // Update source indexes
         for (Node child : parent.getChildren()) {
-          RenderElement childObj = getRenderElement(child);
+          RenderObject childObj = getRenderElement(child);
           if (childObj == null) {
             continue;
           }
