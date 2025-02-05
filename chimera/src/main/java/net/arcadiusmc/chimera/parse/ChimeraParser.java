@@ -1661,6 +1661,12 @@ public class ChimeraParser {
       case "space-evenly":
         keyword = Keyword.SPACE_EVENLY;
         break;
+      case "content-box":
+        keyword = Keyword.CONTENT_BOX;
+        break;
+      case "border-box":
+        keyword = Keyword.BORDER_BOX;
+        break;
       case "true":
         keyword = Keyword.TRUE;
         break;

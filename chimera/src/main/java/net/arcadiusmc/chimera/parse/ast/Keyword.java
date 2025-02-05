@@ -36,6 +36,10 @@ public enum Keyword {
   SPACE_AROUND,
   SPACE_EVENLY,
 
+  // Box Sizing
+  CONTENT_BOX,
+  BORDER_BOX,
+
   // Boolean values
   TRUE,
   FALSE,

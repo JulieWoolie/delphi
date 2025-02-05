@@ -15,6 +15,7 @@ import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.chimera.selector.Selector;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.style.AlignItems;
+import net.arcadiusmc.dom.style.BoxSizing;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
@@ -225,6 +226,9 @@ public final class Chimera {
       case SPACE_AROUND -> JustifyContent.SPACE_AROUND;
       case SPACE_BETWEEN -> JustifyContent.SPACE_BETWEEN;
       case SPACE_EVENLY -> JustifyContent.SPACE_EVENLY;
+
+      case CONTENT_BOX -> BoxSizing.CONTENT_BOX;
+      case BORDER_BOX -> BoxSizing.BORDER_BOX;
 
       case FLEX_START -> {
         if (type == AlignItems.class) {
