@@ -12,6 +12,7 @@ import javax.xml.parsers.SAXParserFactory;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphi.resource.ViewResources;
+import net.arcadiusmc.delphidom.ChatElement;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
@@ -76,6 +77,7 @@ public class DocumentSaxParser extends DefaultHandler {
   private ExtendedView view;
 
   private InputConsumer inputConsumer;
+  private ElementInputConsumer elementConsumer;
   private StringBuffer currentContent = new StringBuffer(128);
 
   public DocumentSaxParser(ViewResources resources) {
@@ -134,8 +136,8 @@ public class DocumentSaxParser extends DefaultHandler {
     nodes.push(n);
   }
 
-  void popNode() {
-    nodes.pop();
+  DelphiNode popNode() {
+    return nodes.pop();
   }
 
   @Override
@@ -200,13 +202,20 @@ public class DocumentSaxParser extends DefaultHandler {
 
         if (element instanceof DelphiItemElement item) {
           String src = item.getAttribute(Attributes.SOURCE);
+          beginIgnoringChildren(qName);
 
           if (!Strings.isNullOrEmpty(src)) {
             resources.loadItemStack(src)
                 .mapError(exc -> "Failed to load item stack from " + src + ": " + exc.getMessage())
                 .ifError(this::warn)
                 .ifSuccess(item::setItemStack);
+          } else {
+            elementConsumer = callbacks.createItemJsonParser();
           }
+        }
+        if (element instanceof ChatElement chat) {
+          beginIgnoringChildren(qName);
+          elementConsumer = callbacks.createTextJsonParser();
         }
 
         break;
@@ -241,14 +250,20 @@ public class DocumentSaxParser extends DefaultHandler {
     LoadMode prev = mode();
 
     if (prev == LoadMode.BODY || first == LoadMode.BODY) {
-      popNode();
+      DelphiNode delphiNode = popNode();
+
+      if (elementConsumer != null) {
+        elementConsumer.consume(currentContent.toString(), delphiNode);
+        elementConsumer = null;
+        currentContent.setLength(0);
+      }
     }
   }
 
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
     if (ignoreDepth != null) {
-      if (inputConsumer != null) {
+      if (inputConsumer != null || elementConsumer != null) {
         currentContent.append(ch, start, length);
         return;
       }

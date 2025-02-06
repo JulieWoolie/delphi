@@ -1,15 +1,21 @@
 package net.arcadiusmc.delphidom;
 
-import net.arcadiusmc.dom.ComponentNode;
+import net.arcadiusmc.dom.ComponentElement;
+import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.Visitor;
 import net.kyori.adventure.text.Component;
 
-public class ChatNode extends DelphiNode implements ComponentNode {
+public class ChatElement extends DelphiElement implements ComponentElement {
 
   private Component component;
 
-  public ChatNode(DelphiDocument document) {
-    super(document);
+  public ChatElement(DelphiDocument document) {
+    super(document, TagNames.COMPONENT);
+  }
+
+  @Override
+  public boolean canHaveChildren() {
+    return false;
   }
 
   @Override

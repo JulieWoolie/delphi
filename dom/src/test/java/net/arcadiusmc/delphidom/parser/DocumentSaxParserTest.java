@@ -20,6 +20,7 @@ import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.dom.ItemElement;
 import net.arcadiusmc.dom.Options;
 import net.arcadiusmc.dom.style.Stylesheet;
 import org.bukkit.inventory.ItemStack;
@@ -71,6 +72,11 @@ class DocumentSaxParserTest {
 
       @Override
       public Result<Nothing, Exception> loadDomClass(Document document, String className) {
+        return null;
+      }
+
+      @Override
+      public ElementInputConsumer<ItemElement> createItemJsonParser() {
         return null;
       }
     });

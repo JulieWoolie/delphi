@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * @see ItemElement
  * @see ButtonElement
  * @see TextNode
- * @see ComponentNode
+ * @see ComponentElement
  */
 public interface Node {
 

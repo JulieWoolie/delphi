@@ -34,7 +34,7 @@ import net.arcadiusmc.delphirender.object.ItemRenderObject;
 import net.arcadiusmc.delphirender.object.RenderObject;
 import net.arcadiusmc.delphirender.object.SingleEntityRenderObject;
 import net.arcadiusmc.delphirender.object.StringRenderObject;
-import net.arcadiusmc.dom.ComponentNode;
+import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.ItemElement;
 import net.arcadiusmc.dom.TextNode;
@@ -264,7 +264,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("render-object:");
     indent++;
 
-    boolean appendChildren = node instanceof ComponentNode || node instanceof ItemElement;
+    boolean appendChildren = node instanceof ComponentElement || node instanceof ItemElement;
     appendRenderObject(re, appendChildren);
 
     indent--;
@@ -451,7 +451,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
   }
 
   @Override
-  public void enterComponent(ComponentNode node) {
+  public void enterComponent(ComponentElement node) {
     super.enterComponent(node);
     appendInfo((DelphiNode) node);
   }

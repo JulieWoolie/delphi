@@ -19,7 +19,7 @@ import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.dom.Attributes;
-import net.arcadiusmc.dom.ComponentNode;
+import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.ItemElement;
@@ -149,6 +149,7 @@ public class DelphiDocument implements Document {
     return switch (tagName) {
       case TagNames.ITEM -> new DelphiItemElement(this);
       case TagNames.BUTTON -> new DelphiButtonElement(this);
+      case TagNames.COMPONENT -> new ChatElement(this);
 
       default -> new DelphiElement(this, tagName);
     };
@@ -172,13 +173,13 @@ public class DelphiDocument implements Document {
   }
 
   @Override
-  public ComponentNode createComponent() {
-    return new ChatNode(this);
+  public ComponentElement createComponent() {
+    return new ChatElement(this);
   }
 
   @Override
-  public ComponentNode createComponent(Component component) {
-    ChatNode n = new ChatNode(this);
+  public ComponentElement createComponent(Component component) {
+    ChatElement n = new ChatElement(this);
     n.setContent(component);
     return n;
   }

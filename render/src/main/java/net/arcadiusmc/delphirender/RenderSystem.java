@@ -13,7 +13,7 @@ import net.arcadiusmc.chimera.DirtyBit;
 import net.arcadiusmc.chimera.StyleUpdateCallbacks;
 import net.arcadiusmc.chimera.system.StyleNode;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
-import net.arcadiusmc.delphidom.ChatNode;
+import net.arcadiusmc.delphidom.ChatElement;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
@@ -163,7 +163,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         stringObj.content = text.getTextContent();
         obj = stringObj;
       }
-      case ChatNode chat -> {
+      case ChatElement chat -> {
         ElementRenderObject el = new ElementRenderObject(this, styleSet);
         ComponentRenderObject comp = new ComponentRenderObject(this);
 
@@ -264,7 +264,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     if (node instanceof Text text) {
       StringRenderObject stringObj = (StringRenderObject) obj;
       stringObj.content = text.getTextContent();
-    } else if (node instanceof ChatNode chat) {
+    } else if (node instanceof ChatElement chat) {
       ElementRenderObject el = (ElementRenderObject) obj;
       ComponentRenderObject comp = el.onlyChild();
       comp.text = chat.getContent();

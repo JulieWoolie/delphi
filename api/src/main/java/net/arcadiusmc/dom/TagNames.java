@@ -45,4 +45,9 @@ public interface TagNames {
    */
   String ITEM_TOOLTIP_LINE = "item-tooltip-line";
 
+  /**
+   * Chat Component
+   * @see ComponentElement
+   */
+  String COMPONENT = "chat-component";
 }

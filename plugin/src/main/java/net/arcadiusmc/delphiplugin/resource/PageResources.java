@@ -122,10 +122,14 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
+    return parseItem(buf.toString());
+  }
+
+  public static Result<ItemStack, DelphiException> parseItem(String json) {
     JsonObject obj;
 
     try {
-      var element = JsonParser.parseString(buf.toString());
+      var element = JsonParser.parseString(json);
       if (!(element instanceof JsonObject o)) {
         return Result.err(new DelphiException(ERR_SYNTAX, "Not a JSON object: " + element));
       }

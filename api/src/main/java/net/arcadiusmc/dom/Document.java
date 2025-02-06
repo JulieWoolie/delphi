@@ -106,7 +106,7 @@ public interface Document extends EventTarget, DomQueryable {
    *
    * @return Created component node
    */
-  ComponentNode createComponent();
+  ComponentElement createComponent();
 
   /**
    * Create a component node.
@@ -123,7 +123,7 @@ public interface Document extends EventTarget, DomQueryable {
    *
    * @return Created component node
    */
-  ComponentNode createComponent(@Nullable Component component);
+  ComponentElement createComponent(@Nullable Component component);
 
   /**
    * Gets the last clicked element that's still active.

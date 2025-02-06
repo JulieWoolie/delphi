@@ -30,7 +30,7 @@ public interface Visitor {
 
   void exitText(TextNode text);
 
-  void enterComponent(ComponentNode node);
+  void enterComponent(ComponentElement node);
 
-  void exitComponent(ComponentNode node);
+  void exitComponent(ComponentElement node);
 }

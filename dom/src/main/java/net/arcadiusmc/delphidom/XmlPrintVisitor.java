@@ -1,7 +1,7 @@
 package net.arcadiusmc.delphidom;
 
 import java.util.Map.Entry;
-import net.arcadiusmc.dom.ComponentNode;
+import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.Visitor;
@@ -62,7 +62,7 @@ public class XmlPrintVisitor implements Visitor {
   }
 
   @Override
-  public void enterComponent(ComponentNode node) {
+  public void enterComponent(ComponentElement node) {
     nlIndent().append("<chat-component>");
     indent++;
 
@@ -79,7 +79,7 @@ public class XmlPrintVisitor implements Visitor {
   }
 
   @Override
-  public void exitComponent(ComponentNode node) {
+  public void exitComponent(ComponentElement node) {
     indent--;
     nlIndent().append("</chat-component>");
   }
