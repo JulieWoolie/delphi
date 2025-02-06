@@ -313,7 +313,7 @@ public class NLayout {
         comp.borderLeft
     );
     conditionallyScale(
-        style.border,
+        style.padding,
         style.padding,
         style.scale,
         comp.paddingTop,
