@@ -336,10 +336,10 @@ public class NLayout {
 
     BoxSizing sizing = element.style.boxSizing;
 
-    if (width.isAuto() || sizing == BoxSizing.BORDER_BOX) {
+    if (width.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
       out.x += xGrow;
     }
-    if (height.isAuto() || sizing == BoxSizing.BORDER_BOX) {
+    if (height.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
       out.y += yGrow;
     }
   }
