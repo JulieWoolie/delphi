@@ -25,6 +25,7 @@ import net.arcadiusmc.delphirender.object.RenderObject;
 import net.arcadiusmc.delphirender.object.TextRenderObject;
 import net.arcadiusmc.dom.style.BoxSizing;
 import net.arcadiusmc.dom.style.Primitive;
+import net.arcadiusmc.dom.style.Primitive.Unit;
 import net.kyori.adventure.text.Component;
 import org.joml.Vector2f;
 
@@ -270,33 +271,115 @@ public class NLayout {
       out.y = clamp(style.size.y, style.minSize.y, style.maxSize.y);
     }
 
-    if (!element.computedStyleSet.width.isAuto()) {
+    ComputedStyleSet comp = element.computedStyleSet;
+    ValueOrAuto width = comp.width;
+    ValueOrAuto height = comp.height;
+
+    if (shouldScale(width)) {
       out.x *= GLOBAL_SCALAR * style.scale.x;
     }
-    if (!element.computedStyleSet.height.isAuto()) {
+    if (shouldScale(height)) {
       out.y *= GLOBAL_SCALAR * style.scale.y;
     }
 
     float xGrow = 0.0f;
     float yGrow = 0.0f;
 
-    rect.set(style.outline).max(0.0f);
+    conditionallyScale(
+        style.margin,
+        style.margin,
+        style.scale,
+        comp.marginTop,
+        comp.marginRight,
+        comp.marginBottom,
+        comp.marginLeft
+    );
+    conditionallyScale(
+        style.outline,
+        style.outline,
+        style.scale,
+        comp.outlineTop,
+        comp.outlineRight,
+        comp.outlineBottom,
+        comp.outlineLeft
+    );
+    conditionallyScale(
+        style.border,
+        style.border,
+        style.scale,
+        comp.borderTop,
+        comp.borderRight,
+        comp.borderBottom,
+        comp.borderLeft
+    );
+    conditionallyScale(
+        style.border,
+        style.padding,
+        style.scale,
+        comp.paddingTop,
+        comp.paddingRight,
+        comp.paddingBottom,
+        comp.paddingLeft
+    );
+
+    rect.set(style.outline);
     xGrow += rect.x();
     yGrow += rect.y();
 
-    rect.set(style.border).max(0.0f);
+    rect.set(style.border);
     xGrow += rect.x();
     yGrow += rect.y();
 
-    rect.set(style.padding).max(0.0f);
+    rect.set(style.padding);
     xGrow += rect.x();
     yGrow += rect.y();
 
-    xGrow *= GLOBAL_SCALAR * style.scale.x;
-    yGrow *= GLOBAL_SCALAR * style.scale.y;
+    BoxSizing sizing = element.style.boxSizing;
 
-    out.x += xGrow;
-    out.y += yGrow;
+    if (width.isAuto() || sizing == BoxSizing.BORDER_BOX) {
+      out.x += xGrow;
+    }
+    if (height.isAuto() || sizing == BoxSizing.BORDER_BOX) {
+      out.y += yGrow;
+    }
+  }
+
+  public static Rect conditionallyScale(
+      Rect out,
+      Rect in,
+      Vector2f scale,
+      ValueOrAuto top,
+      ValueOrAuto right,
+      ValueOrAuto bottom,
+      ValueOrAuto left
+  ) {
+    if (out == null) {
+      out = new Rect();
+    }
+
+    out.set(in);
+
+    if (shouldScale(top)) {
+      out.top *= GLOBAL_SCALAR * scale.y;
+    }
+    if (shouldScale(bottom)) {
+      out.bottom *= GLOBAL_SCALAR * scale.y;
+    }
+    if (shouldScale(right)) {
+      out.right *= GLOBAL_SCALAR * scale.x;
+    }
+    if (shouldScale(left)) {
+      out.left *= GLOBAL_SCALAR * scale.x;
+    }
+
+    return out.max(0.0f);
+  }
+
+  private static boolean shouldScale(ValueOrAuto a) {
+    if (a.isAuto()) {
+      return false;
+    }
+    return a.primitive().getUnit() != Unit.PERCENT;
   }
 
   static LayoutAlgorithm getLayoutAlgo(ElementRenderObject obj) {

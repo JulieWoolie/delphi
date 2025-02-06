@@ -89,15 +89,12 @@ public class ElementRenderObject extends RenderObject {
     float leftOff = style.padding.left + style.border.left + style.outline.left;
     float topOff = style.padding.top + style.border.top + style.outline.top;
 
-    leftOff *= GLOBAL_SCALAR * style.scale.x;
-    topOff *= GLOBAL_SCALAR * style.scale.y;
-
     out.x = position.x + leftOff;
     out.y = position.y - topOff;
   }
 
   private Rect scaledRect(Rect r) {
-    return new Rect(r).max(0.0f).mul(GLOBAL_SCALAR).mul(style.scale);
+    return new Rect(r);
   }
 
   public void configureBoxes() {

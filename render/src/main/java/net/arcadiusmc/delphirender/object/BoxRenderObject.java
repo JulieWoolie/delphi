@@ -42,6 +42,10 @@ public class BoxRenderObject extends SingleEntityRenderObject<TextDisplay> {
     scale.x = EMPTY_TD_BLOCK_SIZE_X * size.x;
     scale.y = EMPTY_TD_BLOCK_SIZE_Y * size.y;
 
-    offset.x -= BLOCK_OFFSET_X * (scale.x / EMPTY_TD_BLOCK_SIZE_X);
+    offset.x -= visualCenterOffset(scale.x);
+  }
+
+  public static float visualCenterOffset(float scaleX) {
+    return BLOCK_OFFSET_X * (scaleX / EMPTY_TD_BLOCK_SIZE_X);
   }
 }

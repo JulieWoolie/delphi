@@ -15,18 +15,21 @@ public interface Consts {
   float EMPTY_TD_BLOCK_SIZE_X = 1.0f / (CHAR_PX_SIZE_X * CH_0_SIZE_X);
   float EMPTY_TD_BLOCK_SIZE_Y = 1.0f / (CHAR_PX_SIZE_Y * CH_0_SIZE_Y);
 
+  //
   // The '0' char is offset from the center by this amount,
   // IF the scale X = EMPTY_TD_BLOCK_SIZE_X and the
   //        scale Y = EMPTY_TD_BLOCK_SIZE_Y
-  //
-  // Fuck this shit
   //
   // To find the appropriate X offset, consider f(x) where X is the X scale
   // of the display entity, the function would look like so:
   //
   //  f(x) = (x / EMPTY_TD_BLOCK_SIZE_X) * BLOCK_OFFSET_X
   //
-  float BLOCK_OFFSET_X = 0.0625f;
+  // If you want to know where this number is from: My ass
+  // No, I measured it using Axiom's display entity editor tools and a
+  // bit of math
+  //
+  float BLOCK_OFFSET_X = 0.0717f;
 
   float ITEM_PX_TO_CH_PX = 2.5f;
   float ITEM_Z_WIDTH = 0.001f;

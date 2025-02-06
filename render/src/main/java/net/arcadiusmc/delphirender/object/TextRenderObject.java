@@ -23,14 +23,16 @@ public abstract class TextRenderObject extends SingleEntityRenderObject<TextDisp
 
   @Override
   protected TextDisplay spawnEntity(World w, Location l) {
-    return w.spawn(l, TextDisplay.class);
+    return w.spawn(l, TextDisplay.class, txt -> {
+      txt.setBackgroundColor(NIL_COLOR);
+      txt.setLineWidth(Integer.MAX_VALUE);
+    });
   }
 
   @Override
   protected void configure(TextDisplay entity, Transformation trans) {
     Component text = text();
     entity.text(text);
-    entity.setBackgroundColor(NIL_COLOR);
 
     FullStyle style = getParentStyle();
     if (style != null) {
@@ -38,6 +40,8 @@ public abstract class TextRenderObject extends SingleEntityRenderObject<TextDisp
     }
 
     configureTextSize(this, text, trans.getScale());
+
+    trans.getTranslation().x -= BoxRenderObject.visualCenterOffset(trans.getScale().x);
   }
 
   static void configureTextSize(TextRenderObject holder, Component text, Vector3f scale) {
