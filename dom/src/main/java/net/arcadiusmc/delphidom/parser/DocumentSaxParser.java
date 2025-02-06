@@ -75,6 +75,9 @@ public class DocumentSaxParser extends DefaultHandler {
   @Setter
   private ExtendedView view;
 
+  private InputConsumer inputConsumer;
+  private StringBuffer currentContent = new StringBuffer(128);
+
   public DocumentSaxParser(ViewResources resources) {
     this.resources = resources;
   }
@@ -224,6 +227,12 @@ public class DocumentSaxParser extends DefaultHandler {
         return;
       }
 
+      if (inputConsumer != null) {
+        inputConsumer.consumeInput(currentContent.toString());
+        inputConsumer = null;
+        currentContent.setLength(0);
+      }
+
       stopIgnoringChildren();
     }
 
@@ -239,6 +248,11 @@ public class DocumentSaxParser extends DefaultHandler {
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
     if (ignoreDepth != null) {
+      if (inputConsumer != null) {
+        currentContent.append(ch, start, length);
+        return;
+      }
+
       warnChildrenIgnored();
       return;
     }
@@ -333,10 +347,15 @@ public class DocumentSaxParser extends DefaultHandler {
 
       case STYLE_ELEMENT -> {
         beginIgnoringChildren(STYLE_ELEMENT);
-
-        String src = validateAttribute(name, Attributes.SOURCE, attributes);
+        String src = attributes.getValue(Attributes.SOURCE);
 
         if (Strings.isNullOrEmpty(src)) {
+          String styleName = attributes.getValue("filename");
+          if (Strings.isNullOrEmpty(styleName)) {
+            styleName = "<style>";
+          }
+
+          inputConsumer = new StyleInputConsumer(styleName, document);
           return;
         }
 
