@@ -1,6 +1,7 @@
 package net.arcadiusmc.chimera.function;
 
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
@@ -11,7 +12,7 @@ public class HslFunction implements ScssFunction {
   static final float MAX_DEG = Primitive.DEGREES_IN_CIRCLE;
 
   @Override
-  public Object invoke(ChimeraContext ctx, Argument[] arguments) {
+  public Object invoke(ChimeraContext ctx, Scope scope, Argument[] arguments) {
     float h = getHue(arguments[0]);
     float s = getChannelValue(arguments[1]);
     float v = getChannelValue(arguments[2]);

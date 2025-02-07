@@ -2,6 +2,7 @@ package net.arcadiusmc.chimera.function;
 
 import java.util.function.DoubleUnaryOperator;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Primitive;
 import org.apache.commons.lang3.Range;
 
@@ -14,7 +15,7 @@ public class MathFunction implements ScssFunction {
   }
 
   @Override
-  public Object invoke(ChimeraContext ctx, Argument[] arguments) {
+  public Object invoke(ChimeraContext ctx, Scope scope, Argument[] arguments) {
     Primitive prim = arguments[0].primitive();
     if (prim == null) {
       return null;

@@ -67,6 +67,7 @@ import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.ExpressionStatement;
 import net.arcadiusmc.chimera.parse.ast.FunctionStatement;
 import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
@@ -275,7 +276,7 @@ public class ChimeraParser {
       return false;
     }
 
-    // An ident followed by anything other than a ':'
+    // An ident followed by anything other than a ':' or '('
     // token is also considered a nested selector.
     try (StreamState state = stream.saveState()) {
       next();
@@ -283,7 +284,7 @@ public class ChimeraParser {
       if (!hasNext()) {
         return false;
       }
-      if (!matches(COLON)) {
+      if (!matches(COLON, BRACKET_OPEN)) {
         return true;
       }
 
@@ -1071,7 +1072,28 @@ public class ChimeraParser {
         if (scope() == ParserScope.TOP_LEVEL) {
           yield rule();
         }
-        yield propertyStatement();
+
+        boolean property;
+
+        try (StreamState stat = stream.saveState()) {
+          next();
+          property = matches(COLON);
+        }
+
+        if (property) {
+          yield propertyStatement();
+        }
+
+        Expression expr = expr();
+
+        ExpressionStatement stat = new ExpressionStatement();
+        stat.setStart(expr.getStart());
+        stat.setEnd(expr.getEnd());
+        stat.setExpr(expr);
+
+        expectEndOfStatement();
+
+        yield stat;
       }
 
       default -> {
@@ -1100,6 +1122,10 @@ public class ChimeraParser {
     );
   }
 
+  private boolean isSkippableListComma() {
+    return matches(COMMA) && scope() != ParserScope.CALL_EXPR;
+  }
+
   private boolean isArrayLiteralPart(Expression expr) {
     if (expr.getStart().line() != peek().location().line()) {
       return false;
@@ -1114,7 +1140,8 @@ public class ChimeraParser {
       return false;
     }
 
-    return scope() != ParserScope.CALL_EXPR;
+    return true;
+//    return scope() != ParserScope.CALL_EXPR;
   }
 
   public Expression expr() {
@@ -1132,10 +1159,18 @@ public class ChimeraParser {
     literal.setStart(expr.getStart());
     literal.getValues().add(expr);
 
+    if (isSkippableListComma()) {
+      next();
+    }
+
     while (isArrayLiteralPart(expr)) {
       expr = logicOr();
       literal.setEnd(expr.getEnd());
       literal.getValues().add(expr);
+
+      if (isSkippableListComma()) {
+        next();
+      }
     }
 
     return literal;

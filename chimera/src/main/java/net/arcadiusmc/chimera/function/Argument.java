@@ -1,8 +1,10 @@
 package net.arcadiusmc.chimera.function;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.parse.CompilerErrors;
 import net.arcadiusmc.chimera.parse.Location;
 import net.arcadiusmc.dom.style.Color;
@@ -16,8 +18,13 @@ public class Argument {
 
   private Object value;
   private int argumentIndex;
-  private Location location;
+  private Location start;
+  private Location end;
   private CompilerErrors errors;
+
+  public String string() {
+    return Objects.toString(value);
+  }
 
   public @Nullable Color color() {
     if (value instanceof Color color) {
@@ -32,7 +39,7 @@ public class Argument {
       }
     }
 
-    errors.error(location, "Expected argument %s to be a color value", argumentIndex);
+    errors.error(start, "Expected argument %s to be a color value", argumentIndex);
     return null;
   }
 
@@ -55,11 +62,11 @@ public class Argument {
   }
 
   public void cannotBeLessThan(float value) {
-    errors.warn(location, "Argument %s cannot be less than %s", argumentIndex, value);
+    errors.warn(start, "Argument %s cannot be less than %s", argumentIndex, value);
   }
 
   public void cannotBeMoreThan(float value) {
-    errors.warn(location, "Argument %s cannot be greater than %s", argumentIndex, value);
+    errors.warn(start, "Argument %s cannot be greater than %s", argumentIndex, value);
   }
 
   private Primitive coerceToPrimitive(Unit... allowedUnits) {
@@ -73,7 +80,7 @@ public class Argument {
         }
       }
 
-      errors.error(location, "Expected argument %s to be a numeric value", argumentIndex);
+      errors.error(start, "Expected argument %s to be a numeric value", argumentIndex);
       return null;
     }
 
@@ -87,12 +94,17 @@ public class Argument {
       }
     }
 
-    errors.error(location, "Unit %s not allowed here", prim.getUnit().name().toLowerCase());
+    errors.error(start, "Unit %s not allowed here", prim.getUnit().name().toLowerCase());
     return null;
   }
 
   public ScssInvocationException error(String format, Object... args) {
     String message = String.format(format, args);
-    return new ScssInvocationException(message, location, argumentIndex);
+    return new ScssInvocationException(message, start, argumentIndex);
+  }
+
+  public boolean bool() {
+    Boolean b = Chimera.coerceValue(Boolean.class, value);
+    return b != null && b;
   }
 }

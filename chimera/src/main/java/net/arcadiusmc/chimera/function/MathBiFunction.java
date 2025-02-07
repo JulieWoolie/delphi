@@ -6,6 +6,7 @@ import static net.arcadiusmc.chimera.parse.Interpreter.testCompatibility;
 
 import java.util.function.DoubleBinaryOperator;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
 import org.apache.commons.lang3.Range;
@@ -19,7 +20,7 @@ public class MathBiFunction implements ScssFunction {
   }
 
   @Override
-  public Object invoke(ChimeraContext ctx, Argument[] arguments) {
+  public Object invoke(ChimeraContext ctx, Scope scope, Argument[] arguments) {
     Primitive lhs = arguments[0].primitive();
     Primitive rhs = arguments[1].primitive();
 

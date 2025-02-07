@@ -97,4 +97,6 @@ public interface NodeVisitor<R> {
   R functionParameter(FuncParameterStatement parameter);
 
   R assertStatement(AssertStatement statement);
+
+  R exprStatement(ExpressionStatement statement);
 }

@@ -4,6 +4,7 @@ import static net.arcadiusmc.dom.style.Color.MAX_VALUE;
 import static net.arcadiusmc.dom.style.Color.MIN_VALUE;
 
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
@@ -12,7 +13,7 @@ import org.apache.commons.lang3.Range;
 public class RgbFunction implements ScssFunction {
 
   @Override
-  public Object invoke(ChimeraContext ctx, Argument[] arguments) {
+  public Object invoke(ChimeraContext ctx, Scope scope, Argument[] arguments) {
     int red = toChannelValue(arguments[0]);
     int green = toChannelValue(arguments[1]);
     int blue = toChannelValue(arguments[2]);

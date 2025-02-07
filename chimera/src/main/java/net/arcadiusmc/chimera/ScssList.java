@@ -46,6 +46,11 @@ public class ScssList implements Iterable<Object> {
     return new Iter();
   }
 
+  public void set(int i, Object o) {
+    Objects.checkIndex(i, length);
+    values[i] = o;
+  }
+
   class Iter implements Iterator<Object> {
 
     int idx = 0;

@@ -10,6 +10,7 @@ import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.ExpressionStatement;
 import net.arcadiusmc.chimera.parse.ast.FunctionStatement;
 import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
@@ -583,6 +584,14 @@ public class XmlPrintVisitor implements NodeVisitor<Void> {
       statement.getMessage().visit(this);
     }
     exitTag("assert-statement");
+    return null;
+  }
+
+  @Override
+  public Void exprStatement(ExpressionStatement statement) {
+    enterTag("expr-statement", statement);
+    statement.getExpr().visit(this);
+    exitTag("expr-statement");
     return null;
   }
 

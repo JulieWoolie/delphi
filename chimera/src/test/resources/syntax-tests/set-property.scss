@@ -1,0 +1,6 @@
+.rule {
+  set-property("margin-left", 1px, false);
+
+  $ml: get-property('margin-left');
+  @assert $ml == 1px;
+}

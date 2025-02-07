@@ -302,4 +302,98 @@ public final class Chimera {
       default -> key;
     };
   }
+
+  public static Object valueToScript(Value<?> v) {
+    ValueType type = v.getType();
+    switch (type) {
+      case UNSET -> {
+        return Keyword.UNSET;
+      }
+      case AUTO -> {
+        return Keyword.AUTO;
+      }
+      case INHERIT -> {
+        return Keyword.INHERIT;
+      }
+      case INITIAL -> {
+        return Keyword.INITIAL;
+      }
+      default -> {
+        return toScriptValue(v.getValue());
+      }
+    }
+  }
+
+  public static Object toScriptValue(Object o) {
+    switch (o) {
+      case PrimitiveRect rect -> {
+        ScssList list = new ScssList(4);
+        list.add(rect.getTop());
+        list.add(rect.getRight());
+        list.add(rect.getBottom());
+        list.add(rect.getLeft());
+        return list;
+      }
+      case PrimitiveLeftRight lr -> {
+        ScssList list = new ScssList(2);
+        list.add(lr.getLeft());
+        list.add(lr.getRight());
+        return list;
+      }
+
+      case DisplayType dt -> {
+        return switch (dt) {
+          case BLOCK -> Keyword.BLOCK;
+          case FLEX -> Keyword.FLEX;
+          case NONE -> Keyword.NONE;
+          case INLINE -> Keyword.INLINE;
+          case INLINE_BLOCK -> Keyword.INLINE_BLOCK;
+        };
+      }
+      case FlexDirection dir -> {
+        return switch (dir) {
+          case ROW -> Keyword.ROW;
+          case COLUMN -> Keyword.COLUMN;
+          case ROW_REVERSE -> Keyword.ROW_REVERSE;
+          case COLUMN_REVERSE -> Keyword.COLUMN_REVERSE;
+        };
+      }
+      case FlexWrap wrap -> {
+        return switch (wrap) {
+          case WRAP -> Keyword.WRAP;
+          case NOWRAP -> Keyword.NOWRAP;
+          case WRAP_REVERSE -> Keyword.WRAP_REVERSE;
+        };
+      }
+      case JustifyContent jc -> {
+        return switch (jc) {
+          case CENTER -> Keyword.CENTER;
+          case FLEX_END -> Keyword.FLEX_END;
+          case FLEX_START -> Keyword.FLEX_START;
+          case SPACE_AROUND -> Keyword.SPACE_AROUND;
+          case SPACE_BETWEEN -> Keyword.SPACE_BETWEEN;
+          case SPACE_EVENLY -> Keyword.SPACE_EVENLY;
+        };
+      }
+      case BoxSizing bs -> {
+        return switch (bs) {
+          case BORDER_BOX -> Keyword.BORDER_BOX;
+          case CONTENT_BOX -> Keyword.CONTENT_BOX;
+        };
+      }
+      case AlignItems ai -> {
+        return switch (ai) {
+          case FLEX_END -> Keyword.FLEX_END;
+          case CENTER -> Keyword.CENTER;
+          case STRETCH -> Keyword.STRETCH;
+          case BASELINE -> Keyword.BASELINE;
+          case FLEX_START -> Keyword.FLEX_START;
+        };
+      }
+
+      default -> {
+        return o;
+      }
+    }
+  }
 }

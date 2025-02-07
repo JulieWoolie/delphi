@@ -61,6 +61,9 @@ public class Scope {
     scope.putFunction("atan2", ScssFunctions.ATAN2);
     scope.putFunction("clamp", ScssFunctions.CLAMP);
 
+    scope.putFunction("get-property", ScssFunctions.GET_PROPERTY);
+    scope.putFunction("set-property", ScssFunctions.SET_PROPERTY);
+
     return scope;
   }
 

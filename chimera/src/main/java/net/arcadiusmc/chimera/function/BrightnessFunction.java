@@ -1,6 +1,7 @@
 package net.arcadiusmc.chimera.function;
 
 import net.arcadiusmc.chimera.parse.ChimeraContext;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
@@ -17,7 +18,7 @@ public class BrightnessFunction implements ScssFunction {
   }
 
   @Override
-  public Object invoke(ChimeraContext ctx, Argument[] arguments) {
+  public Object invoke(ChimeraContext ctx, Scope scope, Argument[] arguments) {
     Color color = arguments[0].color();
     if (color == null) {
       return null;

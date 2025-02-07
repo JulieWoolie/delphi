@@ -5,13 +5,14 @@ import static net.arcadiusmc.chimera.parse.Interpreter.testCompatibility;
 import net.arcadiusmc.chimera.parse.ChimeraContext;
 import net.arcadiusmc.chimera.parse.CompilerErrors;
 import net.arcadiusmc.chimera.parse.Interpreter;
+import net.arcadiusmc.chimera.parse.Scope;
 import net.arcadiusmc.dom.style.Primitive;
 import org.apache.commons.lang3.Range;
 
 public class ClampFunction implements ScssFunction {
 
   @Override
-  public Object invoke(ChimeraContext ctx, Argument[] arguments) {
+  public Object invoke(ChimeraContext ctx, Scope scope, Argument[] arguments) {
     Argument a1 = arguments[0];
     Argument a2 = arguments[1];
     Argument a3 = arguments[2];

@@ -25,4 +25,7 @@ public interface ScssFunctions {
   ScssFunction ATAN2 = new MathBiFunction(Math::atan2);
 
   ScssFunction CLAMP = new ClampFunction();
+
+  ScssFunction GET_PROPERTY = new GetPropertyFunction();
+  ScssFunction SET_PROPERTY = new SetPropertyFunction();
 }

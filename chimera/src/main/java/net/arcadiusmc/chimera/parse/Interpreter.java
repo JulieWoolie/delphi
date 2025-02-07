@@ -31,6 +31,7 @@ import net.arcadiusmc.chimera.parse.ast.ColorLiteral;
 import net.arcadiusmc.chimera.parse.ast.ControlFlowStatement;
 import net.arcadiusmc.chimera.parse.ast.ErroneousExpr;
 import net.arcadiusmc.chimera.parse.ast.Expression;
+import net.arcadiusmc.chimera.parse.ast.ExpressionStatement;
 import net.arcadiusmc.chimera.parse.ast.FunctionStatement;
 import net.arcadiusmc.chimera.parse.ast.FunctionStatement.FuncParameterStatement;
 import net.arcadiusmc.chimera.parse.ast.Identifier;
@@ -245,7 +246,8 @@ public class Interpreter implements NodeVisitor<Object> {
       Argument arg = new Argument();
       arg.setArgumentIndex(i);
       arg.setValue(value);
-      arg.setLocation(argExpr.getStart());
+      arg.setStart(argExpr.getStart());
+      arg.setEnd(argExpr.getEnd());
       arg.setErrors(errors);
 
       argValues[i] = arg;
@@ -269,7 +271,7 @@ public class Interpreter implements NodeVisitor<Object> {
     }
 
     try {
-      return func.invoke(context, argValues);
+      return func.invoke(context, scope, argValues);
     } catch (ScssInvocationException exc) {
       error(exc.getLocation(), "Failed to invoke %s: %s", name, exc.getMessage());
       return null;
@@ -927,6 +929,12 @@ public class Interpreter implements NodeVisitor<Object> {
       error(statement.getStart(), "Failed assert: " + input);
     }
 
+    return null;
+  }
+
+  @Override
+  public Object exprStatement(ExpressionStatement statement) {
+    statement.getExpr().visit(this);
     return null;
   }
 }
