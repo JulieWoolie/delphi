@@ -7,7 +7,6 @@ import static net.arcadiusmc.delphidom.Consts.LEN0_PX;
 import static net.arcadiusmc.delphirender.FullStyle.UNSET;
 import static net.arcadiusmc.delphirender.FullStyle.toBukkitColor;
 import static net.arcadiusmc.delphirender.FullStyle.toTextColor;
-import static net.arcadiusmc.delphirender.object.RenderObject.GLOBAL_SCALAR;
 
 import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.chimera.ValueOrAuto;
@@ -30,6 +29,8 @@ import net.kyori.adventure.text.Component;
 import org.joml.Vector2f;
 
 public class NLayout {
+
+  public static final float GLOBAL_FONT_SIZE = 0.5f;
 
   static final byte X = 0;
   static final byte Y = 1;
@@ -95,8 +96,7 @@ public class NLayout {
     style.size.x = resolve(comp.width, ctx, 0f, X);
     style.size.y = resolve(comp.height, ctx, 0f, Y);
 
-    style.scale.x = resolve(comp.scaleX, ctx, 1f, X);
-    style.scale.y = resolve(comp.scaleY, ctx, 1f, Y);
+    style.fontSize = resolveFontSize(comp.fontSize);
 
     style.minSize.x = resolve(comp.minWidth, ctx, UNSET, X);
     style.minSize.y = resolve(comp.minHeight, ctx, UNSET, Y);
@@ -140,7 +140,7 @@ public class NLayout {
 
     Vector2f psize = new Vector2f();
     applyMeasuredSize(ro, psize);
-    getContentSize(psize, comp, style);
+    getContentSize(psize, style);
 
     ctx.parentSizes.push(psize);
 
@@ -170,18 +170,15 @@ public class NLayout {
       }
       case TextRenderObject txt -> {
         measureText(txt, txt.text(), out);
-        applyScalars(txt, out);
+
+        if (txt.parent != null) {
+          out.mul(GLOBAL_FONT_SIZE).mul(txt.parent.style.fontSize);
+        }
+
         return false;
       }
       case ItemRenderObject it -> {
         out.set(ITEM_SPRITE_SIZE);
-        out.mul(GLOBAL_SCALAR);
-
-        ElementRenderObject parent = object.parent;
-        if (parent != null) {
-          out.mul(parent.style.scale);
-        }
-
         return false;
       }
       case ElementRenderObject el -> {
@@ -213,14 +210,19 @@ public class NLayout {
     out.y *= CHAR_PX_SIZE_Y;
   }
 
-  static void applyScalars(RenderObject obj, Vector2f vec) {
-    vec.x *= GLOBAL_SCALAR;
-    vec.y *= GLOBAL_SCALAR;
-
-    ElementRenderObject parent = obj.parent;
-    if (parent != null) {
-      vec.mul(parent.style.scale);
+  static float resolveFontSize(ValueOrAuto v) {
+    if (v.isAuto()) {
+      return 1.0f;
     }
+
+    Primitive prim = v.primitive();
+    Unit u = prim.getUnit();
+
+    if (u == Unit.PERCENT) {
+      return prim.getValue() * 0.01f;
+    }
+
+    return prim.getValue();
   }
 
   static float resolve(ValueOrAuto v, MeasureContext ctx, float auto, byte axis) {
@@ -279,9 +281,7 @@ public class NLayout {
     ValueOrAuto width = comp.width;
     ValueOrAuto height = comp.height;
 
-    scaleBoxes(comp, style);
-
-    getContentSize(out, comp, style);
+    getContentSize(out, style);
 
     Vector2f growth = new Vector2f();
     getBordersSizes(style, growth);
@@ -296,22 +296,12 @@ public class NLayout {
     }
   }
 
-  static void getContentSize(Vector2f out, ComputedStyleSet comp, FullStyle style) {
-    ValueOrAuto width = comp.width;
-    ValueOrAuto height = comp.height;
-
+  static void getContentSize(Vector2f out, FullStyle style) {
     if (style.size.x != UNSET) {
       out.x = clamp(style.size.x, style.minSize.x, style.maxSize.x);
     }
     if (style.size.y != UNSET) {
       out.y = clamp(style.size.y, style.minSize.y, style.maxSize.y);
-    }
-
-    if (shouldScale(width)) {
-      out.x *= GLOBAL_SCALAR * style.scale.x;
-    }
-    if (shouldScale(height)) {
-      out.y *= GLOBAL_SCALAR * style.scale.y;
     }
   }
 
@@ -329,93 +319,6 @@ public class NLayout {
     rect.set(style.padding);
     out.x += rect.x();
     out.y += rect.y();
-  }
-
-  private static void scaleBoxes(ComputedStyleSet comp, FullStyle style) {
-    conditionallyScale(
-        style.margin,
-        style.margin,
-        style.scale,
-        comp.marginTop,
-        comp.marginRight,
-        comp.marginBottom,
-        comp.marginLeft
-    );
-    conditionallyScale(
-        style.outline,
-        style.outline,
-        style.scale,
-        comp.outlineTop,
-        comp.outlineRight,
-        comp.outlineBottom,
-        comp.outlineLeft
-    );
-    conditionallyScale(
-        style.border,
-        style.border,
-        style.scale,
-        comp.borderTop,
-        comp.borderRight,
-        comp.borderBottom,
-        comp.borderLeft
-    );
-    conditionallyScale(
-        style.padding,
-        style.padding,
-        style.scale,
-        comp.paddingTop,
-        comp.paddingRight,
-        comp.paddingBottom,
-        comp.paddingLeft
-    );
-  }
-
-  public static Rect conditionallyScale(
-      Rect out,
-      Rect in,
-      Vector2f scale,
-      ValueOrAuto top,
-      ValueOrAuto right,
-      ValueOrAuto bottom,
-      ValueOrAuto left
-  ) {
-    if (out == null) {
-      out = new Rect();
-    }
-
-    out.set(in);
-
-    if (shouldScale(top)) {
-      out.top *= GLOBAL_SCALAR * scale.y;
-    }
-    if (shouldScale(bottom)) {
-      out.bottom *= GLOBAL_SCALAR * scale.y;
-    }
-    if (shouldScale(right)) {
-      out.right *= GLOBAL_SCALAR * scale.x;
-    }
-    if (shouldScale(left)) {
-      out.left *= GLOBAL_SCALAR * scale.x;
-    }
-
-    return out.max(0.0f);
-  }
-
-  private static boolean shouldScale(ValueOrAuto a) {
-    if (a.isAuto()) {
-      return false;
-    }
-
-    Unit unit = a.primitive().getUnit();
-    switch (unit) {
-      case VW:
-      case VH:
-      case PERCENT:
-        return false;
-
-      default:
-        return true;
-    }
   }
 
   static LayoutAlgorithm getLayoutAlgo(ElementRenderObject obj) {

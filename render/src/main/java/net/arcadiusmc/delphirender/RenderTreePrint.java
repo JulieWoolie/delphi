@@ -193,7 +193,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
     nlIndent().append("display: DisplayType.").append(style.display);
 
-    nlIndent().append("scale: ").append(style.scale);
+    nlIndent().append("font-size: ").append(style.fontSize);
     nlIndent().append("set-size: ").append(style.size);
     nlIndent().append("min-size: ").append(style.minSize);
     nlIndent().append("max-size: ").append(style.maxSize);

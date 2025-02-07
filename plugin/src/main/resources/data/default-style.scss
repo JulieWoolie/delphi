@@ -5,7 +5,7 @@ $button-outline: black;
 $button-bg: #096cfe;
 $button-bg-hover: lighten($button-bg, 20%);
 $button-bg-active: darken($button-bg, 25%);
-$button-padding: 1px;
+$button-padding: 0.5px;
 $body-bg: #1d1d1d;
 $body-outline: #121212;
 
@@ -16,8 +16,8 @@ $body-outline: #121212;
   height: 100vh;
   width: 100vw;
   box-sizing: border-box;
-  outline: 1px;
-  padding: 1.5px;
+  outline: 0.5px;
+  padding: 1px;
   outline-color: $body-outline;
   color: white;
 }
@@ -25,22 +25,22 @@ $body-outline: #121212;
 /* Text elements */
 
 h1 {
-  scale: 2;
+  font-size: 200%;
   display: block;
 }
 
 h2 {
-  scale: 1.5;
+  font-size: 150%;
   display: block;
 }
 
 h3 {
-  scale: 1.33;
+  font-size: 133%;
   display: block;
 }
 
 h4 {
-  scale: 1.25;
+  font-size: 125%;
   display: block;
 }
 
@@ -88,43 +88,36 @@ br, nl, newline {
 /* Item */
 
 item {
-  scale: 0.5;
   display: inline;
+
+  $size: 25cm;
+  width: $size;
+  height: $size;
 }
 
-/* Item tooltip stuff */
+/* Tooltip stuffs */
 
 item-tooltip-name {
-  margin-bottom: 1px;
+  margin-bottom: 0.5px;
   display: block;
 }
 
-item-tooltip {
-  scale: 0.5;
+item-tooltip, tooltip {
   z-index: 10;
   display: block;
 
-  padding: 1px;
+  $borderSize: 0.25px;
+
+  padding: $borderSize;
   background-color: #170817;
-  border: 1px;
+  border: $borderSize;
   border-color: #270558;
-  outline: 1px;
+  outline: $borderSize;
   outline-color: #170817;
-}
 
-/* Regular Tooltips */
-
-tooltip {
-  scale: 0.5;
-  z-index: 10;
-  display: block;
-
-  padding: 1px;
-  background-color: #170817;
-  border: 1px;
-  border-color: #270558;
-  outline: 1px;
-  outline-color: #170817;
+  * {
+    font-size: 50%;
+  }
 }
 
 /* Buttons */

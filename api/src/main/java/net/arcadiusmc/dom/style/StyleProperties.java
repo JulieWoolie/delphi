@@ -167,14 +167,14 @@ public interface StyleProperties extends StylePropertiesReadonly {
    * @param value Value
    * @return {@code this}
    */
-  StyleProperties setScale(@Nullable String value);
+  StyleProperties setFontSize(@Nullable String value);
 
   /**
    * Set the {@code scale} property.
    * @param value Value
    * @return {@code this}
    */
-  StyleProperties setScale(@Nullable Primitive value);
+  StyleProperties setFontSize(@Nullable Primitive value);
 
   /**
    * Set the {@code width} property.

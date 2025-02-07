@@ -15,8 +15,8 @@ import org.joml.Vector3f;
 
 public class ItemRenderObject extends SingleEntityRenderObject<ItemDisplay> {
 
-  public static final float Z_SCALE = 0.150f * GLOBAL_SCALAR;
-  public static final float Z_OFF = 0.033f * GLOBAL_SCALAR;
+  public static final float Z_SCALE = 0.150f * .5f;
+  public static final float Z_OFF = 0.033f * .5f;
   public static final float Y_OFF_MODIFIER = 0.5f;
   public static final float ROTATION = (float) Math.toRadians(180);
 

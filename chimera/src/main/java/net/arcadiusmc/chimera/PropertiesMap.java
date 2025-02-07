@@ -249,14 +249,14 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   @Override
-  public PropertiesMap setScale(@Nullable String value) {
-    parse(Properties.SCALE, value);
+  public PropertiesMap setFontSize(@Nullable String value) {
+    parse(Properties.FONT_SIZE, value);
     return triggerChange();
   }
 
   @Override
-  public PropertiesMap setScale(@Nullable Primitive value) {
-    set(Properties.SCALE, value);
+  public PropertiesMap setFontSize(@Nullable Primitive value) {
+    set(Properties.FONT_SIZE, value);
     return triggerChange();
   }
 

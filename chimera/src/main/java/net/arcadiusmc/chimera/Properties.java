@@ -110,7 +110,7 @@ public final class Properties {
       .layoutAffecting(true)
       .build();
 
-  public static final Property<Primitive> SCALE = Property.builder(Primitive.class)
+  public static final Property<Primitive> FONT_SIZE = Property.builder(Primitive.class)
       .defaultValue(Primitive.create(1))
       .cascading(true)
       .layoutAffecting(true)
@@ -398,7 +398,7 @@ public final class Properties {
     register("border-color",          BORDER_COLOR);
     register("display",               DISPLAY);
     register("text-shadow",           TEXT_SHADOW);
-    register("scale",                 SCALE);
+    register("font-size",             FONT_SIZE);
     register("z-index",               Z_INDEX);
 
     register("bold",                  BOLD);

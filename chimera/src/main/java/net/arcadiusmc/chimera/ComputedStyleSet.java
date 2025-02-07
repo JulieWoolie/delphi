@@ -14,6 +14,7 @@ import static net.arcadiusmc.chimera.Properties.COLOR;
 import static net.arcadiusmc.chimera.Properties.DISPLAY;
 import static net.arcadiusmc.chimera.Properties.FLEX_DIRECTION;
 import static net.arcadiusmc.chimera.Properties.FLEX_WRAP;
+import static net.arcadiusmc.chimera.Properties.FONT_SIZE;
 import static net.arcadiusmc.chimera.Properties.HEIGHT;
 import static net.arcadiusmc.chimera.Properties.ITALIC;
 import static net.arcadiusmc.chimera.Properties.JUSTIFY_CONTENT;
@@ -42,7 +43,6 @@ import static net.arcadiusmc.chimera.Properties.PADDING_BOTTOM;
 import static net.arcadiusmc.chimera.Properties.PADDING_LEFT;
 import static net.arcadiusmc.chimera.Properties.PADDING_RIGHT;
 import static net.arcadiusmc.chimera.Properties.PADDING_TOP;
-import static net.arcadiusmc.chimera.Properties.SCALE;
 import static net.arcadiusmc.chimera.Properties.STRIKETHROUGH;
 import static net.arcadiusmc.chimera.Properties.TEXT_SHADOW;
 import static net.arcadiusmc.chimera.Properties.UNDERLINED;
@@ -77,8 +77,7 @@ public class ComputedStyleSet {
 
   public DisplayType display;
 
-  public ValueOrAuto scaleX;
-  public ValueOrAuto scaleY;
+  public ValueOrAuto fontSize;
 
   public ValueOrAuto width;
   public ValueOrAuto height;
@@ -138,8 +137,7 @@ public class ComputedStyleSet {
 
     display = DisplayType.DEFAULT;
 
-    scaleX = ValueOrAuto.ONE;
-    scaleY = ValueOrAuto.ONE;
+    fontSize = ValueOrAuto.ONE;
 
     width = ValueOrAuto.AUTO;
     height = ValueOrAuto.AUTO;
@@ -195,9 +193,7 @@ public class ComputedStyleSet {
 
     display = getExplicit(set, DISPLAY);
 
-    ValueOrAuto scale = getPrimitive(set, SCALE);
-    scaleX = scale;
-    scaleY = scale;
+    fontSize = getPrimitive(set, FONT_SIZE);
 
     width = getPrimitive(set, WIDTH);
     height = getPrimitive(set, HEIGHT);

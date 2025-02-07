@@ -62,7 +62,7 @@ public interface StylePropertiesReadonly {
 
   @Nullable String getMarginBottom();
 
-  @Nullable String getScale();
+  @Nullable String getFontSize();
 
   @Nullable String getZIndex();
 

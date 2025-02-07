@@ -157,8 +157,8 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
-  public @Nullable String getScale() {
-    return get(Properties.SCALE);
+  public @Nullable String getFontSize() {
+    return get(Properties.FONT_SIZE);
   }
 
   @Override
