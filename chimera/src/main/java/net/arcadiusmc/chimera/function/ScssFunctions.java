@@ -28,4 +28,6 @@ public interface ScssFunctions {
 
   ScssFunction GET_PROPERTY = new GetPropertyFunction();
   ScssFunction SET_PROPERTY = new SetPropertyFunction();
+
+  ScssFunction IF = new IfFunction();
 }

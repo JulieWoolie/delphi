@@ -65,6 +65,8 @@ public class Scope {
     scope.putFunction("get-property", ScssFunctions.GET_PROPERTY);
     scope.putFunction("set-property", ScssFunctions.SET_PROPERTY);
 
+    scope.putFunction("if", ScssFunctions.IF);
+
     return scope;
   }
 
