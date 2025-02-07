@@ -17,10 +17,12 @@ import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
+import net.arcadiusmc.chimera.parse.ast.IncludeStatement;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
 import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.LogStatement;
+import net.arcadiusmc.chimera.parse.ast.MixinStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.Node;
 import net.arcadiusmc.chimera.parse.ast.NodeVisitor;
@@ -592,6 +594,21 @@ public class XmlPrintVisitor implements NodeVisitor<Void> {
     enterTag("expr-statement", statement);
     statement.getExpr().visit(this);
     exitTag("expr-statement");
+    return null;
+  }
+
+  @Override
+  public Void mixin(MixinStatement statement) {
+    enterTag("mixin", statement);
+    statement.getName().visit(this);
+    statement.getBody().visit(this);
+    exitTag("mixin");
+    return null;
+  }
+
+  @Override
+  public Void include(IncludeStatement statement) {
+    voidTag("include", statement, Map.of("name", statement.getName().getValue()));
     return null;
   }
 

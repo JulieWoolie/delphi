@@ -20,6 +20,7 @@ public class Scope {
 
   private final Map<String, ScssFunction> functionMap = new HashMap<>();
   private final Map<String, Scope> namespaces = new HashMap<>();
+  private final Map<String, MixinObject> mixins = new HashMap<>();
 
   private PropertySet propertyOutput;
   private Object controlFlowValue;
@@ -120,5 +121,17 @@ public class Scope {
 
   public Scope getNamespaced(String namespace) {
     return namespaces.get(namespace);
+  }
+
+  public MixinObject getMixin(String name) {
+    MixinObject obj = mixins.get(name);
+    if (obj != null || parent == null) {
+      return obj;
+    }
+    return parent.getMixin(name);
+  }
+
+  public void putMixin(String name, MixinObject mixin) {
+    mixins.put(name, mixin);
   }
 }

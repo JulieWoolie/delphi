@@ -77,8 +77,10 @@ public record Token(
   public static final int AT_CONTINUE   = AT_BREAK + 1;
   public static final int AT_RETURN     = AT_CONTINUE + 1;
   public static final int AT_ASSERT     = AT_RETURN + 1;
+  public static final int AT_MIXIN      = AT_ASSERT + 1;
+  public static final int AT_INCLUDE    = AT_MIXIN + 1;
 
-  public static final int LAST_TOKEN = AT_ASSERT;
+  public static final int LAST_TOKEN = AT_INCLUDE;
 
   public static String typeToString(int ttype) {
     return switch (ttype) {
@@ -112,7 +114,9 @@ public record Token(
       case AT_CONTINUE -> "'@continue'";
       case AT_RETURN -> "'@return'";
       case AT_ID -> "@-identifier";
-      case AT_ASSERT -> "@assert";
+      case AT_ASSERT -> "'@assert'";
+      case AT_MIXIN -> "'@mixin'";
+      case AT_INCLUDE -> "'@include'";
 
       case COLON -> "':'";
       case SEMICOLON -> "';'";

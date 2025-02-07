@@ -99,4 +99,9 @@ public interface NodeVisitor<R> {
   R assertStatement(AssertStatement statement);
 
   R exprStatement(ExpressionStatement statement);
+
+  R mixin(MixinStatement statement);
+
+  R include(IncludeStatement statement);
+
 }

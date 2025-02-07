@@ -38,10 +38,12 @@ import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
+import net.arcadiusmc.chimera.parse.ast.IncludeStatement;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
 import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.LogStatement;
+import net.arcadiusmc.chimera.parse.ast.MixinStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NodeVisitor;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
@@ -937,4 +939,42 @@ public class Interpreter implements NodeVisitor<Object> {
     statement.getExpr().visit(this);
     return null;
   }
+
+  @Override
+  public Object mixin(MixinStatement statement) {
+    MixinObject object = new MixinObject();
+    object.setBody(statement.getBody());
+    object.setScope(scope);
+
+    scope.putMixin(statement.getName().getValue(), object);
+    return null;
+  }
+
+  @Override
+  public Object include(IncludeStatement statement) {
+    String name = statement.getName().getValue();
+    MixinObject mixin = scope.getMixin(name);
+
+    if (mixin == null) {
+      error(statement.getStart(), "Unknown mixin '%s'", name);
+      return null;
+    }
+
+    if (scope.getPropertyOutput() == null) {
+      error(statement.getStart(), "Cannot use @include here");
+      return null;
+    }
+
+    Scope childScope = new Scope(mixin.getScope());
+    childScope.setPropertyOutput(scope.getPropertyOutput());
+    childScope.setSheetBuilder(scope.getSheetBuilder());
+
+    pushScope(childScope);
+    mixin.getBody().visit(this);
+    popScope();
+
+    return null;
+  }
+
+
 }

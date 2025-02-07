@@ -12,6 +12,8 @@ import static net.arcadiusmc.chimera.parse.Token.AT_ERROR;
 import static net.arcadiusmc.chimera.parse.Token.AT_FUNCTION;
 import static net.arcadiusmc.chimera.parse.Token.AT_IF;
 import static net.arcadiusmc.chimera.parse.Token.AT_IMPORT;
+import static net.arcadiusmc.chimera.parse.Token.AT_INCLUDE;
+import static net.arcadiusmc.chimera.parse.Token.AT_MIXIN;
 import static net.arcadiusmc.chimera.parse.Token.AT_PRINT;
 import static net.arcadiusmc.chimera.parse.Token.AT_RETURN;
 import static net.arcadiusmc.chimera.parse.Token.AT_WARN;
@@ -74,11 +76,13 @@ import net.arcadiusmc.chimera.parse.ast.Identifier;
 import net.arcadiusmc.chimera.parse.ast.IfStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportStatement;
 import net.arcadiusmc.chimera.parse.ast.ImportantMarker;
+import net.arcadiusmc.chimera.parse.ast.IncludeStatement;
 import net.arcadiusmc.chimera.parse.ast.InlineStyleStatement;
 import net.arcadiusmc.chimera.parse.ast.Keyword;
 import net.arcadiusmc.chimera.parse.ast.KeywordLiteral;
 import net.arcadiusmc.chimera.parse.ast.ListLiteral;
 import net.arcadiusmc.chimera.parse.ast.LogStatement;
+import net.arcadiusmc.chimera.parse.ast.MixinStatement;
 import net.arcadiusmc.chimera.parse.ast.NamespaceExpr;
 import net.arcadiusmc.chimera.parse.ast.NumberLiteral;
 import net.arcadiusmc.chimera.parse.ast.PropertyStatement;
@@ -1052,6 +1056,36 @@ public class ChimeraParser {
     return null;
   }
 
+  MixinStatement mixinStatement() {
+    Token start = expect(AT_MIXIN);
+    MixinStatement stat = new MixinStatement();
+    stat.setStart(start.location());
+
+    Identifier id = id();
+    Block body = blockStatement();
+
+    stat.setName(id);
+    stat.setBody(body);
+    stat.setEnd(body.getEnd());
+
+    return stat;
+  }
+
+  IncludeStatement includeStatement() {
+    Token start = expect(AT_INCLUDE);
+    IncludeStatement stat = new IncludeStatement();
+
+    Identifier id = id();
+
+    stat.setStart(start.location());
+    stat.setName(id);
+    stat.setEnd(id.getEnd());
+
+    expectEndOfStatement();
+
+    return stat;
+  }
+
   Statement statement() {
     if (isSelectorNext()) {
       return rule();
@@ -1067,6 +1101,8 @@ public class ChimeraParser {
       case AT_IMPORT -> importStatement();
       case AT_FUNCTION -> functionStatement();
       case AT_ASSERT -> assertStatement();
+      case AT_MIXIN -> mixinStatement();
+      case AT_INCLUDE -> includeStatement();
 
       case ID -> {
         if (scope() == ParserScope.TOP_LEVEL) {
