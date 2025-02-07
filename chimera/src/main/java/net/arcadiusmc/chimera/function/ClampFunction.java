@@ -26,10 +26,10 @@ public class ClampFunction implements ScssFunction {
     }
 
     CompilerErrors errors = ctx.getErrors();
-    if (!testCompatibility(errors, a1.getLocation(), minPrim.getUnit(), valPrim.getUnit())) {
+    if (!testCompatibility(errors, a1.getStart(), minPrim.getUnit(), valPrim.getUnit())) {
       return null;
     }
-    if (!testCompatibility(errors, a3.getLocation(), maxPrim.getUnit(), valPrim.getUnit())) {
+    if (!testCompatibility(errors, a3.getStart(), maxPrim.getUnit(), valPrim.getUnit())) {
       return null;
     }
 

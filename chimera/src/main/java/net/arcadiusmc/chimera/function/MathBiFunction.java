@@ -31,7 +31,7 @@ public class MathBiFunction implements ScssFunction {
     Unit left = lhs.getUnit();
     Unit right = rhs.getUnit();
 
-    if (!testCompatibility(ctx.getErrors(), arguments[0].getLocation(), left, right)) {
+    if (!testCompatibility(ctx.getErrors(), arguments[0].getStart(), left, right)) {
       return null;
     }
 
