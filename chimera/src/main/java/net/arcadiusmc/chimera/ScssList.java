@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.StringJoiner;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +50,43 @@ public class ScssList implements Iterable<Object> {
   public void set(int i, Object o) {
     Objects.checkIndex(i, length);
     values[i] = o;
+  }
+
+  @Override
+  public String toString() {
+    StringJoiner joiner = new StringJoiner(", ", "[", "]");
+
+    for (int i = 0; i < length; i++) {
+      joiner.add(String.valueOf(values[i]));
+    }
+
+    return joiner.toString();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof ScssList list)) {
+      return false;
+    }
+    if (list.length != this.length) {
+      return false;
+    }
+
+    for (int i = 0; i < length; i++) {
+      Object self = values[i];
+      Object other = list.values[i];
+
+      if (Objects.equals(self, other)) {
+        continue;
+      }
+
+      return false;
+    }
+
+    return true;
   }
 
   class Iter implements Iterator<Object> {
