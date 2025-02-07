@@ -729,6 +729,48 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   @Override
+  public StyleProperties setMarginInlineStart(@Nullable Primitive value) {
+    set(Properties.MARGIN_INLINE_START, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setMarginInlineStart(@Nullable String value) {
+    parse(Properties.MARGIN_INLINE_START, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setMarginInlineEnd(@Nullable Primitive value) {
+    set(Properties.MARGIN_INLINE_END, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setMarginInlineEnd(@Nullable String value) {
+    parse(Properties.MARGIN_INLINE_END, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setMarginInline(@Nullable String value) {
+    parse(Properties.MARGIN_INLINE, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setMarginInline(@Nullable Primitive value) {
+    set(Properties.MARGIN_INLINE, value == null ? null : new PrimitiveLeftRight(value, value));
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setMarginInline(@Nullable Primitive start, @Nullable Primitive end) {
+    set(Properties.MARGIN_INLINE, new PrimitiveLeftRight(start, end));
+    return triggerChange();
+  }
+
+  @Override
   public StyleProperties setProperty(@NotNull String propertyName, @Nullable String value) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return this;

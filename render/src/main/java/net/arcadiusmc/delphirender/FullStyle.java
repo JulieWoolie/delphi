@@ -40,6 +40,9 @@ public class FullStyle {
   public final Vector2f minSize = new Vector2f(UNSET);
   public final Vector2f maxSize = new Vector2f(UNSET);
 
+  public float marginInlineStart = 0.0f;
+  public float marginInlineEnd = 0.0f;
+
   public int zindex = 0;
   public AlignItems alignItems = AlignItems.DEFAULT;
   public FlexDirection flexDirection = FlexDirection.DEFAULT;

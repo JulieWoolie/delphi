@@ -747,6 +747,56 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setBoxSizing(@Nullable String value);
 
   /**
+   * Set the {@code margin-inline-start} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginInlineStart(@Nullable Primitive value);
+
+  /**
+   * Set the {@code margin-inline-start} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginInlineStart(@Nullable String value);
+
+  /**
+   * Set the {@code margin-inline-end} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginInlineEnd(@Nullable Primitive value);
+
+  /**
+   * Set the {@code margin-inline-end} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginInlineEnd(@Nullable String value);
+
+  /**
+   * Set the {@code margin-inline} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginInline(@Nullable String value);
+
+  /**
+   * Set the {@code margin-inline} property.
+   * @param value Value
+   * @return {@code this}
+   */
+  StyleProperties setMarginInline(@Nullable Primitive value);
+
+  /**
+   * Set the {@code margin-inline} property.
+   * @param start Margin inline start
+   * @param end Margin inline end
+   * @return {@code this}
+   */
+  StyleProperties setMarginInline(Primitive start, Primitive end);
+
+  /**
    * Set the value of a CSS property.
    *
    * @param propertyName CSS property name

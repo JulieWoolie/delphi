@@ -2,6 +2,7 @@ package net.arcadiusmc.chimera.parse;
 
 import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
+import net.arcadiusmc.chimera.PrimitiveLeftRight;
 import net.arcadiusmc.chimera.PrimitiveRect;
 import net.arcadiusmc.chimera.Property;
 import net.arcadiusmc.chimera.PropertySet;
@@ -123,7 +124,10 @@ public final class Chimera {
     }
 
     if (type == PrimitiveRect.class) {
-      return tryCoerceRectangle(object, type);
+      return tryCoerceRectangle(object);
+    }
+    if (type == PrimitiveLeftRight.class) {
+      return tryCoerceLeftRight(object);
     }
 
     if (object instanceof Primitive prim) {
@@ -143,7 +147,39 @@ public final class Chimera {
     return fromKeyword(key, type);
   }
 
-  private static Object tryCoerceRectangle(Object object, Class<?> type) {
+  private static Object tryCoerceLeftRight(Object object) {
+    if (object instanceof Primitive prim) {
+      return new PrimitiveLeftRight(prim, prim);
+    }
+
+    if (object instanceof ScssList list) {
+      int len = list.getLength();
+      if (len < 1) {
+        return PrimitiveLeftRight.ZERO;
+      }
+
+      Primitive l;
+      Primitive r;
+
+      if (len == 1) {
+        l = coerceValue(Primitive.class, list.get(0));
+        r = l;
+      } else {
+        l = coerceValue(Primitive.class, list.get(0));
+        r = coerceValue(Primitive.class, list.get(1));
+      }
+
+      if (l == null || r == null) {
+        return object;
+      }
+
+      return new PrimitiveLeftRight(l, r);
+    }
+
+    return object;
+  }
+
+  private static Object tryCoerceRectangle(Object object) {
     if (object instanceof Primitive prim) {
       return PrimitiveRect.create(prim);
     }

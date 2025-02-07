@@ -1,6 +1,7 @@
 package net.arcadiusmc.chimera;
 
 import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE;
+import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE_LR;
 import static net.arcadiusmc.chimera.PropertyValidator.NON_ANGLE_RECT;
 import static net.arcadiusmc.chimera.PropertyValidator.SCALAR;
 
@@ -270,6 +271,27 @@ public final class Properties {
       .validator(NON_ANGLE)
       .build();
 
+  public static final Property<Primitive> MARGIN_INLINE_START = Property.builder(Primitive.class)
+      .defaultValue(Primitive.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE)
+      .build();
+
+  public static final Property<Primitive> MARGIN_INLINE_END = Property.builder(Primitive.class)
+      .defaultValue(Primitive.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE)
+      .build();
+
+  public static final Property<PrimitiveLeftRight> MARGIN_INLINE = Property.builder(PrimitiveLeftRight.class)
+      .defaultValue(PrimitiveLeftRight.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE_LR)
+      .build();
+
   public static final Property<PrimitiveRect> PADDING = Property.builder(PrimitiveRect.class)
       .defaultValue(PrimitiveRect.ZERO)
       .cascading(false)
@@ -361,63 +383,67 @@ public final class Properties {
   }
 
   private static void registerAll() {
-    register("color",             COLOR);
-    register("background-color",  BACKGROUND_COLOR);
-    register("outline-color",     OUTLINE_COLOR);
+    register("color",                 COLOR);
+    register("background-color",      BACKGROUND_COLOR);
+    register("outline-color",         OUTLINE_COLOR);
 
-    register("align-items",       ALIGN_ITEMS);
-    register("flex-direction",    FLEX_DIRECTION);
-    register("flex-wrap",         FLEX_WRAP);
-    register("justify-content",   JUSTIFY_CONTENT);
-    register("order",             ORDER);
+    register("align-items",           ALIGN_ITEMS);
+    register("flex-direction",        FLEX_DIRECTION);
+    register("flex-wrap",             FLEX_WRAP);
+    register("justify-content",       JUSTIFY_CONTENT);
+    register("order",                 ORDER);
 
-    register("box-sizing",        BOX_SIZING);
+    register("box-sizing",            BOX_SIZING);
 
-    register("border-color",      BORDER_COLOR);
-    register("display",           DISPLAY);
-    register("text-shadow",       TEXT_SHADOW);
-    register("scale",             SCALE);
-    register("z-index",           Z_INDEX);
+    register("border-color",          BORDER_COLOR);
+    register("display",               DISPLAY);
+    register("text-shadow",           TEXT_SHADOW);
+    register("scale",                 SCALE);
+    register("z-index",               Z_INDEX);
 
-    register("bold",              BOLD);
-    register("italic",            ITALIC);
-    register("underlined",        UNDERLINED);
-    register("strikethrough",     STRIKETHROUGH);
-    register("obfuscated",        OBFUSCATED);
+    register("bold",                  BOLD);
+    register("italic",                ITALIC);
+    register("underlined",            UNDERLINED);
+    register("strikethrough",         STRIKETHROUGH);
+    register("obfuscated",            OBFUSCATED);
 
-    register("width",             WIDTH);
-    register("height",            HEIGHT);
+    register("width",                 WIDTH);
+    register("height",                HEIGHT);
 
-    register("min-width",         MIN_WIDTH);
-    register("min-height",        MIN_HEIGHT);
+    register("min-width",             MIN_WIDTH);
+    register("min-height",            MIN_HEIGHT);
 
-    register("max-width",         MAX_WIDTH);
-    register("max-height",        MAX_HEIGHT);
+    register("max-width",             MAX_WIDTH);
+    register("max-height",            MAX_HEIGHT);
 
-    register("border-top",        BORDER_TOP);
-    register("border-bottom",     BORDER_BOTTOM);
-    register("border-left",       BORDER_LEFT);
-    register("border-right",      BORDER_RIGHT);
+    register("border-top",            BORDER_TOP);
+    register("border-bottom",         BORDER_BOTTOM);
+    register("border-left",           BORDER_LEFT);
+    register("border-right",          BORDER_RIGHT);
 
-    register("outline-top",       OUTLINE_TOP);
-    register("outline-bottom",    OUTLINE_BOTTOM);
-    register("outline-left",      OUTLINE_LEFT);
-    register("outline-right",     OUTLINE_RIGHT);
+    register("outline-top",           OUTLINE_TOP);
+    register("outline-bottom",        OUTLINE_BOTTOM);
+    register("outline-left",          OUTLINE_LEFT);
+    register("outline-right",         OUTLINE_RIGHT);
 
-    register("padding-top",       PADDING_TOP);
-    register("padding-bottom",    PADDING_BOTTOM);
-    register("padding-left",      PADDING_LEFT);
-    register("padding-right",     PADDING_RIGHT);
+    register("padding-top",           PADDING_TOP);
+    register("padding-bottom",        PADDING_BOTTOM);
+    register("padding-left",          PADDING_LEFT);
+    register("padding-right",         PADDING_RIGHT);
 
-    register("margin-top",        MARGIN_TOP);
-    register("margin-bottom",     MARGIN_BOTTOM);
-    register("margin-left",       MARGIN_LEFT);
-    register("margin-right",      MARGIN_RIGHT);
+    register("margin-top",            MARGIN_TOP);
+    register("margin-bottom",         MARGIN_BOTTOM);
+    register("margin-left",           MARGIN_LEFT);
+    register("margin-right",          MARGIN_RIGHT);
 
-    register("padding",           PADDING);
-    register("outline",           OUTLINE);
-    register("border",            BORDER);
-    register("margin",            MARGIN);
+    register("margin-inline-start",   MARGIN_INLINE_START);
+    register("margin-inline-end",     MARGIN_INLINE_END);
+    register("margin-inline",         MARGIN_INLINE);
+
+    register("padding",               PADDING);
+    register("outline",               OUTLINE);
+    register("border",                BORDER);
+    register("margin",                MARGIN);
   }
 
   private static <T> void register(String key, Property<T> property) {

@@ -26,5 +26,10 @@ public interface PropertyValidator<T> {
         .or(() -> NON_ANGLE.validate(rect.getLeft()));
   };
 
+  PropertyValidator<PrimitiveLeftRight> NON_ANGLE_LR = value -> {
+    return NON_ANGLE.validate(value.getLeft())
+        .or(() -> NON_ANGLE.validate(value.getRight()));
+  };
+
   Optional<String> validate(T value);
 }

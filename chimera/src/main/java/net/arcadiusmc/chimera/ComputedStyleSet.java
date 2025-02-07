@@ -19,6 +19,9 @@ import static net.arcadiusmc.chimera.Properties.ITALIC;
 import static net.arcadiusmc.chimera.Properties.JUSTIFY_CONTENT;
 import static net.arcadiusmc.chimera.Properties.MARGIN;
 import static net.arcadiusmc.chimera.Properties.MARGIN_BOTTOM;
+import static net.arcadiusmc.chimera.Properties.MARGIN_INLINE;
+import static net.arcadiusmc.chimera.Properties.MARGIN_INLINE_END;
+import static net.arcadiusmc.chimera.Properties.MARGIN_INLINE_START;
 import static net.arcadiusmc.chimera.Properties.MARGIN_LEFT;
 import static net.arcadiusmc.chimera.Properties.MARGIN_RIGHT;
 import static net.arcadiusmc.chimera.Properties.MARGIN_TOP;
@@ -105,6 +108,9 @@ public class ComputedStyleSet {
   public ValueOrAuto marginBottom;
   public ValueOrAuto marginLeft;
 
+  public ValueOrAuto marginInlineStart;
+  public ValueOrAuto marginInlineEnd;
+
   public int zindex;
   public AlignItems alignItems;
   public FlexDirection flexDirection;
@@ -162,6 +168,9 @@ public class ComputedStyleSet {
     marginBottom = ValueOrAuto.ZERO;
     marginLeft = ValueOrAuto.ZERO;
 
+    marginInlineStart = ValueOrAuto.ZERO;
+    marginInlineEnd = ValueOrAuto.ZERO;
+
     zindex = 0;
     alignItems = AlignItems.DEFAULT;
     flexDirection = FlexDirection.DEFAULT;
@@ -204,6 +213,17 @@ public class ComputedStyleSet {
     justifyContent = getExplicit(set, JUSTIFY_CONTENT);
     order = getExplicit(set, ORDER);
     boxSizing = getExplicit(set, BOX_SIZING);
+
+    // Margin inline
+    PrimitiveLeftRight lr = getExplicit(set, MARGIN_INLINE);
+    marginInlineStart = ValueOrAuto.valueOf(lr.getLeft());
+    marginInlineEnd = ValueOrAuto.valueOf(lr.getRight());
+    if (set.has(MARGIN_INLINE_START)) {
+      marginInlineStart = getPrimitive(set, MARGIN_INLINE_START);
+    }
+    if (set.has(MARGIN_INLINE_END)) {
+      marginInlineStart = getPrimitive(set, MARGIN_INLINE_END);
+    }
 
     // Padding
     PrimitiveRect rect = getExplicit(set, PADDING);

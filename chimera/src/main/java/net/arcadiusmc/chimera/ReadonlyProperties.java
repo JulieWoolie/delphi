@@ -252,6 +252,21 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
+  public @Nullable String getMarginInlineStart() {
+    return get(Properties.MARGIN_INLINE_START);
+  }
+
+  @Override
+  public @Nullable String getMarginInlineEnd() {
+    return get(Properties.MARGIN_INLINE_END);
+  }
+
+  @Override
+  public @Nullable String getMarginInline() {
+    return get(Properties.MARGIN_INLINE);
+  }
+
+  @Override
   public @Nullable String getPropertyValue(String propertyName) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return null;

@@ -125,6 +125,24 @@ public interface StylePropertiesReadonly {
   @Nullable String getBoxSizing();
 
   /**
+   * Get the {@code margin-inline-start} property value.
+   * @return Margin inline start, or {@code null}, if not set.
+   */
+  @Nullable String getMarginInlineStart();
+
+  /**
+   * Get the {@code margin-inline-end} property value.
+   * @return Margin inline end, or {@code null}, if not set.
+   */
+  @Nullable String getMarginInlineEnd();
+
+  /**
+   * Get the {@code margin-inline} property value.
+   * @return Margin inline, or {@code null}, if not set.
+   */
+  @Nullable String getMarginInline();
+
+  /**
    * Get a set of CSS property names that are explicitly set
    * by this property set.
    *
