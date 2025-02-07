@@ -123,6 +123,9 @@ public class NLayout {
     style.padding.bottom = resolve(comp.paddingBottom, ctx, 0, Y);
     style.padding.left = resolve(comp.paddingLeft, ctx, 0, X);
 
+    style.marginInlineStart = resolve(comp.marginInlineStart, ctx, 0, X);
+    style.marginInlineEnd = resolve(comp.marginInlineEnd, ctx, 0, X);
+
     Vector2f childObjectsSize = new Vector2f(0);
     LayoutAlgorithm lStyle = getLayoutAlgo(ro);
 
@@ -137,6 +140,7 @@ public class NLayout {
 
     Vector2f psize = new Vector2f();
     applyMeasuredSize(ro, psize);
+    getContentSize(psize, comp, style);
 
     ctx.parentSizes.push(psize);
 
@@ -254,15 +258,47 @@ public class NLayout {
   private static float clamp(float v, float lower, float upper) {
     float min = lower == UNSET ? Float.MIN_VALUE : lower;
     float max = upper == UNSET ? Float.MAX_VALUE : upper;
-    return Math.clamp(v, min, max);
+
+    if (v < min) {
+      return min;
+    }
+    if (v > max) {
+      return max;
+    }
+
+    return v;
   }
 
   private static void applyMeasuredSize(ElementRenderObject element, Vector2f out) {
     FullStyle style = element.style;
-    Rect rect = new Rect();
 
     out.x = 0;
     out.y = 0;
+
+    ComputedStyleSet comp = element.computedStyleSet;
+    ValueOrAuto width = comp.width;
+    ValueOrAuto height = comp.height;
+
+    scaleBoxes(comp, style);
+
+    getContentSize(out, comp, style);
+
+    Vector2f growth = new Vector2f();
+    getBordersSizes(style, growth);
+
+    BoxSizing sizing = element.style.boxSizing;
+
+    if (width.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
+      out.x += growth.x;
+    }
+    if (height.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
+      out.y += growth.y;
+    }
+  }
+
+  static void getContentSize(Vector2f out, ComputedStyleSet comp, FullStyle style) {
+    ValueOrAuto width = comp.width;
+    ValueOrAuto height = comp.height;
 
     if (style.size.x != UNSET) {
       out.x = clamp(style.size.x, style.minSize.x, style.maxSize.x);
@@ -271,20 +307,31 @@ public class NLayout {
       out.y = clamp(style.size.y, style.minSize.y, style.maxSize.y);
     }
 
-    ComputedStyleSet comp = element.computedStyleSet;
-    ValueOrAuto width = comp.width;
-    ValueOrAuto height = comp.height;
-
     if (shouldScale(width)) {
       out.x *= GLOBAL_SCALAR * style.scale.x;
     }
     if (shouldScale(height)) {
       out.y *= GLOBAL_SCALAR * style.scale.y;
     }
+  }
 
-    float xGrow = 0.0f;
-    float yGrow = 0.0f;
+  static void getBordersSizes(FullStyle style, Vector2f out) {
+    Rect rect = new Rect();
 
+    rect.set(style.outline);
+    out.x += rect.x();
+    out.y += rect.y();
+
+    rect.set(style.border);
+    out.x += rect.x();
+    out.y += rect.y();
+
+    rect.set(style.padding);
+    out.x += rect.x();
+    out.y += rect.y();
+  }
+
+  private static void scaleBoxes(ComputedStyleSet comp, FullStyle style) {
     conditionallyScale(
         style.margin,
         style.margin,
@@ -321,27 +368,6 @@ public class NLayout {
         comp.paddingBottom,
         comp.paddingLeft
     );
-
-    rect.set(style.outline);
-    xGrow += rect.x();
-    yGrow += rect.y();
-
-    rect.set(style.border);
-    xGrow += rect.x();
-    yGrow += rect.y();
-
-    rect.set(style.padding);
-    xGrow += rect.x();
-    yGrow += rect.y();
-
-    BoxSizing sizing = element.style.boxSizing;
-
-    if (width.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
-      out.x += xGrow;
-    }
-    if (height.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
-      out.y += yGrow;
-    }
   }
 
   public static Rect conditionallyScale(
@@ -379,35 +405,20 @@ public class NLayout {
     if (a.isAuto()) {
       return false;
     }
-    return a.primitive().getUnit() != Unit.PERCENT;
+
+    Unit unit = a.primitive().getUnit();
+    switch (unit) {
+      case VW:
+      case VH:
+      case PERCENT:
+        return false;
+
+      default:
+        return true;
+    }
   }
 
   static LayoutAlgorithm getLayoutAlgo(ElementRenderObject obj) {
     return Algorithms.FLOW;
-  }
-
-  static void getBoxSizingOffset(ElementRenderObject obj, Vector2f out) {
-    BoxSizing boxSizing = obj.style.boxSizing;
-    if (boxSizing == BoxSizing.BORDER_BOX) {
-      out.set(0);
-      return;
-    }
-
-    Rect rect = new Rect(0);
-
-    rect.set(obj.style.outline).max(0.0f);
-    out.x += rect.x();
-    out.y += rect.y();
-
-    rect.set(obj.style.border).max(0f);
-    out.x += rect.x();
-    out.y += rect.y();
-
-    rect.set(obj.style.padding).max(0f);
-    out.x += rect.x();
-    out.y += rect.y();
-
-    out.mul(GLOBAL_SCALAR);
-    out.mul(obj.style.scale);
   }
 }
