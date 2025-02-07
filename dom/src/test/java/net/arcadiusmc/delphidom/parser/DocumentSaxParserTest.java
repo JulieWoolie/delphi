@@ -19,6 +19,7 @@ import net.arcadiusmc.delphi.util.Nothing;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.dom.Attributes;
+import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.ItemElement;
 import net.arcadiusmc.dom.Options;
@@ -77,6 +78,11 @@ class DocumentSaxParserTest {
 
       @Override
       public ElementInputConsumer<ItemElement> createItemJsonParser() {
+        return null;
+      }
+
+      @Override
+      public ElementInputConsumer<ComponentElement> createTextJsonParser() {
         return null;
       }
     });
