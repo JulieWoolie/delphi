@@ -1,4 +1,0 @@
-{
-  "scss": "@assert true : 'NOP';",
-  "parser-call": "execute"
-}

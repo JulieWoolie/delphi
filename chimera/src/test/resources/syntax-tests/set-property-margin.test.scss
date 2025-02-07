@@ -1,5 +1,8 @@
 .rule {
   set-property("margin", 1px 2px 3px 4px);
+  
   $m: get-property("margin");
-  @debug $m;
+  $expected: 1px 2px 3px 4px;
+  
+  @assert $m == $expected;
 }

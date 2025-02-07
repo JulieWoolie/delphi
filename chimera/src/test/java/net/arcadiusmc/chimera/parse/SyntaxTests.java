@@ -26,13 +26,15 @@ import org.slf4j.event.Level;
 
 public class SyntaxTests {
 
-  static final String SUFFIX = ".test.json";
+  static final String JSON_SUFFIX = ".test.json";
+  static final String SCSS_SUFFIX = ".test.scss";
   static final Filter<Path> TEST_JSON_FILTER = entry -> {
     if (Files.isDirectory(entry)) {
       return true;
     }
 
-    return entry.toString().endsWith(SUFFIX);
+    String p = entry.toString();
+    return p.endsWith(JSON_SUFFIX) || p.endsWith(SCSS_SUFFIX);
   };
 
   @TestFactory
@@ -66,49 +68,64 @@ public class SyntaxTests {
           continue;
         }
 
-        String jsonContent = Files.readString(path, StandardCharsets.UTF_8);
-        JsonObject obj = JsonParser.parseString(jsonContent).getAsJsonObject();
-
         LoadedSyntaxTest test = new LoadedSyntaxTest();
         String fname = path.getFileName().toString();
 
+        test.displayName = relPath + fname
+            .replace(SCSS_SUFFIX, "")
+            .replace(JSON_SUFFIX, "");
+
         test.fileName = path;
-        test.displayName = relPath + fname.replace(SUFFIX, "");
-        test.errors = loadErrors(obj);
 
-        if (obj.has("should-succeed")) {
-          test.expectedResult = obj.get("should-succeed").getAsBoolean();
+        if (fname.endsWith(SCSS_SUFFIX)) {
+          test.parserCall = "execute";
+          test.scssSource = Files.readString(path, StandardCharsets.UTF_8);
         } else {
-          test.expectedResult = null;
-        }
-
-        if (obj.has("parser-call")) {
-          test.parserCall = obj.get("parser-call").getAsString();
-        } else {
-          test.parserCall = "";
-        }
-
-        if (obj.has("expected")) {
-          test.resultString = obj.get("expected").getAsString();
-        } else {
-          test.resultString = null;
-        }
-
-        if (obj.has("scss")) {
-          test.scssSource = obj.get("scss").getAsString();
-        } else {
-          String scssName = fname.replace(SUFFIX, ".scss");
-
-          Path p = dir.resolve(scssName);
-          if (!Files.exists(p)) {
-            throw new FileNotFoundException(p.toString());
-          }
-
-          test.scssSource = Files.readString(p, StandardCharsets.UTF_8);
+          loadFromJson(test, fname, dir, path);
         }
 
         consumer.accept(test);
       }
+    }
+  }
+
+  private void loadFromJson(LoadedSyntaxTest test, String fname, Path dir, Path path)
+      throws IOException
+  {
+    String jsonContent = Files.readString(path, StandardCharsets.UTF_8);
+    JsonObject obj = JsonParser.parseString(jsonContent).getAsJsonObject();
+
+    test.errors = loadErrors(obj);
+
+    if (obj.has("should-succeed")) {
+      test.expectedResult = obj.get("should-succeed").getAsBoolean();
+    } else {
+      test.expectedResult = null;
+    }
+
+    if (obj.has("parser-call")) {
+      test.parserCall = obj.get("parser-call").getAsString();
+    } else {
+      test.parserCall = "";
+    }
+
+    if (obj.has("expected")) {
+      test.resultString = obj.get("expected").getAsString();
+    } else {
+      test.resultString = null;
+    }
+
+    if (obj.has("scss")) {
+      test.scssSource = obj.get("scss").getAsString();
+    } else {
+      String scssName = fname.replace(JSON_SUFFIX, ".scss");
+
+      Path p = dir.resolve(scssName);
+      if (!Files.exists(p)) {
+        throw new FileNotFoundException(p.toString());
+      }
+
+      test.scssSource = Files.readString(p, StandardCharsets.UTF_8);
     }
   }
 
