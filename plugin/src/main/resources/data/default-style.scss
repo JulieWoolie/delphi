@@ -13,11 +13,9 @@ $body-outline: #121212;
 
 :root {
   background-color: $body-bg;
-  min-width: 100vw;
-  min-height: 100vh;
-  max-width: 100vw;
-  max-height: 100vh;
-
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
   outline: 1px;
   padding: 1.5px;
   outline-color: $body-outline;
@@ -46,7 +44,7 @@ h4 {
   display: block;
 }
 
-b, bold {
+b, strong, bold {
   bold: true;
   display: inline;
 }
