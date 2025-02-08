@@ -708,6 +708,8 @@ public class Interpreter implements NodeVisitor<Object> {
             SelectorList nlist = new SelectorList(l.getSize() + 1);
             nlist.addAll(l);
             nlist.add(selector);
+            nlist.setStyle(l.getStyle());
+            nlist.setType(l.getType());
             prev.setSelector(nlist);
           } else {
             SelectorList list = new SelectorList(2);

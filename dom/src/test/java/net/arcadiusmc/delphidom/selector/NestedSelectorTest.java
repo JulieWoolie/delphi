@@ -101,6 +101,62 @@ public class NestedSelectorTest {
     assertFalse(first.test(null, span));
   }
 
+  @Test
+  void testDoubleNesting() {
+    Selector[] selectors = parseSelectors(
+        """
+        .rule1 {
+          &[attr] {
+            &:hover {
+            }
+          }
+        }"""
+    );
+
+    // [0] = .rule1[attr]:hover
+    // [1] = .rule1[attr]
+    // [2] = .rule1
+    assertEquals(3, selectors.length);
+
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    DelphiElement d1 = (DelphiElement) body.appendElement("div");
+    d1.setClassName("rule1");
+
+    DelphiElement d2 = (DelphiElement) body.appendElement("div");
+    d2.setClassName("rule1");
+    d2.setAttribute("attr", "yay");
+
+    DelphiElement d3 = (DelphiElement) body.appendElement("div");
+    d3.setClassName("rule1");
+    d3.setAttribute("attr", "yay");
+    d3.addFlag(NodeFlag.HOVERED);
+
+    DelphiElement d4 = (DelphiElement) body.appendElement("div");
+    d4.setClassName("rule1");
+    d4.addFlag(NodeFlag.HOVERED);
+
+    for (Selector selector : selectors) {
+      System.out.println(selector);
+    }
+
+    assertFalse(selectors[0].test(null, d1));
+    assertFalse(selectors[0].test(null, d2));
+    assertTrue(selectors[0].test(null, d3));
+    assertFalse(selectors[0].test(null, d4));
+
+    assertFalse(selectors[1].test(null, d1));
+    assertTrue(selectors[1].test(null, d2));
+    assertTrue(selectors[1].test(null, d3));
+    assertFalse(selectors[1].test(null, d4));
+
+    assertTrue(selectors[2].test(null, d1));
+    assertTrue(selectors[2].test(null, d2));
+    assertTrue(selectors[2].test(null, d3));
+    assertTrue(selectors[2].test(null, d4));
+  }
+
   static Selector[] parseSelectors(String str) {
     ChimeraParser parser = new ChimeraParser(str);
 
