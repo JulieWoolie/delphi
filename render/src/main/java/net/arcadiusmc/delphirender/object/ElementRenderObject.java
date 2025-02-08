@@ -9,6 +9,7 @@ import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.RenderSystem;
 import net.arcadiusmc.dom.style.DisplayType;
+import net.arcadiusmc.dom.style.Visibility;
 import org.joml.Vector2f;
 
 public class ElementRenderObject extends RenderObject {
@@ -73,15 +74,20 @@ public class ElementRenderObject extends RenderObject {
     super.moveTo(x, y);
   }
 
+  public boolean isHidden() {
+    return style.display == DisplayType.NONE || style.visibility != Visibility.VISIBLE;
+  }
+
   public void spawnRecursive() {
+    if (isHidden()) {
+      killRecursive();
+      return;
+    }
+
     spawn();
 
     for (RenderObject childObject : childObjects) {
-      if (childObject instanceof ElementRenderObject el) {
-        el.spawnRecursive();
-      } else {
-        childObject.spawn();
-      }
+      childObject.spawnRecursive();
     }
   }
 
@@ -144,6 +150,11 @@ public class ElementRenderObject extends RenderObject {
 
   @Override
   public void spawn() {
+    if (isHidden()) {
+      kill();
+      return;
+    }
+
     configureBoxes();
 
     Rect outline = style.outline;
@@ -194,11 +205,7 @@ public class ElementRenderObject extends RenderObject {
     kill();
 
     for (RenderObject childObject : childObjects) {
-      if (childObject instanceof ElementRenderObject el) {
-        el.killRecursive();
-      } else {
-        childObject.kill();
-      }
+      childObject.killRecursive();
     }
   }
 

@@ -24,6 +24,14 @@ public class FlowAlgorithm implements LayoutAlgorithm {
     return er.style.display != DisplayType.INLINE;
   }
 
+  boolean shouldIgnore(RenderObject object) {
+    if (!(object instanceof ElementRenderObject er)) {
+      return false;
+    }
+
+    return er.style.display == DisplayType.NONE;
+  }
+
   @Override
   public boolean measure(ElementRenderObject ro, MeasureContext ctx, Vector2f out) {
     boolean changed = false;
@@ -37,9 +45,14 @@ public class FlowAlgorithm implements LayoutAlgorithm {
 
     Vector2f childSize = new Vector2f(0);
     Vector2f lineSize = new Vector2f(0);
-    Vector2f maxSize = getMaxSize(ro);
+    Vector2f maxSize = new Vector2f(0);
+    maxSize.set(ctx.screenSize);
 
     for (RenderObject childObject : childObjects) {
+      if (shouldIgnore(childObject)) {
+        continue;
+      }
+
       changed |= NLayout.measure(childObject, ctx, childSize);
       childObject.size.set(childSize);
 
@@ -158,7 +171,7 @@ public class FlowAlgorithm implements LayoutAlgorithm {
     }
   }
 
-  private Vector2f getMaxSize(ElementRenderObject ro) {
+  private Vector2f getMaxSize(ElementRenderObject ro, MeasureContext ctx) {
     Vector2f out = new Vector2f();
     ComputedStyleSet comp = ro.computedStyleSet;
     FullStyle style = ro.style;
@@ -197,6 +210,10 @@ public class FlowAlgorithm implements LayoutAlgorithm {
     Line currentLine = null;
 
     for (RenderObject child : children) {
+      if (shouldIgnore(child)) {
+        continue;
+      }
+
       boolean lbBefore = false;
       boolean lbAfter = false;
 
