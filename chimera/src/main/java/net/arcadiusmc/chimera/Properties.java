@@ -358,7 +358,7 @@ public final class Properties {
       .build();
 
   public static final Property<BoxSizing> BOX_SIZING = Property.builder(BoxSizing.class)
-      .defaultValue(BoxSizing.CONTENT_BOX)
+      .defaultValue(BoxSizing.DEFAULT)
       .cascading(false)
       .layoutAffecting(true)
       .contentAffecting(false)

@@ -5,6 +5,8 @@ public enum BoxSizing implements KeywordRepresentable {
   CONTENT_BOX ("content-box"),
   ;
 
+  public static final BoxSizing DEFAULT = BoxSizing.CONTENT_BOX;
+
   private final String keyword;
 
   BoxSizing(String keyword) {
