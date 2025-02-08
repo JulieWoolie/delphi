@@ -413,6 +413,35 @@ class SelectorTest {
   }
 
   @Test
+  void testFirstOfType() {
+    DelphiDocument doc = createDoc();
+
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement span1 = doc.createElement("span");
+    DelphiElement span2 = doc.createElement("span");
+    DelphiElement span3 = doc.createElement("span");
+
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    body.appendChild(div2);
+    body.appendChild(span1);
+    body.appendChild(div3);
+    body.appendChild(span2);
+    body.appendChild(span3);
+
+    Selector selector = Chimera.parseSelector(":first-of-type");
+    assertTrue(selector.test(body, div1));
+    assertFalse(selector.test(body, div2));
+    assertTrue(selector.test(body, span1));
+    assertFalse(selector.test(body, div3));
+    assertFalse(selector.test(body, span2));
+    assertFalse(selector.test(body, span3));
+  }
+
+  @Test
   void testListOfTagNames() {
     DelphiDocument doc = createDoc();
     DelphiElement u = doc.createElement("u");

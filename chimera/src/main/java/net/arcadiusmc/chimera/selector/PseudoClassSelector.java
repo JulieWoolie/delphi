@@ -9,7 +9,7 @@ import net.kyori.adventure.util.TriState;
 
 public record PseudoClassSelector(PseudoClass pseudo) implements Selector {
 
-  static final AnB ZERO = new AnB(0, 0);
+  static final AnB ZERO = new AnB(0, 1);
 
   @Override
   public boolean test(Element root, Element element) {
