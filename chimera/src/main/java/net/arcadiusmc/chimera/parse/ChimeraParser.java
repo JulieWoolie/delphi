@@ -1181,7 +1181,12 @@ public class ChimeraParser {
   }
 
   public Expression expr() {
-    return listExpr();
+    try {
+      pushMode(ParseMode.VALUES);
+      return listExpr();
+    } finally {
+      popMode();
+    }
   }
 
   Expression listExpr() {

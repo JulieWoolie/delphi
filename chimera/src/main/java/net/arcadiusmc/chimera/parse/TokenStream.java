@@ -285,7 +285,7 @@ public class TokenStream {
         advance();
 
         ParseMode mode = mode();
-        if (!isHexNumber(currentChar) || mode == ParseMode.SELECTOR) {
+        if (!isHexNumber(currentChar) || mode != ParseMode.VALUES) {
           yield token(Token.HASHTAG);
         }
 

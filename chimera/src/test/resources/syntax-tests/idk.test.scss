@@ -1,0 +1,143 @@
+$tag-bracket-color: dodgerblue;
+$tag-name-color: dodgerblue;
+$attr-color: aqua;
+$attr-eq-color: dodgerblue;
+$attr-value-color: rgb(255, 132, 0);
+$dom-text-color: white;
+
+$tab-selected: black;
+$tab-hovered: rgb(72, 72, 72);
+
+$hover-color: rgb(49, 49, 49);
+
+:root {
+  background-color: black;
+
+  outline: unset;
+  outline-color: unset;
+  border: 1px;
+  border-color: white;
+  padding: 0;
+}
+
+#content {
+  width: 100%;
+}
+
+navbar navlink {
+  font-size: 100%;
+}
+
+body {
+  font-size: 50%;
+}
+
+navlink {
+  border-right: 1px;
+  border-bottom: 1px;
+  border-color: white;
+  background-color: black;
+  padding: 1px;
+
+  &:hover {
+    background-color: $tab-hovered;
+  }
+  &[active="true"] {
+    background-color: $tab-selected;
+    border-bottom: 0;
+    padding-bottom: 2px;
+  }
+  &[action="close"] {
+    background-color: darkred;
+    &:hover {
+      background-color: red;
+    }
+  }
+}
+
+.add-attr {
+  color: green;
+  margin-inline-start: 1px;
+
+  &:hover {
+    background-color: $hover-color;
+  }
+}
+
+.xml-tag {
+  color: $tag-name-color;
+
+  &:hover {
+    background-color: $hover-color;
+  }
+}
+.xml-end-tag {
+  color: $tag-name-color;
+}
+.xml-text {
+  color: $dom-text-color;
+  &:hover {
+    background-color: $hover-color;
+  }
+}
+.xml-attr-name {
+  color: $attr-color;
+  margin-inline-start: 1px;
+
+  &:hover {
+    background-color: $hover-color;
+    strikethrough: true;
+  }
+}
+.xml-attr-sep {
+  color: $attr-eq-color;
+}
+.xml-attr-value {
+  color: $attr-value-color;
+
+  &:hover {
+    background-color: $hover-color;
+  }
+}
+.indent-1 span:first-of-type {
+  margin-inline-start: 1ch;
+}
+.indent-2 span:first-of-type {
+  margin-inline-start: 2ch;
+}
+
+.xml-line {
+  width: 100%;
+  &:nth-child(even) {
+    background-color: rgb(14, 14, 14);
+    &:hover {
+      background-color: rgb(34, 34, 34);
+    }
+  }
+  &.first {
+    margin-top: 2px;
+  }
+  &:hover {
+    background-color: rgb(22, 22, 22);
+  }
+}
+
+.lineno {
+  color: gray;
+  width: 5px;
+}
+line {
+  display: inline;
+}
+
+.post-attr-actions {
+  color: green;
+  margin-inline-start: 2px;
+  font-size: 50%;
+  padding-bottom: 0.5px;
+
+  &:hover {
+    color: lime;
+    background-color: $hover-color;
+  }
+}

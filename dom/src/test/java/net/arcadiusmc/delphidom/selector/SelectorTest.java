@@ -65,6 +65,20 @@ class SelectorTest {
   }
 
   @Test
+  void testParsedId() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+    DelphiElement el = doc.createElement("div");
+
+    el.setId("test-id");
+    body.appendChild(el);
+
+    Selector function = Chimera.parseSelector("#test-id");
+    assertTrue(function.test(null, el));
+    assertFalse(function.test(null, body));
+  }
+
+  @Test
   void testFirstChild() {
     DelphiDocument doc = createDoc();
     DelphiElement div1 = doc.createElement("div");

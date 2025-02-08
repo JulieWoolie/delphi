@@ -301,8 +301,10 @@ public class SyntaxTests {
           fail("Passed when expected to fail");
         }
       } catch (ChimeraException exception) {
-        if (!expectedResult) {
-          return;
+        if (expectedResult != null) {
+          if (!expectedResult) {
+            return;
+          }
         }
 
         fail(exception);
