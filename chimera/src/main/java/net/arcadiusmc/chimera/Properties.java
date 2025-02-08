@@ -18,6 +18,7 @@ import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.NamedColor;
 import net.arcadiusmc.dom.style.Primitive;
+import net.arcadiusmc.dom.style.Visibility;
 
 public final class Properties {
   private Properties() {}
@@ -365,6 +366,14 @@ public final class Properties {
       .visualAffecting(true)
       .build();
 
+  public static final Property<Visibility> VISIBILITY = Property.builder(Visibility.class)
+      .defaultValue(Visibility.DEFAULT)
+      .cascading(false)
+      .layoutAffecting(false)
+      .contentAffecting(false)
+      .visualAffecting(true)
+      .build();
+
   static {
     registerAll();
   }
@@ -400,6 +409,7 @@ public final class Properties {
     register("text-shadow",           TEXT_SHADOW);
     register("font-size",             FONT_SIZE);
     register("z-index",               Z_INDEX);
+    register("visibility",            VISIBILITY);
 
     register("bold",                  BOLD);
     register("italic",                ITALIC);

@@ -191,7 +191,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("strikethrough: ").append(style.strikethrough);
     nlIndent().append("obfuscated: ").append(style.obfuscated);
 
-    nlIndent().append("display: DisplayType.").append(style.display);
+    nlIndent().append("display: ").append(style.display);
 
     nlIndent().append("font-size: ").append(style.fontSize);
     nlIndent().append("set-size: ").append(style.size);
@@ -204,6 +204,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("flex-wrap: ").append(style.flexWrap);
     nlIndent().append("justify-content: ").append(style.justify);
     nlIndent().append("order: ").append(style.order);
+    nlIndent().append("box-sizing: ").append(style.boxSizing);
+    nlIndent().append("visibility: ").append(style.visibility);
   }
 
   private void appendRect(Rect rect) {

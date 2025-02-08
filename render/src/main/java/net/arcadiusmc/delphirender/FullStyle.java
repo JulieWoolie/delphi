@@ -8,6 +8,7 @@ import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
+import net.arcadiusmc.dom.style.Visibility;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Color;
 import org.joml.Vector2f;
@@ -49,7 +50,8 @@ public class FullStyle {
   public FlexWrap flexWrap = FlexWrap.DEFAULT;
   public JustifyContent justify = JustifyContent.DEFAULT;
   public int order = 0;
-  public BoxSizing boxSizing = BoxSizing.CONTENT_BOX;
+  public BoxSizing boxSizing = BoxSizing.DEFAULT;
+  public Visibility visibility = Visibility.DEFAULT;
 
   public static Color toBukkitColor(net.arcadiusmc.dom.style.Color c) {
     return Color.fromARGB(c.getAlpha(), c.getRed(), c.getGreen(), c.getBlue());

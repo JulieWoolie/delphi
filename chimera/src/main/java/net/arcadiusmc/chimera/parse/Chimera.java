@@ -22,6 +22,7 @@ import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
+import net.arcadiusmc.dom.style.Visibility;
 
 public final class Chimera {
   private Chimera() {}
@@ -266,6 +267,10 @@ public final class Chimera {
       case CONTENT_BOX -> BoxSizing.CONTENT_BOX;
       case BORDER_BOX -> BoxSizing.BORDER_BOX;
 
+      case VISIBLE -> Visibility.VISIBLE;
+      case HIDDEN -> Visibility.HIDDEN;
+      case COLLAPSE -> Visibility.COLLAPSE;
+
       case FLEX_START -> {
         if (type == AlignItems.class) {
           yield AlignItems.FLEX_START;
@@ -388,6 +393,13 @@ public final class Chimera {
           case STRETCH -> Keyword.STRETCH;
           case BASELINE -> Keyword.BASELINE;
           case FLEX_START -> Keyword.FLEX_START;
+        };
+      }
+      case Visibility v -> {
+        return switch (v) {
+          case HIDDEN -> Keyword.HIDDEN;
+          case VISIBLE -> Keyword.VISIBLE;
+          case COLLAPSE -> Keyword.COLLAPSE;
         };
       }
 

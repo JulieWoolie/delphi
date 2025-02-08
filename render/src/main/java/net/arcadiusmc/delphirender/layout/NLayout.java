@@ -82,6 +82,7 @@ public class NLayout {
     style.justify = styleSet.justifyContent;
     style.order = styleSet.order;
     style.boxSizing = styleSet.boxSizing;
+    style.visibility = styleSet.visibility;
   }
 
   private static boolean measureElement(ElementRenderObject ro, MeasureContext ctx, Vector2f out) {

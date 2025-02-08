@@ -40,6 +40,11 @@ public enum Keyword {
   CONTENT_BOX,
   BORDER_BOX,
 
+  // Visibility
+  VISIBLE,
+  HIDDEN,
+  COLLAPSE,
+
   // Boolean values
   TRUE,
   FALSE,

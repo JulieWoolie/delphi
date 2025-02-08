@@ -46,6 +46,7 @@ import static net.arcadiusmc.chimera.Properties.PADDING_TOP;
 import static net.arcadiusmc.chimera.Properties.STRIKETHROUGH;
 import static net.arcadiusmc.chimera.Properties.TEXT_SHADOW;
 import static net.arcadiusmc.chimera.Properties.UNDERLINED;
+import static net.arcadiusmc.chimera.Properties.VISIBILITY;
 import static net.arcadiusmc.chimera.Properties.WIDTH;
 import static net.arcadiusmc.chimera.Properties.Z_INDEX;
 
@@ -59,6 +60,7 @@ import net.arcadiusmc.dom.style.FlexDirection;
 import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
+import net.arcadiusmc.dom.style.Visibility;
 
 @ToString
 public class ComputedStyleSet {
@@ -117,6 +119,7 @@ public class ComputedStyleSet {
   public JustifyContent justifyContent;
   public int order;
   public BoxSizing boxSizing;
+  public Visibility visibility;
 
   public ComputedStyleSet() {
     clear();
@@ -175,7 +178,8 @@ public class ComputedStyleSet {
     flexWrap = FlexWrap.DEFAULT;
     justifyContent = JustifyContent.DEFAULT;
     order = 0;
-    boxSizing = BoxSizing.CONTENT_BOX;
+    boxSizing = BoxSizing.DEFAULT;
+    visibility = Visibility.DEFAULT;
   }
   
   public void putAll(PropertySet set) {
@@ -209,6 +213,7 @@ public class ComputedStyleSet {
     justifyContent = getExplicit(set, JUSTIFY_CONTENT);
     order = getExplicit(set, ORDER);
     boxSizing = getExplicit(set, BOX_SIZING);
+    visibility = getExplicit(set, VISIBILITY);
 
     // Margin inline
     PrimitiveLeftRight lr = getExplicit(set, MARGIN_INLINE);

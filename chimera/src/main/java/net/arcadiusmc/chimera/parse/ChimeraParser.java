@@ -1738,6 +1738,15 @@ public class ChimeraParser {
       case "border-box":
         keyword = Keyword.BORDER_BOX;
         break;
+      case "visible":
+        keyword = Keyword.VISIBLE;
+        break;
+      case "hidden":
+        keyword = Keyword.HIDDEN;
+        break;
+      case "collapse":
+        keyword = Keyword.COLLAPSE;
+        break;
       case "true":
         keyword = Keyword.TRUE;
         break;
