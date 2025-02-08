@@ -14,7 +14,7 @@ public record AttributeSelector(String attributeKey, AttributeOperation op, Stri
     String attrValue = element.getAttribute(attributeKey);
 
     if (Strings.isNullOrEmpty(attrValue)) {
-      return op == AttributeOperation.HAS;
+      return false;
     }
 
     return switch (op) {
