@@ -159,7 +159,7 @@ public class TokenStream {
   }
 
   void skipLineComment() {
-    while (currentChar != LF && currentChar != CR) {
+    while (currentChar != LF && currentChar != CR && currentChar != EOF) {
       advance();
     }
   }
