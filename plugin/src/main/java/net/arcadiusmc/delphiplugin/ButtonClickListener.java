@@ -5,6 +5,7 @@ import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.EventListener;
+import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,18 @@ class ButtonClickListener implements EventListener.Typed<MouseEvent> {
   static final String CMD = "cmd:";
   static final String PLAYER_CMD = "player-cmd:";
 
+  boolean matchesTrigger(String trigger, MouseEvent event) {
+    if (Strings.isNullOrEmpty(trigger)) {
+      return event.getButton() == MouseButton.LEFT;
+    }
+
+    return switch (trigger) {
+      case "left" -> event.getButton() == MouseButton.LEFT;
+      case "right" -> event.getButton() == MouseButton.RIGHT;
+      default -> false;
+    };
+  }
+
   @Override
   public void handleEvent(MouseEvent event) {
     Element target = event.getTarget();
@@ -26,6 +39,11 @@ class ButtonClickListener implements EventListener.Typed<MouseEvent> {
 
     String action = target.getAttribute(Attributes.BUTTON_ACTION);
     if (Strings.isNullOrEmpty(action)) {
+      return;
+    }
+
+    String trigger = target.getAttribute(Attributes.ACTION_TRIGGER);
+    if (!matchesTrigger(trigger, event)) {
       return;
     }
 

@@ -93,6 +93,30 @@ public interface Attributes {
   String BUTTON_ACTION = "action";
 
   /**
+   * Trigger for {@link #BUTTON_ACTION}.
+   * <table>
+   *   <caption>Supported values</caption>
+   *   <thead>
+   *     <tr>
+   *       <th>Value</th>
+   *       <th>Triggers</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td><code>left</code></td>
+   *       <td>When button is left-clicked</td>
+   *     </tr>
+   *     <tr>
+   *       <td><code>right</code></td>
+   *       <td>When button is right-clicked</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   */
+  String ACTION_TRIGGER = "action-trigger";
+
+  /**
    * Name of the linked java class in a {@link JavaObjectElement}
    */
   String CLASS_NAME = "class-name";
