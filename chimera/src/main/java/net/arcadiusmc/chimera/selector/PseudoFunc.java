@@ -4,7 +4,7 @@ import net.arcadiusmc.dom.Element;
 
 public interface PseudoFunc<T> {
 
-  boolean test(Element root, Element el, T value);
+  boolean test(Element el, T value);
 
   void append(StringBuilder builder);
 

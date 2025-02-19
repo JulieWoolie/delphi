@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
-import lombok.Setter;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
@@ -18,6 +17,11 @@ import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
+import net.arcadiusmc.delphidom.system.ComponentElementSystem;
+import net.arcadiusmc.delphidom.system.ItemElementSystem;
+import net.arcadiusmc.delphidom.system.ObjectModelSystem;
+import net.arcadiusmc.delphidom.system.OptionElementSystem;
+import net.arcadiusmc.delphidom.system.StyleElementSystem;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Document;
@@ -57,16 +61,17 @@ public class DelphiDocument implements Document {
   final EventListenerList documentListeners;
 
   @Getter
-  DelphiElement body;
+  DelphiDocumentElement documentElement;
 
   public DelphiElement hovered;
   public DelphiElement clicked;
 
-  @Getter @Setter
+  @Getter
   ExtendedView view;
 
   @Getter
   final StyleObjectModel styles;
+  final ObjectModelSystem[] systems = new ObjectModelSystem[10];
 
   public DelphiDocument() {
     this.globalTarget = new EventListenerList();
@@ -79,31 +84,88 @@ public class DelphiDocument implements Document {
     this.documentListeners.setIgnorePropagationStops(false);
     this.documentListeners.setIgnoreCancelled(true);
 
-    IdAttrListener attrListener = new IdAttrListener();
+    IdAttrListener idListener = new IdAttrListener();
     IdMutationListener mutationListener = new IdMutationListener();
-    globalTarget.addEventListener(EventTypes.MODIFY_ATTR, attrListener);
+    globalTarget.addEventListener(EventTypes.MODIFY_ATTR, idListener);
     globalTarget.addEventListener(EventTypes.APPEND_CHILD, mutationListener);
     globalTarget.addEventListener(EventTypes.REMOVE_CHILD, mutationListener);
 
     styles = new StyleObjectModel(this);
     styles.initialize();
+
+    addSystem(new OptionElementSystem());
+    addSystem(new StyleElementSystem());
+    addSystem(new ItemElementSystem());
+    addSystem(new ComponentElementSystem());
   }
 
-  public void setBody(DelphiElement body) {
-    if (this.body == body) {
+  public static DelphiDocument createEmpty() {
+    DelphiDocument doc = new DelphiDocument();
+
+    DelphiDocumentElement root = new DelphiDocumentElement(doc);
+    root.appendElement(TagNames.HEAD);
+    root.appendElement(TagNames.BODY);
+
+    doc.setRoot(root);
+
+    return doc;
+  }
+
+  public void addSystem(ObjectModelSystem system) {
+    for (int i = 0; i < systems.length; i++) {
+      ObjectModelSystem system1 = systems[i];
+      if (system1 != null) {
+        continue;
+      }
+
+      systems[i] = system;
+
+      system.onAttach(this);
+      if (view != null) {
+        system.onViewAttach(view);
+      }
+
       return;
     }
 
-    if (this.body != null) {
-      this.body.setAdded(false);
-      this.body.removeFlag(NodeFlag.ROOT);
+    throw new RuntimeException("Tried to add more than " + systems.length + " systems to document");
+  }
+
+  public void removeSystem(ObjectModelSystem system) {
+    for (int i = 0; i < systems.length; i++) {
+      ObjectModelSystem sys = systems[i];
+      if (!Objects.equals(sys, system)) {
+        continue;
+      }
+
+      sys.onViewDetach();
+      sys.onDetach();
+
+      systems[i] = null;
+      return;
     }
+  }
 
-    this.body = body;
+  public <T> T getSystem(Class<T> type) {
+    for (ObjectModelSystem system : systems) {
+      if (system == null) {
+        continue;
+      }
+      if (type.isInstance(system)) {
+        return type.cast(system);
+      }
+    }
+    return null;
+  }
 
-    if (body != null) {
-      body.addFlag(NodeFlag.ROOT);
-      body.setAdded(true);
+  public void shutdownSystems() {
+    for (ObjectModelSystem system : systems) {
+      if (system == null) {
+        continue;
+      }
+
+      system.onViewDetach();
+      system.onDetach();
     }
   }
 
@@ -146,10 +208,18 @@ public class DelphiDocument implements Document {
   public DelphiElement createElement(@NotNull String tagName) {
     Objects.requireNonNull(tagName, "Null tag name");
 
+    tagName = tagName.toLowerCase();
+
     return switch (tagName) {
       case TagNames.ITEM -> new DelphiItemElement(this);
       case TagNames.BUTTON -> new DelphiButtonElement(this);
       case TagNames.COMPONENT -> new ChatElement(this);
+      case TagNames.BODY -> new DelphiBodyElement(this);
+      case TagNames.HEAD -> new DelphiHeaderElement(this);
+      case TagNames.OPTION -> new DelphiOptionElement(this);
+      case TagNames.STYLE -> new DelphiStyleElement(this);
+      case TagNames.JAVA_OBJECT -> new DelphiJavaObjectElement(this);
+      case TagNames.ROOT -> new DelphiDocumentElement(this);
 
       default -> new DelphiElement(this, tagName);
     };
@@ -222,43 +292,41 @@ public class DelphiDocument implements Document {
 
   @Override
   public @NotNull List<Element> getElementsByTagName(@NotNull String tagName) {
-    if (body == null) {
+    if (documentElement == null) {
       return new ArrayList<>();
     }
-    return body.getElementsByTagName(tagName);
+    return documentElement.getElementsByTagName(tagName);
   }
 
   @Override
   public @NotNull List<Element> getElementsByClassName(@NotNull String className) {
-    if (body == null) {
+    if (documentElement == null) {
       return new ArrayList<>();
     }
-    return body.getElementsByClassName(className);
+    return documentElement.getElementsByClassName(className);
   }
 
   @Override
   public @NotNull List<Element> querySelectorAll(@NotNull String query) throws ParserException {
-    if (body == null) {
+    if (documentElement == null) {
       return new ArrayList<>();
     }
-    return body.querySelectorAll(query);
+    return documentElement.querySelectorAll(query);
   }
 
   @Override
   public @Nullable Element querySelector(@NotNull String query) throws ParserException {
-    if (body == null) {
+    if (documentElement == null) {
       return null;
     }
 
-    return body.querySelector(query);
+    return documentElement.querySelector(query);
   }
 
   void optionChanged(String key, String prevValue, String newValue) {
     AttributeMutation mutation = new AttributeMutation(EventTypes.MODIFY_OPTION, this);
     AttributeAction act = deriveAction(prevValue, newValue);
-
     mutation.initEvent(null, false, false, key, prevValue, newValue, act);
-
     dispatchEvent(mutation);
   }
 
@@ -297,14 +365,6 @@ public class DelphiDocument implements Document {
     mutation.initEvent(el, false, false, node, idx);
 
     el.dispatchEvent(mutation);
-  }
-
-  ErrorListener getErrorListener() {
-    return ERROR_LISTENER;
-  }
-
-  void inlineStyleError(ParserException exception) {
-    LOGGER.error("Fatal error parsing inline style", exception);
   }
 
   @Override
@@ -385,6 +445,53 @@ public class DelphiDocument implements Document {
     }
 
     return styles.getCurrentStyle(el);
+  }
+
+  public void setView(ExtendedView view) {
+    this.view = view;
+
+    for (ObjectModelSystem system : systems) {
+      if (system == null) {
+        continue;
+      }
+
+      if (view != null) {
+        system.onViewAttach(view);
+      } else {
+        system.onViewDetach();
+      }
+    }
+  }
+
+  public void setRoot(DelphiDocumentElement elem) {
+    if (elem == null) {
+      if (this.documentElement != null) {
+        documentElement.removeFlagRecursive(NodeFlag.ADDED);
+        styles.removeNode(documentElement);
+      }
+
+      this.documentElement = null;
+      return;
+    }
+
+    if (this.documentElement != null) {
+      return;
+    }
+
+    this.documentElement = elem;
+    elem.addFlagRecursive(NodeFlag.ADDED);
+
+    styles.initRoot(elem);
+  }
+
+  @Override
+  public DelphiBodyElement getBody() {
+    return documentElement == null ? null : documentElement.getBody();
+  }
+
+  @Override
+  public DelphiHeaderElement getHeader() {
+    return documentElement == null ? null : documentElement.getHeader();
   }
 
   class IdMutationListener implements EventListener.Typed<MutationEvent> {

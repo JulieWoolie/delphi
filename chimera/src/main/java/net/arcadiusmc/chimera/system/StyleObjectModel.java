@@ -71,8 +71,8 @@ public class StyleObjectModel {
     l.addEventListener(EventTypes.CLICK_EXPIRE, updateListener);
     l.addEventListener(EventTypes.CLICK, updateListener);
 
-    if (document.getBody() != null) {
-      rootNode = (ElementStyleNode) createNode(document.getBody());
+    if (document.getDocumentElement() != null) {
+      initRoot(document.getDocumentElement());
     }
   }
 
@@ -148,6 +148,52 @@ public class StyleObjectModel {
     node.updateStyle();
   }
 
+  public void replaceStylesheet(ChimeraStylesheet old, ChimeraStylesheet stylesheet) {
+    if (old != null) {
+      sheets.remove(old);
+      for (int i = 0; i < old.getLength(); i++) {
+        Rule r = old.getRule(i);
+        rules.remove(r);
+      }
+    }
+
+    addStylesheet(stylesheet);
+  }
+
+  public void removeStylesheet(ChimeraStylesheet stylesheet) {
+    sheets.remove(stylesheet);
+    for (int i = 0; i < stylesheet.getLength(); i++) {
+      Rule r = stylesheet.getRule(i);
+      rules.remove(r);
+    }
+
+    if (rootNode != null) {
+      rootNode.updateStyle();
+    }
+  }
+
+  public void removeNode(Node node) {
+    StyleNode remove = styleNodes.remove(node);
+    if (remove == null) {
+      return;
+    }
+
+    ElementStyleNode parent = remove.parent;
+    if (parent != null) {
+      parent.removeChild(remove);
+    }
+
+    if (node instanceof Element el) {
+      for (Node child : el.getChildren()) {
+        removeNode(child);
+      }
+    }
+  }
+
+  public void initRoot(Element root) {
+    rootNode = (ElementStyleNode) createNode(root);
+  }
+
   class DomMutationListener implements EventListener.Typed<MutationEvent> {
 
     @Override
@@ -177,7 +223,7 @@ public class StyleObjectModel {
 
       // type = remove child
       if (parentNode != null) {
-        parentNode.removeChild(event.getMutationIndex());
+        removeNode(event.getNode());
       }
     }
   }

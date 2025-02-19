@@ -19,8 +19,8 @@ public class SelectorNode implements Selector {
   }
 
   @Override
-  public boolean test(Element root, Element el) {
-    return selector.test(root, el);
+  public boolean test(Element el) {
+    return selector.test(el);
   }
 
   @Override

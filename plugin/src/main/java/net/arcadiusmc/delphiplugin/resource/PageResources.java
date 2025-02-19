@@ -14,6 +14,7 @@ import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SYNTAX;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.StringReader;
@@ -28,10 +29,6 @@ import lombok.Setter;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.parse.Chimera;
-import net.arcadiusmc.chimera.parse.ChimeraContext;
-import net.arcadiusmc.chimera.parse.ChimeraParser;
-import net.arcadiusmc.chimera.parse.CompilerErrors;
-import net.arcadiusmc.chimera.parse.ast.SheetStatement;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.resource.ApiModule;
@@ -44,18 +41,21 @@ import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.Loggers;
-import net.arcadiusmc.delphidom.parser.DocumentSaxParser;
+import net.arcadiusmc.delphidom.parser.DelphiSaxParser;
 import net.arcadiusmc.delphidom.parser.PluginMissingException;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.ParserException;
-import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -122,10 +122,11 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
-    return parseItem(buf.toString());
+    return parseItemStack(buf.toString());
   }
 
-  public static Result<ItemStack, DelphiException> parseItem(String json) {
+  @Override
+  public Result<ItemStack, DelphiException> parseItemStack(String json) {
     JsonObject obj;
 
     try {
@@ -219,7 +220,7 @@ public class PageResources implements ViewResources {
   private Result<DelphiDocument, DelphiException> parseDocument(StringBuffer buf, String uri) {
     SAXParser parser;
     try {
-      parser = DocumentSaxParser.PARSER_FACTORY.newSAXParser();
+      parser = DelphiSaxParser.PARSER_FACTORY.newSAXParser();
     } catch (ParserConfigurationException | SAXException e) {
       return Result.err(new DelphiException(ERR_SAX_PARSER_INIT, e));
     }
@@ -228,10 +229,9 @@ public class PageResources implements ViewResources {
     source.setPublicId(uri);
     source.setSystemId(uri);
 
-    DocumentSaxParser handler = new DocumentSaxParser(this);
+    DelphiSaxParser handler = new DelphiSaxParser();
     handler.setListener(DelphiDocument.ERROR_LISTENER);
     handler.setView(view);
-    handler.setCallbacks(new SaxCallbacks());
 
     try {
       parser.parse(source, handler);
@@ -285,29 +285,52 @@ public class PageResources implements ViewResources {
       return Result.ioError(exc);
     }
 
-    return Result.ok(parseSheet(buf, path.toString()));
+    return Result.ok(Chimera.parseSheet(buf, path.toString()));
   }
 
-  static ChimeraStylesheet parseSheet(
-      StringBuffer buf,
-      String sourceName
+  @Override
+  public Result<Component, DelphiException> loadComponent(
+      @NotNull String uri,
+      @Nullable ComponentFormat format
   ) {
-    ChimeraParser parser = new ChimeraParser(buf);
+    return resourcePath(uri).flatMap(p -> loadComponent(p, format));
+  }
 
-    CompilerErrors errors = parser.getErrors();
-    errors.setSourceName(sourceName);
-    errors.setListener(error -> {
-      LOGGER.atLevel(error.getLevel())
-          .setMessage(error.getFormattedError())
-          .log();
-    });
+  public Result<Component, DelphiException> loadComponent(
+      @NotNull ResourcePath path,
+      @Nullable ComponentFormat format
+  ) {
+    if (module instanceof ApiModule) {
+      return Result.err(new DelphiException(ERR_API_MODULE));
+    }
 
-    SheetStatement statement = parser.stylesheet();
+    StringBuffer buf;
 
-    ChimeraContext ctx = new ChimeraContext(buf);
-    ctx.setErrors(errors);
+    try {
+      buf = ((IoModule) module).loadString(path);
+    } catch (IOException e) {
+      return Result.ioError(e);
+    }
 
-    return Chimera.compileSheet(statement, ctx);
+    String s = buf.toString();
+    return parseComponent(s, format);
+  }
+
+  @Override
+  public Result<Component, DelphiException> parseComponent(
+      @NotNull String data,
+      @Nullable ComponentFormat format
+  ) {
+    if (format == ComponentFormat.MINIMESSAGE) {
+      return Result.ok(MiniMessage.miniMessage().deserialize(data));
+    }
+
+    try {
+      Component c = GsonComponentSerializer.gson().deserialize(data);
+      return Result.ok(c);
+    } catch (JsonParseException exc) {
+      return Result.err(new DelphiException(ERR_SCHEMA_ERROR, exc));
+    }
   }
 
   record ContextImpl(
@@ -319,11 +342,7 @@ public class PageResources implements ViewResources {
 
     @Override
     public @NotNull Document newDocument() {
-      DelphiDocument document = new DelphiDocument();
-      document.setView(view);
-      document.setBody(document.createElement(TagNames.BODY));
-      document.getStyles().setDefaultStyleSheet(defaultSheet);
-      return document;
+      return DelphiDocument.createEmpty();
     }
 
     @Override
@@ -334,7 +353,7 @@ public class PageResources implements ViewResources {
     @Override
     public @NotNull Stylesheet parseStylesheet(@NotNull String string) {
       Objects.requireNonNull(string, "Null string");
-      return parseSheet(new StringBuffer(string), "<stylesheet>");
+      return Chimera.parseSheet(new StringBuffer(string), "<stylesheet>");
     }
 
     @Override

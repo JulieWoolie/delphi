@@ -10,7 +10,7 @@ public record AttributeSelector(String attributeKey, AttributeOperation op, Stri
 {
 
   @Override
-  public boolean test(Element root, Element element) {
+  public boolean test(Element element) {
     String attrValue = element.getAttribute(attributeKey);
 
     if (Strings.isNullOrEmpty(attrValue)) {

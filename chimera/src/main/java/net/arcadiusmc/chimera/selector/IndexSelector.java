@@ -4,7 +4,7 @@ import net.arcadiusmc.dom.Element;
 
 public interface IndexSelector {
 
-  boolean test(boolean inverted, Element root, Element el);
+  boolean test(boolean inverted, Element el);
 
   void append(StringBuilder builder);
 

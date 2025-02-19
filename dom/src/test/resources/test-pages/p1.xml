@@ -1,8 +1,7 @@
-<page>
-  <header>
+<delphi>
+  <head>
     <option key="title" value="Hello, world!"/>
-    <screen width="3" height="2"/>
-  </header>
+  </head>
   <body>
     Hello, world!
 
@@ -10,4 +9,4 @@
       some text
     </div>
   </body>
-</page>
+</delphi>

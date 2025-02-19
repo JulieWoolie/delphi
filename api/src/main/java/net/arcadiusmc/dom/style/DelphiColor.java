@@ -160,7 +160,7 @@ final class DelphiColor implements Color {
 
   private static int mulAddChannel(byte v, float mod) {
     int b32 = v & MASK;
-    int mul = (int) (mod * b32);
+    int mul = (int) (mod * MAX_VALUE);
     return Math.clamp(mul + b32, MIN_VALUE, MAX_VALUE);
   }
 

@@ -29,6 +29,7 @@ import java.util.Objects;
 import lombok.Getter;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.Rule;
+import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.DelphiResources;
 import net.arcadiusmc.delphi.resource.DirectoryModule;
@@ -101,7 +102,7 @@ public class PluginResources implements DelphiResources {
       return;
     }
 
-    defaultStyle = PageResources.parseSheet(buf, DEFAULT_STYLE);
+    defaultStyle = Chimera.parseSheet(buf, DEFAULT_STYLE);
     defaultStyle.setFlags(ChimeraStylesheet.FLAG_DEFAULT_STYLE);
 
     for (int i = 0; i < defaultStyle.getLength(); i++) {

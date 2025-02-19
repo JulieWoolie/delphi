@@ -27,7 +27,7 @@ public final class Debug {
   private Debug() {}
 
   private static final Logger LOGGER = Loggers.getLogger();
-  public static boolean debugOutlines = LOGGER.isDebugEnabled();
+  public static boolean debugOutlines = false;
   static final float POINT_DIST = 0.12f;
 
   public static Path dumpDebugTree(String fileName, PageView view, @Nullable Element target) {
@@ -54,14 +54,7 @@ public final class Debug {
     RenderTreePrint print = new RenderTreePrint(view, view.renderer);
 
     if (target == null) {
-      print.nlIndent().append("<page>");
-      print.indent++;
-
-      print.appendHeader();
-      Visitor.visit(view.getDocument().getBody(), print);
-
-      print.indent--;
-      print.nlIndent().append("</page>");
+      Visitor.visit(view.getDocument().getDocumentElement(), print);
     } else {
       Visitor.visit(target, print);
     }

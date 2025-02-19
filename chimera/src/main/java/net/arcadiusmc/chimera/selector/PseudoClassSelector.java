@@ -12,7 +12,7 @@ public record PseudoClassSelector(PseudoClass pseudo) implements Selector {
   static final AnB ZERO = new AnB(0, 1);
 
   @Override
-  public boolean test(Element root, Element element) {
+  public boolean test(Element element) {
     return switch (pseudo) {
       case HOVER -> element.hasFlag(NodeFlag.HOVERED);
       case ACTIVE -> element.hasFlag(NodeFlag.CLICKED);
@@ -32,10 +32,10 @@ public record PseudoClassSelector(PseudoClass pseudo) implements Selector {
           && element.nextSibling() == null;
 
       case FIRST_OF_TYPE -> {
-        yield PseudoFunctions.NTH_OF_TYPE.test(root, element, ZERO);
+        yield PseudoFunctions.NTH_OF_TYPE.test(element, ZERO);
       }
       case LAST_OF_TYPE -> {
-        yield PseudoFunctions.NTH_LAST_OF_TYPE.test(root, element, ZERO);
+        yield PseudoFunctions.NTH_LAST_OF_TYPE.test(element, ZERO);
       }
       case ONLY_OF_TYPE -> {
         IndexResult result = IndexResult.indexMatching(

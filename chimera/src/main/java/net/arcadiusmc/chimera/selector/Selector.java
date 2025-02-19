@@ -1,12 +1,13 @@
 package net.arcadiusmc.chimera.selector;
 
+import java.util.function.Predicate;
 import net.arcadiusmc.dom.Element;
 
-public interface Selector {
+public interface Selector extends Predicate<Element> {
 
   Selector MATCH_ALL = MatchAll.MATCH_ALL;
 
-  boolean test(Element root, Element element);
+  boolean test(Element element);
 
   void append(StringBuilder builder);
 

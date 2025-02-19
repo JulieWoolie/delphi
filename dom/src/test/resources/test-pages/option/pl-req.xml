@@ -1,5 +1,5 @@
-<page>
-  <header>
+<delphi>
+  <head>
     <option name="required-plugins" value="any plugins at all"/>
-  </header>
-</page>
+  </head>
+</delphi>

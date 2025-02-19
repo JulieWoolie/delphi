@@ -5,8 +5,8 @@ import net.arcadiusmc.dom.Element;
 public record PseudoFuncSelector<T>(PseudoFunc<T> func, T argument) implements Selector {
 
   @Override
-  public boolean test(Element root, Element element) {
-    return func.test(root, element, argument);
+  public boolean test(Element element) {
+    return func.test(element, argument);
   }
 
   @Override

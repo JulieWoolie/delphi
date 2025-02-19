@@ -8,14 +8,10 @@ import net.kyori.adventure.text.Component;
 public class ChatElement extends DelphiElement implements ComponentElement {
 
   private Component component;
+  public ContentSource source = ContentSource.NONE;
 
   public ChatElement(DelphiDocument document) {
     super(document, TagNames.COMPONENT);
-  }
-
-  @Override
-  public boolean canHaveChildren() {
-    return false;
   }
 
   @Override

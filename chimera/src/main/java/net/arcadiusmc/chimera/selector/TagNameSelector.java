@@ -1,13 +1,12 @@
 package net.arcadiusmc.chimera.selector;
 
-import java.util.Objects;
 import net.arcadiusmc.dom.Element;
 
 public record TagNameSelector(String tagName) implements Selector {
 
   @Override
-  public boolean test(Element root, Element element) {
-    return Objects.equals(tagName, element.getTagName());
+  public boolean test(Element element) {
+    return element.getTagName().equalsIgnoreCase(tagName);
   }
 
   @Override

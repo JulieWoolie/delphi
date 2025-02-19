@@ -46,21 +46,21 @@ public class SelectorList implements Selector, Iterable<Selector> {
   }
 
   @Override
-  public boolean test(Element root, Element element) {
+  public boolean test(Element element) {
     if (selectors.length < 1) {
       return true;
     }
 
     if (type == ListType.OR) {
-      return testOr(root, element);
+      return testOr(element);
     } else {
-      return testAnd(root, element);
+      return testAnd(element);
     }
   }
 
-  private boolean testAnd(Element root, Element element) {
+  private boolean testAnd(Element element) {
     for (Selector selector : selectors) {
-      if (selector.test(root, element)) {
+      if (selector.test(element)) {
         continue;
       }
 
@@ -70,9 +70,9 @@ public class SelectorList implements Selector, Iterable<Selector> {
     return true;
   }
 
-  private boolean testOr(Element root, Element element) {
+  private boolean testOr(Element element) {
     for (Selector selector : selectors) {
-      if (!selector.test(root, element)) {
+      if (!selector.test(element)) {
         continue;
       }
 

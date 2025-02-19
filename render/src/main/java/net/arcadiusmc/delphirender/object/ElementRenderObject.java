@@ -8,6 +8,7 @@ import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.RenderSystem;
+import net.arcadiusmc.delphirender.layout.NLayout;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.Visibility;
 import org.joml.Vector2f;
@@ -99,17 +100,13 @@ public class ElementRenderObject extends RenderObject {
     out.y = position.y - topOff;
   }
 
-  private Rect scaledRect(Rect r) {
-    return new Rect(r);
-  }
-
   public void configureBoxes() {
     BoxRenderObject outline = boxes[OUTLINE];
     BoxRenderObject border = boxes[BORDER];
     BoxRenderObject bg = boxes[BACKGROUND];
 
-    Rect outlineSize = scaledRect(style.outline);
-    Rect borderSize = scaledRect(style.border);
+    Rect outlineSize = style.outline;
+    Rect borderSize = style.border;
 
     Vector2f pos = new Vector2f(position);
 
@@ -224,12 +221,6 @@ public class ElementRenderObject extends RenderObject {
 
   public void getContentSize(Vector2f out) {
     out.set(size);
-
-    Rect outline = scaledRect(style.outline);
-    Rect border = scaledRect(style.border);
-    Rect padding = scaledRect(style.padding);
-
-    out.x -= outline.x() + border.x() + padding.x();
-    out.y -= outline.y() + border.y() + padding.y();
+    NLayout.subtractExtraSpace(style, out);
   }
 }

@@ -34,13 +34,13 @@ public class NestedSelectorTest {
     DelphiElement el = doc.createElement("button");
     body.appendChild(el);
 
-    assertTrue(regular.test(null, el));
-    assertFalse(hoverTest.test(null, el));
+    assertTrue(regular.test(el));
+    assertFalse(hoverTest.test(el));
 
     el.addFlag(NodeFlag.HOVERED);
 
-    assertTrue(regular.test(null, el));
-    assertTrue(hoverTest.test(null, el));
+    assertTrue(regular.test(el));
+    assertTrue(hoverTest.test(el));
 
     Spec regularSpec = new Spec();
     Spec hoverSpec = new Spec();
@@ -84,21 +84,21 @@ public class NestedSelectorTest {
     Selector first = selectors[0]; // :is(u, ul, underlined) div
     Selector second = selectors[1]; // u, ul, underlined
 
-    assertTrue(second.test(null, u));
-    assertTrue(second.test(null, ul));
-    assertTrue(second.test(null, underlined));
+    assertTrue(second.test(u));
+    assertTrue(second.test(ul));
+    assertTrue(second.test(underlined));
 
-    assertFalse(second.test(null, div1));
-    assertFalse(second.test(null, div2));
-    assertFalse(second.test(null, div3));
-    assertFalse(second.test(null, div4));
+    assertFalse(second.test(div1));
+    assertFalse(second.test(div2));
+    assertFalse(second.test(div3));
+    assertFalse(second.test(div4));
 
-    assertTrue(first.test(null, div1));
-    assertTrue(first.test(null, div2));
-    assertTrue(first.test(null, div3));
-    assertTrue(first.test(null, div4));
+    assertTrue(first.test(div1));
+    assertTrue(first.test(div2));
+    assertTrue(first.test(div3));
+    assertTrue(first.test(div4));
 
-    assertFalse(first.test(null, span));
+    assertFalse(first.test(span));
   }
 
   @Test
@@ -141,20 +141,20 @@ public class NestedSelectorTest {
       System.out.println(selector);
     }
 
-    assertFalse(selectors[0].test(null, d1));
-    assertFalse(selectors[0].test(null, d2));
-    assertTrue(selectors[0].test(null, d3));
-    assertFalse(selectors[0].test(null, d4));
+    assertFalse(selectors[0].test(d1));
+    assertFalse(selectors[0].test(d2));
+    assertTrue(selectors[0].test(d3));
+    assertFalse(selectors[0].test(d4));
 
-    assertFalse(selectors[1].test(null, d1));
-    assertTrue(selectors[1].test(null, d2));
-    assertTrue(selectors[1].test(null, d3));
-    assertFalse(selectors[1].test(null, d4));
+    assertFalse(selectors[1].test(d1));
+    assertTrue(selectors[1].test(d2));
+    assertTrue(selectors[1].test(d3));
+    assertFalse(selectors[1].test(d4));
 
-    assertTrue(selectors[2].test(null, d1));
-    assertTrue(selectors[2].test(null, d2));
-    assertTrue(selectors[2].test(null, d3));
-    assertTrue(selectors[2].test(null, d4));
+    assertTrue(selectors[2].test(d1));
+    assertTrue(selectors[2].test(d2));
+    assertTrue(selectors[2].test(d3));
+    assertTrue(selectors[2].test(d4));
   }
 
   static Selector[] parseSelectors(String str) {

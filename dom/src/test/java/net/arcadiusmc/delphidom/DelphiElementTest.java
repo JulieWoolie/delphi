@@ -402,4 +402,68 @@ class DelphiElementTest {
     Element found = body.querySelector(selector);
     assertEquals(div2, found);
   }
+
+  @Test
+  void should_returnElement_when_selectorGoesBeyondQueryElement() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("outest");
+    DelphiElement div2 = doc.createElement("outer");
+    DelphiElement div3 = doc.createElement("inner");
+    DelphiElement body = doc.getBody();
+
+    body.appendChild(div1);
+    div1.appendChild(div2);
+    div2.appendChild(div3);
+
+    DelphiElement element = div2.querySelector("outest outer inner");
+    assertEquals(div3, element);
+  }
+
+  @Test
+  void isDescendant_should_returnTrue_when_nodeDescendsParent() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement body = doc.getBody();
+
+    div1.appendChild(div2);
+    div2.appendChild(div3);
+
+    body.appendChild(div1);
+
+    assertTrue(body.isDescendant(div3));
+    assertTrue(body.isDescendant(div2));
+    assertTrue(body.isDescendant(div1));
+    assertTrue(div1.isDescendant(div3));
+    assertTrue(div1.isDescendant(div2));
+  }
+
+  @Test
+  void isDescendant_should_returnFalse_when_nodeDoesNotDescendParent() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+    DelphiElement div4 = doc.createElement("div");
+    DelphiElement body = doc.getBody();
+
+    div1.appendChild(div2);
+    div3.appendChild(div4);
+
+    body.appendChild(div1);
+    body.appendChild(div3);
+
+    assertFalse(div1.isDescendant(div4));
+    assertFalse(div1.isDescendant(div3));
+    assertFalse(div3.isDescendant(div1));
+    assertFalse(div3.isDescendant(div2));
+  }
+
+  @Test
+  void should_returnFalse_when_descendantIsSelf() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+    assertFalse(body.isDescendant(body));
+  }
 }

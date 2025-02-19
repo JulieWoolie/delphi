@@ -237,6 +237,46 @@ public interface Element extends Node, EventTarget, DomQueryable {
   void insertAfter(@NotNull Node node, @NotNull Node after);
 
   /**
+   * Replace a child element at the specified index.
+   * <p>
+   * If the specified node belongs to a different element or document, it will be removed from
+   * its previous document and element and adopted to this one.
+   * <p>
+   * Will trigger an {@link EventTypes#REMOVE_CHILD} on the child node that's being replaced and
+   * then a {@link EventTypes#APPEND_CHILD} when the node is inserted into the child node list. Can
+   * additionally trigger a {@link EventTypes#REMOVE_CHILD} event on the specified node's parent
+   * element, if there is one.
+   *
+   * @param idx Index of the child to replace
+   * @param node Node to replace with
+   *
+   * @throws IndexOutOfBoundsException If the specified index is less than 0 or greater than or
+   *                                   equal to {@link #getChildCount()}.
+   * @throws NullPointerException If {@code node} is null.
+   */
+  void replaceChild(int idx, @NotNull Node node);
+
+  /**
+   * Replace a child element at the specified index.
+   * <p>
+   * If the specified node belongs to a different element or document, it will be removed from
+   * its previous document and element and adopted to this one.
+   * <p>
+   * If the specified {@code child} is not a child of this element, then nothing happens.
+   * <p>
+   * Will trigger an {@link EventTypes#REMOVE_CHILD} on the child node that's being replaced and
+   * then a {@link EventTypes#APPEND_CHILD} when the node is inserted into the child node list. Can
+   * additionally trigger a {@link EventTypes#REMOVE_CHILD} event on the specified node's parent
+   * element, if there is one.
+   *
+   * @param child Child to replace
+   * @param node Node to replace with
+   *
+   * @throws NullPointerException If {@code node} or {@code child} is null.
+   */
+  void replaceChild(@NotNull Node child, @NotNull Node node);
+
+  /**
    * Removes a specified child from this element.
    * <p>
    * If the specified {@code node} is not a child of this element, then {@code false} will be
@@ -397,4 +437,23 @@ public interface Element extends Node, EventTarget, DomQueryable {
    * @throws NullPointerException If {@code consumer} is {@code null}
    */
   void forEachDescendant(@NotNull Consumer<Node> consumer);
+
+  /**
+   * Test if a specified {@code node} is a descendant of the element.
+   * @param node Node to test
+   * @return {@code true}, if the {@code node} is a descendant of the element,
+   *         {@code false} otherwise
+   */
+  @Contract("null -> false")
+  boolean isDescendant(@Nullable Node node);
+
+  /**
+   * Test if the element matches a CSS selector.
+   *
+   * @param selector Selector string
+   *
+   * @return {@code true}, if the element matches a selector,
+   *         {@code false} otherwise
+   */
+  boolean matches(String selector);
 }

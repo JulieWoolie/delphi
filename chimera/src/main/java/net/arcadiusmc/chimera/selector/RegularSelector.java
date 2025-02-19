@@ -21,7 +21,7 @@ public class RegularSelector implements Selector {
   }
 
   @Override
-  public boolean test(Element root, Element el) {
+  public boolean test(Element el) {
     if (nodes.length < 1) {
       return false;
     }
@@ -33,12 +33,12 @@ public class RegularSelector implements Selector {
       SelectorNode node = nodes[idx--];
 
       if (combinator != null) {
-        el = combinator.findNextMatching(root, el, node);
+        el = combinator.findNextMatching(el, node);
 
         if (el == null) {
           return false;
         }
-      } else if (!node.test(root, el)) {
+      } else if (!node.test(el)) {
         return false;
       }
 

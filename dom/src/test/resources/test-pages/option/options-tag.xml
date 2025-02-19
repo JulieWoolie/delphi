@@ -1,10 +1,10 @@
-<page>
-  <header>
+<delphi>
+  <head>
     <options
       screen-width="3"
       screen-height="2"
       foo="bar"
       foobar="true"
     />
-  </header>
-</page>
+  </head>
+</delphi>

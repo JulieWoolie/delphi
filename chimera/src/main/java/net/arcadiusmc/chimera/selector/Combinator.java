@@ -11,17 +11,16 @@ public enum Combinator {
     }
 
     @Override
-    Element findNextMatching(Element root, Element el, SelectorNode node) {
+    Element findNextMatching(Element el, SelectorNode node) {
       Element p = el.getParent();
-      int minDepth = root == null ? -1 : root.getDepth();
 
       while (p != null) {
-        if (node.test(root, p)) {
+        if (node.test(p)) {
           return p;
         }
 
         p = p.getParent();
-        if (p == null || p.getDepth() <= minDepth) {
+        if (p == null) {
           return null;
         }
       }
@@ -32,14 +31,13 @@ public enum Combinator {
 
   PARENT (">") {
     @Override
-    Element findNextMatching(Element root, Element el, SelectorNode node) {
+    Element findNextMatching(Element el, SelectorNode node) {
       Element p = el.getParent();
-      int minDepth = root == null ? -1 : root.getDepth();
 
-      if (p == null || p.getDepth() <= minDepth) {
+      if (p == null) {
         return null;
       }
-      if (!node.test(root, p)) {
+      if (!node.test(p)) {
         return null;
       }
 
@@ -49,13 +47,13 @@ public enum Combinator {
 
   DIRECT_SIBLING ("+") {
     @Override
-    Element findNextMatching(Element root, Element el, SelectorNode node) {
+    Element findNextMatching(Element el, SelectorNode node) {
       Node previous = el.previousSibling();
 
       if (!(previous instanceof Element prevEl)) {
         return null;
       }
-      if (!node.test(root, prevEl)) {
+      if (!node.test(prevEl)) {
         return null;
       }
 
@@ -65,7 +63,7 @@ public enum Combinator {
 
   SIBLING ("~") {
     @Override
-    Element findNextMatching(Element root, Element el, SelectorNode node) {
+    Element findNextMatching(Element el, SelectorNode node) {
       Node n = el.previousSibling();
 
       while (n != null) {
@@ -74,7 +72,7 @@ public enum Combinator {
           continue;
         }
 
-        if (node.test(root, prevEl)) {
+        if (node.test(prevEl)) {
           return prevEl;
         }
 
@@ -87,8 +85,8 @@ public enum Combinator {
 
   NEST("&") {
     @Override
-    Element findNextMatching(Element root, Element el, SelectorNode node) {
-      if (node.test(root, el)) {
+    Element findNextMatching(Element el, SelectorNode node) {
+      if (node.test(el)) {
         return el;
       }
 
@@ -114,5 +112,5 @@ public enum Combinator {
         .append(' ');
   }
 
-  abstract Element findNextMatching(Element root, Element el, SelectorNode node);
+  abstract Element findNextMatching(Element el, SelectorNode node);
 }

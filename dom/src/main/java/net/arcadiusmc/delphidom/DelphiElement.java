@@ -187,6 +187,28 @@ public class DelphiElement extends DelphiNode implements Element {
     insertAt((DelphiNode) node, getIndex(after, "after"), 1);
   }
 
+  @Override
+  public void replaceChild(int idx, @NotNull Node node) {
+    Objects.requireNonNull(node, "Null node");
+    Objects.checkIndex(idx, children.size());
+
+    removeChild(idx);
+    insertAt((DelphiNode) node, idx, 0);
+  }
+
+  @Override
+  public void replaceChild(@NotNull Node child, @NotNull Node node) {
+    Objects.requireNonNull(node, "Null node");
+    int idx = getIndex(child, "reference");
+
+    if (idx == -1) {
+      return;
+    }
+
+    removeChild(idx);
+    insertAt((DelphiNode) node, idx, 0);
+  }
+
   private int getIndex(Node node, String name) {
     Objects.requireNonNull(node, "Null " + name + " node");
     Element parent = node.getParent();
@@ -436,19 +458,25 @@ public class DelphiElement extends DelphiNode implements Element {
     Selector selector = Chimera.parseSelector(query);
     List<Element> elementList = new ArrayList<>();
 
-    collectDescendants(elementList, element -> selector.test(this, element));
+    collectDescendants(elementList, selector::test);
 
     return elementList;
   }
 
   @Override
-  public @Nullable Element querySelector(@NotNull String query) {
+  public @Nullable DelphiElement querySelector(@NotNull String query) {
     Selector selector = Chimera.parseSelector(query);
     return matchFirst(this, selector);
   }
 
-  private DelphiElement matchFirst(DelphiElement root, Selector group) {
-    if (group.test(root, this)) {
+  @Override
+  public boolean matches(String selector) {
+    Selector compiled = Chimera.parseSelector(selector);
+    return compiled.test(this);
+  }
+
+  public DelphiElement matchFirst(DelphiElement root, Selector group) {
+    if (group.test(this)) {
       return this;
     }
 
@@ -481,14 +509,14 @@ public class DelphiElement extends DelphiNode implements Element {
   public void dispatchEvent(Event event) {
     this.listenerList.validateEventCall(event);
 
-    if (!hasFlag(NodeFlag.ADDED)) {
-      return;
-    }
-
     EventImpl impl = (EventImpl) event;
     impl.setPhase(EventPhase.ORIGIN);
 
     this.listenerList.dispatchEvent(event);
+
+    if (!hasFlag(NodeFlag.ADDED)) {
+      return;
+    }
 
     if (!event.isPropagationStopped() && event.isBubbling()) {
       DelphiElement p = parent;
@@ -505,6 +533,23 @@ public class DelphiElement extends DelphiNode implements Element {
     }
 
     document.dispatchGlobalEvent(event);
+  }
+
+  @Override
+  public boolean isDescendant(@Nullable Node node) {
+    if (!canHaveChildren() || node == null) {
+      return false;
+    }
+
+    Node p = node.getParent();
+    while (p != null) {
+      if (Objects.equals(p, this)) {
+        return true;
+      }
+      p = p.getParent();
+    }
+
+    return false;
   }
 
   @Override
@@ -548,6 +593,22 @@ public class DelphiElement extends DelphiNode implements Element {
       setAttribute(Attributes.CLASS, joiner.toString());
     } finally {
       listUpdatesSupressed = false;
+    }
+  }
+
+  @Override
+  public void addFlagRecursive(NodeFlag nodeFlag) {
+    super.addFlagRecursive(nodeFlag);
+    for (DelphiNode child : children) {
+      child.addFlagRecursive(nodeFlag);
+    }
+  }
+
+  @Override
+  public void removeFlagRecursive(NodeFlag nodeFlag) {
+    super.removeFlagRecursive(nodeFlag);
+    for (DelphiNode child : children) {
+      child.removeFlagRecursive(nodeFlag);
     }
   }
 }

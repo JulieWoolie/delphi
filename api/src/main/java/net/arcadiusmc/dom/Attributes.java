@@ -93,6 +93,18 @@ public interface Attributes {
   String BUTTON_ACTION = "action";
 
   /**
+   * Name of the linked java class in a {@link JavaObjectElement}
+   */
+  String CLASS_NAME = "class-name";
+
+  /**
+   * Type attribute.
+   * <p>
+   * Used on {@link ComponentElement}s to specify what syntax to use when loading component data.
+   */
+  String TYPE = "type";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the

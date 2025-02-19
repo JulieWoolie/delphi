@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 @Getter @Setter
 public class EventListenerList implements EventTarget {
 
+  public static boolean testEnvironment = true;
+
   private static final Logger LOGGER = Loggers.getLogger();
 
   final Map<String, List<EventListener>> listenerMap = new HashMap<>();
@@ -93,6 +95,10 @@ public class EventListenerList implements EventTarget {
     try {
       listener.onEvent(event);
     } catch (Exception exc) {
+      if (!testEnvironment) {
+        throw new RuntimeException(exc);
+      }
+
       LOGGER.error("Error executing event '{}'", event.getType(), exc);
     }
   }

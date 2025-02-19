@@ -7,7 +7,7 @@ enum MatchAll implements Selector {
   ;
 
   @Override
-  public boolean test(Element root, Element element) {
+  public boolean test(Element element) {
     return true;
   }
 

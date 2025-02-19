@@ -79,4 +79,12 @@ public abstract class DelphiNode implements Node {
   protected void setDepth(int depth) {
     this.depth = depth;
   }
+
+  public void addFlagRecursive(NodeFlag nodeFlag) {
+    addFlag(nodeFlag);
+  }
+
+  public void removeFlagRecursive(NodeFlag nodeFlag) {
+    removeFlag(nodeFlag);
+  }
 }

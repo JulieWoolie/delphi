@@ -10,12 +10,11 @@ class DelphiNodeTest {
 
   @Test
   void testSiblingMethods() {
-    DelphiDocument doc = new DelphiDocument();
-    DelphiElement body = doc.createElement("body");
+    DelphiDocument doc = createDoc();
+    DelphiBodyElement body = doc.getBody();
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
 
-    doc.setBody(body);
     body.appendChild(div1);
     body.appendChild(div2);
 
@@ -26,18 +25,16 @@ class DelphiNodeTest {
   @Test
   void getOwningDocument() {
     DelphiDocument doc = new DelphiDocument();
-    DelphiElement body = doc.createElement("body");
+    DelphiBodyElement body = (DelphiBodyElement) doc.createElement("body");
     assertEquals(body.getDocument(), doc);
   }
 
   @Test
   void getSiblingIndex() {
-    DelphiDocument doc = new DelphiDocument();
-    DelphiElement body = doc.createElement("body");
+    DelphiDocument doc = createDoc();
+    DelphiBodyElement body = doc.getBody();
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
-
-    doc.setBody(body);
 
     assertEquals(div1.getSiblingIndex(), -1);
     assertEquals(div2.getSiblingIndex(), -1);
@@ -55,18 +52,17 @@ class DelphiNodeTest {
 
   @Test
   void getDepth() {
-    DelphiDocument doc = new DelphiDocument();
-    DelphiElement body = doc.createElement("body");
+    DelphiDocument doc = createDoc();
+    DelphiBodyElement body = doc.getBody();
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
 
-    doc.setBody(body);
     body.appendChild(div1);
     div1.appendChild(div2);
 
-    assertEquals(body.getDepth(), 0);
-    assertEquals(div1.getDepth(), 1);
-    assertEquals(div2.getDepth(), 2);
+    assertEquals(body.getDepth(), 1);
+    assertEquals(div1.getDepth(), 2);
+    assertEquals(div2.getDepth(), 3);
 
     body.removeChild(div1);
 
@@ -76,19 +72,17 @@ class DelphiNodeTest {
 
   @Test
   void getParent() {
-    DelphiDocument doc = new DelphiDocument();
-    DelphiElement body = doc.createElement("body");
+    DelphiDocument doc = createDoc();
+    DelphiBodyElement body = doc.getBody();
     DelphiElement div1 = doc.createElement("div");
     DelphiElement div2 = doc.createElement("div");
 
     assertNull(div1.getParent());
     assertNull(div2.getParent());
 
-    doc.setBody(body);
     body.appendChild(div1);
     div1.appendChild(div2);
 
-    assertNull(body.getParent());
     assertEquals(div1.getParent(), body);
     assertEquals(div2.getParent(), div1);
 
@@ -104,14 +98,14 @@ class DelphiNodeTest {
     DelphiElement div2 = doc.createElement("div");
     DelphiElement div3 = doc.createElement("div");
 
-    DelphiElement body = doc.getBody();
+    DelphiBodyElement body = doc.getBody();
     body.appendChild(div1);
     div1.appendChild(div2);
     div2.appendChild(div3);
 
-    assertEquals(0, body.getDepth());
-    assertEquals(1, div1.getDepth());
-    assertEquals(2, div2.getDepth());
-    assertEquals(3, div3.getDepth());
+    assertEquals(1, body.getDepth());
+    assertEquals(2, div1.getDepth());
+    assertEquals(3, div2.getDepth());
+    assertEquals(4, div3.getDepth());
   }
 }

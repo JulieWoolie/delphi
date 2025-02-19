@@ -7,6 +7,7 @@ public interface TagNames {
 
   /**
    * Body tag
+   * @see BodyElement
    */
   String BODY = "body";
 
@@ -50,4 +51,33 @@ public interface TagNames {
    * @see ComponentElement
    */
   String COMPONENT = "chat-component";
+
+  /**
+   * Header element
+   * @see HeaderElement
+   */
+  String HEAD = "head";
+
+  /**
+   * Root document element
+   */
+  String ROOT = "delphi";
+
+  /**
+   * Style element
+   * @see StyleElement
+   */
+  String STYLE = "style";
+
+  /**
+   * Option element
+   * @see OptionElement
+   */
+  String OPTION = "option";
+
+  /**
+   * Java object element.
+   * @see JavaObjectElement
+   */
+  String JAVA_OBJECT = "java-object";
 }

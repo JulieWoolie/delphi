@@ -12,13 +12,6 @@ import org.jetbrains.annotations.Nullable;
 public interface ItemElement extends Element {
 
   /**
-   * Item nodes cannot have children, this will always return {@code false}
-   * @return {@code false}
-   */
-  @Override
-  boolean canHaveChildren();
-
-  /**
    * Get whether the element shows the automatically generated tooltip when hovered over or not.
    * <p>
    * If {@link #getTooltip()} does NOT return the automatically generated item tooltip, then the

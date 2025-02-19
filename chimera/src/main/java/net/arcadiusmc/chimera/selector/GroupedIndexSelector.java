@@ -6,8 +6,8 @@ import net.arcadiusmc.dom.Element;
 public record GroupedIndexSelector(AnB anb, Selector group) implements IndexSelector {
 
   @Override
-  public boolean test(boolean inverted, Element root, Element el) {
-    IndexResult gIndex = IndexResult.indexMatching(inverted, el, e -> group.test(root, e));
+  public boolean test(boolean inverted, Element el) {
+    IndexResult gIndex = IndexResult.indexMatching(inverted, el, group);
 
     if (gIndex.indexOrBefore() == -1) {
       return false;

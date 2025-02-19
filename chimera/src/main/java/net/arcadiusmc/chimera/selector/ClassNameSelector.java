@@ -8,7 +8,7 @@ import net.arcadiusmc.dom.Element;
 public record ClassNameSelector(String className) implements Selector {
 
   @Override
-  public boolean test(Element root, Element element) {
+  public boolean test(Element element) {
     String classList = element.getAttribute(Attributes.CLASS);
     if (Strings.isNullOrEmpty(classList)) {
       return false;

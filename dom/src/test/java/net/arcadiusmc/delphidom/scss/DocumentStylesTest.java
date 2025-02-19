@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.Rule;
+import net.arcadiusmc.chimera.system.StyleNode;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.dom.Attributes;
@@ -85,7 +86,11 @@ class DocumentStylesTest {
 
     Rule r = sheet.getRule(0);
     assertEquals(v, r.getProperties().getPaddingLeft());
-    assertTrue(r.getSelectorObject().test(null, body));
+    assertTrue(r.getSelectorObject().test(body));
+
+    StyleNode styleNode = doc.getStyles().getStyleNode(body);
+
+    assertTrue(body.matches(".test"), "Body doesn't match .test selector");
 
     assertEquals(v, map.getPaddingLeft());
     assertNull(inline.getPaddingLeft());

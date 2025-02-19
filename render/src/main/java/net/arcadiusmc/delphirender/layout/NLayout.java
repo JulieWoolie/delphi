@@ -10,6 +10,7 @@ import static net.arcadiusmc.delphirender.FullStyle.toTextColor;
 
 import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.chimera.ValueOrAuto;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphirender.FontMeasureCallback;
 import net.arcadiusmc.delphirender.FullStyle;
@@ -27,8 +28,11 @@ import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
 import net.kyori.adventure.text.Component;
 import org.joml.Vector2f;
+import org.slf4j.Logger;
 
 public class NLayout {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   public static final float GLOBAL_FONT_SIZE = 0.5f;
 
@@ -141,7 +145,7 @@ public class NLayout {
 
     Vector2f psize = new Vector2f();
     applyMeasuredSize(ro, psize);
-    getContentSize(psize, style);
+    subtractExtraSpace(style, psize);
 
     ctx.parentSizes.push(psize);
 
@@ -156,11 +160,23 @@ public class NLayout {
       }
 
       applyMeasuredSize(ro, out);
+
+      psize.set(out);
+      subtractExtraSpace(style, psize);
     }
 
     ctx.parentSizes.pop();
 
     return ro.size.x != preSize.x || ro.size.y != preSize.y;
+  }
+
+  public static void subtractExtraSpace(FullStyle style, Vector2f out) {
+    Rect outline = style.outline;
+    Rect border = style.border;
+    Rect padding = style.padding;
+
+    out.x -= outline.x() + border.x() + padding.x();
+    out.y -= outline.y() + border.y() + padding.y();
   }
 
   static boolean measure(RenderObject object, MeasureContext ctx, Vector2f out) {

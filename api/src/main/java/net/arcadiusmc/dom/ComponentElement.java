@@ -8,15 +8,6 @@ import net.kyori.adventure.text.Component;
 public interface ComponentElement extends Element {
 
   /**
-   * Component elements cannot have child elements, this method will always
-   * return {@code false}.
-   *
-   * @return {@code false}
-   */
-  @Override
-  boolean canHaveChildren();
-
-  /**
    * Get the chat component content
    * @return Content component
    */

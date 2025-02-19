@@ -6,7 +6,7 @@ import net.arcadiusmc.dom.Element;
 public record SimpleIndexSelector(AnB anb) implements IndexSelector {
 
   @Override
-  public boolean test(boolean inverted, Element root, Element el) {
+  public boolean test(boolean inverted, Element el) {
     int idx = IndexSelector.getIndex(el, inverted);
     return anb.indexMatches(idx);
   }

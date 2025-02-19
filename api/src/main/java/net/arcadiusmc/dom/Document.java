@@ -147,7 +147,19 @@ public interface Document extends EventTarget, DomQueryable {
    *
    * @return Document body
    */
-  Element getBody();
+  BodyElement getBody();
+
+  /**
+   * Get the root document element.
+   * @return Root document element
+   */
+  Element getDocumentElement();
+
+  /**
+   * Get the {@code <header>} element
+   * @return Header element, or {@code null}, if no header was declared.
+   */
+  HeaderElement getHeader();
 
   /**
    * Gets the first descendant element of with the specified {@code elementId}

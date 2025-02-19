@@ -7,8 +7,8 @@ public interface PseudoFunctions {
 
   IndexSelectorFunction NTH_CHILD = new IndexSelectorFunction() {
     @Override
-    public boolean test(Element root, Element el, IndexSelector value) {
-      return value.test(false, root, el);
+    public boolean test(Element el, IndexSelector value) {
+      return value.test(false, el);
     }
 
     @Override
@@ -19,8 +19,8 @@ public interface PseudoFunctions {
 
   IndexSelectorFunction NTH_LAST_CHILD = new IndexSelectorFunction() {
     @Override
-    public boolean test(Element root, Element el, IndexSelector value) {
-      return value.test(true, root, el);
+    public boolean test(Element el, IndexSelector value) {
+      return value.test(true, el);
     }
 
     @Override
@@ -31,7 +31,7 @@ public interface PseudoFunctions {
 
   AnbFunction NTH_OF_TYPE = new AnbFunction() {
     @Override
-    public boolean test(Element root, Element el, AnB value) {
+    public boolean test(Element el, AnB value) {
       IndexResult idx = IndexResult.indexMatching(
           false,
           el,
@@ -53,7 +53,7 @@ public interface PseudoFunctions {
 
   AnbFunction NTH_LAST_OF_TYPE = new AnbFunction() {
     @Override
-    public boolean test(Element root, Element el, AnB value) {
+    public boolean test(Element el, AnB value) {
       IndexResult idx = IndexResult.indexMatching(
           true,
           el,
@@ -75,8 +75,8 @@ public interface PseudoFunctions {
 
   PseudoFunc<Selector> IS = new SelectorPseudoFunc() {
     @Override
-    public boolean test(Element root, Element el, Selector value) {
-      return value.test(root, el);
+    public boolean test( Element el, Selector value) {
+      return value.test(el);
     }
 
     @Override
@@ -87,8 +87,8 @@ public interface PseudoFunctions {
 
   PseudoFunc<Selector> NOT = new SelectorPseudoFunc() {
     @Override
-    public boolean test(Element root, Element el, Selector value) {
-      return !value.test(root, el);
+    public boolean test(Element el, Selector value) {
+      return !value.test(el);
     }
 
     @Override

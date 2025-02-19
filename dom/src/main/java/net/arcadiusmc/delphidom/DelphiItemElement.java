@@ -17,17 +17,15 @@ import org.jetbrains.annotations.Nullable;
 public class DelphiItemElement extends DelphiElement implements ItemElement {
 
   private ItemStack item;
+  private ItemStack explicitItem;
+
+  public ContentSource source = ContentSource.NONE;
 
   @Getter
   private DelphiElement itemTooltip;
 
   public DelphiItemElement(DelphiDocument document) {
     super(document, TagNames.ITEM);
-  }
-
-  @Override
-  public boolean canHaveChildren() {
-    return false;
   }
 
   @Override
@@ -68,12 +66,35 @@ public class DelphiItemElement extends DelphiElement implements ItemElement {
 
   @Override
   public @Nullable ItemStack getItemStack() {
-    return item;
+    if (explicitItem == null) {
+      return item;
+    }
+
+    return explicitItem;
   }
 
   @Override
   public void setItemStack(@Nullable ItemStack stack) {
+    if (stack == null) {
+      this.explicitItem = null;
+    } else {
+      this.explicitItem = stack.clone();
+    }
+
+    updateTooltip();
+
+    if (document.getView() != null) {
+      document.getView().contentChanged(this);
+    }
+  }
+
+  public void setItemStack0(@Nullable ItemStack stack) {
     this.item = stack;
+
+    if (explicitItem != null) {
+      return;
+    }
+
     updateTooltip();
 
     if (document.getView() != null) {

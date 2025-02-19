@@ -778,10 +778,10 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
 
     Property<Object> prop = Properties.getByKey(propertyName);
     if (prop == null) {
-      return null;
+      return this;
     }
 
-    set(prop, value);
+    parse(prop, value);
     return triggerChange();
   }
 }

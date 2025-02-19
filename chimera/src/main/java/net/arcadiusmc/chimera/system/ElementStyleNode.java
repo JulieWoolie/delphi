@@ -46,7 +46,7 @@ public class ElementStyleNode extends StyleNode {
     Element domElement = getDomNode();
 
     for (Rule rule : system.rules) {
-      if (!rule.getSelectorObject().test(null, domElement)) {
+      if (!rule.getSelectorObject().test(domElement)) {
         continue;
       }
 
@@ -129,7 +129,7 @@ public class ElementStyleNode extends StyleNode {
 
     for (int i = 0; i < system.defaultStyleSheet.getLength(); i++) {
       Rule r = system.defaultStyleSheet.getRule(i);
-      if (!r.getSelectorObject().test(null, el)) {
+      if (!r.getSelectorObject().test(el)) {
         continue;
       }
 
@@ -194,5 +194,13 @@ public class ElementStyleNode extends StyleNode {
   public void removeChild(int idx) {
     StyleNode removed = children.remove(idx);
     removed.parent = null;
+  }
+
+  public void removeChild(StyleNode remove) {
+    if (!children.remove(remove)) {
+      return;
+    }
+
+    remove.parent = null;
   }
 }

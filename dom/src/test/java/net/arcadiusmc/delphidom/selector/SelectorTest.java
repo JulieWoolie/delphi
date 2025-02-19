@@ -32,9 +32,9 @@ class SelectorTest {
 
     ClassNameSelector f = new ClassNameSelector("test");
 
-    assertFalse(f.test(null, body));
+    assertFalse(f.test(body));
     body.setClassName("test");
-    assertTrue(f.test(null, body));
+    assertTrue(f.test(body));
   }
 
   @Test
@@ -46,8 +46,8 @@ class SelectorTest {
     body.appendChild(el);
 
     TagNameSelector function = new TagNameSelector("div");
-    assertTrue(function.test(null, el));
-    assertFalse(function.test(null, body));
+    assertTrue(function.test(el));
+    assertFalse(function.test(body));
   }
 
   @Test
@@ -60,8 +60,8 @@ class SelectorTest {
     body.appendChild(el);
 
     IdSelector function = new IdSelector("test-id");
-    assertTrue(function.test(null, el));
-    assertFalse(function.test(null, body));
+    assertTrue(function.test(el));
+    assertFalse(function.test(body));
   }
 
   @Test
@@ -74,8 +74,8 @@ class SelectorTest {
     body.appendChild(el);
 
     Selector function = Chimera.parseSelector("#test-id");
-    assertTrue(function.test(null, el));
-    assertFalse(function.test(null, body));
+    assertTrue(function.test(el));
+    assertFalse(function.test(body));
   }
 
   @Test
@@ -91,9 +91,9 @@ class SelectorTest {
     body.appendChild(div3);
 
     PseudoClassSelector function = new PseudoClassSelector(PseudoClass.FIRST_CHILD);
-    assertTrue(function.test(null, div1));
-    assertFalse(function.test(null, div2));
-    assertFalse(function.test(null, div3));
+    assertTrue(function.test(div1));
+    assertFalse(function.test(div2));
+    assertFalse(function.test(div3));
   }
 
   @Test
@@ -109,9 +109,9 @@ class SelectorTest {
     body.appendChild(div3);
 
     PseudoClassSelector function = new PseudoClassSelector(PseudoClass.LAST_CHILD);
-    assertFalse(function.test(null, div1));
-    assertFalse(function.test(null, div2));
-    assertTrue(function.test(null, div3));
+    assertFalse(function.test(div1));
+    assertFalse(function.test(div2));
+    assertTrue(function.test(div3));
   }
 
   @Test
@@ -131,19 +131,19 @@ class SelectorTest {
     final var ix2 = new SimpleIndexSelector(new AnB(0, 3));
 
     PseudoFuncSelector<IndexSelector> func = new PseudoFuncSelector<>(PseudoFunctions.NTH_CHILD, ix0);
-    assertTrue(func.test(null, div1));
-    assertFalse(func.test(null, div2));
-    assertFalse(func.test(null, div3));
+    assertTrue(func.test(div1));
+    assertFalse(func.test(div2));
+    assertFalse(func.test(div3));
 
     func = new PseudoFuncSelector<>(PseudoFunctions.NTH_CHILD, ix1);
-    assertFalse(func.test(null, div1));
-    assertTrue(func.test(null, div2));
-    assertFalse(func.test(null, div3));
+    assertFalse(func.test(div1));
+    assertTrue(func.test(div2));
+    assertFalse(func.test(div3));
 
     func = new PseudoFuncSelector<>(PseudoFunctions.NTH_CHILD, ix2);
-    assertFalse(func.test(null, div1));
-    assertFalse(func.test(null, div2));
-    assertTrue(func.test(null, div3));
+    assertFalse(func.test(div1));
+    assertFalse(func.test(div2));
+    assertTrue(func.test(div3));
   }
 
   @Test
@@ -163,9 +163,9 @@ class SelectorTest {
         Chimera.parseSelector("div")
     );
 
-    assertFalse(func.test(null, div1));
-    assertTrue(func.test(null, div2));
-    assertTrue(func.test(null, div3));
+    assertFalse(func.test(div1));
+    assertTrue(func.test(div2));
+    assertTrue(func.test(div3));
   }
 
   @Test
@@ -181,9 +181,9 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector("div2 ~ div3");
-    assertFalse(selector.test(null, div1));
-    assertFalse(selector.test(null, div2));
-    assertTrue(selector.test(null, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
 
     Element el = body.querySelector("div2 ~ div3");
     assertEquals(div3, el);
@@ -202,9 +202,9 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector("div2 ~ div3");
-    assertFalse(selector.test(null, div1));
-    assertFalse(selector.test(null, div2));
-    assertTrue(selector.test(null, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
 
     Element el = body.querySelector("div2 ~ div3");
     assertEquals(div3, el);
@@ -223,9 +223,9 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector("div2 + div3");
-    assertFalse(selector.test(null, div1));
-    assertFalse(selector.test(null, div2));
-    assertTrue(selector.test(null, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
 
     Element el = body.querySelector("div2 ~ div3");
     assertEquals(div3, el);
@@ -244,9 +244,9 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector("div2 + div3");
-    assertFalse(selector.test(null, div1));
-    assertFalse(selector.test(null, div2));
-    assertFalse(selector.test(null, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertFalse(selector.test(div3));
 
     Element el = body.querySelector("div2 + div3");
     assertNull(el);
@@ -265,14 +265,14 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector(":nth-child(1)");
-    assertTrue(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertFalse(selector.test(body, div3));
+    assertTrue(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertFalse(selector.test(div3));
 
     selector = Chimera.parseSelector(":nth-child(1 of div)");
-    assertTrue(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertFalse(selector.test(body, div3));
+    assertTrue(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertFalse(selector.test(div3));
   }
 
   @Test
@@ -288,24 +288,24 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector(":nth-child(2n+1)");
-    assertTrue(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, div3));
+    assertTrue(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
 
     selector = Chimera.parseSelector(":nth-child(2n)");
-    assertFalse(selector.test(body, div1));
-    assertTrue(selector.test(body, div2));
-    assertFalse(selector.test(body, div3));
+    assertFalse(selector.test(div1));
+    assertTrue(selector.test(div2));
+    assertFalse(selector.test(div3));
 
     selector = Chimera.parseSelector(":nth-last-child(2n+1)");
-    assertTrue(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, div3));
+    assertTrue(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
 
     selector = Chimera.parseSelector(":nth-last-child(2n)");
-    assertFalse(selector.test(body, div1));
-    assertTrue(selector.test(body, div2));
-    assertFalse(selector.test(body, div3));
+    assertFalse(selector.test(div1));
+    assertTrue(selector.test(div2));
+    assertFalse(selector.test(div3));
   }
 
   @Test
@@ -317,9 +317,9 @@ class SelectorTest {
     DelphiElement body = doc.getBody();
 
     Selector group = Chimera.parseSelector("div");
-    assertTrue(group.test(body, div1));
-    assertTrue(group.test(body, div2));
-    assertTrue(group.test(body, div3));
+    assertTrue(group.test(div1));
+    assertTrue(group.test(div2));
+    assertTrue(group.test(div3));
   }
 
   @Test
@@ -335,14 +335,14 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector(":nth-last-child(1 of div)");
-    assertFalse(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
 
     selector = Chimera.parseSelector(":nth-last-child(1)");
-    assertFalse(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(div3));
   }
 
   @Test
@@ -366,12 +366,12 @@ class SelectorTest {
     body.appendChild(span3);
 
     Selector selector = Chimera.parseSelector(":nth-of-type(1)");
-    assertTrue(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, span1));
-    assertFalse(selector.test(body, div3));
-    assertFalse(selector.test(body, span2));
-    assertFalse(selector.test(body, span3));
+    assertTrue(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(span1));
+    assertFalse(selector.test(div3));
+    assertFalse(selector.test(span2));
+    assertFalse(selector.test(span3));
   }
 
   @Test
@@ -395,12 +395,12 @@ class SelectorTest {
     body.appendChild(span3);
 
     Selector selector = Chimera.parseSelector(":nth-last-of-type(1)");
-    assertFalse(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertFalse(selector.test(body, span1));
-    assertTrue(selector.test(body, div3));
-    assertFalse(selector.test(body, span2));
-    assertTrue(selector.test(body, span3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertFalse(selector.test(span1));
+    assertTrue(selector.test(div3));
+    assertFalse(selector.test(span2));
+    assertTrue(selector.test(span3));
   }
 
   @Test
@@ -420,10 +420,10 @@ class SelectorTest {
     body.appendChild(div3);
 
     Selector selector = Chimera.parseSelector(":only-of-type");
-    assertFalse(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, span1));
-    assertFalse(selector.test(body, div3));
+    assertFalse(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(span1));
+    assertFalse(selector.test(div3));
   }
 
   @Test
@@ -447,12 +447,12 @@ class SelectorTest {
     body.appendChild(span3);
 
     Selector selector = Chimera.parseSelector(":first-of-type");
-    assertTrue(selector.test(body, div1));
-    assertFalse(selector.test(body, div2));
-    assertTrue(selector.test(body, span1));
-    assertFalse(selector.test(body, div3));
-    assertFalse(selector.test(body, span2));
-    assertFalse(selector.test(body, span3));
+    assertTrue(selector.test(div1));
+    assertFalse(selector.test(div2));
+    assertTrue(selector.test(span1));
+    assertFalse(selector.test(div3));
+    assertFalse(selector.test(span2));
+    assertFalse(selector.test(span3));
   }
 
   @Test
@@ -468,8 +468,8 @@ class SelectorTest {
     body.appendChild(div);
 
     Selector selector = Chimera.parseSelector("u, underlined");
-    assertTrue(selector.test(null, u));
-    assertTrue(selector.test(null, underlined));
-    assertFalse(selector.test(null, div));
+    assertTrue(selector.test(u));
+    assertTrue(selector.test(underlined));
+    assertFalse(selector.test(div));
   }
 }

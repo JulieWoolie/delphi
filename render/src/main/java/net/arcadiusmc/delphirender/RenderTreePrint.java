@@ -178,6 +178,9 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
     nlIndent().append("margin: ");
     appendRect(style.margin);
+    
+    nlIndent().append("margin-inline-start: ").append(style.marginInlineStart);
+    nlIndent().append("margin-inline-end: ").append(style.marginInlineEnd);
 
     nlIndent().append("text-color: ").append(style.textColor);
     nlIndent().append("background-color: ").append(style.backgroundColor);
@@ -221,7 +224,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
     List<Rule> rules = new ArrayList<>();
 
     for (Rule rule : styles.getRules()) {
-      if (!rule.getSelectorObject().test(null, el)) {
+      if (!rule.getSelectorObject().test(el)) {
         continue;
       }
 

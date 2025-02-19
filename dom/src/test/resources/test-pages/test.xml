@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<delphi>
+  <head>
+    <option name="title" value="Test delphi"/>
+    <option name="hide-topbar" value="true"/>
+    <style src="./style.scss" />
+  </head>
+  <body>
+    <h1 class="title shadowed">Hello, world!</h1>
+    <div class="shadowed" style="color: gold;">This basically works</div>
+
+    <button class="mt-2 p-btn">
+      <item src="./item.json" />
+      I am a button :3
+    </button>
+
+    <button action="cmd: tellraw %player% &quot;Hello, %player%!&quot;" class="mt-2 mli-2 p-btn" id="btn-settings">Settings</button>
+    <button action="close" class="mt-2 mli-2 p-btn" id="btn-quit">Quit</button>
+
+    <i class="mt-2 block">This text is italic</i>
+    <u class="mt-2 block">This text is underlined</u>
+    <b class="mt-2 block">This text is bold <red>and red?</red></b>
+  </body>
+</delphi>

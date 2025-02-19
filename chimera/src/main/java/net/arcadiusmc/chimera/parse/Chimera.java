@@ -1,5 +1,6 @@
 package net.arcadiusmc.chimera.parse;
 
+import com.google.common.base.Strings;
 import java.util.Optional;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.PrimitiveLeftRight;
@@ -23,6 +24,7 @@ import net.arcadiusmc.dom.style.FlexWrap;
 import net.arcadiusmc.dom.style.JustifyContent;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Visibility;
+import org.slf4j.LoggerFactory;
 
 public final class Chimera {
   private Chimera() {}
@@ -43,6 +45,33 @@ public final class Chimera {
     }
 
     return expr.compile(errors);
+  }
+
+  public static ChimeraStylesheet parseSheet(StringBuffer input, String sourceName) {
+    return parseSheet(input, sourceName, error -> {
+      LoggerFactory.getLogger("Document")
+          .atLevel(error.getLevel())
+          .setMessage(error.getFormattedError())
+          .log();
+    });
+  }
+
+  public static ChimeraStylesheet parseSheet(
+      StringBuffer input,
+      String name,
+      CompilerErrorListener listener
+  ) {
+    ChimeraParser parser = new ChimeraParser(input);
+
+    if (!Strings.isNullOrEmpty(name)) {
+      parser.getErrors().setSourceName(name);
+    }
+    if (listener != null) {
+      parser.getErrors().setListener(listener);
+    }
+
+    SheetStatement stat = parser.stylesheet();
+    return compileSheet(stat, parser.createContext());
   }
 
   public static ChimeraStylesheet compileSheet(SheetStatement stat, ChimeraContext ctx) {
