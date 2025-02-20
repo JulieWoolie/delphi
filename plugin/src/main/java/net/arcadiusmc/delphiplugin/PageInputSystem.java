@@ -89,7 +89,7 @@ public class PageInputSystem {
 
     view.getDocument().clicked = this.clickedNode;
 
-    hoveredNode.addFlag(NodeFlag.CLICKED);
+    propagateFlagState(true, NodeFlag.CLICKED, clickedNode);
 
     MouseEvent event = fireMouseEvent(
         EventTypes.CLICK,
@@ -115,7 +115,7 @@ public class PageInputSystem {
       return;
     }
 
-    clickedNode.removeFlag(NodeFlag.CLICKED);
+    propagateFlagState(false, NodeFlag.CLICKED, clickedNode);
 
     fireMouseEvent(
         EventTypes.CLICK_EXPIRE,
@@ -140,7 +140,7 @@ public class PageInputSystem {
       return;
     }
 
-    propagateHoverState(false, hoveredNode);
+    propagateFlagState(false, NodeFlag.HOVERED, hoveredNode);
     fireMouseEvent(
         EventTypes.MOUSE_LEAVE,
         hoveredNodePlayer,
@@ -157,14 +157,14 @@ public class PageInputSystem {
     view.getDocument().hovered = null;
   }
 
-  private void propagateHoverState(boolean state, DelphiNode node) {
+  private void propagateFlagState(boolean state, NodeFlag flag, DelphiNode node) {
     DelphiNode p = node;
 
     while (p != null) {
       if (state) {
-        p.addFlag(NodeFlag.HOVERED);
+        p.addFlag(flag);
       } else {
-        p.removeFlag(NodeFlag.HOVERED);
+        p.removeFlag(flag);
       }
 
       DelphiElement parent = p.getParent();
@@ -208,7 +208,7 @@ public class PageInputSystem {
     this.hoveredNodePlayer = player;
 
     view.getDocument().hovered = hoveredNode;
-    propagateHoverState(true, contained);
+    propagateFlagState(true, NodeFlag.HOVERED, hoveredNode);
 
     fireMouseEvent(EventTypes.MOUSE_ENTER, player, false, MouseButton.NONE, contained, true, false);
   }

@@ -2,8 +2,8 @@ package net.arcadiusmc.delphiplugin;
 
 import com.google.common.base.Strings;
 import net.arcadiusmc.dom.Attributes;
+import net.arcadiusmc.dom.ButtonElement;
 import net.arcadiusmc.dom.Element;
-import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
@@ -32,11 +32,27 @@ class ButtonClickListener implements EventListener.Typed<MouseEvent> {
 
   @Override
   public void handleEvent(MouseEvent event) {
-    Element target = event.getTarget();
-    if (!target.getTagName().equals(TagNames.BUTTON)) {
+    Element p = event.getTarget();
+
+    if (!event.isBubbling()) {
+      if (!(p instanceof ButtonElement el)) {
+        return;
+      }
+
+      tryRunButton(el, event);
       return;
     }
 
+    while (p != null) {
+      if (p instanceof ButtonElement element) {
+        tryRunButton(element, event);
+      }
+
+      p = p.getParent();
+    }
+  }
+
+  private void tryRunButton(ButtonElement target, MouseEvent event) {
     String action = target.getAttribute(Attributes.BUTTON_ACTION);
     if (Strings.isNullOrEmpty(action)) {
       return;
