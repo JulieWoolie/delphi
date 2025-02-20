@@ -49,5 +49,9 @@ tasks {
         "domVersion" to project(":dom").version
       ))
     }
+
+    filesMatching("plugin.yml") {
+      expand(mapOf("version" to version))
+    }
   }
 }
