@@ -63,7 +63,7 @@ public interface Attributes {
   String ADVANCED_ITEM_TOOLTIPS = Options.ADVANCED_ITEM_TOOLTIPS;
 
   /**
-   * Button action, executed when a {@link TagNames#BUTTON} button element is clicked. Only
+   * Button action, executed when a {@link ButtonElement} button element is clicked. Only
    * works on button elements.
    * <br>
    * <table>
