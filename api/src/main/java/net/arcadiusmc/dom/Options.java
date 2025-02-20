@@ -57,4 +57,19 @@ public interface Options {
    * Example: {@code <option name="ignore-player-pitch" value="false" />}
    */
   String IGNORE_PLAYER_PITCH = "ignore-player-pitch";
+
+  /**
+   * Minimum version of the game required to open the page. If the page is opened on an
+   * older version than specified by the option, the page will fail to open.
+   * <p>
+   * This option expects values to be semantic versions ({@code major.minor.patch?}),
+   * anything else causes the system to fall back to a simple string comparison of the specified
+   * version and the current game version, which can result in inaccurate results if the amount of
+   * digits differs between the option's value and the game version.
+   * <p>
+   * By default, this option has no value.
+   * <p>
+   * Example: {@code <option name="minimum-game-version" value="1.21.4"/>}
+   */
+  String MINIMUM_GAME_VERSION = "minimum-game-version";
 }

@@ -117,6 +117,15 @@ public class DelphiException extends RuntimeException {
    */
   public static final int ERR_ILLEGAL_INSTANCE_NAME = 17;
 
+  /**
+   * Game version too old.
+   * <p>
+   * Occurs when parsing a page XML file and the
+   * {@link net.arcadiusmc.dom.Options#MINIMUM_GAME_VERSION} option requires a newer version of
+   * the game.
+   */
+  public static final int ERR_OLD_GAME_VERSION = 18;
+
   private final int code;
 
   public DelphiException(int code) {
@@ -180,6 +189,7 @@ public class DelphiException extends RuntimeException {
       case ERR_EMPTY_MODULE_NAME -> "ERR_EMPTY_MODULE_NAME";
       case ERR_INSTANCE_NAME_USED -> "ERR_INSTANCE_NAME_USED";
       case ERR_ILLEGAL_INSTANCE_NAME -> "ERR_ILLEGAL_INSTANCE_NAME";
+      case ERR_OLD_GAME_VERSION -> "ERR_OLD_GAME_VERSION";
       default -> "ERR_UNKNOWN";
     };
   }

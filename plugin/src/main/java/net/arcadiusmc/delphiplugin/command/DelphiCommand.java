@@ -14,6 +14,7 @@ import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ERROR;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_UNKNOWN;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ZIP_ACCESS_DENIED;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_NO_FILE;
+import static net.arcadiusmc.delphi.resource.DelphiException.ERR_OLD_GAME_VERSION;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_SAX_PARSER_INIT;
 import static net.arcadiusmc.delphi.resource.DelphiException.ERR_UNKNOWN;
 
@@ -135,6 +136,9 @@ public class DelphiCommand {
 
   static final TranslatableExceptionType ILLEGAL_INSTANCE_NAME
       = new TranslatableExceptionType("delphi.error.instanceNameIllegal");
+
+  static final TranslatableExceptionType GAME_TOO_OLD
+      = new TranslatableExceptionType("delphi.error.gameTooOld");
 
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
@@ -431,6 +435,7 @@ public class DelphiCommand {
       case ERR_MODULE_ZIP_ACCESS_DENIED -> MODULE_ACCESS_DENIED.create();
       case ERR_INSTANCE_NAME_USED -> INSTANCE_NAME_IN_USE.create(exc.getBaseMessage());
       case ERR_ILLEGAL_INSTANCE_NAME -> ILLEGAL_INSTANCE_NAME.create(exc.getBaseMessage());
+      case ERR_OLD_GAME_VERSION -> GAME_TOO_OLD.create(exc.getBaseMessage());
       default -> new CommandSyntaxException(NOP, new LiteralMessage(exc.getMessage()));
     };
   }

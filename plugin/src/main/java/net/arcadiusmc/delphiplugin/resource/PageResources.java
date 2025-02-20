@@ -20,7 +20,6 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -42,7 +41,6 @@ import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.parser.DelphiSaxParser;
-import net.arcadiusmc.delphidom.parser.PluginMissingException;
 import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.delphiplugin.command.PathParser;
 import net.arcadiusmc.dom.Document;
@@ -231,6 +229,7 @@ public class PageResources implements ViewResources {
 
     DelphiSaxParser handler = new DelphiSaxParser();
     handler.setListener(DelphiDocument.ERROR_LISTENER);
+    handler.setCallbacks(new SaxCallbacks());
     handler.setView(view);
 
     try {
@@ -239,19 +238,8 @@ public class PageResources implements ViewResources {
       return Result.err(new DelphiException(ERR_DOC_PARSE, e));
     } catch (IOException ioErr) {
       return Result.ioError(ioErr);
-    } catch (PluginMissingException miss) {
-      StringBuilder builder = new StringBuilder();
-      Iterator<String> it = miss.getPluginNames().iterator();
-
-      while (it.hasNext()) {
-        builder.append(it.next());
-
-        if (it.hasNext()) {
-          builder.append(", ");
-        }
-      }
-
-      return Result.err(new DelphiException(ERR_MISSING_PLUGINS, builder.toString()));
+    } catch (DelphiException delphiException) {
+      return Result.err(delphiException);
     } catch (Exception exc) {
       return Result.err(new DelphiException(ERR_UNKNOWN, exc));
     }
