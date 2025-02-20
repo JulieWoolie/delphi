@@ -8,10 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.arcadiusmc.chimera.ChimeraStylesheet;
-import net.arcadiusmc.chimera.PropertySet.PropertyIterator;
 import net.arcadiusmc.chimera.Rule;
-import net.arcadiusmc.chimera.Value;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.resource.ApiModule;
@@ -60,56 +57,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
     this.system = system;
   }
 
-  public void appendHeader() {
+  public void appendDocumentInfo() {
     DelphiDocument doc = (DelphiDocument) view.getDocument();
-    StyleObjectModel styles = doc.getStyles();
-
-    nlIndent().append("<header>");
-    indent++;
-
-    for (String optionKey : doc.getOptionKeys()) {
-      nlIndent().append("<option name=")
-          .append('"')
-          .append(optionKey)
-          .append('"')
-          .append(" value=")
-          .append('"')
-          .append(doc.getOption(optionKey))
-          .append('"')
-          .append(" />");
-    }
-
-    for (ChimeraStylesheet stylesheet : styles.getSheets()) {
-      if ((stylesheet.getFlags() & ChimeraStylesheet.FLAG_DEFAULT_STYLE) != 0) {
-        continue;
-      }
-
-      nlIndent().append("<style>");
-      indent++;
-
-      for (int i = 0; i < stylesheet.getLength(); i++) {
-        Rule rule = stylesheet.getRule(i);
-
-        nlIndent().append(rule.getSelector()).append(" {");
-        indent++;
-
-        PropertyIterator it = rule.getPropertySet().iterator();
-        while (it.hasNext()) {
-          it.next();
-
-          nlIndent().append(it.property().getKey()).append(": ");
-
-          Value<Object> val = it.value();
-          builder.append(val.getTextValue());
-        }
-
-        indent--;
-        nlIndent().append("}");
-      }
-
-      indent--;
-      nlIndent().append("</style>");
-    }
 
     nlIndent().append(COMMENT_START);
     indent++;
@@ -161,9 +110,6 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
     indent--;
     nlIndent().append(COMMENT_END);
-
-    indent--;
-    nlIndent().append("</header>");
   }
 
   private void appendFullStyle(FullStyle style)  {

@@ -54,6 +54,7 @@ public final class Debug {
     RenderTreePrint print = new RenderTreePrint(view, view.renderer);
 
     if (target == null) {
+      print.appendDocumentInfo();
       Visitor.visit(view.getDocument().getDocumentElement(), print);
     } else {
       Visitor.visit(target, print);
