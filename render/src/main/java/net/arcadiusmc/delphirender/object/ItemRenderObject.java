@@ -54,7 +54,7 @@ public class ItemRenderObject extends SingleEntityRenderObject<ItemDisplay> {
     offset.x = size.x * 0.5f;
     offset.y = 0.0f;
     offset.y -= size.y * Y_OFF_MODIFIER;
-    offset.z += Z_OFF;
+//    offset.z += Z_OFF;
 
     entity.setItemStack(item);
   }
