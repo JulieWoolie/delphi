@@ -25,9 +25,10 @@ public final class DelphiProvider {
   }
 
   /**
-   * Create a new document request.
-   * @return Created request
+   * Create a new document view builder.
+   * @return Created view builder
    * @throws NullPointerException If no Delphi service exists yet
+   * @see Delphi#newViewBuilder()
    */
   public static @NotNull DocumentViewBuilder newViewBuilder() {
     return get().newViewBuilder();

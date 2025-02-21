@@ -23,8 +23,8 @@ public interface Delphi {
   DelphiResources getResources();
 
   /**
-   * Create a new document request.
-   * @return Created document request
+   * Create a new document view builder
+   * @return Created document view builder
    */
   DocumentViewBuilder newViewBuilder();
 
