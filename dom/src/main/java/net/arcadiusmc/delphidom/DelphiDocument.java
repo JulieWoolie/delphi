@@ -49,7 +49,6 @@ public class DelphiDocument implements Document {
   public static final ErrorListener ERROR_LISTENER = ErrorListener.logging(LOGGER);
 
   final Map<String, String> options = new HashMap<>();
-  final Map<String, DelphiElement> idLookup = new HashMap<>();
 
   @Getter
   final EventListenerList globalTarget;
@@ -257,8 +256,13 @@ public class DelphiDocument implements Document {
   }
 
   @Override
-  public @Nullable DelphiElement getElementById(String elementId) {
-    return idLookup.get(elementId);
+  public @Nullable Element getElementById(String elementId) {
+    IdSystem system = getSystem(IdSystem.class);
+    if (system == null) {
+      return null;
+    }
+
+    return system.lookupMap.get(elementId);
   }
 
   @Override
