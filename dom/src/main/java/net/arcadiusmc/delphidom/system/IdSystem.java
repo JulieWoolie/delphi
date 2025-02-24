@@ -8,6 +8,7 @@ import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.event.AttributeMutateEvent;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
@@ -83,8 +84,12 @@ public class IdSystem implements ObjectModelSystem {
 
     @Override
     public void handleEvent(MutationEvent event) {
-      Element target = event.getTarget();
-      assert target != null;
+      Node node = event.getNode();
+      assert node != null;
+
+      if (!(node instanceof Element target)) {
+        return;
+      }
 
       if (event.getType().equals(EventTypes.APPEND_CHILD)) {
         updateId(target, null, target.getId());

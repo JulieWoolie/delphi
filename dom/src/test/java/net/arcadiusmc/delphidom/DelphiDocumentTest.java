@@ -3,7 +3,9 @@ package net.arcadiusmc.delphidom;
 import static net.arcadiusmc.delphidom.TestUtil.createDoc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import net.arcadiusmc.delphidom.system.IdSystem;
 import org.junit.jupiter.api.Test;
 
 class DelphiDocumentTest {
@@ -15,6 +17,14 @@ class DelphiDocumentTest {
     DelphiElement item = doc.createElement("item");
 
     assertInstanceOf(DelphiItemElement.class, item);
+  }
+
+  @Test
+  void should_returnIdSystem_when_gotten() {
+    DelphiDocument document = createDoc();
+    IdSystem system = document.getSystem(IdSystem.class);
+
+    assertNotNull(system);
   }
 
   @Test
@@ -30,6 +40,24 @@ class DelphiDocumentTest {
     doc.getBody().appendChild(div2);
     div2.appendChild(div3);
 
+    assertEquals(div3, doc.getElementById("test"));
+
+    div2.setId("test2");
+    assertEquals(div2, doc.getElementById("test2"));
+  }
+
+  @Test
+  void getElementById_2() {
+    DelphiDocument doc = createDoc();
+    DelphiElement div1 = doc.createElement("div");
+    DelphiElement div2 = doc.createElement("div");
+    DelphiElement div3 = doc.createElement("div");
+
+    doc.getBody().appendChild(div1);
+    doc.getBody().appendChild(div2);
+    div2.appendChild(div3);
+
+    div3.setId("test");
     assertEquals(div3, doc.getElementById("test"));
 
     div2.setId("test2");
