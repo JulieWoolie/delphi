@@ -15,7 +15,7 @@ public class OptionSystemTest {
   @Test
   void should_createOptionElementInHead_when_OptionSet() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     assertTrue(head.getChildCount() < 1);
 
@@ -31,7 +31,7 @@ public class OptionSystemTest {
   @Test
   void should_changeOption_when_elementAttrsChanged() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     OptionElement opt = assertInstanceOf(OptionElement.class, head.appendElement(TagNames.OPTION));
     opt.setName("foo");
@@ -43,7 +43,7 @@ public class OptionSystemTest {
   @Test
   void should_removeOption_when_elementNameRemoved() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     OptionElement opt = assertInstanceOf(OptionElement.class, head.appendElement(TagNames.OPTION));
     opt.setName("foo");
@@ -59,7 +59,7 @@ public class OptionSystemTest {
   @Test
   void should_removeOption_when_elementValueRemoved() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     OptionElement opt = assertInstanceOf(OptionElement.class, head.appendElement(TagNames.OPTION));
     opt.setName("foo");
@@ -75,7 +75,7 @@ public class OptionSystemTest {
   @Test
   void should_changeOptionElementInHead_when_OptionSetAndElementAlreadyThere() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     OptionElement opt = assertInstanceOf(OptionElement.class, head.appendElement(TagNames.OPTION));
     opt.setName("foo");
@@ -89,7 +89,7 @@ public class OptionSystemTest {
   @Test
   void should_removeOptionElementInHead_when_optionRemoved() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     OptionElement opt = assertInstanceOf(OptionElement.class, head.appendElement(TagNames.OPTION));
     opt.setName("foo");
@@ -104,7 +104,7 @@ public class OptionSystemTest {
   @Test
   void should_notChangeDocOptions_when_optionElementNotAdded() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     assertNull(doc.getOption("foo"));
 
@@ -118,7 +118,7 @@ public class OptionSystemTest {
   @Test
   void should_removeOption_when_optionElementRemoved() {
     DelphiDocument doc = createDoc();
-    DelphiHeaderElement head = doc.getHeader();
+    DelphiHeadElement head = doc.getHead();
 
     OptionElement opt = (OptionElement) doc.createElement(TagNames.OPTION);
     opt.setName("foo");

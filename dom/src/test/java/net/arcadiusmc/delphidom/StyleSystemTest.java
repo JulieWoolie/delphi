@@ -34,7 +34,7 @@ class StyleSystemTest {
     assertNull(style.getStylesheet());
 
     style.appendChild(node);
-    doc.getHeader().appendChild(style);
+    doc.getHead().appendChild(style);
 
     ChimeraStylesheet stylesheet = style.getStylesheet();
     assertNotNull(stylesheet);
@@ -55,7 +55,7 @@ class StyleSystemTest {
   @Test
   void should_addSheet_when_elementAdded() {
     DelphiDocument doc = DelphiDocument.createEmpty();
-    DelphiHeaderElement header = doc.getHeader();
+    DelphiHeadElement header = doc.getHead();
 
     DelphiStyleElement style = (DelphiStyleElement) doc.createElement(TagNames.STYLE);
     TextNode node = doc.createText(".test {color: red;}");
@@ -69,7 +69,7 @@ class StyleSystemTest {
   @Test
   void should_removeSheet_when_elementRemoved() {
     DelphiDocument doc = DelphiDocument.createEmpty();
-    DelphiHeaderElement header = doc.getHeader();
+    DelphiHeadElement header = doc.getHead();
 
     DelphiStyleElement style = (DelphiStyleElement) doc.createElement(TagNames.STYLE);
     TextNode node = doc.createText(".test {color: red;}");
@@ -85,7 +85,7 @@ class StyleSystemTest {
   @Test
   void should_persistSheet_when_removedAndAddedAgain() {
     DelphiDocument doc = DelphiDocument.createEmpty();
-    DelphiHeaderElement header = doc.getHeader();
+    DelphiHeadElement header = doc.getHead();
 
     DelphiStyleElement style = (DelphiStyleElement) doc.createElement(TagNames.STYLE);
     TextNode node = doc.createText(".test {color: red;}");

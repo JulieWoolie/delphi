@@ -86,7 +86,7 @@ public class DelphiSaxParser extends DefaultHandler {
     chars.setLength(0);
 
     DelphiNode n = elementStack.peek();
-    DelphiElement head = document.getHeader();
+    DelphiElement head = document.getHead();
 
     // If we're currently not inside the <head> element, then filter the
     // input string so that all spaces are removed.

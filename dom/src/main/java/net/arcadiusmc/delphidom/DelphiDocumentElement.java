@@ -13,7 +13,7 @@ import net.arcadiusmc.dom.event.MutationEvent;
 public class DelphiDocumentElement extends DelphiElement implements Element {
 
   private DelphiBodyElement body;
-  private DelphiHeaderElement header;
+  private DelphiHeadElement head;
 
   public DelphiDocumentElement(DelphiDocument document) {
     super(document, TagNames.ROOT);
@@ -33,11 +33,11 @@ public class DelphiDocumentElement extends DelphiElement implements Element {
       }
 
       if (event.getType().equals(EventTypes.APPEND_CHILD)) {
-        if (el instanceof DelphiHeaderElement headerEl) {
-          if (header != null) {
+        if (el instanceof DelphiHeadElement headerEl) {
+          if (head != null) {
             return;
           }
-          header = headerEl;
+          head = headerEl;
           return;
         }
 
@@ -53,8 +53,8 @@ public class DelphiDocumentElement extends DelphiElement implements Element {
         return;
       }
 
-      if (el instanceof DelphiHeaderElement) {
-        header = null;
+      if (el instanceof DelphiHeadElement) {
+        head = null;
         return;
       }
 

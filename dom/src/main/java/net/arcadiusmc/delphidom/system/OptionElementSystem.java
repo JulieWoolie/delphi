@@ -7,7 +7,7 @@ import net.arcadiusmc.chimera.selector.SelectorList;
 import net.arcadiusmc.chimera.selector.SelectorList.ListType;
 import net.arcadiusmc.chimera.selector.TagNameSelector;
 import net.arcadiusmc.delphidom.DelphiDocument;
-import net.arcadiusmc.delphidom.DelphiHeaderElement;
+import net.arcadiusmc.delphidom.DelphiHeadElement;
 import net.arcadiusmc.delphidom.DelphiOptionElement;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.dom.Attributes;
@@ -140,7 +140,7 @@ public class OptionElementSystem extends ElementTrackingSystem<DelphiOptionEleme
 
     @Override
     public void handleEvent(AttributeMutateEvent event) {
-      DelphiHeaderElement header = document.getHeader();
+      DelphiHeadElement header = document.getHead();
       if (header == null) {
         return;
       }

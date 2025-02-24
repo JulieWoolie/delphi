@@ -54,7 +54,7 @@ public interface TagNames {
 
   /**
    * Header element
-   * @see HeaderElement
+   * @see HeadElement
    */
   String HEAD = "head";
 

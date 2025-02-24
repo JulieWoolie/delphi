@@ -1,6 +1,5 @@
 package net.arcadiusmc.delphidom;
 
-import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,11 +17,11 @@ import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.system.ComponentElementSystem;
+import net.arcadiusmc.delphidom.system.IdSystem;
 import net.arcadiusmc.delphidom.system.ItemElementSystem;
 import net.arcadiusmc.delphidom.system.ObjectModelSystem;
 import net.arcadiusmc.delphidom.system.OptionElementSystem;
 import net.arcadiusmc.delphidom.system.StyleElementSystem;
-import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
@@ -32,12 +31,10 @@ import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;
-import net.arcadiusmc.dom.event.AttributeMutateEvent;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventPhase;
 import net.arcadiusmc.dom.event.EventTypes;
-import net.arcadiusmc.dom.event.MutationEvent;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import net.arcadiusmc.dom.style.Stylesheet;
@@ -84,15 +81,10 @@ public class DelphiDocument implements Document {
     this.documentListeners.setIgnorePropagationStops(false);
     this.documentListeners.setIgnoreCancelled(true);
 
-    IdAttrListener idListener = new IdAttrListener();
-    IdMutationListener mutationListener = new IdMutationListener();
-    globalTarget.addEventListener(EventTypes.MODIFY_ATTR, idListener);
-    globalTarget.addEventListener(EventTypes.APPEND_CHILD, mutationListener);
-    globalTarget.addEventListener(EventTypes.REMOVE_CHILD, mutationListener);
-
     styles = new StyleObjectModel(this);
     styles.initialize();
 
+    addSystem(new IdSystem());
     addSystem(new OptionElementSystem());
     addSystem(new StyleElementSystem());
     addSystem(new ItemElementSystem());
@@ -215,7 +207,7 @@ public class DelphiDocument implements Document {
       case TagNames.BUTTON -> new DelphiButtonElement(this);
       case TagNames.COMPONENT -> new ChatElement(this);
       case TagNames.BODY -> new DelphiBodyElement(this);
-      case TagNames.HEAD -> new DelphiHeaderElement(this);
+      case TagNames.HEAD -> new DelphiHeadElement(this);
       case TagNames.OPTION -> new DelphiOptionElement(this);
       case TagNames.STYLE -> new DelphiStyleElement(this);
       case TagNames.JAVA_OBJECT -> new DelphiJavaObjectElement(this);
@@ -409,28 +401,6 @@ public class DelphiDocument implements Document {
     return styles.newBuilder();
   }
 
-  void updateId(DelphiElement element, String previousId, String newId) {
-    if (!Strings.isNullOrEmpty(previousId)) {
-      Element referenced = idLookup.get(previousId);
-
-      if (Objects.equals(referenced, element)) {
-        idLookup.remove(previousId);
-      }
-    }
-
-    if (Strings.isNullOrEmpty(newId)) {
-      return;
-    }
-
-    // Do not override existing
-    DelphiElement existingValue = idLookup.get(newId);
-    if (existingValue != null) {
-      return;
-    }
-
-    idLookup.put(newId, element);
-  }
-
   public StyleProperties getInlineStyle(DelphiElement el) {
     if (styles == null) {
       return null;
@@ -490,42 +460,7 @@ public class DelphiDocument implements Document {
   }
 
   @Override
-  public DelphiHeaderElement getHeader() {
-    return documentElement == null ? null : documentElement.getHeader();
-  }
-
-  class IdMutationListener implements EventListener.Typed<MutationEvent> {
-
-    @Override
-    public void handleEvent(MutationEvent event) {
-      Node node = event.getNode();
-      if (!(node instanceof DelphiElement element)) {
-        return;
-      }
-
-      String type = event.getType();
-
-      if (type.equals(EventTypes.APPEND_CHILD)) {
-        updateId(element, null, element.getId());
-      } else if (type.equals(EventTypes.REMOVE_CHILD)) {
-        updateId(element, element.getId(), null);
-      }
-    }
-  }
-
-  class IdAttrListener implements EventListener.Typed<AttributeMutateEvent> {
-
-    @Override
-    public void handleEvent(AttributeMutateEvent event) {
-      if (!Objects.equals(event.getKey(), Attributes.ID)) {
-        return;
-      }
-
-      String previousId = event.getPreviousValue();
-      String newId = event.getNewValue();
-      DelphiElement element = (DelphiElement) event.getTarget();
-
-      updateId(element, previousId, newId);
-    }
+  public DelphiHeadElement getHead() {
+    return documentElement == null ? null : documentElement.getHead();
   }
 }

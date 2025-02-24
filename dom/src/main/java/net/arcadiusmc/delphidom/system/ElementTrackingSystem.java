@@ -31,7 +31,7 @@ public abstract class ElementTrackingSystem<T extends Element> implements Object
   }
 
   protected static boolean isInHeader(Document document, Element element) {
-    return Objects.equals(document.getHeader(), element);
+    return Objects.equals(document.getHead(), element);
   }
 
   @Override
