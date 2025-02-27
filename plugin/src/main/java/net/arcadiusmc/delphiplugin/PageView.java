@@ -442,11 +442,7 @@ public class PageView implements ExtendedView {
 
   @Override
   public void close() {
-    if (state == ViewState.CLOSED) {
-      return;
-    }
-
-    if (players.isEmpty()) {
+    if (state == ViewState.CLOSED || state == ViewState.CLOSING) {
       return;
     }
 
@@ -455,6 +451,8 @@ public class PageView implements ExtendedView {
   }
 
   public void onClose() {
+    state = ViewState.CLOSING;
+
     if (document != null) {
       EventImpl event = new EventImpl(EventTypes.DOM_CLOSING, document);
       event.initEvent(null, false, false);

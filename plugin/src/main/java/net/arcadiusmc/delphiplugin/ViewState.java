@@ -5,5 +5,6 @@ public enum ViewState {
   LOADED,
   SPAWNED,
   CLOSED,
+  CLOSING,
   ;
 }
