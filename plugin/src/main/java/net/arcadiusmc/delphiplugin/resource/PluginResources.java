@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +142,9 @@ public class PluginResources implements DelphiResources {
       plugin = null;
     }
 
-    RegisteredModule registeredModule = new RegisteredModule(moduleName, module, plugin);
+    RegisteredModule registeredModule = new RegisteredModule(moduleName, module);
+    registeredModule.plugin = plugin;
+
     registered.put(key, registeredModule);
 
     return true;
@@ -317,7 +320,19 @@ public class PluginResources implements DelphiResources {
     return true;
   }
 
-  public record RegisteredModule(String name, ResourceModule module, Plugin plugin) {
+  public Collection<RegisteredModule> getModules() {
+    return registered.values();
+  }
 
+  public static class RegisteredModule {
+    public final String name;
+    public final ResourceModule module;
+    public Plugin plugin;
+    public boolean hidden = false;
+
+    public RegisteredModule(String name, ResourceModule module) {
+      this.name = name;
+      this.module = module;
+    }
   }
 }

@@ -8,6 +8,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import lombok.Setter;
@@ -269,7 +270,13 @@ public class PathParser<S> implements SuggestionProvider<S> {
           return builder.buildFuture();
         }
 
-        return suggest(builder, pluginResources.getModuleNames());
+        List<String> modules = pluginResources.getModules()
+            .stream()
+            .filter(m -> m.hidden)
+            .map(m -> m.name)
+            .toList();
+
+        return suggest(builder, modules);
       }
       case COLON -> {
         builder.suggest(":");

@@ -30,11 +30,11 @@ public class PluginDisableListener implements Listener {
     PluginResources pluginResources = plugin.getPluginResources();
 
     for (RegisteredModule value : pluginResources.getRegistered().values()) {
-      if (!Objects.equals(eventPlugin, value.plugin())) {
+      if (!Objects.equals(eventPlugin, value.plugin)) {
         continue;
       }
 
-      removed.add(value.name());
+      removed.add(value.name);
     }
 
     for (String moduleName : removed) {
