@@ -174,6 +174,8 @@ public class PageResources implements ViewResources {
             path,
             new ContextImpl(view.getPlayers(), view, pluginResources.getDefaultStyle(), this)
         );
+      } catch (DelphiException dx) {
+        return Result.err(dx);
       } catch (Exception t) {
         LOGGER.error("Module {} threw an error when attempting to load document",
             path.getModuleName(), t
