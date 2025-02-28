@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphidom.Loggers;
@@ -25,6 +26,8 @@ public class EventListenerList implements EventTarget {
   boolean ignorePropagationStops = false;
   boolean ignoreCancelled = true;
   EventTarget realTarget;
+
+  Consumer<Event> postRunListener = null;
 
   @Override
   public void addEventListener(String eventType, EventListener listener) {
@@ -89,6 +92,12 @@ public class EventListenerList implements EventTarget {
         break;
       }
     }
+
+    if (postRunListener == null) {
+      return;
+    }
+
+    postRunListener.accept(event);
   }
 
   private void dispatchSafe(Event event, EventListener listener) {

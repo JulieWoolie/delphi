@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.event.DocumentCloseEvent;
+import net.arcadiusmc.delphi.event.DocumentEvent;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
@@ -337,6 +338,11 @@ public class PageView implements ExtendedView {
 
     document.getStyles().setUpdateCallbacks(renderer);
     state = ViewState.LOADED;
+
+    g.setPostRunListener(event -> {
+      DocumentEvent bukkitEvent = new DocumentEvent(event);
+      bukkitEvent.callEvent();
+    });
   }
 
   public void configureScreen() {
@@ -452,6 +458,11 @@ public class PageView implements ExtendedView {
 
   public void onClose() {
     state = ViewState.CLOSING;
+
+    if (document != null) {
+      EventListenerList g = document.getGlobalTarget();
+      g.setPostRunListener(null);
+    }
 
     if (document != null) {
       EventImpl event = new EventImpl(EventTypes.DOM_CLOSING, document);
