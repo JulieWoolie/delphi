@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 
 public class PageInputSystem {
 
-  private static final Sound CLICK_SOUND = Sound.sound()
+  public static final Sound CLICK_SOUND = Sound.sound()
       .type(org.bukkit.Sound.UI_BUTTON_CLICK)
       .build();
 
