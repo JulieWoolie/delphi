@@ -14,10 +14,10 @@ import net.arcadiusmc.delphi.DelphiProvider;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.ApiModule;
 import net.arcadiusmc.delphi.resource.DocumentContext;
+import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.dom.Document;
-import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.style.Stylesheet;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,9 +28,9 @@ public class DevtoolModule implements ApiModule {
       @NotNull ResourcePath path,
       @NotNull DocumentContext context
   ) {
-    String targetInstName = path.getQuery("target-instance");
+    String targetInstName = path.getQuery("target");
     if (Strings.isNullOrEmpty(targetInstName)) {
-      return Result.err("No 'target-instance' query param set");
+      return Result.err("No 'target' query param set");
     }
 
     Delphi delphi = DelphiProvider.get();
@@ -41,6 +41,11 @@ public class DevtoolModule implements ApiModule {
     }
 
     DocumentView view = viewOpt.get();
+    ResourceModule targetModule = view.getResources().getModule();
+
+    if (targetModule instanceof DevtoolModule) {
+      return Result.err("Cannot open devtools on devtools view");
+    }
 
     String domSource = loadResource("devtools/index.xml");
     String scssSource = loadResource("devtools/devtools.scss");
@@ -49,6 +54,9 @@ public class DevtoolModule implements ApiModule {
     Document dom = context.parseDocument(domSource);
 
     dom.addStylesheet(stylesheet);
+
+    Devtools devtools = new Devtools(view, dom);
+    devtools.switchTo(Tabs.INSPECT_ELEMENT);
 
     return Result.ok(dom);
   }
@@ -70,13 +78,6 @@ public class DevtoolModule implements ApiModule {
     }
 
     return writer.toString();
-  }
-
-  private void createTopBar(Document document) {
-    Element topbar = document.createElement("navbar");
-
-    topbar.appendElement("navlink")
-        .setTextContent("");
   }
 
   @Override

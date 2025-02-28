@@ -41,12 +41,14 @@ import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.DelphiPlugin;
 import net.arcadiusmc.delphiplugin.PageView;
+import net.arcadiusmc.delphiplugin.devtools.DevtoolModule;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 public class PluginResources implements DelphiResources {
 
+  static final String DEVTOOLS_MODULE = "devtools";
   static final String DEFAULT_STYLE = "data/default-style.scss";
 
   private static final Logger LOGGER = Loggers.getLogger("DelphiResources");
@@ -68,6 +70,13 @@ public class PluginResources implements DelphiResources {
   public PluginResources(Path directory) {
     this.directory = directory;
     ensureDirectoryExists();
+    registerDevtools();
+  }
+
+  private void registerDevtools() {
+    RegisteredModule mod = new RegisteredModule(DEVTOOLS_MODULE, new DevtoolModule());
+    mod.hidden = true;
+    registered.put(DEVTOOLS_MODULE, mod);
   }
 
   private void ensureDirectoryExists() {
