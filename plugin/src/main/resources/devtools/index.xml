@@ -1,14 +1,15 @@
 <delphi>
   <head>
-    <options screen-width="3" screen-height="2"/>
+    <option name="screen-width" value="3"/>
+    <option name="screen-height" value="2"/>
   </head>
   <body>
     <navbar id="navbar">
-      <navlink active="true" id="nav-dom">Elements</navlink>
-      <navlink id="nav-styles">Styles</navlink>
-      <navlink id="nav-render">Box Model</navlink>
-      <navlink id="nav-render">Doc Info</navlink>
-      <navlink id="nav-render">X</navlink>
+      <navlink nav="dom">Elements</navlink>
+      <navlink nav="styles">Styles</navlink>
+      <navlink nav="boxmodel">Box Model</navlink>
+      <navlink nav="docinfo">Doc Info</navlink>
+      <navlink nav="close">X</navlink>
     </navbar>
 
     <div id="content"></div>
