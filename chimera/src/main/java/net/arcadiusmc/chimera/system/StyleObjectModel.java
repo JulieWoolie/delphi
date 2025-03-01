@@ -71,6 +71,8 @@ public class StyleObjectModel {
     l.addEventListener(EventTypes.CLICK_EXPIRE, updateListener);
     l.addEventListener(EventTypes.CLICK, updateListener);
 
+    l.addEventListener(EventTypes.INPUT, updateListener);
+
     if (document.getDocumentElement() != null) {
       initRoot(document.getDocumentElement());
     }
