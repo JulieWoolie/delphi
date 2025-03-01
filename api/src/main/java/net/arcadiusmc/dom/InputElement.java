@@ -12,7 +12,7 @@ public interface InputElement extends Element {
   /**
    * Default placeholder value returned by {@link #getPlaceholder()}
    */
-  String DEFAULT_PLACEHOLDER = "Enter input...";
+  String DEFAULT_PLACEHOLDER = "...";
 
   /**
    * Input elements cannot have child nodes.
