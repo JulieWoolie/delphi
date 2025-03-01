@@ -36,4 +36,11 @@ public interface Consts {
 
   float LEN0 = 5;
   float LEN0_PX = LEN0 * CHAR_PX_SIZE_X;
+
+  // Macro layer = A single element
+  // Micro layer = A single layer of an element (eg: content, background, outline)
+  float MICRO_LAYER_DEPTH = 0.000125f;
+  float MACRO_LAYER_DEPTH = MICRO_LAYER_DEPTH * 3;
+
+  float RAD90 = (float) Math.toRadians(90);
 }

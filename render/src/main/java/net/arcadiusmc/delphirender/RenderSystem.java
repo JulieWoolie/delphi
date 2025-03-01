@@ -1,6 +1,6 @@
 package net.arcadiusmc.delphirender;
 
-import static net.arcadiusmc.delphirender.object.RenderObject.MACRO_LAYER_DEPTH;
+import static net.arcadiusmc.delphirender.Consts.MACRO_LAYER_DEPTH;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

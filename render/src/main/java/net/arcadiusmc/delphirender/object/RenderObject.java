@@ -15,12 +15,6 @@ import org.joml.Vector3f;
 
 public abstract class RenderObject {
 
-  // Macro layer = A single element
-  // Micro layer = A single layer of an element (eg: content, background, outline)
-  public static final float MICRO_LAYER_DEPTH = 0.0001f;
-  public static final float MACRO_LAYER_DEPTH = MICRO_LAYER_DEPTH * 3;
-  public static final float RAD90 = (float) Math.toRadians(90);
-
   public static final Brightness BRIGHTNESS = new Brightness(0, 15);
   public static final boolean SEE_THROUGH = false;
 

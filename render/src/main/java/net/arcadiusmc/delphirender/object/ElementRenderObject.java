@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Getter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
 import net.arcadiusmc.delphidom.Rect;
+import net.arcadiusmc.delphirender.Consts;
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.RenderSystem;
 import net.arcadiusmc.delphirender.layout.NLayout;
@@ -141,7 +142,7 @@ public class ElementRenderObject extends RenderObject {
     // Configure depth values
     for (int i = 0; i < boxes.length; i++) {
       BoxRenderObject box = boxes[i];
-      box.depth = this.depth + (i * MICRO_LAYER_DEPTH);
+      box.depth = this.depth + (i * Consts.MICRO_LAYER_DEPTH);
     }
   }
 
