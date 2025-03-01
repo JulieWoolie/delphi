@@ -25,6 +25,7 @@ public class ElementTreeTab implements DevToolTab {
 
     DomBuilder builder = new DomBuilder(content);
     createElementLines(targetRoot, document, builder);
+    builder.linebreak();
   }
 
   @Override
