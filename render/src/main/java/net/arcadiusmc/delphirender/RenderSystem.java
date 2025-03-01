@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ComputedStyleSet;
@@ -15,6 +16,7 @@ import net.arcadiusmc.chimera.system.StyleNode;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphidom.ChatElement;
 import net.arcadiusmc.delphidom.DelphiElement;
+import net.arcadiusmc.delphidom.DelphiInputElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.ExtendedView;
@@ -32,6 +34,7 @@ import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.event.InputEvent;
 import net.arcadiusmc.dom.event.MouseEvent;
 import net.arcadiusmc.dom.event.MutationEvent;
 import org.bukkit.World;
@@ -70,6 +73,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     EventTarget g = view.getDocument().getGlobalTarget();
     MutationListener listener = new MutationListener();
     TooltipListener tooltipListener = new TooltipListener();
+    InputListener inputListener = new InputListener();
 
     g.addEventListener(EventTypes.APPEND_CHILD, listener);
     g.addEventListener(EventTypes.REMOVE_CHILD, listener);
@@ -77,6 +81,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
     g.addEventListener(EventTypes.MOUSE_ENTER, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
+
+    g.addEventListener(EventTypes.INPUT, inputListener);
   }
 
   public void close() {
@@ -183,6 +189,16 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
         obj = el;
       }
+      case DelphiInputElement input -> {
+        ElementRenderObject el = new ElementRenderObject(this, styleSet);
+        StringRenderObject sro = new StringRenderObject(this);
+
+        sro.content = input.getDisplayText();
+        sro.depth = depth + MACRO_LAYER_DEPTH;
+        el.addChild(0, sro);
+
+        obj = el;
+      }
       default -> {
         ElementRenderObject o = new ElementRenderObject(this, styleSet);
         DelphiElement el = (DelphiElement) node;
@@ -195,7 +211,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       }
     }
 
-    obj.depth = MACRO_LAYER_DEPTH * node.getDepth();
+    obj.depth = depth;
     obj.domIndex = node.getSiblingIndex();
 
     renderElements.put(node, obj);
@@ -445,8 +461,29 @@ public class RenderSystem implements StyleUpdateCallbacks {
         }
       }
 
-      triggerUpdate();
       triggerRealign();
+      triggerUpdate();
+    }
+  }
+
+  class InputListener implements EventListener.Typed<InputEvent> {
+
+    @Override
+    public void handleEvent(InputEvent event) {
+      DelphiInputElement target = (DelphiInputElement) event.getTarget();
+      ElementRenderObject ero = (ElementRenderObject) getRenderElement(target);
+      StringRenderObject sro = ero.onlyChild();
+
+      String ncontent = target.getDisplayText();
+
+      if (Objects.equals(sro.content, ncontent)) {
+        return;
+      }
+
+      sro.content = ncontent;
+
+      triggerRealign();
+      triggerUpdate();
     }
   }
 }
