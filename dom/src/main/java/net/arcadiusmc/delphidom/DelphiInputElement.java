@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom;
 
+import com.google.common.base.Strings;
 import java.util.Objects;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.InputElement;
@@ -19,6 +20,14 @@ public class DelphiInputElement extends DelphiElement implements InputElement {
   @Override
   public boolean canHaveChildren() {
     return false;
+  }
+
+  public String getDisplayText() {
+    if (Strings.isNullOrEmpty(value)) {
+      return getPlaceholder();
+    }
+
+    return value;
   }
 
   @Override
