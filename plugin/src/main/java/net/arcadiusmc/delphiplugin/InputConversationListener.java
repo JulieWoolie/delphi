@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphiplugin;
 
+import java.util.Objects;
 import joptsimple.internal.Strings;
 import net.arcadiusmc.dom.InputElement;
 import net.arcadiusmc.dom.InputElement.InputType;
@@ -18,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class InputConversationListener implements EventListener.Typed<MouseEvent> {
+
+  static final String CLEAR_CHAR = "-";
 
   @Override
   public void handleEvent(MouseEvent event) {
@@ -38,10 +41,11 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
 
     Plugin plugin = JavaPlugin.getPlugin(DelphiPlugin.class);
 
+    player.playSound(PageInputSystem.CLICK_SOUND);
+    player.sendMessage(Component.translatable("delphi.input.useToClear", NamedTextColor.GRAY));
+
     Conversation conversation = new Conversation(plugin, player, new DelphiPrompt(el));
     player.beginConversation(conversation);
-
-    player.playSound(PageInputSystem.CLICK_SOUND);
   }
 
   static class DelphiPrompt implements Prompt {
@@ -69,6 +73,10 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
     ) {
       if (inputElement.isDisabled()) {
         return Prompt.END_OF_CONVERSATION;
+      }
+
+      if (Objects.equals(input, CLEAR_CHAR)) {
+        input = null;
       }
 
       InputType type = inputElement.getType();
