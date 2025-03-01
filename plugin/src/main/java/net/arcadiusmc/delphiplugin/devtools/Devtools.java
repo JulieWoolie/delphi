@@ -22,7 +22,7 @@ public class Devtools {
   private final Document document;
   private final Element contentEl;
 
-  private DevToolTab tab = Tabs.INSPECT_ELEMENT;
+  private DevToolTab tab;
 
   public Devtools(DocumentView targetView, Document devtoolsDocument) {
     this.target = targetView;

@@ -1,13 +1,19 @@
 package net.arcadiusmc.delphiplugin.devtools;
 
+import com.google.common.base.Strings;
 import java.util.Map.Entry;
 import java.util.Set;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.TextNode;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
 public class ElementTreeTab implements DevToolTab {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   static final String SPAN = "span";
 
@@ -19,8 +25,6 @@ public class ElementTreeTab implements DevToolTab {
 
     DomBuilder builder = new DomBuilder(content);
     createElementLines(targetRoot, document, builder);
-
-
   }
 
   @Override
@@ -30,8 +34,25 @@ public class ElementTreeTab implements DevToolTab {
 
   void createElementLines(Node node, Document document, DomBuilder builder) {
     if (node instanceof TextNode txt) {
-      TextNode copy = document.createText(txt.getTextContent());
-      builder.append(copy);
+      String noWhiteSpace = StringUtils.deleteWhitespace(txt.getTextContent());
+      if (Strings.isNullOrEmpty(noWhiteSpace)) {
+        return;
+      }
+
+      String[] contentArr = txt.getTextContent().split("\\n+");
+
+      for (int i = 0; i < contentArr.length; i++) {
+        String content = contentArr[i];
+        Element txtNode = document.createElement(SPAN);
+        txtNode.setTextContent(content);
+        txtNode.setClassName("xml-text");
+        builder.append(txtNode);
+
+        if (i != contentArr.length - 1) {
+          builder.linebreak();
+        }
+      }
+
       return;
     }
 
@@ -41,6 +62,7 @@ public class ElementTreeTab implements DevToolTab {
     Element prefixEl = document.createElement(SPAN);
     prefixEl.setTextContent(prefix);
     prefixEl.setClassName("xml-tag");
+    builder.append(prefixEl);
 
     Set<Entry<String, String>> attrs = element.getAttributeEntries();
 
@@ -71,7 +93,7 @@ public class ElementTreeTab implements DevToolTab {
     addAttrBtn.setClassName("add-attr");
     builder.append(addAttrBtn);
 
-    if (!element.canHaveChildren()) {
+    if (!element.canHaveChildren() || !element.hasChildren()) {
       Element suffix = document.createElement(SPAN);
       suffix.setTextContent("/>");
       suffix.setClassName("xml-end-tag");
@@ -84,24 +106,72 @@ public class ElementTreeTab implements DevToolTab {
     suffix.setClassName("xml-end-tag");
     builder.append(suffix);
 
-    builder.indent++;
-    builder.linebreak();
+    boolean inlineChildren = inlineChildren(element);
 
-    for (Node child : element.getChildren()) {
-      createElementLines(child, document, builder);
+    if (!inlineChildren) {
+      builder.indent++;
       builder.linebreak();
     }
 
-    builder.indent--;
+    for (Node child : element.getChildren()) {
+      createElementLines(child, document, builder);
+
+      if (!inlineChildren) {
+        builder.linebreak();
+      }
+    }
+
+    if (!inlineChildren) {
+      builder.indent--;
+    }
 
     Element endTag = document.createElement(SPAN);
-    suffix.setTextContent("</" + element.getTagName() + ">");
-    suffix.setClassName("xml-end-tag");
+    endTag.setTextContent("</" + element.getTagName() + ">");
+    endTag.setClassName("xml-end-tag");
 
     builder.append(endTag);
   }
 
+  boolean inlineChildren(Element el) {
+    int descendantCount = countDescendants(el);
+    if (descendantCount > 1) {
+      return false;
+    }
+
+    if (!el.hasChildren()) {
+      return true;
+    }
+
+    Node child = el.firstChild();
+    if (!(child instanceof TextNode txt)) {
+      return false;
+    }
+
+    String content = txt.getTextContent();
+    if (Strings.isNullOrEmpty(content)) {
+      return true;
+    }
+
+    return !(content.contains("\n") || content.contains("\r"));
+  }
+
+  int countDescendants(Element el) {
+    int desc = el.getChildCount();
+
+    for (Node child : el.getChildren()) {
+      if (!(child instanceof Element e)) {
+        continue;
+      }
+
+      desc += countDescendants(e);
+    }
+
+    return desc;
+  }
+
   class DomBuilder {
+
+    static final int MAX_LINE_NUM = 24;
 
     private final Element lineContainer;
     private int lineCount = 1;
@@ -136,6 +206,9 @@ public class ElementTreeTab implements DevToolTab {
 
     public void linebreak() {
       if (line == null) {
+        return;
+      }
+      if (lineCount > MAX_LINE_NUM) {
         return;
       }
 

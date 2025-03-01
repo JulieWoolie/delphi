@@ -19,6 +19,7 @@ import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.delphi.util.Result;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.style.Stylesheet;
+import net.arcadiusmc.dom.style.StylesheetBuilder;
 import org.jetbrains.annotations.NotNull;
 
 public class DevtoolModule implements ApiModule {
@@ -51,14 +52,31 @@ public class DevtoolModule implements ApiModule {
     String scssSource = loadResource("devtools/devtools.scss");
 
     Stylesheet stylesheet = context.parseStylesheet(scssSource);
-    Document dom = context.parseDocument(domSource);
+    Stylesheet indents = generateIndentsSheet(context);
 
+    Document dom = context.parseDocument(domSource);
     dom.addStylesheet(stylesheet);
+    dom.addStylesheet(indents);
 
     Devtools devtools = new Devtools(view, dom);
     devtools.switchTo(Tabs.INSPECT_ELEMENT);
 
     return Result.ok(dom);
+  }
+
+  private Stylesheet generateIndentsSheet(DocumentContext ctx) {
+    StylesheetBuilder builder = ctx.newStylesheet();
+    final int indentLevels = 25;
+
+    for (int i = 1; i <= indentLevels; i++) {
+      int finalI = i;
+
+      builder.addRule(".indent-" + i + " span:first-of-type", prop -> {
+        prop.setMarginInlineStart(finalI + "ch");
+      });
+    }
+
+    return builder.build();
   }
 
   private String loadResource(String uri) {
