@@ -20,6 +20,7 @@ import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.system.ComponentElementSystem;
 import net.arcadiusmc.delphidom.system.IdSystem;
 import net.arcadiusmc.delphidom.system.ItemElementSystem;
+import net.arcadiusmc.delphidom.system.JavaObjectSystem;
 import net.arcadiusmc.delphidom.system.ObjectModelSystem;
 import net.arcadiusmc.delphidom.system.OptionElementSystem;
 import net.arcadiusmc.delphidom.system.StyleElementSystem;
@@ -90,6 +91,7 @@ public class DelphiDocument implements Document {
     addSystem(new StyleElementSystem());
     addSystem(new ItemElementSystem());
     addSystem(new ComponentElementSystem());
+    addSystem(new JavaObjectSystem());
   }
 
   public static DelphiDocument createEmpty() {
