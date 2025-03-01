@@ -462,15 +462,15 @@ public class PageView implements ExtendedView {
     if (document != null) {
       EventListenerList g = document.getGlobalTarget();
       g.setPostRunListener(null);
-    }
 
-    if (document != null) {
       EventImpl event = new EventImpl(EventTypes.DOM_CLOSING, document);
       event.initEvent(null, false, false);
       document.dispatchEvent(event);
 
       DocumentCloseEvent bukkitEvent = new DocumentCloseEvent(this);
       bukkitEvent.callEvent();
+
+      document.shutdownSystems();
     }
 
     killScreenInteraction();
