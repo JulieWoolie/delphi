@@ -24,11 +24,14 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
     if (!(event.getTarget() instanceof InputElement el)) {
       return;
     }
+
+    Player player = event.getPlayer();
+
     if (el.isDisabled()) {
+      player.playSound(PageInputSystem.DISABLED_BUTTON_SOUND);
       return;
     }
 
-    Player player = event.getPlayer();
     if (event.getButton() != MouseButton.LEFT) {
       return;
     }
@@ -37,6 +40,8 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
 
     Conversation conversation = new Conversation(plugin, player, new DelphiPrompt(el));
     player.beginConversation(conversation);
+
+    player.playSound(PageInputSystem.CLICK_SOUND);
   }
 
   static class DelphiPrompt implements Prompt {

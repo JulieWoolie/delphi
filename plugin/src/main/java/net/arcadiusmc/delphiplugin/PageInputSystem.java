@@ -4,9 +4,9 @@ import java.util.Objects;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
 import net.arcadiusmc.delphidom.event.MouseEventImpl;
+import net.arcadiusmc.dom.ButtonElement;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.NodeFlag;
-import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
@@ -18,6 +18,10 @@ public class PageInputSystem {
 
   public static final Sound CLICK_SOUND = Sound.sound()
       .type(org.bukkit.Sound.UI_BUTTON_CLICK)
+      .build();
+
+  public static final Sound DISABLED_BUTTON_SOUND = Sound.sound()
+      .type(org.bukkit.Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR)
       .build();
 
   private final PageView view;
@@ -105,8 +109,12 @@ public class PageInputSystem {
       return;
     }
 
-    if (clickedNode.getTagName().equals(TagNames.BUTTON)) {
-      player.playSound(CLICK_SOUND);
+    if (clickedNode instanceof ButtonElement btn) {
+      if (btn.isEnabled()) {
+        player.playSound(CLICK_SOUND);
+      } else {
+        player.playSound(DISABLED_BUTTON_SOUND);
+      }
     }
   }
 

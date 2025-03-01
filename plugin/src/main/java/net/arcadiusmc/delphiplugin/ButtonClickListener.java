@@ -53,6 +53,10 @@ class ButtonClickListener implements EventListener.Typed<MouseEvent> {
   }
 
   private void tryRunButton(ButtonElement target, MouseEvent event) {
+    if (!target.isEnabled()) {
+      return;
+    }
+
     String action = target.getAttribute(Attributes.BUTTON_ACTION);
     if (Strings.isNullOrEmpty(action)) {
       return;
