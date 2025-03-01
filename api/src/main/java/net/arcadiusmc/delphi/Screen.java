@@ -27,8 +27,25 @@ import org.joml.Vector3f;
  */
 public interface Screen {
 
-  int DEFAULT_WIDTH = 3;
-  int DEFAULT_HEIGHT = 2;
+  /**
+   * Default width of the screen: {@code 3}
+   */
+  float DEFAULT_WIDTH = 3;
+
+  /**
+   * Default height of the screen: {@code 2}
+   */
+  float DEFAULT_HEIGHT = 2;
+
+  /**
+   * Minimum screen size: {@code 1}
+   */
+  float MIN_SCREEN_SIZE = 1;
+
+  /**
+   * Maximum screen size: {@code 10}
+   */
+  float MAX_SCREEN_SIZE = 10;
 
   /**
    * Gets the width of the screen

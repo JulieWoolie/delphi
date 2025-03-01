@@ -1,6 +1,6 @@
 package net.arcadiusmc.delphirender.object;
 
-import static net.arcadiusmc.delphidom.Consts.ITEM_SPRITE_SIZE;
+import static net.arcadiusmc.delphirender.Consts.ITEM_SPRITE_SIZE;
 
 import net.arcadiusmc.delphirender.RenderSystem;
 import org.bukkit.Location;

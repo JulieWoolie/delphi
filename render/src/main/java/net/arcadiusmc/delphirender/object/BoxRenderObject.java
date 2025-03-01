@@ -1,11 +1,11 @@
 package net.arcadiusmc.delphirender.object;
 
-import static net.arcadiusmc.delphidom.Consts.BLOCK_OFFSET_X;
-import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE_X;
-import static net.arcadiusmc.delphidom.Consts.EMPTY_TD_BLOCK_SIZE_Y;
+import static net.arcadiusmc.delphirender.Consts.BLOCK_OFFSET_X;
+import static net.arcadiusmc.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_X;
+import static net.arcadiusmc.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_Y;
 
 import java.util.Objects;
-import net.arcadiusmc.delphidom.Consts;
+import net.arcadiusmc.delphirender.Consts;
 import net.arcadiusmc.delphirender.RenderSystem;
 import org.bukkit.Color;
 import org.bukkit.Location;

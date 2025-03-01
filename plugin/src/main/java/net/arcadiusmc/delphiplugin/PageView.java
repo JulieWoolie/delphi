@@ -1,7 +1,7 @@
 package net.arcadiusmc.delphiplugin;
 
-import static net.arcadiusmc.delphidom.Consts.MAX_SCREEN_SIZE;
-import static net.arcadiusmc.delphidom.Consts.MIN_SCREEN_SIZE;
+import static net.arcadiusmc.delphi.Screen.MAX_SCREEN_SIZE;
+import static net.arcadiusmc.delphi.Screen.MIN_SCREEN_SIZE;
 
 import com.google.common.base.Strings;
 import java.util.Objects;

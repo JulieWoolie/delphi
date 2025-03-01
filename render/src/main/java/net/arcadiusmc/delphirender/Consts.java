@@ -1,4 +1,4 @@
-package net.arcadiusmc.delphidom;
+package net.arcadiusmc.delphirender;
 
 import net.kyori.adventure.text.Component;
 
@@ -32,13 +32,8 @@ public interface Consts {
   float BLOCK_OFFSET_X = 0.0717f;
 
   float ITEM_PX_TO_CH_PX = 2.5f;
-  float ITEM_Z_WIDTH = 0.001f;
   float ITEM_SPRITE_SIZE = ITEM_PX_TO_CH_PX * CHAR_PX_SIZE_X * 16;
-  boolean SEE_THROUGH = false;
 
   float LEN0 = 5;
   float LEN0_PX = LEN0 * CHAR_PX_SIZE_X;
-
-  float MIN_SCREEN_SIZE = 1;
-  float MAX_SCREEN_SIZE = 10;
 }
