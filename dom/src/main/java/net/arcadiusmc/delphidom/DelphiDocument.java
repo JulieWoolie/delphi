@@ -14,6 +14,7 @@ import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphidom.event.AttributeMutation;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
+import net.arcadiusmc.delphidom.event.InputEventImpl;
 import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.system.ComponentElementSystem;
@@ -39,6 +40,7 @@ import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -205,6 +207,7 @@ public class DelphiDocument implements Document {
       case TagNames.ITEM -> new DelphiItemElement(this);
       case TagNames.BUTTON -> new DelphiButtonElement(this);
       case TagNames.COMPONENT -> new ChatElement(this);
+      case TagNames.INPUT -> new DelphiInputElement(this);
       case TagNames.BODY -> new DelphiBodyElement(this);
       case TagNames.HEAD -> new DelphiHeadElement(this);
       case TagNames.OPTION -> new DelphiOptionElement(this);
@@ -361,6 +364,17 @@ public class DelphiDocument implements Document {
     mutation.initEvent(el, false, false, node, idx);
 
     el.dispatchEvent(mutation);
+  }
+
+  public void valueChanged(
+      DelphiInputElement input,
+      String value,
+      String previousValue,
+      Player player
+  ) {
+    InputEventImpl event = new InputEventImpl(EventTypes.INPUT, this);
+    event.initEvent(input, false, false, value, previousValue, player);
+    dispatchEvent(event);
   }
 
   @Override

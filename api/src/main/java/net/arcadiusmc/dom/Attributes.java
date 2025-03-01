@@ -128,6 +128,8 @@ public interface Attributes {
    */
   String TYPE = "type";
 
+  String PLACEHOLDER = "placeholder";
+
   /**
    * Parses a float attribute value.
    * <p>

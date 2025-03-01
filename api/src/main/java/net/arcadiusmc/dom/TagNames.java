@@ -80,4 +80,10 @@ public interface TagNames {
    * @see JavaObjectElement
    */
   String JAVA_OBJECT = "java-object";
+
+  /**
+   * Input element that can take in user input
+   * @see InputElement
+   */
+  String INPUT = "input";
 }

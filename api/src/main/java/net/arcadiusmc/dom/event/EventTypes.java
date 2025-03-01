@@ -346,4 +346,31 @@ public interface EventTypes {
    * </table>
    */
   String DOM_CLOSING = "close";
+
+  /**
+   * Called when an {@link net.arcadiusmc.dom.InputElement}'s value is changed,
+   * either by a player or by invoking the
+   * {@link net.arcadiusmc.dom.InputElement#setValue(String)} method.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link Event}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>None, only triggered on the {@link Document} itself</td>
+   *   </tr>
+   * </table>
+   */
+  String INPUT = "input";
 }

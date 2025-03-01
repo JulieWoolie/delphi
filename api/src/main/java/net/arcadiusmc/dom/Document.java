@@ -66,7 +66,61 @@ public interface Document extends EventTarget, DomQueryable {
   Set<String> getOptionKeys();
 
   /**
-   * Creates an element with a specified {@code tagName}
+   * Creates an element with a specified {@code tagName}.
+   * <p>
+   * The type returned by this method corresponds to the specified tag name.
+   *
+   * <table>
+   *   <caption>Tag types</caption>
+   *   <thead>
+   *     <tr>
+   *       <th>Tag Name</th>
+   *       <th>Returned Type</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>{@link TagNames#OPTION}</td>
+   *       <td>{@link OptionElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#STYLE}</td>
+   *       <td>{@link StyleElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#JAVA_OBJECT}</td>
+   *       <td>{@link JavaObjectElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#HEAD}</td>
+   *       <td>{@link HeadElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#BODY}</td>
+   *       <td>{@link BodyElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#ITEM}</td>
+   *       <td>{@link ItemElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#COMPONENT}</td>
+   *       <td>{@link ComponentElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#BUTTON}</td>
+   *       <td>{@link ButtonElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#INPUT}</td>
+   *       <td>{@link InputElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Any other tag name</td>
+   *       <td>{@link Element}</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
    * @param tagName Element's tag name.
    * @return Created element
    * @throws NullPointerException if {@code tagName} is {@code null}
