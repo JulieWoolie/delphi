@@ -162,6 +162,11 @@ input {
     color: gray;
     outline-color: darkgray;
   }
+
+  &::placeholder {
+    color: gray;
+    italic: true;
+  }
 }
 
 /*

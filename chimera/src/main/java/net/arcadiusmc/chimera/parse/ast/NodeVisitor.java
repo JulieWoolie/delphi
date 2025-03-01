@@ -9,6 +9,7 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoElementExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 
@@ -72,6 +73,8 @@ public interface NodeVisitor<R> {
 
   R selectorNested(NestedSelector selector);
 
+  R selectorPseudoElement(PseudoElementExpr selector);
+
   /* --------------------------- Statements ---------------------------- */
 
   R variableDecl(VariableDecl decl);
@@ -103,5 +106,4 @@ public interface NodeVisitor<R> {
   R mixin(MixinStatement statement);
 
   R include(IncludeStatement statement);
-
 }

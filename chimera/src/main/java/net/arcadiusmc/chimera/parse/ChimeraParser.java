@@ -25,6 +25,7 @@ import static net.arcadiusmc.chimera.parse.Token.COMMA;
 import static net.arcadiusmc.chimera.parse.Token.DOLLAR_EQ;
 import static net.arcadiusmc.chimera.parse.Token.DOLLAR_SIGN;
 import static net.arcadiusmc.chimera.parse.Token.DOT;
+import static net.arcadiusmc.chimera.parse.Token.DOUBLECOLON;
 import static net.arcadiusmc.chimera.parse.Token.ELLIPSES;
 import static net.arcadiusmc.chimera.parse.Token.EQUALS;
 import static net.arcadiusmc.chimera.parse.Token.EQUAL_TO;
@@ -98,6 +99,7 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoElementExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
@@ -486,10 +488,25 @@ public class ChimeraParser {
       case COLON -> {
         return pseudoClass();
       }
+      case DOUBLECOLON -> {
+        return pseudoElement();
+      }
       default -> {
         return null;
       }
     }
+  }
+
+  PseudoElementExpr pseudoElement() {
+    Token start = expect(DOUBLECOLON);
+    PseudoElementExpr expr = new PseudoElementExpr();
+    expr.setStart(start.location());
+
+    Identifier name = id();
+    expr.setName(name);
+    expr.setEnd(name.getEnd());
+
+    return expr;
   }
 
   AttributeExpr attributeExpr() {

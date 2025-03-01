@@ -59,6 +59,7 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoElementExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
@@ -346,6 +347,11 @@ public class Interpreter implements NodeVisitor<Object> {
 
   @Override
   public Object selectorNested(NestedSelector selector) {
+    throw doNotCall();
+  }
+
+  @Override
+  public Object selectorPseudoElement(PseudoElementExpr selector) {
     throw doNotCall();
   }
 

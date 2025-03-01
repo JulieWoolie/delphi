@@ -247,11 +247,21 @@ public class TokenStream {
 
       case ';' -> singleChar(Token.SEMICOLON);
       case ',' -> singleChar(Token.COMMA);
-      case ':' -> singleChar(Token.COLON);
       case '%' -> singleChar(Token.PERCENT);
       case '/' -> singleChar(Token.SLASH);
       case '+' -> singleChar(Token.PLUS);
       case '&' -> singleChar(Token.AMPERSAND);
+
+      case ':' -> {
+        advance();
+
+        if (currentChar == ':') {
+          advance();
+          yield token(Token.DOUBLECOLON);
+        }
+
+        yield token(Token.COLON);
+      }
 
       case '@' -> {
         advance();

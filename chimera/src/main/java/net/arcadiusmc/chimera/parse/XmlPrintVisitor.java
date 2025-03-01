@@ -39,6 +39,7 @@ import net.arcadiusmc.chimera.parse.ast.SelectorExpression.IdExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.MatchAllExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.NestedSelector;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoClassExpr;
+import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoElementExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.PseudoFunctionExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorExpression.TagNameExpr;
 import net.arcadiusmc.chimera.parse.ast.SelectorListStatement;
@@ -428,6 +429,12 @@ public class XmlPrintVisitor implements NodeVisitor<Void> {
     enterTag("selector-nested", selector);
     selector.getSelector().visit(this);
     exitTag("selector-nested");
+    return null;
+  }
+
+  @Override
+  public Void selectorPseudoElement(PseudoElementExpr selector) {
+    voidTag("selector-pseudo-element", selector, Map.of("name", selector.getName().getValue()));
     return null;
   }
 

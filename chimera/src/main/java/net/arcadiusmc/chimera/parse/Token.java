@@ -33,7 +33,8 @@ public record Token(
   public static final int BRACKET_CLOSE = BRACKET_OPEN + 1;
 
   public static final int COLON         = BRACKET_CLOSE + 1;
-  public static final int SEMICOLON     = COLON + 1;
+  public static final int DOUBLECOLON   = COLON + 1;
+  public static final int SEMICOLON     = DOUBLECOLON + 1;
   public static final int DOLLAR_SIGN   = SEMICOLON + 1;
   public static final int DOT           = DOLLAR_SIGN + 1;
   public static final int HASHTAG       = DOT + 1;
@@ -119,6 +120,7 @@ public record Token(
       case AT_INCLUDE -> "'@include'";
 
       case COLON -> "':'";
+      case DOUBLECOLON -> "'::'";
       case SEMICOLON -> "';'";
       case DOLLAR_SIGN -> "'$'";
       case DOT -> "'.'";

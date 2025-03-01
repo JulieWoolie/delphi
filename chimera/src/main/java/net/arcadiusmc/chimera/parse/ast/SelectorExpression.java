@@ -13,6 +13,8 @@ import net.arcadiusmc.chimera.selector.IdSelector;
 import net.arcadiusmc.chimera.selector.IndexSelector;
 import net.arcadiusmc.chimera.selector.PseudoClass;
 import net.arcadiusmc.chimera.selector.PseudoClassSelector;
+import net.arcadiusmc.chimera.selector.PseudoElement;
+import net.arcadiusmc.chimera.selector.PseudoElementSelector;
 import net.arcadiusmc.chimera.selector.PseudoFuncSelector;
 import net.arcadiusmc.chimera.selector.PseudoFunctions;
 import net.arcadiusmc.chimera.selector.Selector;
@@ -288,6 +290,34 @@ public abstract class SelectorExpression extends Node {
     @Override
     public <R> R visit(NodeVisitor<R> visitor) {
       return visitor.selectorNested(this);
+    }
+  }
+
+  @Getter @Setter
+  public static class PseudoElementExpr extends SelectorExpression {
+
+    private Identifier name;
+
+    @Override
+    public Selector compile(CompilerErrors errors) {
+      PseudoElement element;
+      switch (name.getValue()) {
+        case "placeholder" -> {
+          element = PseudoElement.PLACEHOLDER;
+        }
+
+        default -> {
+          errors.error(getStart(), "Unknown/unsupported pseudo element");
+          element = PseudoElement.PLACEHOLDER;
+        }
+      }
+
+      return new PseudoElementSelector(element);
+    }
+
+    @Override
+    public <R> R visit(NodeVisitor<R> visitor) {
+      return visitor.selectorPseudoElement(this);
     }
   }
 }
