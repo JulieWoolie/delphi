@@ -425,7 +425,7 @@ public class DelphiCommand {
       case ERR_NO_FILE -> NO_FILE.create();
       case ERR_ACCESS_DENIED -> ACCESS_DENIED.create();
       case ERR_IO_ERROR -> IO_ERROR.create();
-      case ERR_MODULE_ERROR -> MODULE_ERROR.create();
+      case ERR_MODULE_ERROR -> MODULE_ERROR.create(exc.getBaseMessage());
       case ERR_SAX_PARSER_INIT -> SAX_PARSER.create();
       case ERR_DOC_PARSE -> DOC_PARSE.create();
       case ERR_MISSING_PLUGINS -> MISSING_PLUGINS.create(exc.getBaseMessage());
