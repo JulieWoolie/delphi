@@ -124,10 +124,17 @@ public interface Attributes {
   /**
    * Type attribute.
    * <p>
-   * Used on {@link ComponentElement}s to specify what syntax to use when loading component data.
+   * Used in multiple places:
+   * <ul>
+   *   <li>On {@link ComponentElement}s to specify what syntax to use when loading component data.</li>
+   *   <li>On {@link InputElement}s to specify what type of input they accept</li>
+   * </ul>
    */
   String TYPE = "type";
 
+  /**
+   * Used to specify the placeholder on an {@link InputElement}
+   */
   String PLACEHOLDER = "placeholder";
 
   /**

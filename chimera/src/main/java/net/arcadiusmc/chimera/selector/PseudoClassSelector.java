@@ -2,9 +2,10 @@ package net.arcadiusmc.chimera.selector;
 
 import com.google.common.base.Strings;
 import net.arcadiusmc.dom.Attributes;
+import net.arcadiusmc.dom.ButtonElement;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.InputElement;
 import net.arcadiusmc.dom.NodeFlag;
-import net.arcadiusmc.dom.TagNames;
 import net.kyori.adventure.util.TriState;
 
 public record PseudoClassSelector(PseudoClass pseudo) implements Selector {
@@ -50,7 +51,9 @@ public record PseudoClassSelector(PseudoClass pseudo) implements Selector {
   }
 
   private TriState buttonEnabled(Element element) {
-    if (!element.getTagName().equals(TagNames.BUTTON)) {
+    if (!(element instanceof InputElement)
+        && !(element instanceof ButtonElement)
+    ) {
       return TriState.NOT_SET;
     }
 

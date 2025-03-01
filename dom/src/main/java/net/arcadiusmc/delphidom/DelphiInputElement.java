@@ -22,9 +22,58 @@ public class DelphiInputElement extends DelphiElement implements InputElement {
     return false;
   }
 
+  @Override
+  public boolean isDisabled() {
+    return !Attributes.boolAttribute(getAttribute(Attributes.ENABLED), true);
+  }
+
+  @Override
+  public void setDisabled(boolean disabled) {
+    if (!disabled) {
+      setAttribute(Attributes.ENABLED, null);
+      return;
+    }
+
+    setAttribute(Attributes.ENABLED, "false");
+  }
+
+  @Override
+  public void setType(@Nullable InputType type) {
+    if (type == null) {
+      setAttribute(Attributes.TYPE, null);
+      return;
+    }
+
+    setAttribute(Attributes.TYPE, type.getKeyword());
+  }
+
+  @Override
+  public @NotNull InputType getType() {
+    String typeAttr = getAttribute(Attributes.TYPE);
+    if (Strings.isNullOrEmpty(typeAttr)) {
+      return InputType.TEXT;
+    }
+
+    String lower = typeAttr.toLowerCase();
+    for (InputType inputType : InputType.values()) {
+      if (!Objects.equals(inputType.getKeyword(), lower)) {
+        continue;
+      }
+
+      return inputType;
+    }
+
+    return InputType.TEXT;
+  }
+
   public String getDisplayText() {
     if (Strings.isNullOrEmpty(value)) {
       return getPlaceholder();
+    }
+
+    InputType type = getType();
+    if (type == InputType.PASSWORD) {
+      return "*".repeat(value.length());
     }
 
     return value;

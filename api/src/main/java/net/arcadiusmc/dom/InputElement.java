@@ -22,6 +22,39 @@ public interface InputElement extends Element {
   boolean canHaveChildren();
 
   /**
+   * Test if the element is disabled.
+   * <p>
+   * This element can be disabled by setting the {@link Attributes#ENABLED}
+   * attribute to {@code false}.
+   *
+   * @return {@code true}, if the element is disabled, {@code false} otherwise
+   */
+  boolean isDisabled();
+
+  /**
+   * Set the {@link Attributes#ENABLED} attribute
+   * @param disabled {@code true} to disable the element,
+   *                 {@code false} otherwise.
+   */
+  void setDisabled(boolean disabled);
+
+  /**
+   * Get the input type from the {@link Attributes#TYPE} attribute.
+   * <p>
+   * If the attribute isn't set or its value does not map to an enum value,
+   * then {@link InputType#TEXT} is returned.
+   *
+   * @return Input type
+   */
+  @NotNull InputType getType();
+
+  /**
+   * Set the input type
+   * @param type Input type, or {@code null}.
+   */
+  void setType(@Nullable InputType type);
+
+  /**
    * Get the inputted value
    * @return Inputted value, may be an empty string or {@code null}
    */
@@ -62,4 +95,41 @@ public interface InputElement extends Element {
    * @param placeholder New placeholder
    */
   void setPlaceholder(@Nullable String placeholder);
+
+  /**
+   * Input element type
+   */
+  enum InputType {
+    /**
+     * Regular text input
+     */
+    TEXT ("text"),
+
+    /**
+     * Password text, when rendered, all characters will be replaced with
+     * the {@code *} character.
+     */
+    PASSWORD ("password"),
+
+    /**
+     * Number input, validated beforehand when entered by a player, however calling the
+     * {@link #setValue(String)} method can skip validation.
+     */
+    NUMBER ("number"),
+    ;
+
+    final String keyword;
+
+    InputType(String keyword) {
+      this.keyword = keyword;
+    }
+
+    /**
+     * Get the keyword used to represent the input type
+     * @return Input type keyword
+     */
+    public String getKeyword() {
+      return keyword;
+    }
+  }
 }
