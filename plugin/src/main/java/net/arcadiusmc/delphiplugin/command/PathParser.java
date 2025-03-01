@@ -272,7 +272,7 @@ public class PathParser<S> implements SuggestionProvider<S> {
 
         List<String> modules = pluginResources.getModules()
             .stream()
-            .filter(m -> m.hidden)
+            .filter(m -> !m.hidden)
             .map(m -> m.name)
             .toList();
 
