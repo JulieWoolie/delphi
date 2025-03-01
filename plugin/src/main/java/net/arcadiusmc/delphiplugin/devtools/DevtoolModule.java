@@ -69,10 +69,10 @@ public class DevtoolModule implements ApiModule {
     final int indentLevels = 25;
 
     for (int i = 1; i <= indentLevels; i++) {
-      int finalI = i;
+      float indentLevel = ((float) i) * 0.5f;
 
       builder.addRule(".indent-" + i + " span:first-of-type", prop -> {
-        prop.setMarginInlineStart(finalI + "ch");
+        prop.setMarginInlineStart(indentLevel + "ch");
       });
     }
 
