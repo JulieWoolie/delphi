@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -271,36 +270,6 @@ public class PluginResources implements DelphiResources {
   }
 
   @Override
-  public List<String> getModuleNames() {
-    List<String> result = new ArrayList<>();
-
-    for (RegisteredModule value : registered.values()) {
-      result.add(value.name);
-    }
-
-    if (!Files.isDirectory(directory)) {
-      return result;
-    }
-
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-      for (Path path : stream) {
-        String fname = path.getFileName().toString();
-
-        if (Files.isDirectory(path)) {
-          result.add(fname);
-        } else if (fname.endsWith(ZIP_EXT)) {
-          String extRemoved = fname.substring(0, fname.length() - ZIP_EXT.length());
-          result.add(extRemoved);
-        }
-      }
-    } catch (IOException e) {
-      LOGGER.error("Error attempting to iterate module directory");
-    }
-
-    return result;
-  }
-
-  @Override
   public boolean unregisterModule(String moduleName) {
     if (Strings.isNullOrEmpty(moduleName)) {
       return false;
@@ -329,8 +298,46 @@ public class PluginResources implements DelphiResources {
     return true;
   }
 
-  public Collection<RegisteredModule> getModules() {
-    return registered.values();
+  @Override
+  public List<String> getModuleNames() {
+    return getModulesNames(true);
+  }
+
+  public List<String> getNonHiddenModuleNames() {
+    return getModulesNames(false);
+  }
+
+  private List<String> getModulesNames(boolean includeHidden) {
+    List<String> result = new ArrayList<>();
+
+    for (RegisteredModule value : registered.values()) {
+      if (value.hidden && !includeHidden) {
+        continue;
+      }
+
+      result.add(value.name);
+    }
+
+    if (!Files.isDirectory(directory)) {
+      return result;
+    }
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+      for (Path path : stream) {
+        String fname = path.getFileName().toString();
+
+        if (Files.isDirectory(path)) {
+          result.add(fname);
+        } else if (fname.endsWith(ZIP_EXT)) {
+          String extRemoved = fname.substring(0, fname.length() - ZIP_EXT.length());
+          result.add(extRemoved);
+        }
+      }
+    } catch (IOException e) {
+      LOGGER.error("Error attempting to iterate module directory");
+    }
+
+    return result;
   }
 
   public static class RegisteredModule {

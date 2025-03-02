@@ -14,10 +14,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.delphi.resource.ResourceModule;
 import net.arcadiusmc.delphi.resource.ResourcePath;
+import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphiplugin.resource.PluginResources;
+import org.slf4j.Logger;
 
 @Getter @Setter
 public class PathParser<S> implements SuggestionProvider<S> {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   static final TranslatableExceptionType EMPTY_MODULE
       = new TranslatableExceptionType("delphi.paths.emptyModule");
@@ -270,12 +274,7 @@ public class PathParser<S> implements SuggestionProvider<S> {
           return builder.buildFuture();
         }
 
-        List<String> modules = pluginResources.getModules()
-            .stream()
-            .filter(m -> !m.hidden)
-            .map(m -> m.name)
-            .toList();
-
+        List<String> modules = pluginResources.getNonHiddenModuleNames();
         return suggest(builder, modules);
       }
       case COLON -> {
