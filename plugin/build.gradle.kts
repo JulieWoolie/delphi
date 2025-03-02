@@ -50,7 +50,7 @@ tasks {
       ))
     }
 
-    filesMatching("plugin.yml") {
+    filesMatching("paper-plugin.yml") {
       expand(mapOf("version" to version))
     }
   }
