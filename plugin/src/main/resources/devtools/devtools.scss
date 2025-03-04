@@ -135,3 +135,22 @@ line {
     background-color: $hover-color;
   }
 }
+
+.docinfo {
+  font-size: 50%;
+  margin-left: 2px;
+  margin-top: 2px;
+}
+.docinfo-property {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.25px;
+}
+.docinfo-value {
+
+}
+.docinfo-field {
+  width: 25%;
+  box-sizing: border-box;
+  bold: true;
+}

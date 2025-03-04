@@ -100,7 +100,7 @@ public class Devtools {
       }
 
       case "docinfo" -> {
-
+        switchTo(Tabs.DOC_INFO);
       }
 
       case null, default -> {
