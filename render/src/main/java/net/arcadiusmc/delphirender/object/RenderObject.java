@@ -70,28 +70,6 @@ public abstract class RenderObject {
     }
   }
 
-  protected void project(Transformation transform) {
-    Vector3f translate = transform.getTranslation();
-    Vector3f scale = transform.getScale();
-
-    Vector2f screenDimScale = screen.getScreenScale();
-    Vector3f screenWorldScale = screen.getScale();
-
-    Quaternionf lrot = screen.getLeftRotation();
-    Quaternionf rrot = screen.getRightRotation();
-
-    translate.x *= screenDimScale.x;
-    translate.y *= screenDimScale.y;
-
-    scale.mul(screenWorldScale);
-
-    lrot.transform(translate);
-    rrot.transform(translate);
-
-    transform.getLeftRotation().mul(lrot);
-    transform.getRightRotation().mul(rrot);
-  }
-
   protected static Transformation newTransform() {
     return new Transformation(
         new Vector3f(0),

@@ -218,6 +218,25 @@ public class Screen implements RenderScreen {
     return true;
   }
 
+  /* --------------------------- Projection --------------------------- */
+
+  @Override
+  public void project(Transformation transform) {
+    Vector3f translate = transform.getTranslation();
+    Vector3f scale = transform.getScale();
+
+    translate.x *= screenScale.x;
+    translate.y *= screenScale.y;
+
+    scale.mul(this.scale);
+
+    this.leftRotation.transform(translate);
+    this.leftRotation.transform(translate);
+
+    transform.getLeftRotation().mul(this.leftRotation);
+    transform.getRightRotation().mul(this.leftRotation);
+  }
+
   /* --------------------------- API impl ---------------------------- */
 
   @Override

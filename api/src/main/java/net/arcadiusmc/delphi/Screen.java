@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphi;
 
+import org.bukkit.util.Transformation;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -148,4 +149,12 @@ public interface Screen {
    * @param out Result destination
    */
   void screenspaceToWorld(Vector2f screenPoint, Vector3f out);
+
+  /**
+   * Transform the specified {@code transformation} so that it is aligned, rotated and scaled to
+   * match the screen.
+   *
+   * @param transformation Input transformation
+   */
+  void project(Transformation transformation);
 }

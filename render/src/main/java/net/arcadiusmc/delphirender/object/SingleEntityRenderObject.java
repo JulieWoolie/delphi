@@ -91,7 +91,7 @@ public abstract class SingleEntityRenderObject<T extends Display> extends Render
     offset.z = depth + zIndexDepth;
 
     configure(entity, trans);
-    project(trans);
+    screen.project(trans);
 
     entity.setTransformation(trans);
   }
