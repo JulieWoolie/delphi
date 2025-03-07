@@ -27,6 +27,7 @@ import net.arcadiusmc.delphirender.object.ElementRenderObject;
 import net.arcadiusmc.delphirender.object.RenderObject;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.Options;
+import net.arcadiusmc.dom.RenderBounds;
 import net.arcadiusmc.dom.event.AttributeAction;
 import net.arcadiusmc.dom.event.AttributeMutateEvent;
 import net.arcadiusmc.dom.event.EventListener;
@@ -509,6 +510,16 @@ public class PageView implements ExtendedView {
 
     drawSelected();
     input.tick();
+  }
+
+  @Override
+  public RenderBounds renderBounds(DelphiNode delphiNode) {
+    RenderObject obj = renderer.getRenderElement(delphiNode);
+    if (obj == null) {
+      return null;
+    }
+
+    return new RenderBoundsImpl(obj.position, obj.size);
   }
 
   @Override

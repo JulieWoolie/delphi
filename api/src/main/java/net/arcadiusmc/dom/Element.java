@@ -17,6 +17,19 @@ import org.jetbrains.annotations.Nullable;
  * <p>
  * Elements are not guaranteed to have children. An element can only support children if
  * {@link #canHaveChildren()} returns {@code true}.
+ *
+ * @see TagNames Tag name constants
+ * @see Attributes Attribute name constants
+ * @see Element
+ * @see HeadElement
+ * @see OptionElement
+ * @see StyleElement
+ * @see JavaObjectElement
+ * @see BodyElement
+ * @see ItemElement
+ * @see ButtonElement
+ * @see ComponentElement
+ * @see InputElement
  */
 public interface Element extends Node, EventTarget, DomQueryable {
 

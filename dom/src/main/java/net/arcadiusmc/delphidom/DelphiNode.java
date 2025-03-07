@@ -5,6 +5,7 @@ import lombok.Getter;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
+import net.arcadiusmc.dom.RenderBounds;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,5 +87,10 @@ public abstract class DelphiNode implements Node {
 
   public void removeFlagRecursive(NodeFlag nodeFlag) {
     removeFlag(nodeFlag);
+  }
+
+  @Override
+  public @Nullable RenderBounds getRenderingBounds() {
+    return document.renderBounds(this);
   }
 }

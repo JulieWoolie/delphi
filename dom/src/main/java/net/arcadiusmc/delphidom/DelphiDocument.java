@@ -31,6 +31,7 @@ import net.arcadiusmc.dom.ItemElement;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.ParserException;
+import net.arcadiusmc.dom.RenderBounds;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;
 import net.arcadiusmc.dom.event.Event;
@@ -377,6 +378,14 @@ public class DelphiDocument implements Document {
     InputEventImpl event = new InputEventImpl(EventTypes.INPUT, this);
     event.initEvent(input, false, false, value, previousValue, player);
     dispatchEvent(event);
+  }
+
+  public RenderBounds renderBounds(DelphiNode delphiNode) {
+    if (view == null) {
+      return null;
+    }
+
+    return view.renderBounds(delphiNode);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package net.arcadiusmc.delphidom;
 
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.dom.RenderBounds;
 import org.bukkit.entity.Entity;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -18,4 +19,6 @@ public interface ExtendedView extends DocumentView {
   Vector3f getCursorWorld();
 
   void handleEntityVisibility(Entity entity);
+
+  RenderBounds renderBounds(DelphiNode delphiNode);
 }

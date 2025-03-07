@@ -10,12 +10,18 @@ import org.jetbrains.annotations.Nullable;
  * A node can be an element, text, component or an item element. Unlike, regular DOM
  * implementations, attributes are <i>not</i> nodes.
  *
+ * @see TextNode
  * @see Document
  * @see Element
+ * @see HeadElement
+ * @see OptionElement
+ * @see StyleElement
+ * @see JavaObjectElement
+ * @see BodyElement
  * @see ItemElement
  * @see ButtonElement
- * @see TextNode
  * @see ComponentElement
+ * @see InputElement
  */
 public interface Node {
 
@@ -70,6 +76,20 @@ public interface Node {
    */
   @Contract("null -> false")
   boolean hasFlag(NodeFlag flag);
+
+  /**
+   * Get the rendering bounds for a node.
+   * <p>
+   * <b>Note</b>: If the node has not been appended to a document, or if the
+   * {@link #getOwningDocument()}'s view has not been spawned, then this will
+   * return {@code null}.
+   * <p>
+   * The returned reference is not updated after it is returned.
+   *
+   * @return Node rendering bounds, or {@code null}, if the document's view
+   *         has not been spawned.
+   */
+  @Nullable RenderBounds getRenderingBounds();
 
   void enterVisitor(Visitor visitor);
 
