@@ -45,6 +45,11 @@ public class BoxRenderObject extends SingleEntityRenderObject<TextDisplay> {
     offset.x -= visualCenterOffset(scale.x);
   }
 
+  /**
+   * <a href="https://juliewoolie.com/delphi/element-rendering/#51-translation">https://juliewoolie.com/delphi/element-rendering/#51-translation</a>
+   * @param scaleX
+   * @return
+   */
   public static float visualCenterOffset(float scaleX) {
     return BLOCK_OFFSET_X * (scaleX / EMPTY_TD_BLOCK_SIZE_X);
   }
