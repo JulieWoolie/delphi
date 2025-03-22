@@ -1,9 +1,9 @@
 package net.arcadiusmc.delphirender.layout;
 
-import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE_X;
-import static net.arcadiusmc.delphidom.Consts.CHAR_PX_SIZE_Y;
-import static net.arcadiusmc.delphidom.Consts.ITEM_SPRITE_SIZE;
-import static net.arcadiusmc.delphidom.Consts.LEN0_PX;
+import static net.arcadiusmc.delphirender.Consts.CHAR_PX_SIZE_X;
+import static net.arcadiusmc.delphirender.Consts.CHAR_PX_SIZE_Y;
+import static net.arcadiusmc.delphirender.Consts.ITEM_SPRITE_SIZE;
+import static net.arcadiusmc.delphirender.Consts.LEN0_PX;
 import static net.arcadiusmc.delphirender.FullStyle.UNSET;
 import static net.arcadiusmc.delphirender.FullStyle.toBukkitColor;
 import static net.arcadiusmc.delphirender.FullStyle.toTextColor;
@@ -24,6 +24,7 @@ import net.arcadiusmc.delphirender.object.ItemRenderObject;
 import net.arcadiusmc.delphirender.object.RenderObject;
 import net.arcadiusmc.delphirender.object.TextRenderObject;
 import net.arcadiusmc.dom.style.BoxSizing;
+import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.Primitive;
 import net.arcadiusmc.dom.style.Primitive.Unit;
 import net.kyori.adventure.text.Component;
@@ -339,6 +340,10 @@ public class NLayout {
   }
 
   static LayoutAlgorithm getLayoutAlgo(ElementRenderObject obj) {
+    if (obj.style.display == DisplayType.FLEX) {
+      return Algorithms.FLEX;
+    }
+
     return Algorithms.FLOW;
   }
 }
