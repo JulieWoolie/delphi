@@ -12,7 +12,7 @@ public class DelphiButtonElement extends DelphiElement implements ButtonElement 
 
   @Override
   public boolean isEnabled() {
-    return Attributes.boolAttribute(getAttribute(Attributes.ENABLED), false);
+    return Attributes.boolAttribute(getAttribute(Attributes.ENABLED), true);
   }
 
   @Override
