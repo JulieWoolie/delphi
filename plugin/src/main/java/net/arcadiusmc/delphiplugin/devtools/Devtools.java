@@ -25,12 +25,23 @@ public class Devtools {
 
   private DevToolTab tab;
 
+  private final EventListener rerender;
+  private final EventListener onTargetClose;
+
   public Devtools(DocumentView targetView, Document devtoolsDocument) {
     this.target = targetView;
     this.document = devtoolsDocument;
 
     contentEl = document.getElementById("content");
     Objects.requireNonNull(contentEl, "Null content element");
+
+    this.rerender = event -> {
+      contentEl.clearChildren();
+      tab.onOpen(this);
+    };
+    this.onTargetClose = event -> {
+      document.getView().close();
+    };
 
     registerListeners();
   }
@@ -41,11 +52,12 @@ public class Devtools {
 
     // Closing the window that this devtools is attached to
     // should close the devtools too
-    targetDoc.addEventListener(EventTypes.DOM_CLOSING, event -> {
-      document.getView().close();
-    });
-
+    targetDoc.addEventListener(EventTypes.DOM_CLOSING, onTargetClose);
     document.addEventListener(EventTypes.DOM_CLOSING, event -> onClose());
+
+    g.addEventListener(EventTypes.MODIFY_ATTR, rerender);
+    g.addEventListener(EventTypes.APPEND_CHILD, rerender);
+    g.addEventListener(EventTypes.REMOVE_CHILD, rerender);
 
     Element navbar = document.getElementById("navbar");
     if (navbar != null) {
@@ -72,6 +84,15 @@ public class Devtools {
   }
 
   private void onClose() {
+    Document targetDoc = target.getDocument();
+    EventTarget g = targetDoc.getGlobalTarget();
+
+    g.removeEventListener(EventTypes.MODIFY_ATTR, rerender);
+    g.removeEventListener(EventTypes.APPEND_CHILD, rerender);
+    g.removeEventListener(EventTypes.REMOVE_CHILD, rerender);
+
+    targetDoc.removeEventListener(EventTypes.DOM_CLOSING, onTargetClose);
+
     tab.onClose(this);
   }
 

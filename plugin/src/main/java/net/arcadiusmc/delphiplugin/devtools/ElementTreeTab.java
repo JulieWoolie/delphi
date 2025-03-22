@@ -6,8 +6,12 @@ import java.util.Set;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.InputElement;
 import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.TextNode;
+import net.arcadiusmc.dom.event.EventListener;
+import net.arcadiusmc.dom.event.InputEvent;
+import net.arcadiusmc.dom.event.MouseEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -16,6 +20,7 @@ public class ElementTreeTab implements DevToolTab {
   private static final Logger LOGGER = Loggers.getLogger();
 
   static final String SPAN = "span";
+  static final String INPUT = "input";
 
   @Override
   public void onOpen(Devtools devtools) {
@@ -33,12 +38,23 @@ public class ElementTreeTab implements DevToolTab {
 
   }
 
+  Element createCross(Document document) {
+    Element element = document.createElement(SPAN);
+    element.setTextContent("x");
+    element.setClassName("cross");
+    return element;
+  }
+
   void createElementLines(Node node, Document document, DomBuilder builder) {
     if (node instanceof TextNode txt) {
       String noWhiteSpace = StringUtils.deleteWhitespace(txt.getTextContent());
       if (Strings.isNullOrEmpty(noWhiteSpace)) {
         return;
       }
+
+      Element removeNodeCross = createCross(document);
+      removeNodeCross.onClick(new RemoveNode(node));
+      builder.append(removeNodeCross);
 
       String[] contentArr = txt.getTextContent().split("\\n+");
 
@@ -57,6 +73,10 @@ public class ElementTreeTab implements DevToolTab {
       return;
     }
 
+    Element removeNodeCross = createCross(document);
+    removeNodeCross.onClick(new RemoveNode(node));
+    builder.append(removeNodeCross);
+
     Element element = (Element) node;
 
     String prefix = "<" + element.getTagName();
@@ -68,14 +88,16 @@ public class ElementTreeTab implements DevToolTab {
     Set<Entry<String, String>> attrs = element.getAttributeEntries();
 
     for (Entry<String, String> attr : attrs) {
-      Element attrName = document.createElement(SPAN);
+      InputElement attrName = (InputElement) document.createElement(INPUT);
       Element attrSep = document.createElement(SPAN);
-      Element attrValue = document.createElement(SPAN);
+      InputElement attrValue = (InputElement) document.createElement(INPUT);
       Element attrSuffix = document.createElement(SPAN);
 
-      attrName.setTextContent(attr.getKey());
+      String attrKey = attr.getKey();
+
+      attrName.setValue(attrKey);
       attrSep.setTextContent("=\"");
-      attrValue.setTextContent(attr.getValue());
+      attrValue.setValue(attr.getValue());
       attrSuffix.setTextContent("\"");
 
       attrName.setClassName("xml-attr-name");
@@ -83,7 +105,14 @@ public class ElementTreeTab implements DevToolTab {
       attrValue.setClassName("xml-attr-value");
       attrSuffix.setClassName("xml-attr-sep");
 
+      attrName.onInput(new RenameAttr(element, attrKey));
+      attrValue.onInput(new ChangeAttrValue(element, attrKey));
+
+      Element removeAttrCross = createCross(document);
+      removeAttrCross.onClick(new RemoveAttr(element, attrKey));
+
       builder.append(attrName);
+      builder.append(removeAttrCross);
       builder.append(attrSep);
       builder.append(attrValue);
       builder.append(attrSuffix);
@@ -168,6 +197,51 @@ public class ElementTreeTab implements DevToolTab {
     }
 
     return desc;
+  }
+
+  record RemoveNode(Node node) implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      Element parent = node.getParent();
+      if (parent == null) {
+        return;
+      }
+
+      parent.removeChild(node);
+    }
+  }
+
+  record ChangeAttrValue(Element el, String attrName) implements EventListener.Typed<InputEvent> {
+
+    @Override
+    public void handleEvent(InputEvent event) {
+      String newValue = Strings.nullToEmpty(event.getNewValue());
+      el.setAttribute(attrName, newValue);
+    }
+  }
+
+  record RenameAttr(Element el, String attrName) implements EventListener.Typed<InputEvent> {
+
+    @Override
+    public void handleEvent(InputEvent event) {
+      String newName = event.getNewValue();
+      String value = el.removeAttribute(attrName);
+
+      if (Strings.isNullOrEmpty(newName)) {
+        return;
+      }
+
+      el.setAttribute(newName, value);
+    }
+  }
+
+  record RemoveAttr(Element el, String attrName) implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      el.removeAttribute(attrName);
+    }
   }
 
   class DomBuilder {

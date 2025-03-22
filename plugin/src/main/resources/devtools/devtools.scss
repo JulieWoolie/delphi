@@ -32,6 +32,19 @@ body {
   font-size: 50%;
 }
 
+input {
+  display: inline;
+  width: auto;
+  outline: unset;
+  outline-color: unset;
+  padding: unset;
+  background-color: unset;
+}
+
+.cross {
+  color: darkred;
+}
+
 navlink {
   border-right: 1px;
   border-bottom: 1px;
