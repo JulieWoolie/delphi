@@ -8,6 +8,7 @@ import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphiplugin.PageInputSystem;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
@@ -50,6 +51,11 @@ public class Devtools {
     if (navbar != null) {
       EventListener.Typed<MouseEvent> listener = this::onNavbarClick;
       navbar.addEventListener(EventTypes.CLICK, listener);
+
+      Element domNav = navbar.querySelector("[nav=\"dom\"]");
+      if (domNav != null) {
+        domNav.setAttribute("active", "true");
+      }
     }
   }
 
@@ -89,6 +95,7 @@ public class Devtools {
 
       case "dom" -> {
         switchTo(Tabs.INSPECT_ELEMENT);
+        setActive(target);
       }
 
       case "styles" -> {
@@ -101,10 +108,26 @@ public class Devtools {
 
       case "docinfo" -> {
         switchTo(Tabs.DOC_INFO);
+        setActive(target);
       }
 
       case null, default -> {
         // No op
+      }
+    }
+  }
+
+  private void setActive(Element el) {
+    Element parent = el.getParent();
+    for (Node child : parent.getChildren()) {
+      if (!(child instanceof Element element)) {
+        continue;
+      }
+
+      if (Objects.equals(el, element)) {
+        element.setAttribute("active", "true");
+      } else {
+        element.setAttribute("active", null);
       }
     }
   }
