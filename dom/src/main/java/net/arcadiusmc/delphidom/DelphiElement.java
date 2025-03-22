@@ -118,8 +118,15 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   }
 
   @Override
-  public void removeAttribute(String attributeName) {
+  public String removeAttribute(String attributeName) {
+    if (Strings.isNullOrEmpty(attributeName)) {
+      throw new NullPointerException("Null/empty attribute name");
+    }
+
+    String value = getAttribute(attributeName);
     setAttribute(attributeName, null);
+
+    return value;
   }
 
   @Override

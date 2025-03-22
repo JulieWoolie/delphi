@@ -86,10 +86,12 @@ public interface Element extends Node, EventTarget, DomQueryable {
    * after the attribute is removed
    *
    * @param attributeName Attribute name
+   * @return The attribute's value before being removed
    *
    * @throws NullPointerException if {@code attributeName} is {@code null} or empty
    */
-  void removeAttribute(String attributeName);
+  @Nullable
+  String removeAttribute(String attributeName);
 
   /**
    * Get a set of attribute keys that exist on this element.
