@@ -75,12 +75,16 @@ obf, obfuscated {
 
 div {
   display: block;
+  box-sizing: border-box;
+  width: 100%;
 }
 span {
   display: inline;
 }
 p {
   display: block;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* New line tag */
