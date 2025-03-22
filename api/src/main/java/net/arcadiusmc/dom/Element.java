@@ -77,6 +77,21 @@ public interface Element extends Node, EventTarget, DomQueryable {
   void setAttribute(@NotNull String key, @Nullable String value);
 
   /**
+   * Remove an attribute.
+   * <p>
+   * If the specified attribute isn't set for this attribute, nothing will
+   * change.
+   * <br>
+   * Otherwise, an {@link EventTypes#MODIFY_ATTR} event will be triggered
+   * after the attribute is removed
+   *
+   * @param attributeName Attribute name
+   *
+   * @throws NullPointerException if {@code attributeName} is {@code null} or empty
+   */
+  void removeAttribute(String attributeName);
+
+  /**
    * Get a set of attribute keys that exist on this element.
    * @return Unmodifiable key set
    */

@@ -118,6 +118,11 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   }
 
   @Override
+  public void removeAttribute(String attributeName) {
+    setAttribute(attributeName, null);
+  }
+
+  @Override
   public Set<String> getAttributeNames() {
     return Collections.unmodifiableSet(attributes.keySet());
   }
