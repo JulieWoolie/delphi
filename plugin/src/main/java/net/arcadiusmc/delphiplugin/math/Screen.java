@@ -222,19 +222,29 @@ public class Screen implements RenderScreen {
 
   @Override
   public void project(Transformation transform) {
+    project(this, transform);
+  }
+
+  protected void project(Screen screen, Transformation transform) {
     Vector3f translate = transform.getTranslation();
     Vector3f scale = transform.getScale();
 
-    translate.x *= screenScale.x;
-    translate.y *= screenScale.y;
+    Vector2f screenDimScale = screen.getScreenScale();
+    Vector3f screenWorldScale = screen.getScale();
 
-    scale.mul(this.scale);
+    Quaternionf lrot = screen.getLeftRotation();
+    Quaternionf rrot = screen.getRightRotation();
 
-    this.leftRotation.transform(translate);
-    this.leftRotation.transform(translate);
+    translate.x *= screenDimScale.x;
+    translate.y *= screenDimScale.y;
 
-    transform.getLeftRotation().mul(this.leftRotation);
-    transform.getRightRotation().mul(this.leftRotation);
+    scale.mul(screenWorldScale);
+
+    lrot.transform(translate);
+    rrot.transform(translate);
+
+    transform.getLeftRotation().mul(lrot);
+    transform.getRightRotation().mul(rrot);
   }
 
   /* --------------------------- API impl ---------------------------- */
