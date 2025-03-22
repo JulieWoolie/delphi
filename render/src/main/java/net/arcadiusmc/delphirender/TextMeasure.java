@@ -2,12 +2,16 @@ package net.arcadiusmc.delphirender;
 
 import it.unimi.dsi.fastutil.floats.FloatArrays;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.kyori.adventure.text.flattener.FlattenerListener;
 import net.kyori.adventure.text.format.Style;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 
 public abstract class TextMeasure implements FlattenerListener {
+
+  protected static final Pattern COLOR_CODE_PATTERN = Pattern.compile("§(([0-9a-bA-Br])|(#[a-zA-Z0-9r]{6}))");
 
   protected Style style = Style.empty();
   private Stack<Style> styleStack = new Stack<>();
@@ -21,6 +25,18 @@ public abstract class TextMeasure implements FlattenerListener {
   protected float[] lineWidths = new float[1];
   protected float[] lineHeights = new float[1];
   protected float[] lineDescenders = new float[1];
+
+  protected static String removeColorCodes(String text) {
+    StringBuilder buf = new StringBuilder();
+    Matcher matcher = COLOR_CODE_PATTERN.matcher(text);
+
+    while (matcher.find()) {
+      matcher.appendReplacement(buf, "");
+    }
+    matcher.appendTail(buf);
+
+    return buf.toString();
+  }
 
   public void outputSize(Vector2f out) {
     if (lineChars > 0) {

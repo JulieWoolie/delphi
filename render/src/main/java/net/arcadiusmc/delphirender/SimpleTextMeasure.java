@@ -29,6 +29,8 @@ public class SimpleTextMeasure extends TextMeasure {
 
   @Override
   public void component(@NotNull String text) {
+    text = removeColorCodes(text);
+
     for (int i = 0; i < text.length(); i++) {
       char ch = text.charAt(i);
 

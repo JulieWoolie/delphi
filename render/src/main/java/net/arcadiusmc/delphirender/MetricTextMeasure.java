@@ -16,6 +16,8 @@ public class MetricTextMeasure extends TextMeasure {
   public void component(@NotNull String text) {
     int idx = 0;
 
+    text = removeColorCodes(text);
+
     while (idx < text.length()) {
       boolean foundMatchingChar = metrics.measureNextChar(text, style, idx, output);
 
