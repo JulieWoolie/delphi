@@ -90,15 +90,7 @@ public class NLayout {
     style.visibility = styleSet.visibility;
   }
 
-  private static boolean measureElement(ElementRenderObject ro, MeasureContext ctx, Vector2f out) {
-    ComputedStyleSet comp = ro.computedStyleSet;
-    FullStyle style = ro.style;
-
-    applyBasicStyle(style, comp);
-
-    Vector2f preSize = new Vector2f();
-    preSize.set(ro.size);
-
+  private static void applyComplexStyle(FullStyle style, ComputedStyleSet comp, MeasureContext ctx) {
     style.size.x = resolve(comp.width, ctx, 0f, X);
     style.size.y = resolve(comp.height, ctx, 0f, Y);
 
@@ -131,6 +123,17 @@ public class NLayout {
 
     style.marginInlineStart = resolve(comp.marginInlineStart, ctx, 0, X);
     style.marginInlineEnd = resolve(comp.marginInlineEnd, ctx, 0, X);
+  }
+
+  private static boolean measureElement(ElementRenderObject ro, MeasureContext ctx, Vector2f out) {
+    ComputedStyleSet comp = ro.computedStyleSet;
+    FullStyle style = ro.style;
+
+    applyBasicStyle(style, comp);
+    applyComplexStyle(style, comp, ctx);
+
+    Vector2f preSize = new Vector2f();
+    preSize.set(ro.size);
 
     Vector2f childObjectsSize = new Vector2f(0);
     LayoutAlgorithm lStyle = getLayoutAlgo(ro);
@@ -206,11 +209,7 @@ public class NLayout {
     }
   }
 
-  public static void measureText(
-      TextRenderObject obj,
-      Component text,
-      Vector2f out
-  ) {
+  public static void measureText(TextRenderObject obj, Component text, Vector2f out) {
     TextMeasure measure;
     FontMeasureCallback metrics = obj.system.getFontMetrics();
 
