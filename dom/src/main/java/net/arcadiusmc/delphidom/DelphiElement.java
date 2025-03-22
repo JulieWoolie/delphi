@@ -17,6 +17,7 @@ import lombok.Getter;
 import net.arcadiusmc.chimera.StringUtil;
 import net.arcadiusmc.chimera.parse.Chimera;
 import net.arcadiusmc.chimera.selector.Selector;
+import net.arcadiusmc.delphidom.event.DelegateTarget;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.dom.Attributes;
@@ -25,14 +26,13 @@ import net.arcadiusmc.dom.Node;
 import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.Visitor;
 import net.arcadiusmc.dom.event.Event;
-import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventPhase;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DelphiElement extends DelphiNode implements Element {
+public class DelphiElement extends DelphiNode implements Element, DelegateTarget {
 
   @Getter
   final String tagName;
@@ -493,16 +493,6 @@ public class DelphiElement extends DelphiNode implements Element {
     }
 
     return null;
-  }
-
-  @Override
-  public void addEventListener(String eventType, EventListener listener) {
-    this.listenerList.addEventListener(eventType, listener);
-  }
-
-  @Override
-  public boolean removeEventListener(String eventType, EventListener listener) {
-    return this.listenerList.removeEventListener(eventType, listener);
   }
 
   @Override

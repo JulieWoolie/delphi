@@ -12,6 +12,7 @@ import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphidom.event.AttributeMutation;
+import net.arcadiusmc.delphidom.event.DelegateTarget;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.InputEventImpl;
@@ -35,8 +36,8 @@ import net.arcadiusmc.dom.RenderBounds;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;
 import net.arcadiusmc.dom.event.Event;
-import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventPhase;
+import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StyleProperties;
 import net.arcadiusmc.dom.style.StylePropertiesReadonly;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class DelphiDocument implements Document {
+public class DelphiDocument implements Document, DelegateTarget {
 
   private static final Logger LOGGER = Loggers.getDocumentLogger();
   public static final ErrorListener ERROR_LISTENER = ErrorListener.logging(LOGGER);
@@ -163,6 +164,11 @@ public class DelphiDocument implements Document {
       system.onViewDetach();
       system.onDetach();
     }
+  }
+
+  @Override
+  public EventTarget getListenerList() {
+    return documentListeners;
   }
 
   @Override
@@ -386,16 +392,6 @@ public class DelphiDocument implements Document {
     }
 
     return view.renderBounds(delphiNode);
-  }
-
-  @Override
-  public void addEventListener(String eventType, EventListener listener) {
-    documentListeners.addEventListener(eventType, listener);
-  }
-
-  @Override
-  public boolean removeEventListener(String eventType, EventListener listener) {
-    return documentListeners.removeEventListener(eventType, listener);
   }
 
   @Override
