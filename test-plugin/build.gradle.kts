@@ -12,5 +12,6 @@ repositories {
 
 dependencies {
   compileOnly(project(":api"))
+  compileOnly("org.apache.logging.log4j:log4j-core:2.19.0")
   implementation(kotlin("stdlib"))
 }
