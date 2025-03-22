@@ -2,6 +2,7 @@ package net.arcadiusmc.delphitest
 
 import net.arcadiusmc.delphi.DelphiProvider
 import net.arcadiusmc.delphi.resource.JarResourceModule
+import net.arcadiusmc.delphitest.console.ConsoleModule
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitTask
 
@@ -12,8 +13,11 @@ class DelphiTestPlugin: JavaPlugin() {
   override fun onEnable() {
     val delphi = DelphiProvider.get()
     val jarMod = JarResourceModule(classLoader, "entity-editor")
+    val consoleMod = ConsoleModule()
+
     jarMod.filePaths = listOf("equipment.xml", "test.xml")
     delphi.resources.registerModule("entity-editor", jarMod)
+    delphi.resources.registerModule("console", consoleMod)
 
     val pl = server.pluginManager
     pl.registerEvents(EntityEditorListener(), this)

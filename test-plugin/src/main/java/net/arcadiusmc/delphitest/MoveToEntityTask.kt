@@ -21,7 +21,7 @@ class MoveToEntityTask(val entity: Entity, val view: DocumentView): Consumer<Buk
       return
     }
 
-    val player = view.player
+    val player = view.players.iterator().next()
 
     entityPos.x = entity.x.toFloat()
     entityPos.y = entity.y.toFloat()
