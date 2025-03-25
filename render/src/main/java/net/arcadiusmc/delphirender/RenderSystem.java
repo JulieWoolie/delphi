@@ -265,10 +265,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       }
 
       triggerRealign();
-
-      if (renderRoot != null) {
-        renderRoot.spawnRecursive();
-      }
+      triggerUpdate();
     } else if (respawn) {
       if (obj instanceof ElementRenderObject er) {
         NLayout.applyBasicStyle(er.style, styleNode.getComputedSet());
