@@ -1,8 +1,9 @@
 package net.arcadiusmc.delphiplugin;
 
 import com.google.common.base.Strings;
-import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ButtonElement;
+import net.arcadiusmc.dom.ButtonElement.ButtonAction;
+import net.arcadiusmc.dom.ButtonElement.ButtonTrigger;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.MouseButton;
@@ -10,23 +11,15 @@ import net.arcadiusmc.dom.event.MouseEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public
 class ButtonClickListener implements EventListener.Typed<MouseEvent> {
 
-  static final String CLOSE = "close";
-  static final String CMD = "cmd:";
-  static final String PLAYER_CMD = "player-cmd:";
-
-  boolean matchesTrigger(String trigger, MouseEvent event) {
-    if (Strings.isNullOrEmpty(trigger)) {
-      return event.getButton() == MouseButton.LEFT;
-    }
-
+  boolean matchesTrigger(@NotNull ButtonTrigger trigger, MouseEvent event) {
     return switch (trigger) {
-      case "left" -> event.getButton() == MouseButton.LEFT;
-      case "right" -> event.getButton() == MouseButton.RIGHT;
-      default -> false;
+      case LEFT_CLICK -> event.getButton() == MouseButton.LEFT;
+      case RIGHT_CLICK -> event.getButton() == MouseButton.RIGHT;
     };
   }
 
@@ -57,39 +50,40 @@ class ButtonClickListener implements EventListener.Typed<MouseEvent> {
       return;
     }
 
-    String action = target.getAttribute(Attributes.BUTTON_ACTION);
-    if (Strings.isNullOrEmpty(action)) {
-      return;
-    }
-
-    String trigger = target.getAttribute(Attributes.ACTION_TRIGGER);
+    ButtonTrigger trigger = target.getTrigger();
     if (!matchesTrigger(trigger, event)) {
       return;
     }
 
-    if (action.equalsIgnoreCase(CLOSE)) {
-      event.stopPropagation();
-      event.preventDefault();
-      event.getDocument().getView().close();
+    ButtonAction action = target.getAction();
+    if (action == null) {
       return;
     }
 
     Player player = event.getPlayer();
 
-    if (action.startsWith(CMD)) {
-      runCommand(player, Bukkit.getConsoleSender(), CMD, action);
-      return;
-    }
-    if (action.startsWith(PLAYER_CMD)) {
-      runCommand(player, player, PLAYER_CMD, action);
+    switch (action.type()) {
+      case CLOSE -> {
+        event.stopPropagation();
+        event.preventDefault();
+        event.getDocument().getView().close();
+      }
+
+      case PLAYER_COMMAND -> {
+        runCommand(player, player, action.command());
+      }
+      case CONSOLE_COMMAND -> {
+        runCommand(player, Bukkit.getConsoleSender(), action.command());
+      }
     }
   }
 
-  private void runCommand(Player player, CommandSender sender, String prefix, String cmd) {
-    String formatted = cmd.substring(prefix.length())
-        .trim()
-        .replace("%player%", player.getName());
+  private void runCommand(Player player, CommandSender sender, String cmd) {
+    if (Strings.isNullOrEmpty(cmd)) {
+      return;
+    }
 
+    String formatted = cmd.replace("%player%", player.getName());
     Bukkit.dispatchCommand(sender, formatted);
   }
 }
