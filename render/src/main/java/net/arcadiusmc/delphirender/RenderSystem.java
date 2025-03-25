@@ -132,6 +132,12 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
   }
 
+  //
+  // Layout updates and render object entity updates should only occur a
+  // maximum of once per tick. This means, all changes made to the DOM tree
+  // in that time are all executed and laid out in a single go.
+  //
+
   private void triggerRealign() {
     layoutTriggered = true;
   }
@@ -144,7 +150,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     return renderElements.get(node);
   }
 
-  public void removeRenderElement(DelphiElement element) {
+  public void removeRenderElement(Node element) {
     RenderObject obj = renderElements.remove(element);
 
     if (obj == null) {
@@ -270,7 +276,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
       if (obj instanceof ElementRenderObject er) {
         NLayout.applyBasicStyle(er.style, styleNode.getComputedSet());
       }
-      obj.spawnRecursive();
+
+      triggerUpdate();
     }
   }
 
