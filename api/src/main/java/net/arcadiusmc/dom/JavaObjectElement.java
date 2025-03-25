@@ -1,5 +1,7 @@
 package net.arcadiusmc.dom;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * The Java Object element in the header allows for java classes to be
  * triggered from the DOM by specifying their class name.
@@ -8,7 +10,8 @@ package net.arcadiusmc.dom;
  * <p>
  *   When the {@link Attributes#CLASS_NAME} attribute is set, a lookup is
  *   made via {@link Class#forName(String, boolean, ClassLoader)} to find
- *   the class.
+ *   the class. The class will be loaded if not already loaded, and the
+ *   Delphi plugin's class loader is used.
  * </p>
  * <p>
  *   If found, then a {@code public static void onDomInitialize(Document)}
@@ -31,13 +34,17 @@ public interface JavaObjectElement extends Element {
    *
    * @return Java Class name
    */
-  String getClassName();
+  @Nullable String getClassName();
 
   /**
    * Get the class named by {@link #getClassName()}.
+   * <p>
+   * If {@link #getClassName()} is not set, or if it doesn't name an existing
+   * class, then this method will return {@code null}.
+   *
    * @return Java class
    */
-  Class<?> getJavaClass();
+  @Nullable Class<?> getJavaClass();
 
   /**
    * Get whether the {@link #getJavaClass()}'s entry point was called. If
