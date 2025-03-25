@@ -509,7 +509,9 @@ public class PageView implements ExtendedView {
     }
 
     drawSelected();
+
     input.tick();
+    renderer.tick();
   }
 
   @Override

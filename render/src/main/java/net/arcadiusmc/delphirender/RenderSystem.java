@@ -57,6 +57,9 @@ public class RenderSystem implements StyleUpdateCallbacks {
   private final Map<DelphiNode, RenderObject> renderElements = new Object2ObjectOpenHashMap<>();
   private ElementRenderObject renderRoot = null;
 
+  private boolean layoutTriggered = false;
+  private boolean updateTriggered = false;
+
   public RenderSystem(ExtendedView view, RenderScreen screen) {
     this.view = view;
     this.screen = screen;
@@ -113,20 +116,28 @@ public class RenderSystem implements StyleUpdateCallbacks {
     entities.clear();
   }
 
-  private void triggerRealign() {
+  public void tick() {
     if (renderRoot == null || !active) {
       return;
     }
 
-    NLayout.layout(renderRoot);
+    if (layoutTriggered) {
+      layoutTriggered = false;
+      NLayout.layout(renderRoot);
+    }
+
+    if (updateTriggered) {
+      updateTriggered = false;
+      renderRoot.spawnRecursive();
+    }
+  }
+
+  private void triggerRealign() {
+    layoutTriggered = true;
   }
 
   private void triggerUpdate() {
-    if (renderRoot == null || !active) {
-      return;
-    }
-
-    renderRoot.spawnRecursive();
+    updateTriggered = true;
   }
 
   public RenderObject getRenderElement(Node node) {

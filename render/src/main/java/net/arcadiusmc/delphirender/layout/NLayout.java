@@ -90,7 +90,7 @@ public class NLayout {
     style.visibility = styleSet.visibility;
   }
 
-  private static void applyComplexStyle(FullStyle style, ComputedStyleSet comp, MeasureContext ctx) {
+  public static void applyComplexStyle(FullStyle style, ComputedStyleSet comp, MeasureContext ctx) {
     style.size.x = resolve(comp.width, ctx, 0f, X);
     style.size.y = resolve(comp.height, ctx, 0f, Y);
 
