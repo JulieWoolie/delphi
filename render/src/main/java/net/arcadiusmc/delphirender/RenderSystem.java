@@ -483,8 +483,13 @@ public class RenderSystem implements StyleUpdateCallbacks {
     public void handleEvent(InputEvent event) {
       DelphiInputElement target = (DelphiInputElement) event.getTarget();
       ElementRenderObject ero = (ElementRenderObject) getRenderElement(target);
-      StringRenderObject sro = ero.onlyChild();
 
+      // Null if ero was removed
+      if (ero == null) {
+        return;
+      }
+
+      StringRenderObject sro = ero.onlyChild();
       String ncontent = target.getDisplayText();
 
       if (Objects.equals(sro.content, ncontent)) {
