@@ -1,7 +1,6 @@
 package net.arcadiusmc.delphiplugin.devtools;
 
 import java.util.stream.Collectors;
-import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.Screen;
 import net.arcadiusmc.delphi.resource.ApiModule;
@@ -10,6 +9,7 @@ import net.arcadiusmc.delphi.resource.IoModule;
 import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphi.resource.ZipModule;
+import net.arcadiusmc.delphiplugin.PageView;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
 import org.bukkit.entity.Player;
@@ -19,7 +19,7 @@ public class DocInfoTab implements DevToolTab {
   @Override
   public void onOpen(Devtools devtools) {
     Document d = devtools.getDocument();
-    DocumentView view = devtools.getTarget();
+    PageView view = (PageView) devtools.getTarget();
 
     Element el = d.createElement("div");
     el.setClassName("docinfo");
@@ -54,6 +54,8 @@ public class DocInfoTab implements DevToolTab {
     el.appendChild(createField(d, "Module Type", moduleType));
     el.appendChild(createField(d, "Screen Height", screen.getHeight()));
     el.appendChild(createField(d, "Screen Width", screen.getWidth()));
+    el.appendChild(createField(d, "Render Objects", view.getRenderer().getRenderElements().size()));
+    el.appendChild(createField(d, "Entities", view.getRenderer().getEntities().size()));
 
     devtools.getContentEl().appendChild(el);
   }
