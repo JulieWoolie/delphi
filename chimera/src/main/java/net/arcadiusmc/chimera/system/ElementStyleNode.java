@@ -155,6 +155,7 @@ public class ElementStyleNode extends StyleNode {
     }
     if (Strings.isNullOrEmpty(inline)) {
       inlineStyleSet.clear();
+      return;
     }
 
     ChimeraParser parser = new ChimeraParser(inline);
