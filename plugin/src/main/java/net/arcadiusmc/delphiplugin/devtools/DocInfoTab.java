@@ -47,14 +47,16 @@ public class DocInfoTab implements DevToolTab {
       case null -> "unknown";
     };
 
+    int renderObjects = view.getRenderer().getRenderElements().size();
+
     el.appendChild(createField(d, "Players", playerListType));
-//    el.appendChild(createField(d, "Render Objects", 0));
+    el.appendChild(createField(d, "Instance Name", view.getInstanceName()));
     el.appendChild(createField(d, "Module Name", resources.getModuleName()));
     el.appendChild(createField(d, "Resource Path", view.getPath()));
     el.appendChild(createField(d, "Module Type", moduleType));
     el.appendChild(createField(d, "Screen Height", screen.getHeight()));
     el.appendChild(createField(d, "Screen Width", screen.getWidth()));
-    el.appendChild(createField(d, "Render Objects", view.getRenderer().getRenderElements().size()));
+    el.appendChild(createField(d, "Render Objects", renderObjects));
     el.appendChild(createField(d, "Entities", view.getRenderer().getEntities().size()));
 
     devtools.getContentEl().appendChild(el);
