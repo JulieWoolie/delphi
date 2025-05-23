@@ -33,6 +33,7 @@ public abstract class TextRenderObject extends SingleEntityRenderObject<TextDisp
   protected void configure(TextDisplay entity, Transformation trans) {
     Component text = text();
     entity.text(text);
+    entity.setLineWidth(Integer.MAX_VALUE);
 
     FullStyle style = getParentStyle();
     if (style != null) {
