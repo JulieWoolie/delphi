@@ -46,6 +46,8 @@ public abstract class SingleEntityRenderObject<T extends Display> extends Render
       entity = spawnEntity(location.getWorld(), location);
       system.addEntity(entity);
       configureEntity(entity);
+    } else {
+      entity.teleport(location);
     }
 
     Transformation trans = newTransform();
