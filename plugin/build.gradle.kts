@@ -2,7 +2,6 @@ import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 
 plugins {
   java
-  id("io.freefair.lombok") version "8.6"
   id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
   id("com.github.johnrengelman.shadow") version "8.1.1"
   kotlin("jvm") version "2.0.0"
@@ -30,7 +29,7 @@ dependencies {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+
 }
 
 tasks {

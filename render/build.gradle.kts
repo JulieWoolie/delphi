@@ -1,6 +1,5 @@
 plugins {
   java
-  id("io.freefair.lombok") version "8.6"
 }
 
 repositories {
