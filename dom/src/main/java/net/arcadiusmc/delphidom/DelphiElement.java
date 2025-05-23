@@ -287,14 +287,23 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
 
     DelphiNode node = children.get(childIndex);
 
+    // Remove the child itself from this element, and then call the
+    // event listener and finally nullify all the child's values
+    //
+    // This is so when the event is called, you can still access
+    // information about siblings, parents and depth, but you can't
+    // find it anymore among its parents children
+    //
+    // This is good, trust me bro
+    //
+    children.remove(childIndex);
+
     document.removingChild(this, node, childIndex);
 
     node.parent = null;
     node.setDepth(0);
     node.siblingIndex = -1;
     node.setAdded(false);
-
-    children.remove(childIndex);
 
     for (int i = childIndex; i < children.size(); i++) {
       DelphiNode el = children.get(i);
