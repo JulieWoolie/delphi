@@ -66,6 +66,9 @@ navlink {
       background-color: red;
     }
   }
+  &[unsupported] {
+    background-color: darkred;
+  }
 }
 
 .add-attr {

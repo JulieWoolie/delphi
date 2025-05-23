@@ -6,9 +6,10 @@
   <body>
     <navbar id="navbar">
       <navlink nav="dom">Elements</navlink>
-      <navlink nav="styles">Styles</navlink>
-      <navlink nav="boxmodel">Box Model</navlink>
-      <navlink nav="docinfo">Doc Info</navlink>
+      <navlink unsupported="true" nav="styles">Styles</navlink>
+      <navlink unsupported="true" nav="boxmodel">Box Model</navlink>
+      <navlink unsupported="true" nav="actions">Actions</navlink>
+      <navlink nav="docinfo">Meta</navlink>
       <navlink nav="close">X</navlink>
     </navbar>
 
