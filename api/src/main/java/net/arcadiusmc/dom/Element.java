@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
  * @see ButtonElement
  * @see ComponentElement
  * @see InputElement
+ * @see ScriptElement
  */
 public interface Element extends Node, EventTarget, DomQueryable {
 

@@ -29,7 +29,7 @@ public class DelphiPlugin extends JavaPlugin {
   public void onEnable() {
     this.metrics = new FontMetrics(this);
     this.viewManager = new ViewManager(this);
-    this.pluginResources = new PluginResources(getDataPath().resolve("modules"));
+    this.pluginResources = new PluginResources(this);
     this.manager = new DelphiImpl(this, pluginResources, viewManager);
 
     viewManager.startTicking();
@@ -90,5 +90,9 @@ public class DelphiPlugin extends JavaPlugin {
 
   public Path getJarPath() {
     return getFile().toPath();
+  }
+
+  public Path getInternalDataPath() {
+    return getDataPath().resolve("data");
   }
 }

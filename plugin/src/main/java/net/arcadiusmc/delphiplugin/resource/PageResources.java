@@ -47,6 +47,7 @@ import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.style.Stylesheet;
 import net.arcadiusmc.dom.style.StylesheetBuilder;
+import net.arcadiusmc.hephaestus.ScriptElementSystem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -82,7 +83,8 @@ public class PageResources implements ViewResources {
     this.module = module;
   }
 
-  public Result<ResourcePath, DelphiException> resourcePath(String uri) {
+  @Override
+  public Result<ResourcePath, DelphiException> resolve(String uri) {
     ResourcePath path;
 
     try {
@@ -103,24 +105,30 @@ public class PageResources implements ViewResources {
   }
 
   @Override
-  public Result<ItemStack, DelphiException> loadItemStack(String uri) {
-    return resourcePath(uri).flatMap(this::loadItemStack);
+  public Result<StringBuffer, DelphiException> loadBuffer(String uri) {
+    return resolve(uri).flatMap(this::loadBuffer);
   }
 
-  private Result<ItemStack, DelphiException> loadItemStack(ResourcePath path) {
-    if (module instanceof ApiModule) {
+  private Result<StringBuffer, DelphiException> loadBuffer(ResourcePath path) {
+    if (!(module instanceof IoModule io)) {
       return Result.err(new DelphiException(ERR_API_MODULE));
     }
 
-    StringBuffer buf;
-
     try {
-      buf = ((IoModule) module).loadString(path);
+      StringBuffer buff = io.loadString(path);
+      return Result.ok(buff);
     } catch (IOException exc) {
       return Result.ioError(exc);
     }
+  }
 
-    return parseItemStack(buf.toString());
+  @Override
+  public Result<ItemStack, DelphiException> loadItemStack(String uri) {
+    return resolve(uri).flatMap(this::loadItemStack);
+  }
+
+  private Result<ItemStack, DelphiException> loadItemStack(ResourcePath path) {
+    return loadBuffer(path).flatMap(buf -> parseItemStack(buf.toString()));
   }
 
   @Override
@@ -160,7 +168,7 @@ public class PageResources implements ViewResources {
 
   @Override
   public Result<Document, DelphiException> loadDocument(String uri) {
-    return resourcePath(uri)
+    return resolve(uri)
         .flatMap(path -> loadDocument(path, uri))
         .map(delphiDocument -> delphiDocument);
   }
@@ -231,7 +239,7 @@ public class PageResources implements ViewResources {
 
     DelphiSaxParser handler = new DelphiSaxParser();
     handler.setListener(DelphiDocument.ERROR_LISTENER);
-    handler.setCallbacks(new SaxCallbacks());
+    handler.setCallbacks(new SaxCallbacks(pluginResources));
     handler.setView(view);
 
     try {
@@ -258,24 +266,11 @@ public class PageResources implements ViewResources {
 
   @Override
   public Result<Stylesheet, DelphiException> loadStylesheet(String uri) {
-    return resourcePath(uri).flatMap(this::loadStylesheet);
+    return resolve(uri).flatMap(this::loadStylesheet);
   }
 
   public Result<Stylesheet, DelphiException> loadStylesheet(ResourcePath path) {
-    if (module instanceof ApiModule) {
-      return Result.err(new DelphiException(ERR_API_MODULE));
-    }
-
-    IoModule io = (IoModule) module;
-    StringBuffer buf;
-
-    try {
-      buf = io.loadString(path);
-    } catch (IOException exc) {
-      return Result.ioError(exc);
-    }
-
-    return Result.ok(Chimera.parseSheet(buf, path.toString()));
+    return loadBuffer(path).map(buf -> Chimera.parseSheet(buf, path.toString()));
   }
 
   @Override
@@ -283,27 +278,14 @@ public class PageResources implements ViewResources {
       @NotNull String uri,
       @Nullable ComponentFormat format
   ) {
-    return resourcePath(uri).flatMap(p -> loadComponent(p, format));
+    return resolve(uri).flatMap(p -> loadComponent(p, format));
   }
 
   public Result<Component, DelphiException> loadComponent(
       @NotNull ResourcePath path,
       @Nullable ComponentFormat format
   ) {
-    if (module instanceof ApiModule) {
-      return Result.err(new DelphiException(ERR_API_MODULE));
-    }
-
-    StringBuffer buf;
-
-    try {
-      buf = ((IoModule) module).loadString(path);
-    } catch (IOException e) {
-      return Result.ioError(e);
-    }
-
-    String s = buf.toString();
-    return parseComponent(s, format);
+    return loadBuffer(path).flatMap(buf -> parseComponent(buf.toString(), format));
   }
 
   @Override
@@ -332,7 +314,13 @@ public class PageResources implements ViewResources {
 
     @Override
     public @NotNull Document newDocument() {
-      return DelphiDocument.createEmpty();
+      DelphiDocument doc = DelphiDocument.createEmpty();
+
+      if (this.resources.pluginResources.isScriptingEnabled()) {
+        doc.addSystem(new ScriptElementSystem());
+      }
+
+      return doc;
     }
 
     @Override

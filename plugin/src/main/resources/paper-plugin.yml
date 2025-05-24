@@ -5,3 +5,4 @@ version: "${version}"
 bootstrapper: "net.arcadiusmc.delphiplugin.DelphiBootstrapper"
 has-open-classloader: true
 load: STARTUP
+loader: net.arcadiusmc.delphiplugin.DelphiLoader

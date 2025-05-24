@@ -38,9 +38,8 @@ public class FontMetrics implements FontMeasureCallback {
 
   public FontMetrics(DelphiPlugin plugin) {
     Path jarFile = plugin.getJarPath();
-    Path dataDir = plugin.getDataPath();
 
-    dataDirectoryPath = dataDir.resolve("data").resolve("fonts");
+    dataDirectoryPath = plugin.getInternalDataPath().resolve("fonts");
     jarResourcePath = null;
 
     initializeJarPath(jarFile);

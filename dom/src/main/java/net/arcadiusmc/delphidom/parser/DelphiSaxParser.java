@@ -126,6 +126,7 @@ public class DelphiSaxParser extends DefaultHandler {
   @Override
   public void startDocument() throws SAXException {
     document = new DelphiDocument();
+    callbacks.onDocumentCreated(document);
 
     if (view != null) {
       document.setView(view);

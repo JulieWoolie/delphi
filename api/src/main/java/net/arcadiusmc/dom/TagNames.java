@@ -86,4 +86,10 @@ public interface TagNames {
    * @see InputElement
    */
   String INPUT = "input";
+
+  /**
+   * Script element
+   * @see ScriptElement
+   */
+  String SCRIPT = "script";
 }

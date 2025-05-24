@@ -4,7 +4,6 @@ plugins {
   java
   id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
   id("com.github.johnrengelman.shadow") version "8.1.1"
-  kotlin("jvm") version "2.0.0"
 }
 
 val minecraftVersion = "1.21.4"
@@ -24,6 +23,7 @@ dependencies {
   implementation(project(":chimera"))
   implementation(project(":api"))
   implementation(project(":render"))
+  implementation(project(":hephaestus"))
 
   paperweight.paperDevBundle("$minecraftVersion-R0.1-SNAPSHOT")
 }

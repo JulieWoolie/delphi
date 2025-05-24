@@ -222,6 +222,7 @@ public class DelphiDocument implements Document, DelegateTarget {
       case TagNames.OPTION -> new DelphiOptionElement(this);
       case TagNames.STYLE -> new DelphiStyleElement(this);
       case TagNames.JAVA_OBJECT -> new DelphiJavaObjectElement(this);
+      case TagNames.SCRIPT -> new DelphiScriptElement(this);
       case TagNames.ROOT -> new DelphiDocumentElement(this);
 
       default -> new DelphiElement(this, tagName);

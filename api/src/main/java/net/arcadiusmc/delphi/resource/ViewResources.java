@@ -36,6 +36,65 @@ public interface ViewResources {
   DocumentView getView();
 
   /**
+   * Parse a URI into a resource path.
+   * <p>
+   * Using the {@code ./} as a path prefix means the path will be relative to the currently
+   * open menu file instead of the module's root.
+   *
+   * <table>
+   *   <caption>Result errors</caption>
+   *   <tr>
+   *     <th>Error code</th>
+   *     <th>Description</th>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code ERR_INVALID_PATH}</td>
+   *     <td>The {@code uri} could not be parsed into a resource path.</td>
+   *   </tr>
+   * </table>
+   *
+   * @param uri URI string
+   * @return A successful result if the URI was parsed, an erroneous result otherwise.
+   */
+  Result<ResourcePath, DelphiException> resolve(String uri);
+
+  /**
+   * Load a string buffer from the {@link #getModule()}.
+   *
+   * <table>
+   *   <caption>Result errors</caption>
+   *   <tr>
+   *     <th>Error code</th>
+   *     <th>Description</th>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code ERR_INVALID_PATH}</td>
+   *     <td>The {@code uri} could not be parsed into a resource path.</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code ERR_API_MODULE}</td>
+   *     <td>If the module is not an {@link IoModule}.</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code ERR_NO_FILE}</td>
+   *     <td>Module threw a {@link NoSuchFileException}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code ERR_ACCESS_DENIED}</td>
+   *     <td>Module threw a {@link AccessDeniedException}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>{@code ERR_IO_ERROR}</td>
+   *     <td>Module threw an {@link IOException}</td>
+   *   </tr>
+   * </table>
+   *
+   * @param uri File path
+   * @return Successful result, if the buffer was loaded, or an erroneous one
+   */
+  Result<StringBuffer, DelphiException> loadBuffer(String uri);
+
+  /**
    * Loads an item stack from a JSON file.
    * <p>
    * Any errors thrown during the method's execution will be caught and returned in the

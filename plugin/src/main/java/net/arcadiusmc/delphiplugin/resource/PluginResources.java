@@ -8,6 +8,9 @@ import static net.arcadiusmc.delphi.resource.DelphiException.ERR_MODULE_ZIP_ACCE
 
 import com.google.common.base.Strings;
 import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import lombok.Getter;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.Rule;
@@ -49,6 +53,7 @@ public class PluginResources implements DelphiResources {
 
   static final String DEVTOOLS_MODULE = "devtools";
   static final String DEFAULT_STYLE = "data/default-style.scss";
+  static final String SCRIPTING_TOGGLE = "scripting.properties";
 
   private static final Logger LOGGER = Loggers.getLogger("DelphiResources");
 
@@ -66,10 +71,50 @@ public class PluginResources implements DelphiResources {
 
   public DelphiPlugin plugin;
 
-  public PluginResources(Path directory) {
-    this.directory = directory;
+  public PluginResources(DelphiPlugin plugin) {
+    this.directory = plugin.getDataPath().resolve("modules");
+    this.plugin = plugin;
+
     ensureDirectoryExists();
     registerDevtools();
+  }
+
+  public boolean isScriptingEnabled() {
+    Path p = plugin.getInternalDataPath().resolve(SCRIPTING_TOGGLE);
+
+    try (BufferedReader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
+      Properties properties = new Properties();
+      properties.load(reader);
+
+      return Boolean.parseBoolean(properties.getProperty("enabled", "false"));
+    } catch (IOException exc) {
+      if (!(exc instanceof FileNotFoundException)) {
+        LOGGER.error("Failed to read scripting toggle", exc);
+      }
+
+      return false;
+    }
+  }
+
+  public void setScriptingAllowed(boolean scriptingAllowed) {
+    Path p = plugin.getInternalDataPath().resolve(SCRIPTING_TOGGLE);
+
+    Properties properties = new Properties(1);
+    properties.setProperty("enabled", String.valueOf(scriptingAllowed));
+
+    try (BufferedWriter writer = Files.newBufferedWriter(p, StandardCharsets.UTF_8)) {
+      properties.store(writer,
+          """
+          This properties file is used to enable/disable scripting support.
+          
+          Please note that scripts are given the same access to the server as plugins and can be 
+          just as powerful.
+          
+          Be careful when enabling scripts!"""
+      );
+    } catch (IOException exc) {
+      LOGGER.error("Failed to write scripting toggle", exc);
+    }
   }
 
   private void registerDevtools() {
