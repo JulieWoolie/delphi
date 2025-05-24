@@ -34,8 +34,13 @@ publishing {
 
   repositories {
     maven {
-      // Define the local directory where you want to publish the artifact
-      url = uri(layout.buildDirectory.dir("maven-repo"))
+      var envVal = System.getenv("ARCADIUSMC_LOCAL_REPO")
+
+      if (envVal == null) {
+        url = uri(layout.buildDirectory.dir("maven-repo"))
+      } else {
+        url = uri(envVal)
+      }
     }
   }
 }
