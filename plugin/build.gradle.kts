@@ -9,7 +9,7 @@ plugins {
 val minecraftVersion = "1.21.4"
 val pluginBaseName = "delphi-papermc"
 
-version = "$minecraftVersion-0.2.0"
+version = "$minecraftVersion-0.3.0"
 
 paperweight.reobfArtifactConfiguration.set(ReobfArtifactConfiguration.MOJANG_PRODUCTION)
 
@@ -45,7 +45,8 @@ tasks {
       expand(mapOf(
         "chimeraVersion" to project(":chimera").version,
         "apiVersion" to project(":api").version,
-        "domVersion" to project(":dom").version
+        "domVersion" to project(":dom").version,
+        "jsVersion" to project(":hephaestus").version
       ))
     }
 
