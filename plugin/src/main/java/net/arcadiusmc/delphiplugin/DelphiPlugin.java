@@ -73,13 +73,21 @@ public class DelphiPlugin extends JavaPlugin {
     String apiVersion = config.getString("api", "UNKNOWN");
     String chimeraVersion = config.getString("chimera", "UNKNOWN");
     String domVersion = config.getString("dom", "UNKNOWN");
+    String jsVersion = config.getString("js", "UNKNOWN");
 
     getSLF4JLogger().info(
-        "Running delphi plugin: version={}, dom-impl-version={} api-version={}, scss-engine-version={}",
+        "Running delphi plugin: "
+            + "version={}, "
+            + "dom-impl-version={}, "
+            + "api-version={}, "
+            + "scss-engine-version={}, "
+            + "js-engine-version={}",
+
         getPluginMeta().getVersion(),
         domVersion,
         apiVersion,
-        chimeraVersion
+        chimeraVersion,
+        jsVersion
     );
   }
 
