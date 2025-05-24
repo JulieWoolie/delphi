@@ -3,13 +3,16 @@ package net.arcadiusmc.delphiplugin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.text.MessageFormat;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.translation.TranslationStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,18 +23,40 @@ public class LocaleLoader {
   static final Set<Locale> LOCALES = Set.of(Locale.ENGLISH);
   static final Key KEY = Key.key("delphi", "messages");
 
-  static void load() {
-    TranslationRegistry registry = TranslationRegistry.create(KEY);
-    registry.defaultLocale(Locale.ENGLISH);
-
-    for (Locale locale : LOCALES) {
-      loadLocale(locale, registry);
+  static void loadFrom(Path pluginDataPath, TranslationStore<Component> store) {
+    Path dataPath = pluginDataPath.resolve("data").resolve("lang");
+    if (!Files.isDirectory(dataPath)) {
+      return;
     }
 
-    GlobalTranslator.translator().addSource(registry);
+    try (var stream = Files.newDirectoryStream(dataPath, "*.properties")) {
+      for (Path path : stream) {
+        String fName = path.getFileName().toString().replace(".properties", "");
+        Locale locale = Locale.forLanguageTag(fName);
+
+        try (InputStream inStream = Files.newInputStream(path)) {
+          loadTranslations(store, inStream, locale);
+        } catch (IOException exc) {
+          LOGGER.error("Failed to read translations from {}:", path, exc);
+        }
+      }
+    } catch (IOException exc) {
+      LOGGER.error("Failed load language from {} directory", dataPath, exc);
+    }
   }
 
-  private static void loadLocale(Locale locale, TranslationRegistry registry) {
+  static void load(Path pluginPath) {
+    TranslationStore<Component> store = TranslationStore.component(KEY);
+    GlobalTranslator.translator().addSource(store);
+
+    for (Locale locale : LOCALES) {
+      loadLocale(locale, store);
+    }
+
+    loadFrom(pluginPath, store);
+  }
+
+  private static void loadLocale(Locale locale, TranslationStore<Component> registry) {
     String filePath = "lang/" + locale.toLanguageTag() + ".properties";
     URL resource = LocaleLoader.class.getClassLoader().getResource(filePath);
 
@@ -40,9 +65,17 @@ public class LocaleLoader {
       return;
     }
 
+    try (InputStream inStream = resource.openStream()) {
+      loadTranslations(registry, inStream, locale);
+    } catch (IOException e) {
+      LOGGER.error("Failed to load locale from {} (language: {})", resource, locale, e);
+    }
+  }
+
+  private static void loadTranslations(TranslationStore<Component> registry, InputStream stream, Locale locale) {
     Properties properties;
 
-    try (InputStream stream = resource.openStream()) {
+    try {
       properties = new Properties();
       properties.load(stream);
     } catch (IOException e) {
@@ -53,17 +86,13 @@ public class LocaleLoader {
     for (Object o : properties.keySet()) {
       String key = String.valueOf(o);
       String value = properties.getProperty(key, "");
+      Component base = MiniMessage.miniMessage().deserialize(value);
 
-      MessageFormat format;
-
-      try {
-        format = new MessageFormat(value);
-      } catch (IllegalArgumentException exc) {
-        LOGGER.error("Malformed translation value {}, in {}:", key, filePath, exc);
-        continue;
+      if (registry.contains(key)) {
+        registry.unregister(key);
       }
 
-      registry.register(key, locale, format);
+      registry.register(key, locale, base);
     }
   }
 }

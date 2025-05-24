@@ -12,7 +12,7 @@ public class DelphiBootstrapper implements PluginBootstrap {
 
   @Override
   public void bootstrap(@NotNull BootstrapContext context) {
-    LocaleLoader.load();
+    LocaleLoader.load(context.getDataDirectory());
 
     context.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
       try {
