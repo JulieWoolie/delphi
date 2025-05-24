@@ -16,4 +16,4 @@ https://github.com/user-attachments/assets/ea3aa794-3255-46eb-abc0-76ae92ab9707
 - `dom` (`delphidom`): The Document Object Model implementation. (Uses `chimera`)
 - `render` (`delphirender`): The layout and rendering engine.
 - `plugin` (`delphiplugin`): The Paper MC plugin.
-- `scripting` (`delphiscript`): Scripting System (TODO)
+- `hephaestus`: JavaScript integration
