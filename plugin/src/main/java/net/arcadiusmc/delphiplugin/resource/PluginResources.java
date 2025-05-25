@@ -64,6 +64,7 @@ public class PluginResources implements DelphiResources {
   private final Map<Path, FileSystemModule> cachedFileModules = new HashMap<>();
 
   private final Path directory;
+  private final Path scriptingProperties;
   private FileSystemProvider zipProvider;
 
   @Getter
@@ -72,17 +73,25 @@ public class PluginResources implements DelphiResources {
   public DelphiPlugin plugin;
 
   public PluginResources(DelphiPlugin plugin) {
-    this.directory = plugin.getDataPath().resolve("modules");
     this.plugin = plugin;
+    this.directory = plugin.getDataPath().resolve("modules");
+    this.scriptingProperties = plugin.getInternalDataPath().resolve("scripting.properties");
 
     ensureDirectoryExists();
+    ensureScriptingPropertiesExists();
     registerDevtools();
   }
 
-  public boolean isScriptingEnabled() {
-    Path p = plugin.getInternalDataPath().resolve(SCRIPTING_TOGGLE);
+  public void ensureScriptingPropertiesExists() {
+    if (Files.exists(scriptingProperties)) {
+      return;
+    }
 
-    try (BufferedReader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
+    setScriptingAllowed(false);
+  }
+
+  public boolean isScriptingEnabled() {
+    try (BufferedReader reader = Files.newBufferedReader(scriptingProperties, StandardCharsets.UTF_8)) {
       Properties properties = new Properties();
       properties.load(reader);
 
@@ -97,12 +106,10 @@ public class PluginResources implements DelphiResources {
   }
 
   public void setScriptingAllowed(boolean scriptingAllowed) {
-    Path p = plugin.getInternalDataPath().resolve(SCRIPTING_TOGGLE);
-
     Properties properties = new Properties(1);
     properties.setProperty("enabled", String.valueOf(scriptingAllowed));
 
-    try (BufferedWriter writer = Files.newBufferedWriter(p, StandardCharsets.UTF_8)) {
+    try (BufferedWriter writer = Files.newBufferedWriter(scriptingProperties, StandardCharsets.UTF_8)) {
       properties.store(writer,
           """
           This properties file is used to enable/disable scripting support.
