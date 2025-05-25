@@ -23,4 +23,9 @@ public class DelphiScriptElement extends DelphiElement implements ScriptElement 
   public ResourcePath getSourcePath() {
     return resourcePath;
   }
+
+  @Override
+  public boolean isDeferred() {
+    return Attributes.boolAttribute(getAttribute(Attributes.DEFER), false);
+  }
 }

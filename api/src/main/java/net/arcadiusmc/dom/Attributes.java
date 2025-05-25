@@ -138,6 +138,12 @@ public interface Attributes {
   String PLACEHOLDER = "placeholder";
 
   /**
+   * Defer attribute for delaying script execution until the DOM has finished loading
+   * @see ScriptElement
+   */
+  String DEFER = "defer";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
