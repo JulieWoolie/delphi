@@ -373,4 +373,30 @@ public interface EventTypes {
    * </table>
    */
   String INPUT = "input";
+
+  /**
+   * Called when a text node's content is changed. This event is fired on the text node's
+   * parent element.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code true}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link Event}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
+   */
+  String CONTENT_CHANGED = "content-changed";
 }

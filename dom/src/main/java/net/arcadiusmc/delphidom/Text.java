@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom;
 
+import java.util.Objects;
 import lombok.Getter;
 import net.arcadiusmc.dom.NodeFlag;
 import net.arcadiusmc.dom.TextNode;
@@ -17,10 +18,14 @@ public class Text extends DelphiNode implements TextNode {
 
   @Override
   public void setTextContent(@Nullable String textContent) {
+    if (Objects.equals(this.textContent, textContent)) {
+      return;
+    }
+
     this.textContent = textContent;
 
     if (hasFlag(NodeFlag.ADDED) && document.getView() != null) {
-      document.getView().contentChanged(this);
+      document.contentChanged(this);
     }
   }
 

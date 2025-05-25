@@ -17,6 +17,7 @@ import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.event.InputEventImpl;
 import net.arcadiusmc.delphidom.event.Mutation;
+import net.arcadiusmc.delphidom.event.TextChange;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
 import net.arcadiusmc.delphidom.system.ComponentElementSystem;
 import net.arcadiusmc.delphidom.system.IdSystem;
@@ -374,6 +375,19 @@ public class DelphiDocument implements Document, DelegateTarget {
     mutation.initEvent(el, false, false, node, idx);
 
     el.dispatchEvent(mutation);
+  }
+
+  public void contentChanged(Text text) {
+    if (view != null) {
+      view.contentChanged(text);
+    }
+
+    DelphiElement parent = text.parent;
+    if (parent != null) {
+      TextChange change = new TextChange(EventTypes.CONTENT_CHANGED, this);
+      change.initEvent(parent, false, false, text);
+      parent.dispatchEvent(change);
+    }
   }
 
   public void valueChanged(
