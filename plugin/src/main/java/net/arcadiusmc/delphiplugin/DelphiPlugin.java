@@ -10,6 +10,7 @@ import net.arcadiusmc.delphiplugin.listeners.PlayerListener;
 import net.arcadiusmc.delphiplugin.listeners.PluginDisableListener;
 import net.arcadiusmc.delphiplugin.resource.FontMetrics;
 import net.arcadiusmc.delphiplugin.resource.PluginResources;
+import net.arcadiusmc.hephaestus.Scripting;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
@@ -37,6 +38,7 @@ public class DelphiPlugin extends JavaPlugin {
     reloadConfig();
     registerEvents();
     Permissions.registerAll();
+    Scripting.scriptingInit();
 
     printVersions();
 
@@ -58,7 +60,7 @@ public class DelphiPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
-
+    Scripting.shutdownScripting();
   }
 
   private void printVersions() {

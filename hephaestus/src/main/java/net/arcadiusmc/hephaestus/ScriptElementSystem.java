@@ -9,6 +9,9 @@ import net.arcadiusmc.delphidom.DelphiScriptElement;
 import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.delphidom.system.ParsedDataElementSystem;
+import net.arcadiusmc.dom.event.Event;
+import net.arcadiusmc.dom.event.EventListener;
+import net.arcadiusmc.dom.event.EventTypes;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Source;
@@ -23,6 +26,9 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   private Context context;
   private Value jsScope;
 
+  private boolean domLoaded = false;
+  private final LoadListener loadListener = new LoadListener();
+
   public ScriptElementSystem() {
     super(DelphiScriptElement.class);
   }
@@ -33,8 +39,11 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
 
     this.context = Scripting.setupContext();
     this.jsScope = context.getBindings(JS_LANGUAGE);
+    this.domLoaded = false;
 
     jsScope.putMember("document", document);
+
+    document.getGlobalTarget().addEventListener(EventTypes.DOM_LOADED, loadListener);
   }
 
   @Override
@@ -46,19 +55,21 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   @Override
   protected void onRemove(DelphiScriptElement delphiScriptElement) {
     super.onRemove(delphiScriptElement);
-
   }
 
   @Override
   public void onDetach() {
-    super.onDetach();
-
     jsScope.removeMember("document");
 
     context.close(true);
 
     context = null;
     jsScope = null;
+    domLoaded = false;
+
+    document.getGlobalTarget().removeEventListener(EventTypes.DOM_LOADED, loadListener);
+
+    super.onDetach();
   }
 
   @Override
@@ -106,6 +117,14 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
       LOGGER.error("Failed to compile JS from {}:", uri, exc);
     } catch (Exception exc) {
       LOGGER.error("JS Evaluation error: ", exc);
+    }
+  }
+
+  class LoadListener implements EventListener {
+
+    @Override
+    public void onEvent(Event event) {
+      domLoaded = true;
     }
   }
 }

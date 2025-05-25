@@ -1,11 +1,9 @@
 package net.arcadiusmc.hephaestus.typemappers;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
-public class EnumTypeMapper<E extends Enum<E>> implements Predicate<Value>, Function<Value, E> {
+public class EnumTypeMapper<E extends Enum<E>> implements TypeMapper<Value, E> {
 
   private final Class<E> type;
   private final E[] values;
@@ -17,7 +15,7 @@ public class EnumTypeMapper<E extends Enum<E>> implements Predicate<Value>, Func
 
   public static <E extends Enum<E>> void addMapper(HostAccess.Builder builder, Class<E> type) {
     EnumTypeMapper<E> mapper = new EnumTypeMapper<>(type);
-    builder.targetTypeMapping(Value.class, type, mapper, mapper);
+    TypeMapper.addTypeMapper(builder, Value.class, type, mapper);
   }
 
   @Override
