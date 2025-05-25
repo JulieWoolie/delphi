@@ -20,6 +20,7 @@ import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
 import net.arcadiusmc.dom.event.MutationEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -64,7 +65,10 @@ public class EventListenerList implements EventTarget {
   }
 
   public void validateEventCall(Event event) {
-    if (!Bukkit.isPrimaryThread()) {
+    Server server = Bukkit.getServer();
+
+    // Ignore the warning, can be true during testing
+    if (server != null && !server.isPrimaryThread()) {
       throw new IllegalStateException("Events may only be dispatched from the main thread");
     }
 
