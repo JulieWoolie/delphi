@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.style.StyleProperties;
@@ -336,6 +337,18 @@ public interface Element extends Node, EventTarget, DomQueryable {
    * @throws IndexOutOfBoundsException If the specified {@code childIndex} is invalid
    */
   void removeChild(int childIndex) throws IndexOutOfBoundsException;
+
+  /**
+   * Remove all child nodes that match the specified {@code filter} predicate.
+   * <p>
+   * Each child that is removed triggers a {@link EventTypes#REMOVE_CHILD} event. And each removed
+   * node will be orphaned after removal.
+   *
+   * @param filter Removal filter
+   *
+   * @throws NullPointerException If {@code filter} is {@code null}
+   */
+  void removeMatchingChildren(@NotNull Predicate<Node> filter);
 
   /**
    * Remove all child elements.

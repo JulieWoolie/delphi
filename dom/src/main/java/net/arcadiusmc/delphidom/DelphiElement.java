@@ -400,14 +400,56 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   }
 
   @Override
-  public void setTextContent(String content) {
-    clearChildren();
+  public void removeMatchingChildren(@NotNull Predicate<Node> predicate) {
+    Objects.requireNonNull(predicate, "Null predicate");
 
-    if (Strings.isNullOrEmpty(content)) {
+    List<DelphiNode> toRemove = new ArrayList<>(children.size());
+    for (int i = 0; i < children.size(); i++) {
+      DelphiNode dnode = children.get(i);
+
+      if (!predicate.test(dnode)) {
+        continue;
+      }
+
+      toRemove.add(dnode);
+    }
+
+    if (toRemove.isEmpty()) {
       return;
     }
 
-    appendText(content);
+    for (int i = 0; i < toRemove.size(); i++) {
+      removeChild(toRemove.get(i));
+    }
+  }
+
+  @Override
+  public void setTextContent(String content) {
+    if (!canHaveChildren()) {
+      return;
+    }
+
+    Text text = null;
+
+    for (int i = 0; i < children.size(); i++) {
+      if (!(children.get(i) instanceof Text txt)) {
+        continue;
+      }
+      text = txt;
+    }
+
+    if (text == null) {
+      clearChildren();
+      appendText(content);
+      return;
+    }
+
+    if (children.size() != 1) {
+      Text finalText = text;
+      removeMatchingChildren(node -> node != finalText);
+    }
+
+    text.setTextContent(content);
   }
 
   @Override
