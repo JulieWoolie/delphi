@@ -67,6 +67,7 @@ public class Scripting {
 
     Context built = ctx
         .option("engine.WarnInterpreterOnly", "false")
+        .option("js.polyglot-builtin", "false")
         .allowCreateProcess(false)
         .allowCreateThread(false)
         .allowEnvironmentAccess(EnvironmentAccess.NONE)
