@@ -12,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Set;
 import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.event.EventListener;
+import net.arcadiusmc.dom.event.EventTypes;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.junit.jupiter.api.Test;
 
 class DelphiElementTest {
@@ -465,5 +468,57 @@ class DelphiElementTest {
     DelphiDocument doc = createDoc();
     DelphiElement body = doc.getBody();
     assertFalse(body.isDescendant(body));
+  }
+
+  @Test
+  void should_reuseTextElement_when_settingTextContent_with_1element() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    Text text = doc.createText("Test");
+    body.appendChild(text);
+
+    body.setTextContent("Test 2");
+
+    assertEquals(body, text.parent);
+    assertEquals(text, body.firstChild());
+  }
+
+  @Test
+  void should_reuseTextElement_when_settingTextContent_with_manyElements() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    Text text = doc.createText("Test");
+    DelphiElement el1 = doc.createElement("div");
+    DelphiElement el2 = doc.createElement("div");
+
+    body.appendChild(el1);
+    body.appendChild(text);
+    body.appendChild(el2);
+
+    body.setTextContent("Test 2");
+
+    assertEquals(body, text.parent);
+    assertEquals(text, body.firstChild());
+    assertEquals(1, body.getChildCount());
+    assertNull(el1.getParent());
+    assertNull(el2.getParent());
+  }
+
+  @Test
+  void should_notChangeTextContent_when_settingToIdenticalContent() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+    final String content = "Test";
+
+    MutableBoolean bool = new MutableBoolean(false);
+    EventListener listener = event -> bool.setTrue();
+
+    body.setTextContent(content);
+    body.addEventListener(EventTypes.CONTENT_CHANGED, listener);
+
+    body.setTextContent(content);
+    assertFalse(bool.getValue());
   }
 }
