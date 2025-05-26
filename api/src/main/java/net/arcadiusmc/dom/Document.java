@@ -1,8 +1,10 @@
 package net.arcadiusmc.dom;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.dom.event.CustomEvent;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTarget;
 import net.arcadiusmc.dom.event.EventTypes;
@@ -182,6 +184,23 @@ public interface Document extends EventTarget, DomQueryable {
    * @return Created component node
    */
   ComponentElement createComponent(@Nullable Component component);
+
+  /**
+   * Create a new custom event.
+   * <p>
+   * Allows for creating and listening to custom event types with custom event properties.
+   * <p>
+   * Before the event can be dispatched, it must be initialized with
+   * {@link CustomEvent#initEvent(Element, boolean, boolean, Map)}.
+   *
+   * @param eventType Event Type
+   *
+   * @return Created event
+   *
+   * @throws NullPointerException If {@code eventType} is {@code null}
+   * @throws IllegalArgumentException If {@code eventType} is an empty string
+   */
+  CustomEvent newCustomEvent(@NotNull String eventType);
 
   /**
    * Gets the last clicked element that's still active.

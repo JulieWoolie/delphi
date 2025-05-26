@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import net.arcadiusmc.chimera.ChimeraSheetBuilder;
 import net.arcadiusmc.chimera.ChimeraStylesheet;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphidom.event.AttributeMutation;
+import net.arcadiusmc.delphidom.event.CustomEventImpl;
 import net.arcadiusmc.delphidom.event.DelegateTarget;
 import net.arcadiusmc.delphidom.event.EventImpl;
 import net.arcadiusmc.delphidom.event.EventListenerList;
@@ -36,6 +38,7 @@ import net.arcadiusmc.dom.ParserException;
 import net.arcadiusmc.dom.RenderBounds;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.AttributeAction;
+import net.arcadiusmc.dom.event.CustomEvent;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventPhase;
 import net.arcadiusmc.dom.event.EventTarget;
@@ -257,6 +260,16 @@ public class DelphiDocument implements Document, DelegateTarget {
     ChatElement n = new ChatElement(this);
     n.setContent(component);
     return n;
+  }
+
+  @Override
+  public CustomEvent newCustomEvent(@NotNull String eventType) {
+    Objects.requireNonNull(eventType, "Null eventType");
+    if (Strings.isNullOrEmpty(eventType)) {
+      throw new IllegalArgumentException("Empty eventType");
+    }
+
+    return new CustomEventImpl(eventType, this);
   }
 
   @Override
