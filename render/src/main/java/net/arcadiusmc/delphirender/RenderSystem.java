@@ -306,7 +306,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     triggerRealign();
-    obj.spawn();
+    triggerUpdate();
   }
 
   public void tooltipChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
