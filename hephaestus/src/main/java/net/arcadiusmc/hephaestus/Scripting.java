@@ -1,6 +1,7 @@
 package net.arcadiusmc.hephaestus;
 
 import static net.arcadiusmc.hephaestus.ScriptElementSystem.JS_LANGUAGE;
+import static net.arcadiusmc.hephaestus.typemappers.TypeMapper.addTypeMapper;
 
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphidom.Loggers;
@@ -13,15 +14,19 @@ import net.arcadiusmc.hephaestus.stdlib.SendMessageFunction;
 import net.arcadiusmc.hephaestus.stdlib.SetInterval;
 import net.arcadiusmc.hephaestus.stdlib.SetTimeout;
 import net.arcadiusmc.hephaestus.typemappers.ComponentTypeMapper;
+import net.arcadiusmc.hephaestus.typemappers.LocationTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.PlayerTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.TypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.VectorTypeMapper;
+import net.arcadiusmc.hephaestus.typemappers.WorldTypeMapper;
 import net.kyori.adventure.pointer.Pointered;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -74,10 +79,12 @@ public class Scripting {
     Context.Builder ctx = Context.newBuilder(JS_LANGUAGE);
     HostAccess.Builder builder = HostAccess.newBuilder(HostAccess.ALL);
 
-    TypeMapper.addTypeMapper(builder, Value.class, Player.class, new PlayerTypeMapper());
-    TypeMapper.addTypeMapper(builder, Value.class, Component.class, new ComponentTypeMapper());
-    TypeMapper.addTypeMapper(builder, Value.class, Vector.class, new VectorTypeMapper());
-
+    addTypeMapper(builder, Value.class, Player.class,     new PlayerTypeMapper());
+    addTypeMapper(builder, Value.class, Component.class,  new ComponentTypeMapper());
+    addTypeMapper(builder, Value.class, Vector.class,     new VectorTypeMapper());
+    addTypeMapper(builder, Value.class, World.class,      new WorldTypeMapper());
+    addTypeMapper(builder, Value.class, Location.class,   new LocationTypeMapper());
+    
     Context built = ctx
         .allowExperimentalOptions(true)
         .useSystemExit(false)
@@ -103,6 +110,28 @@ public class Scripting {
     initStandardValues(jsValues);
 
     return built;
+  }
+
+  public static double toDouble(Value value) {
+    return toDouble(value, 0.0d);
+  }
+
+  public static double toDouble(Value value, double fallback) {
+    if (value == null || !value.isNumber()) {
+      return fallback;
+    }
+    return value.asDouble();
+  }
+
+  public static float toFloat(Value value) {
+    return toFloat(value, 0.0f);
+  }
+
+  public static float toFloat(Value value, float fallback) {
+    if (value == null || !value.isNumber()) {
+      return fallback;
+    }
+    return value.asFloat();
   }
 
   public static Component toComponent(Value value, Pointered target) {
