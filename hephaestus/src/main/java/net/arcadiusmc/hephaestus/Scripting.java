@@ -2,12 +2,16 @@ package net.arcadiusmc.hephaestus;
 
 import static net.arcadiusmc.hephaestus.ScriptElementSystem.JS_LANGUAGE;
 
+import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.hephaestus.lang.JavaScriptInterface;
 import net.arcadiusmc.hephaestus.lang.LanguageInterface;
+import net.arcadiusmc.hephaestus.stdlib.CancelTask;
 import net.arcadiusmc.hephaestus.stdlib.CommandFunction;
 import net.arcadiusmc.hephaestus.stdlib.GetPlayerFunction;
 import net.arcadiusmc.hephaestus.stdlib.SendMessageFunction;
+import net.arcadiusmc.hephaestus.stdlib.SetInterval;
+import net.arcadiusmc.hephaestus.stdlib.SetTimeout;
 import net.arcadiusmc.hephaestus.typemappers.ComponentTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.PlayerTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.TypeMapper;
@@ -57,6 +61,15 @@ public class Scripting {
     scope.putMember("sendActionBar", SendMessageFunction.ACTIONBAR);
   }
 
+  public static void initViewScope(Value scope, DocumentView view) {
+    scope.putMember("setTimeout", new SetTimeout(view));
+    scope.putMember("setInterval", new SetInterval(view));
+
+    CancelTask task = new CancelTask(view);
+    scope.putMember("clearTimeout", task);
+    scope.putMember("clearInterval", task);
+  }
+
   public static Context setupContext() {
     Context.Builder ctx = Context.newBuilder(JS_LANGUAGE);
     HostAccess.Builder builder = HostAccess.newBuilder(HostAccess.ALL);
@@ -66,6 +79,8 @@ public class Scripting {
     TypeMapper.addTypeMapper(builder, Value.class, Vector.class, new VectorTypeMapper());
 
     Context built = ctx
+        .allowExperimentalOptions(true)
+        .useSystemExit(false)
         .option("engine.WarnInterpreterOnly", "false")
         .option("js.polyglot-builtin", "false")
         .option("js.load", "false")
@@ -122,5 +137,13 @@ public class Scripting {
     } catch (Exception e) {
       return Component.empty();
     }
+  }
+
+  public static void verifyExecutable(Value func) {
+    if (func.canExecute()) {
+      return;
+    }
+
+    throw new IllegalArgumentException("Callback is not executable");
   }
 }

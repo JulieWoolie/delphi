@@ -50,6 +50,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   public void onViewAttach(ExtendedView view) {
     super.onViewAttach(view);
     jsScope.putMember("view", view);
+    Scripting.initViewScope(jsScope, view);
   }
 
   @Override
@@ -75,7 +76,13 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   @Override
   public void onViewDetach() {
     super.onViewDetach();
+
     jsScope.removeMember("view");
+
+    jsScope.removeMember("setInterval");
+    jsScope.removeMember("setTimeout");
+    jsScope.removeMember("clearInterval");
+    jsScope.removeMember("clearTimeout");
   }
 
   @Override
