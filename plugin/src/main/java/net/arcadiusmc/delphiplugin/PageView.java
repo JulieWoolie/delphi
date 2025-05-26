@@ -95,6 +95,8 @@ public class PageView implements ExtendedView {
   @Getter
   final PageInputSystem input;
 
+  final ViewScheduler scheduler;
+
   private Interaction interaction;
 
   public PageView(
@@ -121,6 +123,8 @@ public class PageView implements ExtendedView {
     this.renderer.setFontMetrics(fontMetrics);
 
     this.input = new PageInputSystem(this);
+
+    this.scheduler = new ViewScheduler();
   }
 
   public void spawn() {
@@ -512,6 +516,7 @@ public class PageView implements ExtendedView {
 
     input.tick();
     renderer.tick();
+    scheduler.tick();
   }
 
   @Override
@@ -527,6 +532,23 @@ public class PageView implements ExtendedView {
   @Override
   public boolean isSelected() {
     return selectedPlayer != null;
+  }
+
+  @Override
+  public int runLater(long tickDelay, @NotNull Runnable task) throws IllegalArgumentException {
+    return scheduler.scheduleLater(tickDelay, task);
+  }
+
+  @Override
+  public int runRepeating(long tickDelay, long tickInterval, @NotNull Runnable task)
+      throws NullPointerException
+  {
+    return scheduler.scheduleRepeating(tickDelay, tickInterval, task);
+  }
+
+  @Override
+  public boolean cancelTask(int taskId) {
+    return scheduler.cancelTask(taskId);
   }
 
   private void drawSelected() {

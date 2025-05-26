@@ -170,4 +170,57 @@ public interface DocumentView {
    * @throws NullPointerException If {@code position} is {@code null}
    */
   void moveTo(@NotNull Vector3f position);
+
+  /**
+   * Execute a task after a tick delay.
+   * <p>
+   * Tasks scheduled with DocumentView's schedulers are only active while the view itself is active.
+   * Once closed, all tasks are cancelled.
+   *
+   * @param tickDelay Tick Delay
+   * @param task Task
+   *
+   * @return Task ID
+   *
+   * @throws IllegalArgumentException If {@code tickDelay} is less than {@code 1}
+   * @throws NullPointerException If {@code task} is {@code null}
+   *
+   * @see #cancelTask(int)
+   * @see #runRepeating(long, long, Runnable)
+   */
+  int runLater(long tickDelay, @NotNull Runnable task) throws IllegalArgumentException;
+
+  /**
+   * Execute a task repeatedly
+   * <p>
+   * Tasks scheduled with DocumentView's schedulers are only active while the view itself is active.
+   * Once closed, all tasks are cancelled.
+   *
+   * @param tickDelay Initial Tick Delay
+   * @param tickInterval Delay between task repetitions
+   * @param task Task
+   *
+   * @return Task ID
+   *
+   * @throws NullPointerException If {@code task} is {@code null}
+   * @throws IllegalArgumentException If {@code tickInterval} is less than 1
+   *
+   * @see #cancelTask(int)
+   * @see #runLater(long, Runnable)
+   */
+  int runRepeating(long tickDelay, long tickInterval, @NotNull Runnable task)
+      throws NullPointerException;
+
+  /**
+   * Cancel a scheduled task.
+   *
+   * @param taskId Task ID
+   *
+   * @return {@code true}, if the task was cancelled, {@code false}, if it was already cancelled or
+   *         had finished execution.
+   *
+   * @see #runRepeating(long, long, Runnable)
+   * @see #runLater(long, Runnable)
+   */
+  boolean cancelTask(int taskId);
 }
