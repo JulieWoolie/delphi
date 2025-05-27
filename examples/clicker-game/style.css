@@ -1,0 +1,59 @@
+
+script {
+  display: none;
+}
+
+.counter {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 200%;
+}
+
+.btn {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2px;
+  font-size: 125%;
+}
+
+.cps {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.upgrade-container {
+  width: 80%;
+  background-color: darkgray;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 4px;
+  padding: 2px;
+}
+
+.upgr-btn {
+  width: 45%;
+  display: inline;
+
+  &:last-child {
+    margin-inline-start: 5%;
+  }
+}
+
+.upgr-line:not(:first-child) {
+  margin-top: 3px;
+}
+
+.upgr-title {
+  display: block;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+.upgr-price {
+  display: block;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}

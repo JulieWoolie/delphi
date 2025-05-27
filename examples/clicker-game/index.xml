@@ -1,0 +1,8 @@
+<delphi>
+  <head>
+    <style src="style.css"/>
+  </head>
+  <body>
+    <script src="game.js"/>
+  </body>
+</delphi>
