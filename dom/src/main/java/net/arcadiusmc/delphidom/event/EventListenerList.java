@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 @Getter @Setter
 public class EventListenerList implements EventTarget {
 
-  public static boolean testEnvironment = true;
-
   private static final Logger LOGGER = Loggers.getLogger();
 
   final Map<String, List<EventListener>> listenerMap = new HashMap<>();
@@ -39,7 +37,6 @@ public class EventListenerList implements EventTarget {
   EventTarget realTarget;
 
   Consumer<Event> postRunListener = null;
-  List<EventListener> listenerBuffer = new ArrayList<>(10);
 
   @Override
   public void addEventListener(String eventType, EventListener listener) {
@@ -102,21 +99,25 @@ public class EventListenerList implements EventTarget {
     // Use a secondary array for calling the listeners to prevent
     // a concurrent modification exception, which may occur from
     // a listener removing itself
-    listenerBuffer.clear();
-    listenerBuffer.addAll(list);
+    ListenerBuffer buffer = ListenerBufferPool.POOL.allocBuffer();
+    buffer.copy(list);
 
     if (realTarget != null) {
       EventImpl impl = (EventImpl) event;
       impl.setCurrentTarget(realTarget);
     }
 
-    for (int i = 0; i < listenerBuffer.size(); i++) {
-      EventListener listener = listenerBuffer.get(i);
-      dispatchSafe(event, listener);
+    try {
+      for (int i = 0; i < buffer.len; i++) {
+        EventListener listener = buffer.listeners[i];
+        dispatchSafe(event, listener);
 
-      if (!ignorePropagationStops && event.isPropagationStopped()) {
-        break;
+        if (!ignorePropagationStops && event.isPropagationStopped()) {
+          break;
+        }
       }
+    } finally {
+      ListenerBufferPool.POOL.freeBuffer(buffer);
     }
 
     if (postRunListener == null) {
@@ -130,10 +131,6 @@ public class EventListenerList implements EventTarget {
     try {
       listener.onEvent(event);
     } catch (Exception exc) {
-      if (!testEnvironment) {
-        throw new RuntimeException(exc);
-      }
-
       LOGGER.error("Error executing event '{}'", event.getType(), exc);
     }
   }
