@@ -8,6 +8,7 @@ import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.hephaestus.lang.JavaScriptInterface;
 import net.arcadiusmc.hephaestus.lang.LanguageInterface;
 import net.arcadiusmc.hephaestus.stdlib.CancelTask;
+import net.arcadiusmc.hephaestus.stdlib.CloseView;
 import net.arcadiusmc.hephaestus.stdlib.CommandFunction;
 import net.arcadiusmc.hephaestus.stdlib.GetPlayerFunction;
 import net.arcadiusmc.hephaestus.stdlib.SendMessageFunction;
@@ -16,7 +17,6 @@ import net.arcadiusmc.hephaestus.stdlib.SetTimeout;
 import net.arcadiusmc.hephaestus.typemappers.ComponentTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.LocationTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.PlayerTypeMapper;
-import net.arcadiusmc.hephaestus.typemappers.TypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.VectorTypeMapper;
 import net.arcadiusmc.hephaestus.typemappers.WorldTypeMapper;
 import net.kyori.adventure.pointer.Pointered;
@@ -73,6 +73,8 @@ public class Scripting {
     CancelTask task = new CancelTask(view);
     scope.putMember("clearTimeout", task);
     scope.putMember("clearInterval", task);
+
+    scope.putMember("closeView", new CloseView(view));
   }
 
   public static Context setupContext() {
