@@ -17,6 +17,8 @@ public class ViewScheduler {
   final List<ViewTask> tasks = new ObjectArrayList<>(25);
   int nextId = 0;
 
+  boolean stopped = false;
+
   int scheduleLater(long interval, Runnable runnable) {
     Objects.requireNonNull(runnable, "Null task");
     if (interval < 1) {
@@ -55,6 +57,10 @@ public class ViewScheduler {
   }
 
   void tick() {
+    if (stopped) {
+      return;
+    }
+
     Iterator<ViewTask> it = tasks.iterator();
     while (it.hasNext()) {
       var task = it.next();
@@ -65,6 +71,10 @@ public class ViewScheduler {
       }
 
       task.runSafe();
+
+      if (stopped) {
+        return;
+      }
 
       if (task.type == TT_REPEATING) {
         task.untilExec = task.interval;

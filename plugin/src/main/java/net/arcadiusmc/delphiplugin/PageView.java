@@ -465,6 +465,7 @@ public class PageView implements ExtendedView {
 
   public void onClose() {
     state = ViewState.CLOSING;
+    scheduler.stopped = true;
 
     if (document != null) {
       EventListenerList g = document.getGlobalTarget();
