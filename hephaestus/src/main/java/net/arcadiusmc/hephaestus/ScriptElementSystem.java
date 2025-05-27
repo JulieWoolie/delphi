@@ -1,5 +1,8 @@
 package net.arcadiusmc.hephaestus;
 
+import java.util.ArrayList;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ViewResources;
 import net.arcadiusmc.delphi.util.Result;
@@ -28,6 +31,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
 
   private boolean domLoaded = false;
   private final LoadListener loadListener = new LoadListener();
+  private final List<DeferredScript> deferredScripts = new ArrayList<>();
 
   public ScriptElementSystem() {
     super(DelphiScriptElement.class);
@@ -88,7 +92,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   @Override
   protected void parseFromContent(DelphiScriptElement element) {
     String textContent = element.getTextContent();
-    evaluate("<script>", textContent);
+    scriptExec(element, "<script>", textContent);
   }
 
   @Override
@@ -102,7 +106,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     }
 
     String content = result.value().orElseThrow().toString();
-    evaluate(uri, content);
+    scriptExec(element, uri, content);
   }
 
   @Override
@@ -113,6 +117,37 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   @Override
   protected void setSource(DelphiScriptElement element, ContentSource source) {
     element.source = source;
+  }
+
+  private void execDeferred() {
+    for (DeferredScript deferredScript : deferredScripts) {
+      evaluate(deferredScript.uri, deferredScript.source);
+    }
+    deferredScripts.clear();
+  }
+
+  private void scriptExec(DelphiScriptElement element, String uri, String source) {
+    if (domLoaded || !element.isDeferred()) {
+      evaluate(uri, source);
+      return;
+    }
+
+    DeferredScript found = null;
+    for (int i = 0; i < deferredScripts.size(); i++) {
+      DeferredScript deferred = deferredScripts.get(i);
+      if (deferred.element == element) {
+        found = deferred;
+        break;
+      }
+    }
+
+    if (found == null) {
+      found = new DeferredScript(element);
+      deferredScripts.addLast(found);
+    }
+
+    found.uri = uri;
+    found.source = source;
   }
 
   private void evaluate(String uri, String src) {
@@ -127,11 +162,19 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     }
   }
 
+  @RequiredArgsConstructor
+  static class DeferredScript {
+    final DelphiScriptElement element;
+    String source;
+    String uri;
+  }
+
   class LoadListener implements EventListener {
 
     @Override
     public void onEvent(Event event) {
       domLoaded = true;
+      execDeferred();
     }
   }
 }
