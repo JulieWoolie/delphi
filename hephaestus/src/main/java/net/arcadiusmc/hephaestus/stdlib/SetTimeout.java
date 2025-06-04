@@ -2,6 +2,7 @@ package net.arcadiusmc.hephaestus.stdlib;
 
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.hephaestus.Scripting;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 
@@ -32,9 +33,7 @@ public class SetTimeout implements ProxyExecutable {
       throw new IllegalArgumentException("Specified task is not executable");
     }
 
-    Runnable task = new RunnableValue(func);
-    view.runLater(delay, task);
-
-    return null;
+    Scripting.verifyExecutable(func);
+    return view.runLater(delay, new RunnableValue(func));
   }
 }

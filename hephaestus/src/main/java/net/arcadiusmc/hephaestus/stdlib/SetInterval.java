@@ -36,10 +36,6 @@ public class SetInterval implements ProxyExecutable {
     }
 
     Scripting.verifyExecutable(func);
-    Runnable task = new RunnableValue(func);
-    
-    view.runRepeating(delay, interval, task);
-
-    return null;
+    return view.runRepeating(delay, interval, new RunnableValue(func));
   }
 }
