@@ -1,7 +1,9 @@
 package net.arcadiusmc.hephaestus;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.delphi.resource.DelphiException;
 import net.arcadiusmc.delphi.resource.ViewResources;
@@ -11,7 +13,11 @@ import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiScriptElement;
 import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Loggers;
+import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphidom.system.ParsedDataElementSystem;
+import net.arcadiusmc.dom.Element;
+import net.arcadiusmc.dom.event.AttributeAction;
+import net.arcadiusmc.dom.event.AttributeMutateEvent;
 import net.arcadiusmc.dom.event.Event;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
@@ -33,6 +39,8 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   private final LoadListener loadListener = new LoadListener();
   private final List<DeferredScript> deferredScripts = new ArrayList<>();
 
+  private final AttributeChangeListener eventAttrListener = new AttributeChangeListener();
+
   public ScriptElementSystem() {
     super(DelphiScriptElement.class);
   }
@@ -47,7 +55,9 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
 
     jsScope.putMember("document", document);
 
-    document.getGlobalTarget().addEventListener(EventTypes.DOM_LOADED, loadListener);
+    EventListenerList target = document.getGlobalTarget();
+    target.addEventListener(EventTypes.DOM_LOADED, loadListener);
+    target.addEventListener(EventTypes.MODIFY_ATTR, eventAttrListener);
   }
 
   @Override
@@ -72,7 +82,9 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     jsScope = null;
     domLoaded = false;
 
-    document.getGlobalTarget().removeEventListener(EventTypes.DOM_LOADED, loadListener);
+    EventListenerList target = document.getGlobalTarget();
+    target.removeEventListener(EventTypes.DOM_LOADED, loadListener);
+    target.removeEventListener(EventTypes.MODIFY_ATTR, eventAttrListener);
 
     super.onDetach();
   }
@@ -162,6 +174,15 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     }
   }
 
+  private static Value executeSafely(Value value, Object... args) {
+    try {
+      return value.execute(args);
+    } catch (Exception e) {
+      LOGGER.error("JavaScript invocation failure", e);
+      return null;
+    }
+  }
+
   @RequiredArgsConstructor
   static class DeferredScript {
     final DelphiScriptElement element;
@@ -175,6 +196,116 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     public void onEvent(Event event) {
       domLoaded = true;
       execDeferred();
+    }
+  }
+
+  class AttributeChangeListener implements EventListener.Typed<AttributeMutateEvent> {
+
+    final Map<Element, Map<String, ScriptedAttribute>> trackingMap = new Object2ObjectOpenHashMap<>();
+
+    String toEventType(String attrKey) {
+      return switch (attrKey) {
+        case "onmouseenter" -> EventTypes.MOUSE_ENTER;
+        case "onmouseexit" -> EventTypes.MOUSE_LEAVE;
+        case "onmousemove" -> EventTypes.MOUSE_MOVE;
+        case "onclickexpire" -> EventTypes.CLICK_EXPIRE;
+        case "onappend" -> EventTypes.APPEND_CHILD;
+        case "onremovechild" -> EventTypes.REMOVE_CHILD;
+        case "onmodifyattr" -> EventTypes.MODIFY_ATTR;
+        case "onmodifyoption" -> EventTypes.MODIFY_OPTION;
+        case "onspawn" -> EventTypes.DOM_SPAWNED;
+        case "oncontentchanged" -> EventTypes.CONTENT_CHANGED;
+        default -> attrKey.substring(2);
+      };
+    }
+
+    @Override
+    public void handleEvent(AttributeMutateEvent event) {
+      String key = event.getKey();
+      if (!key.startsWith("on")) {
+        return;
+      }
+
+      Element target = event.getTarget();
+      assert target != null;
+
+      if (event.getAction() == AttributeAction.REMOVE) {
+        String eventType = toEventType(key);
+
+        Map<String, ScriptedAttribute> map = trackingMap.get(target);
+        if (map == null) {
+          return;
+        }
+
+        ScriptedAttribute removed = map.remove(eventType);
+        if (removed == null) {
+          return;
+        }
+
+        target.removeEventListener(eventType, removed);
+
+        if (map.isEmpty()) {
+          trackingMap.remove(target);
+        }
+        return;
+      }
+
+      String scriptCode = event.getNewValue();
+      String uri = String.format("<%s/>::%s", target.getTagName(), key);
+      Value compiled;
+
+      try {
+        Source source = Source.newBuilder(JS_LANGUAGE, scriptCode, uri).buildLiteral();
+        compiled = context.parse(source);
+      } catch (PolyglotException exc) {
+        LOGGER.error("Failed to compile event listener {}:", uri, exc);
+        return;
+      }
+
+      String eventType = toEventType(key);
+
+      Map<String, ScriptedAttribute> map = trackingMap.get(target);
+      ScriptedAttribute scriptedAttribute = new ScriptedAttribute(compiled);
+
+      if (map == null) {
+        map = new Object2ObjectOpenHashMap<>();
+        map.put(eventType, scriptedAttribute);
+        trackingMap.put(target, map);
+      } else {
+        ScriptedAttribute attr = map.put(eventType, scriptedAttribute);
+        if (attr != null) {
+          target.removeEventListener(eventType, attr);
+        }
+      }
+
+      target.addEventListener(eventType, scriptedAttribute);
+    }
+  }
+
+  static class ScriptedAttribute implements EventListener {
+
+    private Value compiled;
+    private Value func;
+
+    public ScriptedAttribute(Value compiled) {
+      this.compiled = compiled;
+      this.func = null;
+    }
+
+    @Override
+    public void onEvent(Event event) {
+      if (func != null) {
+        executeSafely(func, event);
+        return;
+      }
+
+      Value v = executeSafely(compiled);
+      if (v == null || !v.canExecute()) {
+        return;
+      }
+
+      func = v;
+      executeSafely(func, event);
     }
   }
 }
