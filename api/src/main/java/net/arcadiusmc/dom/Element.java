@@ -64,6 +64,15 @@ public interface Element extends Node, EventTarget, DomQueryable {
   @Nullable String getAttribute(String key);
 
   /**
+   * Test if the element has an attribute with a mapped value.
+   * @param key Attribute name
+   * @return {@code true}, if the element has a value mapped for the specified attribute,
+   *         {@code false} otherwise.
+   */
+  @Contract("null -> false")
+  boolean hasAttribute(@Nullable String key);
+
+  /**
    * Sets an attribute's value.
    * <p>
    * If the specified {@code value} is already set as the value for this attribute, nothing

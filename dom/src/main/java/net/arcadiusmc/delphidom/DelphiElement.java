@@ -93,6 +93,15 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   }
 
   @Override
+  public boolean hasAttribute(String key) {
+    if (Strings.isNullOrEmpty(key)) {
+      return false;
+    }
+
+    return attributes.containsKey(key);
+  }
+
+  @Override
   public void setAttribute(@NotNull String key, @Nullable String value) {
     if (Strings.isNullOrEmpty(key)) {
       throw new NullPointerException("Null/empty key");
