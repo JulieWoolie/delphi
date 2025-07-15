@@ -1,6 +1,7 @@
 package net.arcadiusmc.dom;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +19,7 @@ public interface InputElement extends Element {
    * Input elements cannot have child nodes.
    * @return {@code false}
    */
-  @Override
+  @Override @Contract("-> false")
   boolean canHaveChildren();
 
   /**

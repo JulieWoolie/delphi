@@ -1,5 +1,6 @@
 package net.arcadiusmc.dom;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -23,6 +24,13 @@ import org.jetbrains.annotations.Nullable;
 public interface JavaObjectElement extends Element {
 
   String INIT_METHOD_NAME = "onDomInitialize";
+
+  /**
+   * Java objects elements cannot have any child nodes
+   * @return {@code false}
+   */
+  @Override @Contract("-> false")
+  boolean canHaveChildren();
 
   /**
    * Get the name of the linked class.

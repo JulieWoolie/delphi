@@ -14,6 +14,11 @@ public class DelphiJavaObjectElement extends DelphiElement implements JavaObject
   }
 
   @Override
+  public boolean canHaveChildren() {
+    return false;
+  }
+
+  @Override
   public String getClassName() {
     return getAttribute(Attributes.CLASS_NAME);
   }
