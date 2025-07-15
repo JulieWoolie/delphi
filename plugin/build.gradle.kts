@@ -2,11 +2,11 @@ import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 
 plugins {
   java
-  id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
+  id("io.papermc.paperweight.userdev") version "2.0.0-beta.17"
   id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-val minecraftVersion = "1.21.4"
+val minecraftVersion = "1.21.7"
 val pluginBaseName = "delphi-papermc"
 
 version = "$minecraftVersion-0.3.0"

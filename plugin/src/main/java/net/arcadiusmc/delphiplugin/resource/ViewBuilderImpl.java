@@ -17,7 +17,6 @@ import net.arcadiusmc.delphiplugin.AllPlayersSet;
 import net.arcadiusmc.delphiplugin.DelphiImpl;
 import net.arcadiusmc.delphiplugin.PlayerSetImpl;
 import net.arcadiusmc.delphiplugin.command.PathParser;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +80,6 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
   @Override
   public DocumentViewBuilder setPlayers(@NotNull Collection<Player> players) {
     Objects.requireNonNull(players, "Null players");
-    Validate.noNullElements(players, "players contained a null player");
 
     PlayerSetImpl set = new PlayerSetImpl();
     set.addAll(players);
@@ -94,7 +92,6 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
   @Override
   public DocumentViewBuilder addPlayers(@NotNull Collection<Player> players) {
     Objects.requireNonNull(players, "Null players");
-    Validate.noNullElements(players, "players contained a null player");
 
     if (this.players instanceof AllPlayersSet) {
       return setPlayers(players);

@@ -19,7 +19,7 @@ subprojects {
   }
 
   dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT")
 
     // Test dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
@@ -31,7 +31,7 @@ subprojects {
     testImplementation("org.slf4j:slf4j-api:2.0.13")
     testImplementation("org.slf4j:slf4j-simple:2.0.13")
     testImplementation("it.unimi.dsi:fastutil:8.5.13")
-    testImplementation("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT")
 
     if (name != "api" && name != "test-plugin") {
       val lombok = "org.projectlombok:lombok:1.18.38"
