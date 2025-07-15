@@ -56,7 +56,11 @@ final class DelphiColor implements Color {
   public static Color hsvaColor(float hue, float saturation, float value, float alpha) {
     int alphaInt = (int) (Math.clamp(alpha, 0f, 1f) * MAX_VALUE);
     int argb = java.awt.Color.HSBtoRGB(hue, saturation, value);
-    return Color.argb(argb | (alphaInt << 24));
+
+    // Clear the alpha channel, since HSBtoRGB returns an ARGB with max alpha
+    int rgb = argb & ~(0xff << 24);
+
+    return Color.argb(rgb | (alphaInt << 24));
   }
 
   private void validate(int v, String channel) {
