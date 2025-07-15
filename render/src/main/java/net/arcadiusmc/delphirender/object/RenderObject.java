@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphirender.object;
 
+import net.arcadiusmc.delphirender.Consts;
 import net.arcadiusmc.delphirender.FullStyle;
 import net.arcadiusmc.delphirender.RenderScreen;
 import net.arcadiusmc.delphirender.RenderSystem;
@@ -50,9 +51,22 @@ public abstract class RenderObject {
   }
 
   protected Location getLocation() {
+    Location l = new Location(system.getWorld(), 0, 0, 0);
+    screenLocation(this.position, l);
+    return l;
+  }
+
+  protected void screenLocation(Vector2f screenPos, Location out) {
     Vector3f pos = new Vector3f();
-    screen.screenToWorld(this.position, pos);
-    return new Location(system.getWorld(), pos.x, pos.y, pos.z);
+    screen.screenToWorld(screenPos, pos);
+    out.set(pos.x, pos.y, pos.z);
+  }
+
+  protected float getZIndexDepth() {
+    if (parent != null) {
+      return parent.style.zindex * Consts.MACRO_LAYER_DEPTH;
+    }
+    return 0.0f;
   }
 
   protected FullStyle getParentStyle() {

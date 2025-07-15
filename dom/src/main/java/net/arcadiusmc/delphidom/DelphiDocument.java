@@ -21,6 +21,7 @@ import net.arcadiusmc.delphidom.event.InputEventImpl;
 import net.arcadiusmc.delphidom.event.Mutation;
 import net.arcadiusmc.delphidom.event.TextChange;
 import net.arcadiusmc.delphidom.parser.ErrorListener;
+import net.arcadiusmc.delphidom.system.CanvasElementSystem;
 import net.arcadiusmc.delphidom.system.ComponentElementSystem;
 import net.arcadiusmc.delphidom.system.IdSystem;
 import net.arcadiusmc.delphidom.system.ItemElementSystem;
@@ -76,7 +77,7 @@ public class DelphiDocument implements Document, DelegateTarget {
 
   @Getter
   final StyleObjectModel styles;
-  final ObjectModelSystem[] systems = new ObjectModelSystem[10];
+  final ObjectModelSystem[] systems = new ObjectModelSystem[16];
 
   public DelphiDocument() {
     this.globalTarget = new EventListenerList();
@@ -98,6 +99,7 @@ public class DelphiDocument implements Document, DelegateTarget {
     addSystem(new ItemElementSystem());
     addSystem(new ComponentElementSystem());
     addSystem(new JavaObjectSystem());
+    addSystem(new CanvasElementSystem());
   }
 
   public static DelphiDocument createEmpty() {
@@ -221,6 +223,7 @@ public class DelphiDocument implements Document, DelegateTarget {
       case TagNames.BUTTON -> new DelphiButtonElement(this);
       case TagNames.COMPONENT -> new ChatElement(this);
       case TagNames.INPUT -> new DelphiInputElement(this);
+      case TagNames.CANVAS -> new DelphiCanvasElement(this);
       case TagNames.BODY -> new DelphiBodyElement(this);
       case TagNames.HEAD -> new DelphiHeadElement(this);
       case TagNames.OPTION -> new DelphiOptionElement(this);

@@ -15,6 +15,7 @@ import net.arcadiusmc.chimera.StyleUpdateCallbacks;
 import net.arcadiusmc.chimera.system.StyleNode;
 import net.arcadiusmc.chimera.system.StyleObjectModel;
 import net.arcadiusmc.delphidom.ChatElement;
+import net.arcadiusmc.delphidom.DelphiCanvasElement;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiInputElement;
 import net.arcadiusmc.delphidom.DelphiItemElement;
@@ -23,6 +24,7 @@ import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.delphirender.layout.NLayout;
 import net.arcadiusmc.delphirender.math.Rectangle;
+import net.arcadiusmc.delphirender.object.CanvasRenderObject;
 import net.arcadiusmc.delphirender.object.ComponentRenderObject;
 import net.arcadiusmc.delphirender.object.ElementRenderObject;
 import net.arcadiusmc.delphirender.object.ItemRenderObject;
@@ -216,6 +218,16 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
         obj = el;
       }
+      case DelphiCanvasElement canvas -> {
+        ElementRenderObject el = new ElementRenderObject(this, styleSet);
+        CanvasRenderObject cro = new CanvasRenderObject(this);
+
+        cro.canvas = canvas.canvas;
+        cro.depth = depth + MACRO_LAYER_DEPTH;
+        el.addChild(0, cro);
+
+        obj = el;
+      }
       default -> {
         ElementRenderObject o = new ElementRenderObject(this, styleSet);
         DelphiElement el = (DelphiElement) node;
@@ -281,6 +293,15 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
   }
 
+  public void canvasSizeChanged(DelphiCanvasElement el) {
+    ElementRenderObject obj = (ElementRenderObject) getRenderElement(el);
+    if (obj == null) {
+      return;
+    }
+
+    triggerUpdate();
+  }
+
   public void contentChanged(DelphiNode node) {
     if (!active) {
       return;
@@ -291,6 +312,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
     if (obj == null) {
       return;
     }
+
+    boolean reflow = true;
 
     if (node instanceof Text text) {
       StringRenderObject stringObj = (StringRenderObject) obj;
@@ -303,9 +326,15 @@ public class RenderSystem implements StyleUpdateCallbacks {
       ElementRenderObject el = (ElementRenderObject) obj;
       ItemRenderObject item = el.onlyChild();
       item.item = itemEl.getItemStack();
+      reflow = false;
+    } else if (node instanceof DelphiCanvasElement) {
+      reflow = false;
     }
 
-    triggerRealign();
+    if (reflow) {
+      triggerRealign();
+    }
+
     triggerUpdate();
   }
 

@@ -19,6 +19,7 @@ import net.arcadiusmc.delphirender.SimpleTextMeasure;
 import net.arcadiusmc.delphirender.TextMeasure;
 import net.arcadiusmc.delphirender.TextUtil;
 import net.arcadiusmc.delphirender.object.BoxRenderObject;
+import net.arcadiusmc.delphirender.object.CanvasRenderObject;
 import net.arcadiusmc.delphirender.object.ElementRenderObject;
 import net.arcadiusmc.delphirender.object.ItemRenderObject;
 import net.arcadiusmc.delphirender.object.RenderObject;
@@ -204,6 +205,11 @@ public class NLayout {
       }
       case ElementRenderObject el -> {
         return measureElement(el, ctx, out);
+      }
+      case CanvasRenderObject canvas -> {
+        out.x = canvas.canvas.getWidth() * CHAR_PX_SIZE_X;
+        out.y = canvas.canvas.getHeight() * CHAR_PX_SIZE_Y;
+        return false;
       }
       default -> throw new IllegalStateException();
     }

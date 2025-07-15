@@ -11,6 +11,7 @@ import net.arcadiusmc.hephaestus.stdlib.CancelTask;
 import net.arcadiusmc.hephaestus.stdlib.CloseView;
 import net.arcadiusmc.hephaestus.stdlib.CommandFunction;
 import net.arcadiusmc.hephaestus.stdlib.GetPlayerFunction;
+import net.arcadiusmc.hephaestus.stdlib.HsvFunction;
 import net.arcadiusmc.hephaestus.stdlib.SendMessageFunction;
 import net.arcadiusmc.hephaestus.stdlib.SetInterval;
 import net.arcadiusmc.hephaestus.stdlib.SetTimeout;
@@ -64,6 +65,9 @@ public class Scripting {
     scope.putMember("getPlayer", GetPlayerFunction.INSTANCE);
     scope.putMember("sendMessage", SendMessageFunction.CHAT);
     scope.putMember("sendActionBar", SendMessageFunction.ACTIONBAR);
+
+    // Color, ig
+    scope.putMember("hsv", HsvFunction.HSV);
   }
 
   public static void initViewScope(Value scope, DocumentView view) {
@@ -133,7 +137,13 @@ public class Scripting {
     if (value == null || !value.isNumber()) {
       return fallback;
     }
-    return value.asFloat();
+    if (value.fitsInFloat()) {
+      return value.asFloat();
+    }
+    if (value.fitsInDouble()) {
+      return (float) value.asDouble();
+    }
+    return fallback;
   }
 
   public static Component toComponent(Value value, Pointered target) {

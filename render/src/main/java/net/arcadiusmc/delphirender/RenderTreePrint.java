@@ -25,12 +25,14 @@ import net.arcadiusmc.delphidom.Rect;
 import net.arcadiusmc.delphidom.XmlPrintVisitor;
 import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.delphirender.object.BoxRenderObject;
+import net.arcadiusmc.delphirender.object.CanvasRenderObject;
 import net.arcadiusmc.delphirender.object.ComponentRenderObject;
 import net.arcadiusmc.delphirender.object.ElementRenderObject;
 import net.arcadiusmc.delphirender.object.ItemRenderObject;
 import net.arcadiusmc.delphirender.object.RenderObject;
 import net.arcadiusmc.delphirender.object.SingleEntityRenderObject;
 import net.arcadiusmc.delphirender.object.StringRenderObject;
+import net.arcadiusmc.dom.CanvasElement;
 import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.ItemElement;
@@ -215,7 +217,11 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("render-object:");
     indent++;
 
-    boolean appendChildren = node instanceof ComponentElement || node instanceof ItemElement;
+    boolean appendChildren
+         = node instanceof ComponentElement
+        || node instanceof ItemElement
+        || node instanceof CanvasElement;
+
     appendRenderObject(re, appendChildren);
 
     indent--;
@@ -286,6 +292,11 @@ public class RenderTreePrint extends XmlPrintVisitor {
     }
 
     switch (object) {
+      case CanvasRenderObject canvas -> {
+        nlIndent().append("canvas-width: ").append(canvas.canvas.getWidth());
+        nlIndent().append("canvas-height: ").append(canvas.canvas.getHeight());
+        nlIndent().append("entities: ").append(canvas.entities.size());
+      }
       case ItemRenderObject item -> {
         nlIndent().append("itemstack: ").append(item.item);
       }

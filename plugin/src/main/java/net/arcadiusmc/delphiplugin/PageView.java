@@ -11,6 +11,7 @@ import net.arcadiusmc.delphi.PlayerSet;
 import net.arcadiusmc.delphi.event.DocumentCloseEvent;
 import net.arcadiusmc.delphi.event.DocumentEvent;
 import net.arcadiusmc.delphi.resource.ResourcePath;
+import net.arcadiusmc.delphidom.DelphiCanvasElement;
 import net.arcadiusmc.delphidom.DelphiDocument;
 import net.arcadiusmc.delphidom.DelphiElement;
 import net.arcadiusmc.delphidom.DelphiNode;
@@ -422,11 +423,6 @@ public class PageView implements ExtendedView {
   }
 
   @Override
-  public void contentChanged(DelphiNode node) {
-    renderer.contentChanged(node);
-  }
-
-  @Override
   public Vector2f getCursorScreenPosition() {
     if (selectedPlayer == null) {
       return null;
@@ -451,6 +447,17 @@ public class PageView implements ExtendedView {
   @Override
   public void tooltipChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
     renderer.tooltipChanged(element, old, titleNode);
+  }
+
+
+  @Override
+  public void canvasSizeChanged(DelphiCanvasElement element) {
+    renderer.canvasSizeChanged(element);
+  }
+
+  @Override
+  public void contentChanged(DelphiNode node) {
+    renderer.contentChanged(node);
   }
 
   @Override

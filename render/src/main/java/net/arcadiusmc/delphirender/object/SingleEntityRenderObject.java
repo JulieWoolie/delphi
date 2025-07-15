@@ -1,6 +1,5 @@
 package net.arcadiusmc.delphirender.object;
 
-import net.arcadiusmc.delphirender.Consts;
 import net.arcadiusmc.delphirender.RenderSystem;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -81,16 +80,9 @@ public abstract class SingleEntityRenderObject<T extends Display> extends Render
     // Origin point at the top left
     //
 
-    float zIndexDepth;
-    if (parent != null) {
-      zIndexDepth = parent.style.zindex * Consts.MACRO_LAYER_DEPTH;
-    } else {
-      zIndexDepth = 0.0f;
-    }
-
     offset.x += size.x * 0.5f;
     offset.y -= size.y;
-    offset.z = depth + zIndexDepth;
+    offset.z = depth + getZIndexDepth();
 
     configure(entity, trans);
     screen.project(trans);

@@ -14,7 +14,7 @@ public class DelphiLoader implements PluginLoader {
     MavenLibraryResolver library = new MavenLibraryResolver();
 
     RemoteRepository repository = new RemoteRepository
-        .Builder("central", "default", "https://repo1.maven.org/maven2/")
+        .Builder("central", "default", MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR)
         .build();
 
     Dependency js = makeDependency("org.graalvm.js:js-language:24.1.2");

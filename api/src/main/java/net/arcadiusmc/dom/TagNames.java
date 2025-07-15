@@ -92,4 +92,9 @@ public interface TagNames {
    * @see ScriptElement
    */
   String SCRIPT = "script";
+
+  /**
+   * Canvas element
+   */
+  String CANVAS = "canvas";
 }

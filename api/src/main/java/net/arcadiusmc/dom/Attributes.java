@@ -144,6 +144,18 @@ public interface Attributes {
   String DEFER = "defer";
 
   /**
+   * Attribute for defining the width in pixels of a canvas element.
+   * @see CanvasElement
+   */
+  String WIDTH = "width";
+
+  /**
+   * Attribute for defining the height in pixels of a canvas element.
+   * @see CanvasElement
+   */
+  String HEIGHT = "height";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
@@ -175,6 +187,28 @@ public interface Attributes {
     }
 
     return Result.ok(f);
+  }
+
+  /**
+   * Parses an attribute's string value into an integer.
+   *
+   * @param value Attribute value
+   * @param min Minimum parsed value
+   * @param max Maximum parsed value
+   * @param fb Fallback value if attribute value is empty or null
+   *
+   * @return Clamped parsed value, or fallback
+   */
+  static int intAttribute(String value, int min, int max, int fb) {
+    if (Strings.isNullOrEmpty(value)) {
+      return fb;
+    }
+
+    try {
+      return Math.clamp(Integer.parseInt(value), min, max);
+    } catch (NumberFormatException exc) {
+      return fb;
+    }
   }
 
   static boolean boolAttribute(@Nullable String value, boolean fallback) {

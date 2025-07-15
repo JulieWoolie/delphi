@@ -122,6 +122,10 @@ public interface Document extends EventTarget, DomQueryable {
    *       <td>{@link ScriptElement}</td>
    *     </tr>
    *     <tr>
+   *       <td>{@link TagNames#CANVAS}</td>
+   *       <td>{@link CanvasElement}</td>
+   *     </tr>
+   *     <tr>
    *       <td>Any other tag name</td>
    *       <td>{@link Element}</td>
    *     </tr>

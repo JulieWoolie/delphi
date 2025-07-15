@@ -21,4 +21,6 @@ public interface ExtendedView extends DocumentView {
   void handleEntityVisibility(Entity entity);
 
   RenderBounds renderBounds(DelphiNode delphiNode);
+
+  void canvasSizeChanged(DelphiCanvasElement element);
 }
