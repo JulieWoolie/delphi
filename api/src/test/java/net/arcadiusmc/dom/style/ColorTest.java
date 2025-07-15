@@ -58,4 +58,23 @@ class ColorTest {
   @Test
   void darken() {
   }
+
+  @Test
+  void hsvTest() {
+    float h = 1.0f;
+    float s = 1.0f;
+    float v = 1.0f;
+
+    int rgb = java.awt.Color.HSBtoRGB(h, s, v);
+    assertNotEquals(0, rgb);
+
+    System.out.println(Integer.toUnsignedString(rgb, 16));
+
+    Color c = Color.hsv(h, s, v);
+    assertNotEquals(NamedColor.BLACK, c);
+
+    assertEquals(255, c.getRed());
+    assertEquals(0, c.getGreen());
+    assertEquals(0, c.getBlue());
+  }
 }

@@ -319,4 +319,10 @@ public sealed interface Color permits DelphiColor {
    * @return SCSS Color representation
    */
   String toString();
+
+  /**
+   * Get the hex code representation of this color.
+   * @return Hex code
+   */
+  String hexString();
 }
