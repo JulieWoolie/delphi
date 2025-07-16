@@ -12,6 +12,7 @@ import net.arcadiusmc.delphirender.RenderSystem;
 import net.arcadiusmc.delphirender.layout.NLayout;
 import net.arcadiusmc.dom.style.DisplayType;
 import net.arcadiusmc.dom.style.Visibility;
+import org.bukkit.Color;
 import org.joml.Vector2f;
 
 public class ElementRenderObject extends RenderObject {
@@ -139,11 +140,34 @@ public class ElementRenderObject extends RenderObject {
     bg.size.x -= borderSize.x();
     bg.size.y -= borderSize.y();
 
+    if (outlineSize.isNotZero() || borderSize.isNotZero()) {
+      bg.color = findParentBgColor();
+    }
+
     // Configure depth values
     for (int i = 0; i < boxes.length; i++) {
       BoxRenderObject box = boxes[i];
       box.depth = this.depth + (i * Consts.MICRO_LAYER_DEPTH);
     }
+  }
+
+  Color findParentBgColor() {
+    Color c = style.backgroundColor;
+
+    if (c.getAlpha() > 0) {
+      return c;
+    }
+
+    ElementRenderObject el = parent;
+    while (el != null) {
+      c = el.style.backgroundColor;
+      if (c.getAlpha() > 0) {
+        return c;
+      }
+      el = el.parent;
+    }
+
+    return Color.BLACK;
   }
 
   @Override
@@ -158,14 +182,20 @@ public class ElementRenderObject extends RenderObject {
     Rect outline = style.outline;
     Rect border = style.border;
 
+    boolean bgRequired = false;
+
     if (outline.isNotZero()) {
+      bgRequired = true;
       boxes[OUTLINE].spawn();
     }
     if (border.isNotZero()) {
+      bgRequired = true;
       boxes[BORDER].spawn();
     }
 
-    boxes[BACKGROUND].spawn();
+    if (bgRequired || style.backgroundColor.asRGB() != 0) {
+      boxes[BACKGROUND].spawn();
+    }
 
     spawned = true;
   }
