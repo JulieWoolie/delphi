@@ -5,24 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import net.arcadiusmc.chimera.ChimeraStylesheet;
-import net.arcadiusmc.delphidom.event.EventListenerList;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.TextNode;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class StyleSystemTest {
-
-  @BeforeAll
-  static void onStart() {
-    EventListenerList.testEnvironment = false;
-  }
-
-  @AfterAll
-  static void onEnd() {
-    EventListenerList.testEnvironment = true;
-  }
 
   @Test
   void should_useTextContent_whenTextContentSet() {

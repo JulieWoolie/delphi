@@ -19,18 +19,21 @@ import net.arcadiusmc.delphidom.ExtendedView;
 import net.arcadiusmc.delphidom.Text;
 import net.arcadiusmc.dom.TagNames;
 import org.apache.commons.lang3.StringUtils;
+import org.ccil.cowan.tagsoup.Parser;
+import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl;
 import org.slf4j.event.Level;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 @Getter
 public class DelphiSaxParser extends DefaultHandler {
 
-  public static final SAXParserFactory PARSER_FACTORY = SAXParserFactory.newInstance();
+  public static final SAXParserFactory PARSER_FACTORY = createFactory();
 
   @Setter
   private SaxParserCallbacks callbacks;
@@ -50,12 +53,41 @@ public class DelphiSaxParser extends DefaultHandler {
   @Setter
   private ErrorListener listener;
 
+  public static SAXParserFactory createFactory() {
+    SAXFactoryImpl factory = new SAXFactoryImpl();
+
+    try {
+      factory.setFeature(Parser.CDATAElementsFeature, false);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    factory.setXIncludeAware(false);
+    factory.setNamespaceAware(false);
+
+    return factory;
+  }
+
+  public static XMLReader createReader() throws ParserConfigurationException, SAXException {
+    SAXParser parser = PARSER_FACTORY.newSAXParser();
+
+    XMLReader reader = parser.getXMLReader();
+    reader.setProperty(Parser.schemaProperty, new DelphiSchema());
+
+    return reader;
+  }
+
   public static DelphiSaxParser runParser(InputSource source, DelphiSaxParser handler)
       throws ParserConfigurationException, SAXException, IOException
   {
-    SAXParser parser = PARSER_FACTORY.newSAXParser();
-    PARSER_FACTORY.setXIncludeAware(false);
-    parser.parse(source, handler);
+    XMLReader reader = createReader();
+
+    reader.setContentHandler(handler);
+    reader.setEntityResolver(handler);
+    reader.setErrorHandler(handler);
+    reader.setDTDHandler(handler);
+    reader.parse(source);
+
     return handler;
   }
 
@@ -126,7 +158,10 @@ public class DelphiSaxParser extends DefaultHandler {
   @Override
   public void startDocument() throws SAXException {
     document = new DelphiDocument();
-    callbacks.onDocumentCreated(document);
+
+    if (callbacks != null) {
+      callbacks.onDocumentCreated(document);
+    }
 
     if (view != null) {
       document.setView(view);

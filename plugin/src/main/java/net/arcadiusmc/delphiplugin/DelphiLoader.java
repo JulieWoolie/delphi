@@ -18,9 +18,11 @@ public class DelphiLoader implements PluginLoader {
         .build();
 
     Dependency js = makeDependency("org.graalvm.js:js-language:24.1.2");
+    Dependency tagsoup = makeDependency("org.ccil.cowan.tagsoup:tagsoup:1.2.1");
 
     library.addRepository(repository);
     library.addDependency(js);
+    library.addDependency(tagsoup);
 
     classpathBuilder.addLibrary(library);
   }

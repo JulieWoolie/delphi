@@ -2,37 +2,69 @@ package net.arcadiusmc.delphidom;
 
 import java.io.StringReader;
 import java.util.StringJoiner;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import net.arcadiusmc.delphidom.parser.DelphiSaxParser;
+import net.arcadiusmc.dom.Visitor;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class SaxTest {
 
   static final String INPUT_STR = """
-  <delphi>
-    <head>
-      <option key="asd" val="asd"/>
-    </head>
-    <body>
-      <h1>Hello, world!</h1>
-    </body>
-  </delphi>
+<delphi>
+  <head>
+    <style src="./style.scss"/>
+  </head>
+  <body>
+    <h1 class="title shadowed">Hello, world!</h1>
+
+    <div class="shadowed" style="color: gold;">This basically works</div>
+
+    <button class="mt-2 p-btn" onclick="ev => sendMessage(ev.getPlayer(), 'Hello!')">
+      <item src="./item.json" />
+      I am a button :3
+    </button>
+
+    <button action="cmd: tellraw %player% &quot;Hello, %player%!&quot;" class="mt-2 mli-2 p-btn" id="btn-settings">Settings</button>
+    <button action="close" class="mt-2 mli-2 p-btn" id="btn-quit">Quit</button>
+
+    <i class="mt-2 block">This text is italic</i>
+    <u class="mt-2 block">This text is underlined</u>
+    <b class="mt-2 block">This text is bold <red>and red?</red></b>
+  </body>
+</delphi>
   """;
 
   @Test
   void run() throws Exception {
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    SAXParser saxParser = factory.newSAXParser();
-
     Listener listener = new Listener();
     InputSource source = new InputSource("testsource.xml");
     source.setCharacterStream(new StringReader(INPUT_STR));
 
-    saxParser.parse(source, listener);
+    XMLReader reader = DelphiSaxParser.createReader();
+    reader.setContentHandler(listener);
+    reader.setEntityResolver(listener);
+    reader.setErrorHandler(listener);
+    reader.setDTDHandler(listener);
+    reader.parse(source);
+  }
+
+  @Test
+  void testParser() throws Exception {
+    InputSource source = new InputSource("testsource.xml");
+    source.setCharacterStream(new StringReader(INPUT_STR));
+
+    DelphiSaxParser handler = new DelphiSaxParser();
+    handler.setListener(DelphiDocument.ERROR_LISTENER);
+
+    DelphiSaxParser.runParser(source, handler);
+
+    XmlPrintVisitor visitor = new XmlPrintVisitor();
+    Visitor.visit(handler.getDocument().getDocumentElement(), visitor);
+    System.out.println(visitor);
   }
 
   class Listener extends DefaultHandler {
@@ -70,7 +102,7 @@ public class SaxTest {
       for (int i = 0; i < attributes.getLength(); i++) {
         String name = attributes.getLocalName(i);
         String val = attributes.getValue(i);
-        joiner.add(name + "=" + val);
+        joiner.add(name + "='" + val + "'");
       }
 
       p("Start element: ", qName, ", attrs: ", joiner);

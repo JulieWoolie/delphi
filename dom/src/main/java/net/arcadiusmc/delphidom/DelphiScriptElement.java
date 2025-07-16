@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom;
 
+import com.google.common.base.Strings;
 import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.dom.Attributes;
 import net.arcadiusmc.dom.ScriptElement;
@@ -26,6 +27,11 @@ public class DelphiScriptElement extends DelphiElement implements ScriptElement 
 
   @Override
   public boolean isDeferred() {
-    return Attributes.boolAttribute(getAttribute(Attributes.DEFER), false);
+    String value = getAttribute(Attributes.DEFER);
+    if (Strings.isNullOrEmpty(value)) {
+      return false;
+    }
+
+    return Attributes.DEFER.equals(value) || value.equalsIgnoreCase("true");
   }
 }

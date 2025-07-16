@@ -22,7 +22,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.io.IOException;
 import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.chimera.ChimeraSheetBuilder;
@@ -58,6 +57,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 public class PageResources implements ViewResources {
 
@@ -226,9 +226,9 @@ public class PageResources implements ViewResources {
   }
 
   private Result<DelphiDocument, DelphiException> parseDocument(StringBuffer buf, String uri) {
-    SAXParser parser;
+    XMLReader parser;
     try {
-      parser = DelphiSaxParser.PARSER_FACTORY.newSAXParser();
+      parser = DelphiSaxParser.createReader();
     } catch (ParserConfigurationException | SAXException e) {
       return Result.err(new DelphiException(ERR_SAX_PARSER_INIT, e));
     }
@@ -242,8 +242,13 @@ public class PageResources implements ViewResources {
     handler.setCallbacks(new SaxCallbacks(pluginResources));
     handler.setView(view);
 
+    parser.setDTDHandler(handler);
+    parser.setEntityResolver(handler);
+    parser.setErrorHandler(handler);
+    parser.setContentHandler(handler);
+
     try {
-      parser.parse(source, handler);
+      parser.parse(source);
     } catch (SAXException e) {
       return Result.err(new DelphiException(ERR_DOC_PARSE, e));
     } catch (IOException ioErr) {
