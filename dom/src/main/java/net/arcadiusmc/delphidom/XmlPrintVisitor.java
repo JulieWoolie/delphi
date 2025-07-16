@@ -1,5 +1,6 @@
 package net.arcadiusmc.delphidom;
 
+import com.google.common.xml.XmlEscapers;
 import java.util.Map.Entry;
 import net.arcadiusmc.dom.ComponentElement;
 import net.arcadiusmc.dom.Element;
@@ -24,10 +25,15 @@ public class XmlPrintVisitor implements Visitor {
 
     for (Entry<String, String> entry : element.getAttributeEntries()) {
       builder.append(" ")
-          .append(entry.getKey())
-          .append('=')
+          .append(entry.getKey());
+
+      if (entry.getKey().equals(entry.getValue())) {
+        continue;
+      }
+
+      builder.append('=')
           .append('"')
-          .append(entry.getValue())
+          .append(XmlEscapers.xmlAttributeEscaper().escape(entry.getValue()))
           .append('"');
     }
 
