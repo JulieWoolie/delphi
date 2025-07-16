@@ -9,10 +9,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +21,7 @@ public class LocaleLoader {
   static final Set<Locale> LOCALES = Set.of(Locale.ENGLISH);
   static final Key KEY = Key.key("delphi", "messages");
 
-  static void loadFrom(Path pluginDataPath, TranslationStore<Component> store) {
+  static void loadFrom(Path pluginDataPath, MiniMessageTranslationStore store) {
     Path dataPath = pluginDataPath.resolve("data").resolve("lang");
     if (!Files.isDirectory(dataPath)) {
       return;
@@ -46,7 +44,7 @@ public class LocaleLoader {
   }
 
   static void load(Path pluginPath) {
-    TranslationStore<Component> store = TranslationStore.component(KEY);
+    MiniMessageTranslationStore store = MiniMessageTranslationStore.create(KEY);
     GlobalTranslator.translator().addSource(store);
 
     for (Locale locale : LOCALES) {
@@ -56,7 +54,7 @@ public class LocaleLoader {
     loadFrom(pluginPath, store);
   }
 
-  private static void loadLocale(Locale locale, TranslationStore<Component> registry) {
+  private static void loadLocale(Locale locale, MiniMessageTranslationStore registry) {
     String filePath = "lang/" + locale.toLanguageTag() + ".properties";
     URL resource = LocaleLoader.class.getClassLoader().getResource(filePath);
 
@@ -72,7 +70,7 @@ public class LocaleLoader {
     }
   }
 
-  private static void loadTranslations(TranslationStore<Component> registry, InputStream stream, Locale locale) {
+  private static void loadTranslations(MiniMessageTranslationStore registry, InputStream stream, Locale locale) {
     Properties properties;
 
     try {
@@ -86,13 +84,12 @@ public class LocaleLoader {
     for (Object o : properties.keySet()) {
       String key = String.valueOf(o);
       String value = properties.getProperty(key, "");
-      Component base = MiniMessage.miniMessage().deserialize(value);
 
       if (registry.contains(key)) {
         registry.unregister(key);
       }
 
-      registry.register(key, locale, base);
+      registry.register(key, locale, value);
     }
   }
 }

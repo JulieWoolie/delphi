@@ -66,7 +66,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -78,8 +77,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("UnstableApiUsage")
 public class DelphiCommand {
 
-  static final Component PREFIX = MiniMessage.miniMessage()
-      .deserialize("<dark_gray>[<b><gradient:gold:red>Delphi</gradient></b>]");
+  static final Component PREFIX = Component.translatable("delphi.prefix");
 
   static final CommandExceptionType NOP = new CommandExceptionType() {};
 
@@ -460,7 +458,7 @@ public class DelphiCommand {
 
       return manager.getByInstanceName(string).orElseThrow(() -> {
         reader.setCursor(start);
-        return VIEW_NOT_FOUND.createWithContext(reader, start);
+        return VIEW_NOT_FOUND.createWithContext(reader, string);
       });
     }
 
