@@ -195,6 +195,8 @@ public class ElementRenderObject extends RenderObject {
 
     if (bgRequired || style.backgroundColor.asRGB() != 0) {
       boxes[BACKGROUND].spawn();
+    } else {
+      boxes[BACKGROUND].killRecursive();
     }
 
     spawned = true;
