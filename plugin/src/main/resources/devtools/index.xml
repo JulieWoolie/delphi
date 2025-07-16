@@ -8,7 +8,7 @@
       <navlink nav="dom">Elements</navlink>
       <navlink unsupported="true" nav="styles">Styles</navlink>
       <navlink unsupported="true" nav="boxmodel">Box Model</navlink>
-      <navlink unsupported="true" nav="actions">Actions</navlink>
+      <navlink nav="actions">Actions</navlink>
       <navlink nav="docinfo">Meta</navlink>
       <navlink nav="close">X</navlink>
     </navbar>

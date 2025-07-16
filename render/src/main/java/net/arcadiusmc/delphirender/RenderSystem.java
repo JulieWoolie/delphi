@@ -140,11 +140,11 @@ public class RenderSystem implements StyleUpdateCallbacks {
   // in that time are all executed and laid out in a single go.
   //
 
-  private void triggerRealign() {
+  public void triggerRealign() {
     layoutTriggered = true;
   }
 
-  private void triggerUpdate() {
+  public void triggerUpdate() {
     updateTriggered = true;
   }
 

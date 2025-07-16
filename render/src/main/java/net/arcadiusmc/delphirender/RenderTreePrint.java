@@ -249,6 +249,16 @@ public class RenderTreePrint extends XmlPrintVisitor {
     if (node instanceof DelphiElement el) {
       StyleProperties inline = el.getInlineStyle();
       appendProperties(true, "inline-properties", inline);
+
+      List<String> classList = el.getClassList();
+      if (!classList.isEmpty()) {
+        nlIndent().append("class-list:");
+        indent++;
+        for (String string : classList) {
+          nlIndent().append(" - ").append('"').append(string).append('"');
+        }
+        indent--;
+      }
     }
 
     StylePropertiesReadonly styleSet = node.getDocument().getCurrentStyle(node);

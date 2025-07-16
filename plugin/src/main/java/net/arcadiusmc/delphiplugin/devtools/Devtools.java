@@ -127,6 +127,11 @@ public class Devtools {
 
       }
 
+      case "actions" -> {
+        switchTo(Tabs.ACTIONS);
+        setActive(target);
+      }
+
       case "docinfo" -> {
         switchTo(Tabs.DOC_INFO);
         setActive(target);
