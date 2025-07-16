@@ -1,10 +1,8 @@
 package net.arcadiusmc.delphirender.object;
 
 import static net.arcadiusmc.delphirender.Consts.BLOCK_OFFSET_X;
-import static net.arcadiusmc.delphirender.Consts.BOX_OVERPRINT;
 import static net.arcadiusmc.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_X;
 import static net.arcadiusmc.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_Y;
-import static net.arcadiusmc.delphirender.Consts.HALF_BOX_OVERPRINT;
 
 import java.util.Objects;
 import net.arcadiusmc.delphirender.Consts;
@@ -44,13 +42,7 @@ public class BoxRenderObject extends SingleEntityRenderObject<TextDisplay> {
     scale.x = EMPTY_TD_BLOCK_SIZE_X * size.x;
     scale.y = EMPTY_TD_BLOCK_SIZE_Y * size.y;
 
-    scale.x += scale.x * BOX_OVERPRINT;
-    scale.y += scale.y * BOX_OVERPRINT;
-
     offset.x -= visualCenterOffset(scale.x);
-
-    offset.x -= offset.x * HALF_BOX_OVERPRINT;
-    offset.y += offset.y * HALF_BOX_OVERPRINT;
   }
 
   /**
