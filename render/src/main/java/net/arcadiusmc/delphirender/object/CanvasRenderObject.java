@@ -1,7 +1,9 @@
 package net.arcadiusmc.delphirender.object;
 
+import static net.arcadiusmc.delphirender.Consts.BOX_OVERPRINT;
 import static net.arcadiusmc.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_X;
 import static net.arcadiusmc.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_Y;
+import static net.arcadiusmc.delphirender.Consts.HALF_BOX_OVERPRINT;
 import static net.arcadiusmc.delphirender.object.BoxRenderObject.visualCenterOffset;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -73,10 +75,16 @@ public class CanvasRenderObject extends RenderObject {
         scale.x = EMPTY_TD_BLOCK_SIZE_X * pixelSize.x;
         scale.y = EMPTY_TD_BLOCK_SIZE_Y * pixelSize.y;
 
+        scale.x += scale.x * BOX_OVERPRINT;
+        scale.y += scale.y * BOX_OVERPRINT;
+
         Vector3f offset = trans.getTranslation();
         offset.x += (pixelSize.x * 0.5f) + visualCenterOffset(scale.x);
         offset.y -= pixelSize.y;
         offset.z = depth + getZIndexDepth();
+
+        offset.x -= offset.x * HALF_BOX_OVERPRINT;
+        offset.y += offset.y * HALF_BOX_OVERPRINT;
 
         screen.project(trans);
         display.setTransformation(trans);

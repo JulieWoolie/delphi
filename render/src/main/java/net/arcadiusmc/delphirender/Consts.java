@@ -122,4 +122,15 @@ public interface Consts {
   float MACRO_LAYER_DEPTH = MICRO_LAYER_DEPTH * 3;
 
   float RAD90 = (float) Math.toRadians(90);
+
+  /**
+   * The amount a box render object's or canvas pixel's size is increased
+   * to prevent some weird artifacting.
+   */
+  float BOX_OVERPRINT = 0.0015f;
+
+  /**
+   * Half of {@link #BOX_OVERPRINT}
+   */
+  float HALF_BOX_OVERPRINT = BOX_OVERPRINT * 0.5f;
 }
