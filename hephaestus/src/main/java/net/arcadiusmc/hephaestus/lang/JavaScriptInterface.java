@@ -1,6 +1,6 @@
 package net.arcadiusmc.hephaestus.lang;
 
-import static net.arcadiusmc.hephaestus.ScriptElementSystem.JS_LANGUAGE;
+import static net.arcadiusmc.hephaestus.Scripting.JS_LANGUAGE;
 
 import net.arcadiusmc.hephaestus.Scripting;
 import org.graalvm.polyglot.Context;
@@ -27,7 +27,7 @@ public class JavaScriptInterface implements LanguageInterface {
 
     arrayCtor = ctx.parse(JS_LANGUAGE, "[]");
     objectCtor = ctx.parse(JS_LANGUAGE, "{}");
-    toJson = ctx.eval(JS_LANGUAGE, "(x) => JSON.stringify(s)");
+    toJson = ctx.eval(JS_LANGUAGE, "(x) => JSON.stringify(x)");
     fromJson = ctx.eval(JS_LANGUAGE, "(s) => JSON.parse(s)");
   }
 
