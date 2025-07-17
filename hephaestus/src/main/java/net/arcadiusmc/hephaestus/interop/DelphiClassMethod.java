@@ -1,7 +1,6 @@
 package net.arcadiusmc.hephaestus.interop;
 
 import com.oracle.truffle.api.interop.ArityException;
-import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
@@ -71,22 +70,7 @@ public class DelphiClassMethod {
   public static Object callSafe(MethodHandle handle, Object... args) {
     try {
       Object o = handle.invokeWithArguments(args);
-      if (o == null) {
-        return Interop.getHostAccessor().hostSupport().getHostNull();
-      }
-      if (InteropLibrary.isValidValue(o)) {
-        return o;
-      }
-
-      DelphiScriptObject<Object> value = Scripting.typeRegistry.wrapObject(o);
-      if (value != null) {
-        return value;
-      }
-
-      return Interop.getHostAccessor()
-          .hostSupport()
-          .toDisconnectedHostObject(o);
-
+      return Scripting.wrapReturn(o);
     } catch (InvocationTargetException exc) {
       throw new RuntimeException(exc.getCause());
     } catch (RuntimeException r) {

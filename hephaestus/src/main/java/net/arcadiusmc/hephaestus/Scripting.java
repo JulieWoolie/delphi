@@ -2,11 +2,13 @@ package net.arcadiusmc.hephaestus;
 
 import static net.arcadiusmc.hephaestus.typemappers.TypeMapper.addTypeMapper;
 
+import com.oracle.truffle.api.interop.InteropLibrary;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.hephaestus.interop.DelphiObjectTypeRegistry;
 import net.arcadiusmc.hephaestus.interop.DelphiScriptObject;
+import net.arcadiusmc.hephaestus.interop.Interop;
 import net.arcadiusmc.hephaestus.lang.JavaScriptInterface;
 import net.arcadiusmc.hephaestus.lang.LanguageInterface;
 import net.arcadiusmc.hephaestus.stdlib.CancelTask;
@@ -129,16 +131,22 @@ public class Scripting {
     return built;
   }
 
-  public static Object wrapReturn(Object r) {
-    if (r == null) {
-      return null;
+  public static Object wrapReturn(Object o) {
+    if (o == null) {
+      return Interop.getHostAccessor().hostSupport().getHostNull();
+    }
+    if (InteropLibrary.isValidValue(o)) {
+      return o;
     }
 
-    var value = typeRegistry.wrapObject(r);
+    DelphiScriptObject<Object> value = Scripting.typeRegistry.wrapObject(o);
     if (value != null) {
       return value;
     }
-    return r;
+
+    return Interop.getHostAccessor()
+        .hostSupport()
+        .toDisconnectedHostObject(o);
   }
 
   public <T> Object wrapReturn(Class<T> interfaceType, T obj) {
