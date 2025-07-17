@@ -1,17 +1,21 @@
 package net.arcadiusmc.hephaestus;
 
-import static net.arcadiusmc.hephaestus.ScriptElementSystem.JS_LANGUAGE;
 import static net.arcadiusmc.hephaestus.typemappers.TypeMapper.addTypeMapper;
 
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphidom.Loggers;
+import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.hephaestus.interop.DelphiObjectTypeRegistry;
+import net.arcadiusmc.hephaestus.interop.DelphiScriptObject;
 import net.arcadiusmc.hephaestus.lang.JavaScriptInterface;
 import net.arcadiusmc.hephaestus.lang.LanguageInterface;
 import net.arcadiusmc.hephaestus.stdlib.CancelTask;
 import net.arcadiusmc.hephaestus.stdlib.CloseView;
 import net.arcadiusmc.hephaestus.stdlib.CommandFunction;
+import net.arcadiusmc.hephaestus.stdlib.DollarSignFunction;
 import net.arcadiusmc.hephaestus.stdlib.GetPlayerFunction;
 import net.arcadiusmc.hephaestus.stdlib.HsvFunction;
+import net.arcadiusmc.hephaestus.stdlib.RgbFunction;
 import net.arcadiusmc.hephaestus.stdlib.SendMessageFunction;
 import net.arcadiusmc.hephaestus.stdlib.SetInterval;
 import net.arcadiusmc.hephaestus.stdlib.SetTimeout;
@@ -42,6 +46,8 @@ import org.slf4j.Logger;
 public class Scripting {
 
   public static final LanguageInterface JS = new JavaScriptInterface();
+  public static final DelphiObjectTypeRegistry typeRegistry = new DelphiObjectTypeRegistry();
+  public static final String JS_LANGUAGE = "js";
   private static final Logger LOGGER = Loggers.getLogger();
 
   public static void scriptingInit() {
@@ -68,6 +74,11 @@ public class Scripting {
 
     // Color, ig
     scope.putMember("hsv", HsvFunction.HSV);
+    scope.putMember("rgb", RgbFunction.RGB);
+  }
+
+  public static void initDocumentScope(Value scope, Document document) {
+    scope.putMember("$", new DollarSignFunction(document));
   }
 
   public static void initViewScope(Value scope, DocumentView view) {
@@ -116,6 +127,26 @@ public class Scripting {
     initStandardValues(jsValues);
 
     return built;
+  }
+
+  public static Object wrapReturn(Object r) {
+    if (r == null) {
+      return null;
+    }
+
+    var value = typeRegistry.wrapObject(r);
+    if (value != null) {
+      return value;
+    }
+    return r;
+  }
+
+  public <T> Object wrapReturn(Class<T> interfaceType, T obj) {
+    DelphiScriptObject<T> sobj = typeRegistry.wrapObject(interfaceType, obj);
+    if (sobj != null) {
+      return sobj;
+    }
+    return obj;
   }
 
   public static double toDouble(Value value) {
@@ -186,5 +217,19 @@ public class Scripting {
     }
 
     throw new IllegalArgumentException("Callback is not executable");
+  }
+
+  public static int toInt(Value argument, int fallback) {
+    if (!argument.isNumber()) {
+      return fallback;
+    }
+    if (argument.fitsInInt()) {
+      return argument.asInt();
+    }
+    if (argument.fitsInLong()) {
+      long l = argument.asLong();
+      return (int) l;
+    }
+    return fallback;
   }
 }

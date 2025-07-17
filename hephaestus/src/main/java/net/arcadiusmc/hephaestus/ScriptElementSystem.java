@@ -29,8 +29,6 @@ import org.slf4j.Logger;
 
 public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptElement> {
 
-  public static final String JS_LANGUAGE = "js";
-
   private static final Logger LOGGER = Loggers.getLogger();
   private Context context;
   private Value jsScope;
@@ -50,10 +48,12 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     super.onAttach(document);
 
     this.context = Scripting.setupContext();
-    this.jsScope = context.getBindings(JS_LANGUAGE);
+    this.jsScope = context.getBindings(Scripting.JS_LANGUAGE);
     this.domLoaded = false;
 
     jsScope.putMember("document", document);
+
+    Scripting.initDocumentScope(jsScope, document);
 
     EventListenerList target = document.getGlobalTarget();
     target.addEventListener(EventTypes.DOM_LOADED, loadListener);
@@ -163,7 +163,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
   }
 
   private void evaluate(String uri, String src) {
-    Source source = Source.newBuilder(JS_LANGUAGE, src, uri).buildLiteral();
+    Source source = Source.newBuilder(Scripting.JS_LANGUAGE, src, uri).buildLiteral();
 
     try {
       context.eval(source);
@@ -255,7 +255,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
       Value compiled;
 
       try {
-        Source source = Source.newBuilder(JS_LANGUAGE, scriptCode, uri).buildLiteral();
+        Source source = Source.newBuilder(Scripting.JS_LANGUAGE, scriptCode, uri).buildLiteral();
         compiled = context.parse(source);
       } catch (PolyglotException exc) {
         LOGGER.error("Failed to compile event listener {}:", uri, exc);
