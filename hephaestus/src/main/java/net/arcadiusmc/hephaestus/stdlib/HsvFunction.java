@@ -16,7 +16,7 @@ public enum HsvFunction implements ProxyExecutable {
     float val = 1.0f;
     float alpha = 1.0f;
 
-    switch (arguments.length) {
+    switch (Math.min(arguments.length, 4)) {
       case 4:
         alpha = Scripting.toFloat(arguments[3], 1.0f);
       case 3:
@@ -25,7 +25,12 @@ public enum HsvFunction implements ProxyExecutable {
         sat = Scripting.toFloat(arguments[1], 1.0f);
       case 1:
         hue = Scripting.toFloat(arguments[0], 1.0f);
+        break;
+
       default:
+        hue = 0.0f;
+        sat = 0.0f;
+        val = 0.0f;
         break;
     }
 
