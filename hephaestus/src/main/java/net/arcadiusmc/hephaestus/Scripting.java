@@ -6,6 +6,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphidom.Loggers;
 import net.arcadiusmc.dom.Document;
+import net.arcadiusmc.dom.style.Color;
 import net.arcadiusmc.hephaestus.interop.DelphiObjectTypeRegistry;
 import net.arcadiusmc.hephaestus.interop.DelphiScriptObject;
 import net.arcadiusmc.hephaestus.interop.Interop;
@@ -17,6 +18,7 @@ import net.arcadiusmc.hephaestus.stdlib.CommandFunction;
 import net.arcadiusmc.hephaestus.stdlib.DollarSignFunction;
 import net.arcadiusmc.hephaestus.stdlib.GetPlayerFunction;
 import net.arcadiusmc.hephaestus.stdlib.HsvFunction;
+import net.arcadiusmc.hephaestus.stdlib.JsColor;
 import net.arcadiusmc.hephaestus.stdlib.RgbFunction;
 import net.arcadiusmc.hephaestus.stdlib.SendMessageFunction;
 import net.arcadiusmc.hephaestus.stdlib.SetInterval;
@@ -42,6 +44,7 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.EnvironmentAccess;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.impl.AbstractPolyglotImpl.APIAccess;
 import org.graalvm.polyglot.io.IOAccess;
 import org.slf4j.Logger;
 
@@ -58,6 +61,8 @@ public class Scripting {
     } catch (Exception e) {
       LOGGER.error("Failed to initialize JS:", e);
     }
+
+    typeRegistry.register(Color.class, JsColor.class);
   }
 
   public static void shutdownScripting() {
@@ -144,12 +149,23 @@ public class Scripting {
       return value;
     }
 
+    APIAccess access = Interop.getApiAccess();
+
+    if (access.isProxy(o)) {
+      return Interop.getHostAccessor()
+          .hostSupport()
+          .toDisconnectedHostProxy(o);
+    }
+    if (access.isValue(o)) {
+      return access.getValueReceiver(o);
+    }
+
     return Interop.getHostAccessor()
         .hostSupport()
         .toDisconnectedHostObject(o);
   }
 
-  public <T> Object wrapReturn(Class<T> interfaceType, T obj) {
+  public static <T> Object wrapReturn(Class<T> interfaceType, T obj) {
     DelphiScriptObject<T> sobj = typeRegistry.wrapObject(interfaceType, obj);
     if (sobj != null) {
       return sobj;

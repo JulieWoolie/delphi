@@ -55,7 +55,7 @@ public class DelphiClassMethod {
       }
 
       try {
-        javaArgs[jArgIdx] = Value.asValue(arg).as(conversionType);
+        javaArgs[jArgIdx] = convertToParam(arg, conversionType);
       } catch (ClassCastException exc) {
         throw UnsupportedTypeException.create(
             arguments,
@@ -65,6 +65,13 @@ public class DelphiClassMethod {
     }
 
     return callSafe(handle, javaArgs);
+  }
+
+  private Object convertToParam(Object scriptArg, Class<?> desiredType) {
+    if (desiredType.isInstance(scriptArg)) {
+      return scriptArg;
+    }
+    return Value.asValue(scriptArg).as(desiredType);
   }
 
   public static Object callSafe(MethodHandle handle, Object... args) {

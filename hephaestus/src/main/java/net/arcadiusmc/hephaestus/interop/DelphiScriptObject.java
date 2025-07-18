@@ -7,6 +7,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.InvalidArrayIndexException;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
@@ -34,12 +35,28 @@ public class DelphiScriptObject<T> implements TruffleObject {
 
   @ExportMessage
   final boolean isMemberReadable(String member) {
-    return type.propertyGetters.containsKey(member);
+    if (isIndexMember(member)) {
+      long idx = toIndex(member);
+      return isArrayElementReadable(idx);
+    }
+    return type.getters.containsKey(member);
   }
 
   @ExportMessage
-  public Object readMember(String name) throws UnknownIdentifierException {
-    MethodHandle methodHandle = type.propertyGetters.get(name);
+  public Object readMember(String name)
+      throws UnknownIdentifierException, UnsupportedMessageException
+  {
+    if (isIndexMember(name)) {
+      long idx = toIndex(name);
+      System.out.println("indexRead: " + name + " hasArrayElements: " + hasArrayElements() + " readable: " + isArrayElementReadable(idx));
+      try {
+        return readArrayElement(idx);
+      } catch (InvalidArrayIndexException e) {
+        throw UnknownIdentifierException.create(name);
+      }
+    }
+
+    MethodHandle methodHandle = type.getters.get(name);
     if (methodHandle != null) {
       return callSafe(methodHandle, object);
     }
@@ -66,24 +83,58 @@ public class DelphiScriptObject<T> implements TruffleObject {
 
   @ExportMessage
   public boolean isMemberModifiable(String name) {
-    return type.propertySetters.containsKey(name);
+    if (isIndexMember(name)) {
+      return isArrayElementModifiable(toIndex(name));
+    }
+
+    return type.setters.containsKey(name);
   }
 
   @ExportMessage
-  public Object writeMember(String name, Object value)
-      throws UnknownIdentifierException, UnsupportedTypeException
+  public void writeMember(String name, Object value)
+      throws UnknownIdentifierException, UnsupportedTypeException, UnsupportedMessageException
   {
-    DelphiClassMethod handle = type.propertySetters.get(name);
+    if (isIndexMember(name)) {
+      long idx = toIndex(name);
+
+      try {
+        writeArrayElement(idx, value);
+      } catch (InvalidArrayIndexException e) {
+        throw UnknownIdentifierException.create(name);
+      }
+
+      return;
+    }
+
+    DelphiClassMethod handle = type.setters.get(name);
     if (handle == null) {
       throw UnknownIdentifierException.create(name);
     }
 
     try {
-      return handle.execute(object, value);
+      handle.execute(object, value);
     } catch (ArityException ignored) {
       // should not happen
       throw new IllegalStateException();
     }
+  }
+
+  private long toIndex(String member) {
+    return Long.parseLong(member);
+  }
+
+  private boolean isIndexMember(String name) {
+    for (int i = 0; i < name.length(); i++) {
+      char ch = name.charAt(i);
+      if (i == 0 && ch == '-') {
+        continue;
+      }
+      if (ch >= '0' && ch <= '9') {
+        continue;
+      }
+      return false;
+    }
+    return true;
   }
 
   @ExportMessage
@@ -110,6 +161,89 @@ public class DelphiScriptObject<T> implements TruffleObject {
   @ExportMessage
   final Object getMembers(boolean includeInternal) {
     return new KeysObject<>(type);
+  }
+
+  @ExportMessage
+  public boolean hasArrayElements() {
+    return type.arrayLen != null && type.arrayRead != null;
+  }
+
+  @ExportMessage
+  public Object readArrayElement(long idx)
+      throws UnsupportedMessageException, InvalidArrayIndexException
+  {
+    if (!hasArrayElements()) {
+      throw UnsupportedMessageException.create();
+    }
+
+    Object index;
+    if (type.arrayReadInt) {
+      index = (int) idx;
+    } else {
+      index = idx;
+    }
+
+    try {
+      return callSafe(type.arrayRead, object, index);
+    } catch (IndexOutOfBoundsException exc) {
+      throw InvalidArrayIndexException.create(idx);
+    }
+  }
+
+  @ExportMessage
+  public long getArraySize() throws UnsupportedMessageException {
+    if (!hasArrayElements()) {
+      throw UnsupportedMessageException.create();
+    }
+
+    Object o = callSafe(type.arrayLen, object);
+    if (o instanceof Integer i) {
+      return i.longValue();
+    }
+    return (Long) o;
+  }
+
+  @ExportMessage
+  public boolean isArrayElementReadable(long idx) {
+    if (!hasArrayElements()) {
+      return false;
+    }
+
+    try {
+      long length = getArraySize();
+      return idx >= 0 && idx < length;
+    } catch (UnsupportedMessageException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @ExportMessage
+  public void writeArrayElement(long idx, Object value)
+      throws UnsupportedMessageException, UnsupportedTypeException, InvalidArrayIndexException {
+    if (!hasArrayElements() || type.arrayWrite == null) {
+      throw UnsupportedMessageException.create();
+    }
+
+    try {
+      type.arrayWrite.execute(object, idx, value);
+    } catch (ArityException ignored) {
+      // Shouldn't be possible
+    } catch (IndexOutOfBoundsException exc) {
+      throw InvalidArrayIndexException.create(idx);
+    }
+  }
+
+  @ExportMessage
+  public boolean isArrayElementModifiable(long idx) {
+    if (!isArrayElementReadable(idx)) {
+      return false;
+    }
+    return type.arrayWrite != null;
+  }
+
+  @ExportMessage
+  public boolean isArrayElementInsertable(long idx) {
+    return false;
   }
 
   @ExportLibrary(InteropLibrary.class)

@@ -34,6 +34,6 @@ public enum HsvFunction implements ProxyExecutable {
         break;
     }
 
-    return Color.hsva(hue, sat, val, alpha);
+    return Scripting.wrapReturn(Color.class, Color.hsva(hue, sat, val, alpha));
   }
 }

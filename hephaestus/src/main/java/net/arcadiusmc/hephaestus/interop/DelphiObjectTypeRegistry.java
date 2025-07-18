@@ -1,8 +1,7 @@
 package net.arcadiusmc.hephaestus.interop;
 
-import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -10,14 +9,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.Map;
-import java.util.Set;
 import net.arcadiusmc.delphidom.Loggers;
+import net.arcadiusmc.hephaestus.interop.scan.AnnotationHandler;
+import net.arcadiusmc.hephaestus.interop.scan.AnnotationHandlers;
+import net.arcadiusmc.hephaestus.interop.scan.AnnotationScanException;
 import org.slf4j.Logger;
 
 public class DelphiObjectTypeRegistry {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
+  private final AnnotationHandlers handlers = new AnnotationHandlers();
   private final Map<Class, DelphiScriptClass<?>> scriptClassMap = new Object2ObjectOpenHashMap<>();
 
   public <T> void register(Class<T> type, Class<?> methodHolder) {
@@ -81,155 +83,38 @@ public class DelphiObjectTypeRegistry {
     Lookup lookup = MethodHandles.publicLookup();
 
     Class<T> jType = scriptClass.getTypeClass();
-    String typename = jType.getSimpleName();
-
-    Set<String> properties = new ObjectOpenHashSet<>();
-    Map<String, MethodHandle> getters = new Object2ObjectOpenHashMap<>();
-    Map<String, DelphiClassMethod> setters = new Object2ObjectOpenHashMap<>();
-    Map<String, DelphiClassMethod> scriptMethods = new Object2ObjectOpenHashMap<>();
+    boolean success = true;
 
     for (Method method : methods) {
-      SetProperty pset = method.getAnnotation(SetProperty.class);
-      GetProperty pget = method.getAnnotation(GetProperty.class);
-      ScriptFunction sfunc = method.getAnnotation(ScriptFunction.class);
-
-      if (pget == null && pset == null && sfunc == null) {
-        continue;
-      }
-
       if (!Modifier.isStatic(method.getModifiers())) {
-        LOGGER.error("Script method {} is not static", method);
         continue;
       }
 
       Parameter[] params = method.getParameters();
       if (params.length < 1 || !areCompatible(params[0].getType(), jType)) {
-        LOGGER.error("Script method {} does not have a {} parameter", method, typename);
         continue;
       }
 
       MethodHandle handle = lookup.unreflect(method);
+      Annotation[] annotations = method.getAnnotations();
 
-      if (pget != null) {
-        if (params.length != 1) {
-          LOGGER.error("GetProperty method {} must have 1 argument: {}", method, typename);
+      for (Annotation annotation : annotations) {
+        AnnotationHandler<Annotation> handler = handlers.getHandler(annotation);
+        if (handler == null) {
+          LOGGER.info("Couldn't find handler for annotation {}", annotation);
           continue;
         }
 
-        String value = pget.value();
-        if (Strings.isNullOrEmpty(value)) {
-          value = stripPrefix(method.getName(), "get");
+        try {
+          handler.scan(method, handle, annotation, scriptClass);
+        } catch (AnnotationScanException exc) {
+          LOGGER.error(exc.getMessage());
+          success = false;
         }
-
-        if (getters.containsKey(value)) {
-          LOGGER.error("GetProperty with name {} already defined", value);
-          continue;
-        }
-
-        getters.put(value, handle);
-        properties.add(value);
-
-        continue;
       }
-
-      if (pset != null) {
-        if (params.length != 2) {
-          LOGGER.error("SetProperty method {} must have 2 arguments: {} and a value", method, typename);
-          continue;
-        }
-
-        String value = pset.value();
-        if (Strings.isNullOrEmpty(value)) {
-          value = stripPrefix(method.getName(), "set");
-        }
-
-        if (setters.containsKey(value)) {
-          LOGGER.error("SetProperty with name {} already defined", value);
-          continue;
-        }
-
-        Parameter[] onlyParam = new Parameter[1];
-        onlyParam[0] = params[1];
-
-        DelphiClassMethod dMethod = new DelphiClassMethod(handle, onlyParam, 1, 1);
-        setters.put(value, dMethod);
-        properties.add(value);
-
-        continue;
-      }
-
-      Parameter[] funcParams = new Parameter[params.length - 1];
-      int minArity = 0;
-      int maxArity = 0;
-
-      for (int i = 1; i < params.length; i++) {
-        Parameter param = params[i];
-        if (param.isVarArgs()) {
-          maxArity = Integer.MAX_VALUE;
-        } else {
-          minArity++;
-          maxArity++;
-        }
-        funcParams[i - 1] = param;
-      }
-
-      String fname = sfunc.value();
-      if (Strings.isNullOrEmpty(fname)) {
-        fname = method.getName();
-      }
-
-      if (scriptMethods.containsKey(fname)) {
-        LOGGER.error("Script method {} already defined", fname);
-        continue;
-      }
-
-      DelphiClassMethod dMethod = new DelphiClassMethod(handle, funcParams, minArity, maxArity);
-      scriptMethods.put(fname, dMethod);
-      properties.add(fname);
     }
 
-    if (properties.isEmpty()) {
-      return false;
-    }
-
-    for (String string : setters.keySet()) {
-      MethodHandle getter = getters.get(string);
-      if (getter != null) {
-        continue;
-      }
-
-      LOGGER.warn("Script property '{}' has setter, but not getter", string);
-    }
-
-    for (String property : properties) {
-      if (!scriptClass.properties.contains(property)) {
-        continue;
-      }
-
-      LOGGER.error("Property/method {} for class {} is already defined", property, typename);
-      return false;
-    }
-
-    scriptClass.propertySetters.putAll(setters);
-    scriptClass.propertyGetters.putAll(getters);
-    scriptClass.methods.putAll(scriptMethods);
-    scriptClass.properties.addAll(properties);
-
-    return true;
-  }
-
-  private String stripPrefix(String mname, String prefix) {
-    if (mname.startsWith(prefix)) {
-      LOGGER.info("mname={} prefix={}", mname, prefix);
-      String sub = mname.substring(prefix.length());
-      String result = sub.substring(0, 1).toLowerCase() + sub.substring(1);
-
-      LOGGER.debug("sub={} result={}", sub, result);
-
-      return result;
-    }
-
-    return mname;
+    return success;
   }
 
   private static boolean areCompatible(Class<?> t1, Class<?> t2) {

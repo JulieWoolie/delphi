@@ -33,6 +33,6 @@ public enum RgbFunction implements ProxyExecutable {
         break;
     }
 
-    return Color.argb(a, r, g, b);
+    return Scripting.wrapReturn(Color.class, Color.argb(a, r, g, b));
   }
 }
