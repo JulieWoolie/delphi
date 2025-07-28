@@ -2,7 +2,7 @@ plugins {
   java
 }
 
-group = "net.arcadiusmc"
+group = "com.juliewoolie"
 
 repositories {
   mavenCentral()
