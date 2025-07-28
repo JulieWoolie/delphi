@@ -4,15 +4,14 @@ import static com.juliewoolie.delphi.Screen.MAX_SCREEN_SIZE;
 import static com.juliewoolie.delphi.Screen.MIN_SCREEN_SIZE;
 
 import com.google.common.base.Strings;
-import java.util.Objects;
-import lombok.Getter;
-import lombok.Setter;
 import com.juliewoolie.delphi.PlayerSet;
 import com.juliewoolie.delphi.event.DocumentCloseEvent;
 import com.juliewoolie.delphi.event.DocumentEvent;
+import com.juliewoolie.delphi.event.DocumentViewMoveEvent;
 import com.juliewoolie.delphi.resource.ResourcePath;
 import com.juliewoolie.delphidom.DelphiCanvasElement;
 import com.juliewoolie.delphidom.DelphiDocument;
+import com.juliewoolie.delphidom.DelphiDocumentElement;
 import com.juliewoolie.delphidom.DelphiElement;
 import com.juliewoolie.delphidom.DelphiNode;
 import com.juliewoolie.delphidom.ExtendedView;
@@ -34,6 +33,9 @@ import com.juliewoolie.dom.event.AttributeMutateEvent;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.MouseButton;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -45,6 +47,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 public class PageView implements ExtendedView {
@@ -209,6 +212,10 @@ public class PageView implements ExtendedView {
     killIfSpawned();
     screen.apply(transformation);
     spawnIfSpawned();
+
+    if (transformation.getTranslation().lengthSquared() != 0) {
+      callMoveEvents();
+    }
   }
 
   @Override
@@ -219,6 +226,8 @@ public class PageView implements ExtendedView {
 
     killIfSpawned();
 
+    boolean callMoveEvent = !screen.center.equals(transformation.getTranslation());
+
     screen.center.set(transformation.getTranslation());
     screen.scale.set(transformation.getScale());
     screen.leftRotation.set(transformation.getLeftRotation());
@@ -226,6 +235,10 @@ public class PageView implements ExtendedView {
     screen.recalculate();
 
     spawnIfSpawned();
+
+    if (callMoveEvent) {
+      callMoveEvents();
+    }
   }
 
   @Override
@@ -323,6 +336,27 @@ public class PageView implements ExtendedView {
       Location loc = getSpawnInteractionLocation();
       interaction.teleport(loc);
       configureInteractionSize();
+    }
+
+    callMoveEvents();
+  }
+
+  private void callMoveEvents() {
+    if (state != ViewState.SPAWNED) {
+      return;
+    }
+
+    // Call Bukkit Event
+    Vector3d vec = new Vector3d(screen.center.x, screen.boundingBoxMin.y, screen.center.z);
+    DocumentViewMoveEvent moveEvent = new DocumentViewMoveEvent(this, this.world, vec);
+    moveEvent.callEvent();
+
+    // Call DOM event
+    DelphiDocumentElement element = document.getDocumentElement();
+    if (element != null) {
+      EventImpl domEvent = new EventImpl(EventTypes.VIEW_MOVED, document);
+      domEvent.initEvent(element, false, false);
+      element.dispatchEvent(domEvent);
     }
   }
 

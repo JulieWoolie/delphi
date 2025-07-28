@@ -400,4 +400,30 @@ public interface EventTypes {
    * </table>
    */
   String CONTENT_CHANGED = "content-changed";
+
+  /**
+   * Called when the current document view is moved, or it's location changes.
+   * Only called on {@link Document#getDocumentElement()} instances.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link Event}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>{@link Document}</td>
+   *   </tr>
+   * </table>
+   */
+  String VIEW_MOVED = "view-moved";
 }

@@ -215,6 +215,7 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
         case "onmodifyoption" -> EventTypes.MODIFY_OPTION;
         case "onspawn" -> EventTypes.DOM_SPAWNED;
         case "oncontentchanged" -> EventTypes.CONTENT_CHANGED;
+        case "onviewmoved" -> EventTypes.VIEW_MOVED;
         default -> attrKey.substring(2);
       };
     }
