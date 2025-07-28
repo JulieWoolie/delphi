@@ -1,6 +1,6 @@
 name: DelphiTestPlugin
 version: "1.0.0"
-main: "net.arcadiusmc.delphitest.DelphiTestPlugin"
+main: "com.juliewoolie.delphitest.DelphiTestPlugin"
 api-version: "1.21"
 
 dependencies:
