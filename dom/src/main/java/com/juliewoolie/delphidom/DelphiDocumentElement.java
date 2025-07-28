@@ -1,5 +1,7 @@
 package com.juliewoolie.delphidom;
 
+import com.juliewoolie.dom.BodyElement;
+import com.juliewoolie.dom.HeadElement;
 import lombok.Getter;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Node;
@@ -8,9 +10,13 @@ import com.juliewoolie.dom.TagNames;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.MutationEvent;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class DelphiDocumentElement extends DelphiElement implements Element {
+public class DelphiDocumentElement
+    extends DelphiElement
+    implements com.juliewoolie.dom.DelphiElement
+{
 
   private DelphiBodyElement body;
   private DelphiHeadElement head;
@@ -21,6 +27,16 @@ public class DelphiDocumentElement extends DelphiElement implements Element {
     ChildListener listener = new ChildListener();
     addEventListener(EventTypes.APPEND_CHILD, listener);
     addEventListener(EventTypes.REMOVE_CHILD, listener);
+  }
+
+  @Override
+  public HeadElement getHeadElement() {
+    return head;
+  }
+
+  @Override
+  public @Nullable BodyElement getBodyElement() {
+    return body;
   }
 
   class ChildListener implements EventListener.Typed<MutationEvent> {

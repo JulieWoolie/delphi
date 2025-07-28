@@ -82,6 +82,10 @@ public interface Document extends EventTarget, DomQueryable {
    *   </thead>
    *   <tbody>
    *     <tr>
+   *       <td>{@link TagNames#ROOT}</td>
+   *       <td>{@link DelphiElement}</td>
+   *     </tr>
+   *     <tr>
    *       <td>{@link TagNames#OPTION}</td>
    *       <td>{@link OptionElement}</td>
    *     </tr>
@@ -234,7 +238,7 @@ public interface Document extends EventTarget, DomQueryable {
    * Get the root document element.
    * @return Root document element
    */
-  Element getDocumentElement();
+  DelphiElement getDocumentElement();
 
   /**
    * Get the {@code <head>} element
