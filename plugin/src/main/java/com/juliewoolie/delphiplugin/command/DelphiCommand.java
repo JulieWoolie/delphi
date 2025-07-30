@@ -1,8 +1,5 @@
 package com.juliewoolie.delphiplugin.command;
 
-import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
-import static io.papermc.paper.command.brigadier.Commands.argument;
-import static io.papermc.paper.command.brigadier.Commands.literal;
 import static com.juliewoolie.delphi.resource.DelphiException.ERR_ACCESS_DENIED;
 import static com.juliewoolie.delphi.resource.DelphiException.ERR_DOC_PARSE;
 import static com.juliewoolie.delphi.resource.DelphiException.ERR_ILLEGAL_INSTANCE_NAME;
@@ -17,7 +14,25 @@ import static com.juliewoolie.delphi.resource.DelphiException.ERR_NO_FILE;
 import static com.juliewoolie.delphi.resource.DelphiException.ERR_OLD_GAME_VERSION;
 import static com.juliewoolie.delphi.resource.DelphiException.ERR_SAX_PARSER_INIT;
 import static com.juliewoolie.delphi.resource.DelphiException.ERR_UNKNOWN;
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+import static io.papermc.paper.command.brigadier.Commands.argument;
+import static io.papermc.paper.command.brigadier.Commands.literal;
 
+import com.juliewoolie.delphi.DelphiProvider;
+import com.juliewoolie.delphi.DocumentView;
+import com.juliewoolie.delphi.DocumentViewBuilder;
+import com.juliewoolie.delphi.resource.DelphiException;
+import com.juliewoolie.delphi.resource.ResourcePath;
+import com.juliewoolie.delphi.util.Result;
+import com.juliewoolie.delphiplugin.Debug;
+import com.juliewoolie.delphiplugin.DelphiImpl;
+import com.juliewoolie.delphiplugin.DelphiPlugin;
+import com.juliewoolie.delphiplugin.PageView;
+import com.juliewoolie.delphiplugin.ViewManager;
+import com.juliewoolie.delphiplugin.resource.PluginResources;
+import com.juliewoolie.dom.Canvas;
+import com.juliewoolie.dom.CanvasElement;
+import com.juliewoolie.dom.Element;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
@@ -41,6 +56,10 @@ import io.papermc.paper.command.brigadier.argument.resolvers.PlayerProfileListRe
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,19 +68,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import com.juliewoolie.delphi.DelphiProvider;
-import com.juliewoolie.delphi.DocumentView;
-import com.juliewoolie.delphi.DocumentViewBuilder;
-import com.juliewoolie.delphi.resource.DelphiException;
-import com.juliewoolie.delphi.resource.ResourcePath;
-import com.juliewoolie.delphi.util.Result;
-import com.juliewoolie.delphiplugin.Debug;
-import com.juliewoolie.delphiplugin.DelphiImpl;
-import com.juliewoolie.delphiplugin.DelphiPlugin;
-import com.juliewoolie.delphiplugin.PageView;
-import com.juliewoolie.delphiplugin.ViewManager;
-import com.juliewoolie.delphiplugin.resource.PluginResources;
-import com.juliewoolie.dom.Element;
+import javax.imageio.ImageIO;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -71,6 +78,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector4i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +145,12 @@ public class DelphiCommand {
 
   static final TranslatableExceptionType GAME_TOO_OLD
       = new TranslatableExceptionType("delphi.error.gameTooOld");
+
+  static final TranslatableExceptionType NOT_A_CANVAS
+      = new TranslatableExceptionType("delphi.error.notACanvas");
+
+  static final TranslatableExceptionType CANVAS_DUMP_FAILED
+      = new TranslatableExceptionType("delphi.error.canvasDumpFailed");
 
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
@@ -242,8 +256,51 @@ public class DelphiCommand {
         .then(literal("dump-targeted-element-xml")
             .executes(dumpCommand("target-element-dump", true))
         )
+        .then(literal("dump-targeted-canvas-png")
+            .executes(dumpCanvas())
+        )
         .then(toggleDebugLines())
         .build();
+  }
+
+  private static Command<CommandSourceStack> dumpCanvas() {
+    return context -> {
+      PageView view = getAnyTargeted(context);
+      Element targetted = view.getDocument().getHoveredElement();
+
+      if (!(targetted instanceof CanvasElement canvas)) {
+        throw NOT_A_CANVAS.create();
+      }
+
+      Canvas gfx = canvas.getCanvas();
+      BufferedImage image = new BufferedImage(gfx.getWidth(), gfx.getHeight(), BufferedImage.TYPE_INT_ARGB);
+      Vector4i c = new Vector4i();
+
+      for (int y = 0; y < gfx.getHeight(); y++) {
+        for (int x = 0; x < gfx.getWidth(); x++) {
+          gfx.getColori(x, y, c);
+          Color awtColor = new Color(c.x, c.y, c.z, c.w);
+          image.setRGB(x, y, awtColor.getRGB());
+        }
+      }
+
+      Path p = getPlugin()
+          .getDataPath()
+          .resolve("debug")
+          .resolve("canvas-dump.png");
+
+      try (var s = Files.newOutputStream(p)) {
+        ImageIO.write(image, "PNG", s);
+      } catch (IOException e) {
+        getPlugin().getSLF4JLogger().error("Error writing canvas dump", e);
+        throw CANVAS_DUMP_FAILED.create();
+      }
+
+      context.getSource().getSender().sendMessage(
+          Component.translatable("delphi.debug.dumpedCanvas")
+      );
+      return SINGLE_SUCCESS;
+    };
   }
 
   private static Command<CommandSourceStack> dumpCommand(String fname, boolean targetElement) {
