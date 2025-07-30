@@ -127,10 +127,5 @@ public interface Consts {
    * The amount a box render object's or canvas pixel's size is increased
    * to prevent some weird artifacting.
    */
-  float BOX_OVERPRINT = 0.0015f;
-
-  /**
-   * Half of {@link #BOX_OVERPRINT}
-   */
-  float HALF_BOX_OVERPRINT = BOX_OVERPRINT * 0.5f;
+  float BOX_OVERPRINT = 0.000125f;
 }

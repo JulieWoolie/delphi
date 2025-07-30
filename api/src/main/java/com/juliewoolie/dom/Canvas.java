@@ -2,11 +2,11 @@ package com.juliewoolie.dom;
 
 import com.juliewoolie.dom.style.Color;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector3i;
 import org.joml.Vector3ic;
+import org.joml.Vector4f;
 import org.joml.Vector4fc;
+import org.joml.Vector4i;
 import org.joml.Vector4ic;
 
 /**
@@ -48,7 +48,7 @@ public interface Canvas {
    *         width or height, respectively.
    * @throws NullPointerException If {@code out} is {@code null}
    */
-  Vector3f getColorf(int x, int y, @NotNull Vector3f out)
+  Vector4f getColorf(int x, int y, @NotNull Vector4f out)
       throws NullPointerException, IllegalArgumentException;
 
   /**
@@ -64,7 +64,7 @@ public interface Canvas {
    *         width or height, respectively.
    * @throws NullPointerException If {@code out} is {@code null}
    */
-  Vector3i getColori(int x, int y, @NotNull Vector3i out);
+  Vector4i getColori(int x, int y, @NotNull Vector4i out);
 
   /**
    * Get a pixel's color value in range [0..1]
@@ -78,7 +78,7 @@ public interface Canvas {
    *         width or height, respectively.
    */
   @NotNull
-  Vector3f getColorf(int x, int y) throws IllegalArgumentException;
+  Vector4f getColorf(int x, int y) throws IllegalArgumentException;
 
   /**
    * Get a pixel's color value in range [0..255]
@@ -92,7 +92,7 @@ public interface Canvas {
    *         width or height, respectively.
    */
   @NotNull
-  Vector3i getColori(int x, int y) throws IllegalArgumentException;
+  Vector4i getColori(int x, int y) throws IllegalArgumentException;
 
   /**
    * Get a pixel's color.

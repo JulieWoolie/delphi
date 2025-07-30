@@ -1,24 +1,24 @@
 package com.juliewoolie.delphidom;
 
-import java.util.Objects;
 import com.juliewoolie.dom.Canvas;
 import com.juliewoolie.dom.CanvasElement;
 import com.juliewoolie.dom.style.Color;
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector3i;
 import org.joml.Vector3ic;
+import org.joml.Vector4f;
 import org.joml.Vector4fc;
 import org.joml.Vector4i;
 import org.joml.Vector4ic;
 
 public class DelphiCanvas implements Canvas {
 
-  static final int CHANNELS = 3;
+  static final int CHANNELS = 4;
   static final int CH_RED = 0;
   static final int CH_GREEN = 1;
   static final int CH_BLUE = 2;
+  static final int CH_ALPHA = 3;
   static final float MAX_VALUE = 255.0f;
 
   private int width;
@@ -116,15 +116,29 @@ public class DelphiCanvas implements Canvas {
     return (int) (f * MAX_VALUE);
   }
 
-  public void sample(int idx, Vector3i out) {
+  public void sample(int idx, Vector4i out) {
     idx *= CHANNELS;
     out.x = data[idx + CH_RED] & 0xff;
     out.y = data[idx + CH_GREEN] & 0xff;
     out.z = data[idx + CH_BLUE] & 0xff;
+    out.w = data[idx + CH_ALPHA] & 0xff;
+  }
+
+  public void sample(int x, int y, Vector4i out) {
+    if (x < 0 || y < 0 || x >= width || y >= height) {
+      out.set(0);
+      return;
+    }
+
+    int idx = (x + (y * width)) * CHANNELS;
+    out.x = data[idx + CH_RED] & 0xff;
+    out.y = data[idx + CH_GREEN] & 0xff;
+    out.z = data[idx + CH_BLUE] & 0xff;
+    out.w = data[idx + CH_ALPHA] & 0xff;
   }
 
   @Override
-  public Vector3f getColorf(int x, int y, @NotNull Vector3f out) {
+  public Vector4f getColorf(int x, int y, @NotNull Vector4f out) {
     Objects.requireNonNull(out, "out is null");
 
     int idx = pixelIndex(x, y);
@@ -132,16 +146,18 @@ public class DelphiCanvas implements Canvas {
     float r = data[idx + CH_RED] & 0xff;
     float g = data[idx + CH_GREEN] & 0xff;
     float b = data[idx + CH_BLUE] & 0xff;
+    float a = data[idx + CH_ALPHA] & 0xff;
 
     out.x = r / MAX_VALUE;
     out.y = g / MAX_VALUE;
     out.z = b / MAX_VALUE;
+    out.w = a / MAX_VALUE;
 
     return out;
   }
 
   @Override
-  public Vector3i getColori(int x, int y, @NotNull Vector3i out) {
+  public Vector4i getColori(int x, int y, @NotNull Vector4i out) {
     Objects.requireNonNull(out, "out is null");
 
     int idx = pixelIndex(x, y);
@@ -149,25 +165,26 @@ public class DelphiCanvas implements Canvas {
     out.x = data[idx + CH_RED] & 0xff;
     out.y = data[idx + CH_GREEN] & 0xff;
     out.z = data[idx + CH_BLUE] & 0xff;
+    out.w = data[idx + CH_ALPHA] & 0xff;
 
     return out;
   }
 
   @Override
-  public @NotNull Vector3f getColorf(int x, int y) {
-    return getColorf(x, y, new Vector3f());
+  public @NotNull Vector4f getColorf(int x, int y) {
+    return getColorf(x, y, new Vector4f());
   }
 
   @Override
-  public @NotNull Vector3i getColori(int x, int y) {
-    return getColori(x, y, new Vector3i());
+  public @NotNull Vector4i getColori(int x, int y) {
+    return getColori(x, y, new Vector4i());
   }
 
   @Override
   public Color getColor(int x, int y) throws IllegalArgumentException {
-    Vector3i c = new Vector3i();
+    Vector4i c = new Vector4i();
     getColori(x, y, c);
-    return Color.rgb(c.x, c.y, c.z);
+    return Color.argb(c.w, c.x, c.y, c.z);
   }
 
   @Override
@@ -182,61 +199,28 @@ public class DelphiCanvas implements Canvas {
     setColori(x, y, vec);
   }
 
-  private int combineAlpha(int idx, int v, float a) {
-    int ev = data[idx];
-    if (a <= 0.0) {
-      return ev;
-    }
-
-    return (int) (v * a + ev * (1.0f - a));
-  }
-
   @Override
   public void setColorf(int x, int y, @NotNull Vector4fc color) {
     Objects.requireNonNull(color, "color is null");
 
-    float a = color.w();
-    if (a <= 0.0) {
-      return;
-    }
-
     int r = toChannel(color.x());
     int g = toChannel(color.y());
     int b = toChannel(color.z());
+    int a = toChannel(color.w());
 
-    if (a < 1.0) {
-      int idx = pixelIndex(x, y);
-      r = combineAlpha(idx + CH_RED, r, a);
-      g = combineAlpha(idx + CH_GREEN, g, a);
-      b = combineAlpha(idx + CH_BLUE, b, a);
-    }
-
-    setColorInternal(x, y, r, g, b);
+    setColorInternal(x, y, r, g, b, a);
   }
 
   @Override
   public void setColori(int x, int y, @NotNull Vector4ic color) {
     Objects.requireNonNull(color, "color is null");
 
-    int ai = color.w();
-    if (ai <= 0) {
-      return;
-    }
-
     int r = (color.x() & 0xff);
     int g = (color.y() & 0xff);
     int b = (color.z() & 0xff);
+    int a = (color.w() & 0xff);
 
-    if (ai < 255) {
-      int idx = pixelIndex(x, y);
-      float a = ai / MAX_VALUE;
-
-      r = combineAlpha(idx + CH_RED, r, a);
-      g = combineAlpha(idx + CH_GREEN, g, a);
-      b = combineAlpha(idx + CH_BLUE, b, a);
-    }
-
-    setColorInternal(x, y, r, g, b);
+    setColorInternal(x, y, r, g, b, a);
   }
 
   @Override
@@ -246,7 +230,7 @@ public class DelphiCanvas implements Canvas {
     int r = toChannel(color.x());
     int g = toChannel(color.y());
     int b = toChannel(color.z());
-    setColorInternal(x, y, r, g, b);
+    setColorInternal(x, y, r, g, b, 255);
   }
 
   @Override
@@ -256,23 +240,25 @@ public class DelphiCanvas implements Canvas {
     int r = (color.x() & 0xff);
     int g = (color.y() & 0xff);
     int b = (color.z() & 0xff);
-    setColorInternal(x, y, r, g, b);
+    setColorInternal(x, y, r, g, b, 255);
   }
 
-  private void setColorInternal(int x, int y, int r, int g, int b) {
+  private void setColorInternal(int x, int y, int r, int g, int b, int a) {
     int idx = pixelIndex(x, y);
 
-    int or = data[idx + 0] & 0xff;
-    int og = data[idx + 1] & 0xff;
-    int ob = data[idx + 2] & 0xff;
+    int or = data[idx + CH_RED] & 0xff;
+    int og = data[idx + CH_GREEN] & 0xff;
+    int ob = data[idx + CH_BLUE] & 0xff;
+    int oa = data[idx + CH_ALPHA] & 0xff;
 
-    if (or == r && og == r && ob == b) {
+    if (or == r && og == r && ob == b && oa == a) {
       return;
     }
 
-    data[idx + 0] = (byte) r;
-    data[idx + 1] = (byte) g;
-    data[idx + 2] = (byte) b;
+    data[idx + CH_RED] = (byte) r;
+    data[idx + CH_GREEN] = (byte) g;
+    data[idx + CH_BLUE] = (byte) b;
+    data[idx + CH_ALPHA] = (byte) a;
 
     ExtendedView view = element.document.view;
     if (view != null) {
