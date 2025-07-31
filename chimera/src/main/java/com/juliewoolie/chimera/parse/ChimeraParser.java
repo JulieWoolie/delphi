@@ -290,7 +290,7 @@ public class ChimeraParser {
       if (!hasNext()) {
         return false;
       }
-      if (!matches(COLON, BRACKET_OPEN)) {
+      if (!matches(COLON, BRACKET_OPEN, EQUALS)) {
         return true;
       }
 
@@ -1023,7 +1023,17 @@ public class ChimeraParser {
 
   PropertyStatement propertyStatement() {
     Identifier propertyName = id();
-    expect(COLON);
+
+    if (matches(COLON)) {
+      next();
+    } else if (matches(EQUALS)) {
+      // idk, maybe they confused the two, just accept and issue error
+      Token t = next();
+      error(t.location(), "Invalid assignment operator '='");
+    } else {
+      // Assume ':' is just missing and next is value
+      error(propertyName.getEnd(), "Expected ':' assignment operator");
+    }
 
     Expression value = expr();
 
@@ -1040,7 +1050,7 @@ public class ChimeraParser {
 
     ParserScope scope = scope();
 
-    if (marker != null && scope != ParserScope.INLINE) {
+    if (marker != null && scope == ParserScope.INLINE) {
       error(marker.getStart(), "'!important' not allowed here");
     }
     if (scope != ParserScope.RULE && scope != ParserScope.INLINE) {
@@ -1061,8 +1071,6 @@ public class ChimeraParser {
     Token idToken = expect(ID);
 
     if (idToken != null && idToken.value().equalsIgnoreCase("important")) {
-      next();
-
       ImportantMarker stat = new ImportantMarker();
       stat.setStart(exclaim.location());
       stat.setEnd(idToken.end());
