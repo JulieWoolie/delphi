@@ -143,6 +143,12 @@ public interface StylePropertiesReadonly {
   @Nullable String getMarginInline();
 
   /**
+   * Get the {@code flex-basis} property value
+   * @return Flex basis, or {@code null}, if not set.
+   */
+  @Nullable String getFlexBasis();
+
+  /**
    * Get a set of CSS property names that are explicitly set
    * by this property set.
    *

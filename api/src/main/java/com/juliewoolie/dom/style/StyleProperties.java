@@ -797,6 +797,20 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setMarginInline(Primitive start, Primitive end);
 
   /**
+   * Set the {@code flex-basis} property.
+   * @param value Flex basis value
+   * @return {@code this}
+   */
+  StyleProperties setFlexBasis(@Nullable Primitive value);
+
+  /**
+   * Set the {@code flex-basis} property.
+   * @param value Flex basis value
+   * @return {@code this}
+   */
+  StyleProperties setFlexBasis(@Nullable String value);
+
+  /**
    * Set the value of a CSS property.
    *
    * @param propertyName CSS property name

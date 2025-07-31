@@ -118,6 +118,13 @@ public final class Properties {
       .validator(SCALAR)
       .build();
 
+  public static final Property<Primitive> FLEX_BASIS = Property.builder(Primitive.class)
+      .defaultValue(Primitive.create(0))
+      .cascading(true)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE)
+      .build();
+
   public static final Property<Primitive> WIDTH = Property.builder(Primitive.class)
       .defaultValue(Primitive.ZERO)
       .cascading(false)
@@ -417,6 +424,7 @@ public final class Properties {
     register("strikethrough",         STRIKETHROUGH);
     register("obfuscated",            OBFUSCATED);
 
+    register("flex-basis",            FLEX_BASIS);
     register("width",                 WIDTH);
     register("height",                HEIGHT);
 

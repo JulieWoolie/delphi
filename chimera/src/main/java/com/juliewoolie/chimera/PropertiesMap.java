@@ -771,6 +771,18 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   @Override
+  public StyleProperties setFlexBasis(@Nullable String value) {
+    parse(Properties.FLEX_BASIS, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setFlexBasis(@Nullable Primitive value) {
+    set(Properties.FLEX_BASIS, value);
+    return triggerChange();
+  }
+
+  @Override
   public StyleProperties setProperty(@NotNull String propertyName, @Nullable String value) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return this;
