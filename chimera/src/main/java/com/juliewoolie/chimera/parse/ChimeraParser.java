@@ -1193,8 +1193,7 @@ public class ChimeraParser {
       return false;
     }
 
-    return true;
-//    return scope() != ParserScope.CALL_EXPR;
+    return scope() != ParserScope.CALL_EXPR;
   }
 
   public Expression expr() {

@@ -12,6 +12,7 @@ import static com.juliewoolie.chimera.Properties.BORDER_TOP;
 import static com.juliewoolie.chimera.Properties.BOX_SIZING;
 import static com.juliewoolie.chimera.Properties.COLOR;
 import static com.juliewoolie.chimera.Properties.DISPLAY;
+import static com.juliewoolie.chimera.Properties.FLEX_BASIS;
 import static com.juliewoolie.chimera.Properties.FLEX_DIRECTION;
 import static com.juliewoolie.chimera.Properties.FLEX_WRAP;
 import static com.juliewoolie.chimera.Properties.FONT_SIZE;
@@ -112,6 +113,8 @@ public class ComputedStyleSet {
   public ValueOrAuto marginInlineStart;
   public ValueOrAuto marginInlineEnd;
 
+  public ValueOrAuto flexBasis;
+
   public int zindex;
   public AlignItems alignItems;
   public FlexDirection flexDirection;
@@ -172,6 +175,8 @@ public class ComputedStyleSet {
     marginInlineStart = ValueOrAuto.ZERO;
     marginInlineEnd = ValueOrAuto.ZERO;
 
+    flexBasis = ValueOrAuto.AUTO;
+
     zindex = 0;
     alignItems = AlignItems.DEFAULT;
     flexDirection = FlexDirection.DEFAULT;
@@ -214,6 +219,8 @@ public class ComputedStyleSet {
     order = getExplicit(set, ORDER);
     boxSizing = getExplicit(set, BOX_SIZING);
     visibility = getExplicit(set, VISIBILITY);
+
+    flexBasis = getPrimitive(set, FLEX_BASIS);
 
     // Margin inline
     PrimitiveLeftRight lr = getExplicit(set, MARGIN_INLINE);

@@ -368,7 +368,8 @@ class ChimeraParserTest {
     assertEquals(0xffffaabb, lit.getColor().argb());
 
     lit = parseExpr("#c0aaffcc", ColorLiteral.class);
-    assertEquals(0xc0aaffcc, lit.getColor().argb());
+    System.out.println(lit.getColor().hexString());
+    assertEquals(0xccc0aaff, lit.getColor().argb());
   }
 
   @Test
@@ -394,13 +395,13 @@ class ChimeraParserTest {
     assertInvalidSyntax(
         "$variable:",
         ChimeraParser::variableDecl,
-        "Expected ';', but found end-of-input"
+        "Expected ';' to end statement, found end-of-input"
     );
 
     assertInvalidSyntax(
         "$variable: 14",
         ChimeraParser::variableDecl,
-        "Expected ';', but found end-of-input"
+        "Expected ';' to end statement, found end-of-input"
     );
   }
 
