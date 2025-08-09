@@ -52,7 +52,7 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
 
     try {
       PathParser<?> parser = new PathParser<>(null, new StringReader(path));
-      parser.parsePath();
+      parser.parse();
       this.path = parser.getPath();
     } catch (CommandSyntaxException exc) {
       throw new DelphiException(DelphiException.ERR_SYNTAX, exc.getMessage());
