@@ -26,6 +26,7 @@ import com.juliewoolie.delphirender.object.RenderObject;
 import com.juliewoolie.delphirender.object.TextRenderObject;
 import com.juliewoolie.dom.style.BoxSizing;
 import com.juliewoolie.dom.style.DisplayType;
+import com.juliewoolie.dom.style.FlexDirection;
 import com.juliewoolie.dom.style.Primitive;
 import com.juliewoolie.dom.style.Primitive.Unit;
 import net.kyori.adventure.text.Component;
@@ -124,6 +125,9 @@ public class NLayout {
 
     style.marginInlineStart = resolve(comp.marginInlineStart, ctx, 0, X);
     style.marginInlineEnd = resolve(comp.marginInlineEnd, ctx, 0, X);
+
+    byte flexBasisAxis = comp.flexDirection == FlexDirection.DEFAULT ? X : Y;
+    style.flexBasis = resolve(comp.flexBasis, ctx, 0, flexBasisAxis);
   }
 
   private static boolean measureElement(ElementRenderObject ro, MeasureContext ctx, Vector2f out) {

@@ -43,6 +43,7 @@ public class FullStyle {
   public float marginInlineStart = 0.0f;
   public float marginInlineEnd = 0.0f;
   public float fontSize = 1.0f;
+  public float flexBasis = UNSET;
 
   public int zindex = 0;
   public AlignItems alignItems = AlignItems.DEFAULT;
