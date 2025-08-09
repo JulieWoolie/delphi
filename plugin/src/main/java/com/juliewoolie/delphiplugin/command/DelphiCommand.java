@@ -29,6 +29,7 @@ import com.juliewoolie.delphiplugin.DelphiImpl;
 import com.juliewoolie.delphiplugin.DelphiPlugin;
 import com.juliewoolie.delphiplugin.PageView;
 import com.juliewoolie.delphiplugin.ViewManager;
+import com.juliewoolie.delphiplugin.devtools.DevtoolModule;
 import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.juliewoolie.dom.Canvas;
 import com.juliewoolie.dom.CanvasElement;
@@ -152,6 +153,9 @@ public class DelphiCommand {
   static final TranslatableExceptionType CANVAS_DUMP_FAILED
       = new TranslatableExceptionType("delphi.error.canvasDumpFailed");
 
+  static final TranslatableExceptionType DEVTOOLS_OPEN_FAILED
+      = new TranslatableExceptionType("delphi.devtools.alreadyHasDevtools");
+
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
 
@@ -162,6 +166,8 @@ public class DelphiCommand {
 
     literal.then(debugArguments());
     literal.then(reloadConfig());
+
+    literal.then(devtools());
 
     return literal.build();
   }
@@ -186,6 +192,45 @@ public class DelphiCommand {
     }
 
     return (PageView) opt.get();
+  }
+
+  private static LiteralCommandNode<CommandSourceStack> devtools() {
+    return literal("devtools")
+        .executes(context -> {
+          PageView view = getAnyTargeted(context);
+          return openDevtools(context.getSource(), view);
+        })
+        .then(argument("instance name", new InstanceNameType())
+            .executes(context -> {
+              PageView view = context.getArgument("instance name", PageView.class);
+              return openDevtools(context.getSource(), view);
+            })
+        )
+        .build();
+  }
+
+  private static int openDevtools(CommandSourceStack stack, PageView view)
+      throws CommandSyntaxException
+  {
+    if (!(stack.getSender() instanceof Player player)) {
+      throw ONLY_PLAYERS.create();
+    }
+
+    var result = DevtoolModule.openDevtoolsFor(player, view);
+
+    if (result.isSuccess()) {
+      stack.getSender().sendMessage(
+          prefixTranslatable("delphi.devtools.opened", NamedTextColor.GRAY)
+      );
+      return SINGLE_SUCCESS;
+    }
+
+    DelphiException exc = result.error().orElseThrow();
+    if (exc.getCode() == ERR_INSTANCE_NAME_USED) {
+      throw DEVTOOLS_OPEN_FAILED.create();
+    }
+
+    throw toCommandError(exc);
   }
 
   private static LiteralCommandNode<CommandSourceStack> reloadConfig() {
@@ -455,10 +500,17 @@ public class DelphiCommand {
       builder.setSpawnLocation(location);
     }
 
-    Result<DocumentView, DelphiException> result = builder.open();
+    return handleDocumentOpen(builder.open(), c.getSource(), path, instanceName);
+  }
 
+  private static int handleDocumentOpen(
+      Result<DocumentView, DelphiException> result,
+      CommandSourceStack source,
+      ResourcePath path,
+      String instanceName
+  ) throws CommandSyntaxException {
     if (result.isSuccess()) {
-      c.getSource().getSender().sendMessage(
+      source.getSender().sendMessage(
           prefixTranslatable("delphi.docOpened", NamedTextColor.GRAY)
       );
 

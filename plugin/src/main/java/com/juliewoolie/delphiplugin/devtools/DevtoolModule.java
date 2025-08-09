@@ -1,5 +1,18 @@
 package com.juliewoolie.delphiplugin.devtools;
 
+import com.juliewoolie.delphi.Delphi;
+import com.juliewoolie.delphi.DelphiProvider;
+import com.juliewoolie.delphi.DocumentView;
+import com.juliewoolie.delphi.resource.ApiModule;
+import com.juliewoolie.delphi.resource.DelphiException;
+import com.juliewoolie.delphi.resource.DocumentContext;
+import com.juliewoolie.delphi.resource.ResourceModule;
+import com.juliewoolie.delphi.resource.ResourcePath;
+import com.juliewoolie.delphi.util.Result;
+import com.juliewoolie.delphiplugin.math.Screen;
+import com.juliewoolie.dom.Document;
+import com.juliewoolie.dom.style.Stylesheet;
+import com.juliewoolie.dom.style.StylesheetBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,20 +22,75 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import joptsimple.internal.Strings;
-import com.juliewoolie.delphi.Delphi;
-import com.juliewoolie.delphi.DelphiProvider;
-import com.juliewoolie.delphi.DocumentView;
-import com.juliewoolie.delphi.resource.ApiModule;
-import com.juliewoolie.delphi.resource.DocumentContext;
-import com.juliewoolie.delphi.resource.ResourceModule;
-import com.juliewoolie.delphi.resource.ResourcePath;
-import com.juliewoolie.delphi.util.Result;
-import com.juliewoolie.dom.Document;
-import com.juliewoolie.dom.style.Stylesheet;
-import com.juliewoolie.dom.style.StylesheetBuilder;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Math;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class DevtoolModule implements ApiModule {
+
+  static final float DEVTOOLS_DIST_FROM_TARGET = 0.25f;
+  static final float DEVTOOLS_VIEW_ANGLE = Math.toRadians(12.0f);
+  static final float DEVTOOLS_WIDTH = 3.0f;
+  static final float DEVTOOLS_HEIGHT = 2.1f;
+
+  public static void applyTransforms(DocumentView targetView, DocumentView devtoolsView) {
+    Vector3f globalUp = new Vector3f(0, -1, 0);
+    Vector3f up = new Vector3f();
+    Vector3f right = new Vector3f();
+
+    Screen screen = (Screen) targetView.getScreen();
+    Vector3f normal = screen.normal();
+
+    normal.cross(globalUp, right);
+    right.normalize();
+    normal.cross(right, up);
+
+    Vector3f left = new Vector3f(right).mul(-1);
+
+    Vector3f pos = new Vector3f();
+    pos.x = screen.loLeft.x + (left.x * DEVTOOLS_DIST_FROM_TARGET);
+    pos.y = screen.loLeft.y + (left.y * DEVTOOLS_DIST_FROM_TARGET);
+    pos.z = screen.loLeft.z + (left.z * DEVTOOLS_DIST_FROM_TARGET);
+
+    left.mul(DEVTOOLS_WIDTH * 0.5f);
+    Quaternionf quat = new Quaternionf();
+    quat.rotateAxis(DEVTOOLS_VIEW_ANGLE, up);
+
+    quat.transform(left);
+
+    pos.add(left);
+    pos.x += up.x * (DEVTOOLS_HEIGHT * 0.5f);
+    pos.y += up.y * (DEVTOOLS_HEIGHT * 0.5f);
+    pos.z += up.z * (DEVTOOLS_HEIGHT * 0.5f);
+
+    Quaternionf lrot = new Quaternionf(screen.leftRotation).mul(quat);
+    Quaternionf rrot = new Quaternionf(screen.rightRotation);
+    Vector3f scale = new Vector3f(screen.scale);
+
+    devtoolsView.setScreenTransform(new Transformation(pos, lrot, scale, rrot));
+  }
+
+  public static Result<DocumentView, DelphiException> openDevtoolsFor(Player player, DocumentView targetView) {
+    Delphi delphi = DelphiProvider.get();
+
+    String playerName = player.getName().toLowerCase();
+    String targetName = targetView.getInstanceName();
+    String instName = String.format("devtools-%s-%s", playerName, targetName);
+
+    ResourcePath path = ResourcePath.create("devtools").setQuery("target", targetName);
+
+    return delphi.newViewBuilder()
+        .setPlayer(player)
+        .setPath(path)
+        .setInstanceName(instName)
+        .open()
+        .ifSuccess(devtools -> {
+          applyTransforms(targetView, devtools);
+        });
+  }
 
   @Override
   public Result<Document, String> loadDocument(

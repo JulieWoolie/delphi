@@ -24,10 +24,10 @@ public class Screen implements RenderScreen {
   final Vector3f normal = new Vector3f(0, 0, 1);
 
   // Points of the screen
-  final Vector3f loRight = new Vector3f(0);
-  final Vector3f hiRight = new Vector3f(0);
-  final Vector3f loLeft = new Vector3f(0);
-  final Vector3f hiLeft = new Vector3f(0);
+  public final Vector3f loRight = new Vector3f(0);
+  public final Vector3f hiRight = new Vector3f(0);
+  public final Vector3f loLeft = new Vector3f(0);
+  public final Vector3f hiLeft = new Vector3f(0);
 
   // Transformations
   public final Vector3f scale = new Vector3f(1);
