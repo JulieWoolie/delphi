@@ -29,9 +29,7 @@ public class SaxCallbacks implements SaxParserCallbacks {
 
   @Override
   public void onDocumentCreated(DelphiDocument document) {
-    if (pluginResources.isScriptingEnabled()) {
-      document.addSystem(new ScriptElementSystem());
-    }
+    document.addSystem(new ScriptElementSystem());
   }
 
   @Override

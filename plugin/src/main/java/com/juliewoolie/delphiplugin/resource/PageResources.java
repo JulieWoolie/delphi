@@ -320,11 +320,7 @@ public class PageResources implements ViewResources {
     @Override
     public @NotNull Document newDocument() {
       DelphiDocument doc = DelphiDocument.createEmpty();
-
-      if (this.resources.pluginResources.isScriptingEnabled()) {
-        doc.addSystem(new ScriptElementSystem());
-      }
-
+      doc.addSystem(new ScriptElementSystem());
       return doc;
     }
 
