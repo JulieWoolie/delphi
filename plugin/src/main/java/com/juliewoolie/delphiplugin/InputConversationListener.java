@@ -77,6 +77,7 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
               .inputs(
                   List.of(
                       DialogInput.text("input_value", Component.text(element.getPlaceholder()))
+                          .maxLength(Integer.MAX_VALUE)
                           .initial(element.getValue())
                           .build()
                   )
