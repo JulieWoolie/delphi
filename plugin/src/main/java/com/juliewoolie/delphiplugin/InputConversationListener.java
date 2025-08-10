@@ -1,6 +1,10 @@
 package com.juliewoolie.delphiplugin;
 
+import static com.juliewoolie.delphiplugin.TextUtil.translate;
+
+import com.google.common.base.Strings;
 import com.juliewoolie.dom.InputElement;
+import com.juliewoolie.dom.InputElement.InputType;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.MouseButton;
 import com.juliewoolie.dom.event.MouseEvent;
@@ -15,10 +19,8 @@ import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback.Options;
-import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class InputConversationListener implements EventListener.Typed<MouseEvent> {
 
@@ -41,18 +43,27 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
       return;
     }
 
-    Plugin plugin = JavaPlugin.getPlugin(DelphiPlugin.class);
-    player.playSound(PageInputSystem.CLICK_SOUND);
-
     Dialog dialog = createDialog(player, el);
+
+    player.playSound(PageInputSystem.CLICK_SOUND);
     player.showDialog(dialog);
   }
 
-  static Component translate(Player audience, String trans) {
-    return GlobalTranslator.render(
-        Component.translatable(trans),
-        audience.locale()
-    );
+  static void submitInput(Player player, InputElement element, String input) {
+    if (element.getType() == InputType.PASSWORD && !Strings.isNullOrEmpty(input)) {
+      try {
+        Double.parseDouble(input);
+      } catch (NumberFormatException exc) {
+        player.sendMessage(
+            Component.translatable("delphi.input.invalidNumber")
+                .color(NamedTextColor.RED)
+                .arguments(Component.text(input))
+        );
+        return;
+      }
+    }
+
+    element.setValue(input, player);
   }
 
   static Dialog createDialog(Player player, InputElement element) {
@@ -63,7 +74,11 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
               ActionButton.builder(translate(player, "delphi.input.yes"))
                   .action(DialogAction.customClick(
                       (response, audience) -> {
-                        element.setValue(response.getText("input_value"), (Player) audience);
+                        submitInput(
+                            (Player) audience,
+                            element,
+                            response.getText("input_value")
+                        );
                       },
                       Options.builder().build()
                   ))
@@ -78,7 +93,8 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
                   List.of(
                       DialogInput.text("input_value", Component.text(element.getPlaceholder()))
                           .maxLength(Integer.MAX_VALUE)
-                          .initial(element.getValue())
+                          .initial(Strings.nullToEmpty(element.getValue()))
+                          .width(350)
                           .build()
                   )
               )
