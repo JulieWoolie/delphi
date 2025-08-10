@@ -10,13 +10,15 @@ $tab-hovered: rgb(72, 72, 72);
 
 $hover-color: rgb(49, 49, 49);
 
+$border-color: white;
+
 :root {
   background-color: black;
 
   outline: unset;
   outline-color: unset;
   border: 1px;
-  border-color: white;
+  border-color: $border-color;
   padding: 0;
 }
 
@@ -48,7 +50,7 @@ input {
 navlink {
   border-right: 1px;
   border-bottom: 1px;
-  border-color: white;
+  border-color: $border-color;
   background-color: black;
   padding: 1px;
 
@@ -86,6 +88,9 @@ navlink {
   &:hover {
     background-color: $hover-color;
   }
+  &[selected] {
+    background-color: $hover-color;
+  }
 }
 .xml-end-tag {
   color: $tag-name-color;
@@ -98,11 +103,13 @@ navlink {
 }
 .xml-attr-name {
   color: $attr-color;
-  margin-inline-start: 1px;
 
   &:hover {
     background-color: $hover-color;
   }
+}
+.attr-remove-cross {
+  margin-inline-start: 1px;
 }
 .xml-attr-sep {
   color: $attr-eq-color;
@@ -128,6 +135,10 @@ navlink {
   }
   &:hover {
     background-color: rgb(22, 22, 22);
+  }
+  &[selected] {
+    $rgbv: 60;
+    background-color: rgb($rgbv, $rgbv, $rgbv);
   }
 }
 
@@ -168,4 +179,12 @@ line {
   width: 25%;
   box-sizing: border-box;
   bold: true;
+}
+
+.mt-2 {
+  margin-top: 2px;
+}
+
+.stylesheet-name {
+  margin-left: 2px;
 }
