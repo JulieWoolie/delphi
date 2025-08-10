@@ -11,6 +11,7 @@ import com.juliewoolie.chimera.system.StyleObjectModel;
 import com.juliewoolie.dom.ParserException;
 import com.juliewoolie.dom.style.StyleProperties;
 import com.juliewoolie.dom.style.StylesheetBuilder;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,9 @@ public class ChimeraSheetBuilder implements StylesheetBuilder {
 
   private final @Nullable StyleObjectModel system;
   private final List<Rule> rules = new ArrayList<>();
+
+  @Getter @Setter
+  private String source;
 
   public ChimeraSheetBuilder(@Nullable StyleObjectModel system) {
     this.system = system;
@@ -61,6 +65,7 @@ public class ChimeraSheetBuilder implements StylesheetBuilder {
       system.addStylesheet(sheet);
     }
 
+    sheet.setSource(source);
     return sheet;
   }
 }

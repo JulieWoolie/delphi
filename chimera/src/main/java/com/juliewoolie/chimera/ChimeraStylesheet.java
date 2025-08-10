@@ -1,5 +1,6 @@
 package com.juliewoolie.chimera;
 
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import com.juliewoolie.chimera.PropertySet.PropertyIterator;
@@ -14,8 +15,19 @@ public class ChimeraStylesheet implements Stylesheet {
   @Setter @Getter
   private int flags = 0;
 
+  @Setter
+  private String source;
+
   public ChimeraStylesheet(Rule[] rules) {
     this.rules = rules;
+  }
+
+  @Override
+  public String getSource() {
+    if (Strings.isNullOrEmpty(this.source)) {
+      return "programmatic";
+    }
+    return this.source;
   }
 
   @Override

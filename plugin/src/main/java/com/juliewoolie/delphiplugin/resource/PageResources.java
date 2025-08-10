@@ -275,7 +275,11 @@ public class PageResources implements ViewResources {
   }
 
   public Result<Stylesheet, DelphiException> loadStylesheet(ResourcePath path) {
-    return loadBuffer(path).map(buf -> Chimera.parseSheet(buf, path.toString()));
+    return loadBuffer(path).map(buf -> {
+      ChimeraStylesheet sheet = Chimera.parseSheet(buf, path.toString());
+      sheet.setSource(path.toString());
+      return sheet;
+    });
   }
 
   @Override

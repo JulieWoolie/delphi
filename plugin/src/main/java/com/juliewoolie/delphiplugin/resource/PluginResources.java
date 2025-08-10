@@ -116,6 +116,7 @@ public class PluginResources implements DelphiResources {
 
     defaultStyle = Chimera.parseSheet(buf, DEFAULT_STYLE);
     defaultStyle.setFlags(ChimeraStylesheet.FLAG_DEFAULT_STYLE);
+    defaultStyle.setSource("default-stylesheet");
 
     for (int i = 0; i < defaultStyle.getLength(); i++) {
       Rule rule = defaultStyle.getRule(i);

@@ -101,6 +101,7 @@ public class StyleElementSystem extends ParsedDataElementSystem<DelphiStyleEleme
 
     ChimeraStylesheet old = element.stylesheet;
     element.stylesheet = Chimera.parseSheet(new StringBuffer(txtContent), "<style #text>");
+    element.stylesheet.setSource("inline");
     document.getStyles().replaceStylesheet(old, element.stylesheet);
   }
 
