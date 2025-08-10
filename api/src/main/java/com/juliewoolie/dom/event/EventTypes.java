@@ -361,7 +361,7 @@ public interface EventTypes {
    *   </tr>
    *   <tr>
    *     <td>Cancellable</td>
-   *     <td>{@code false}</td>
+   *     <td>{@code true}</td>
    *   </tr>
    *   <tr>
    *     <td>Type</td>

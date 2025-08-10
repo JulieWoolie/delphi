@@ -406,15 +406,16 @@ public class DelphiDocument implements Document, DelegateTarget {
     }
   }
 
-  public void valueChanged(
+  public boolean valueChanged(
       DelphiInputElement input,
       String value,
       String previousValue,
       Player player
   ) {
     InputEventImpl event = new InputEventImpl(EventTypes.INPUT, this);
-    event.initEvent(input, false, false, value, previousValue, player);
-    dispatchEvent(event);
+    event.initEvent(input, false, true, value, previousValue, player);
+    input.dispatchEvent(event);
+    return event.isCancelled();
   }
 
   public RenderBounds renderBounds(DelphiNode delphiNode) {

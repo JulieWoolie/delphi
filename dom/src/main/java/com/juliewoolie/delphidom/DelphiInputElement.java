@@ -99,7 +99,14 @@ public class DelphiInputElement extends DelphiElement implements InputElement {
     String previousValue = this.value;
     this.value = value;
 
-    document.valueChanged(this, value, previousValue, player);
+    boolean cancelled = true;
+    try {
+      cancelled = document.valueChanged(this, value, previousValue, player);
+    } finally {
+      if (cancelled) {
+        this.value = previousValue;
+      }
+    }
   }
 
   @Override

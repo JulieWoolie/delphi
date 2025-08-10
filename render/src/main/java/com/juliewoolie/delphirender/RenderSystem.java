@@ -514,6 +514,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     @Override
     public void handleEvent(InputEvent event) {
+      if (event.isCancelled()) {
+        return;
+      }
+
       DelphiInputElement target = (DelphiInputElement) event.getTarget();
       ElementRenderObject ero = (ElementRenderObject) getRenderElement(target);
 
