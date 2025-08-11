@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import joptsimple.internal.Strings;
 import org.bukkit.entity.Player;
@@ -80,7 +81,9 @@ public class DevtoolModule implements ApiModule {
     String targetName = targetView.getInstanceName();
     String instName = String.format("devtools-%s-%s", playerName, targetName);
 
-    ResourcePath path = ResourcePath.create("devtools").setQuery("target", targetName);
+    ResourcePath path = ResourcePath.create("devtools")
+        .setQuery("lang", player.locale().toLanguageTag())
+        .setQuery("target", targetName);
 
     return delphi.newViewBuilder()
         .setPlayer(player)
@@ -126,8 +129,14 @@ public class DevtoolModule implements ApiModule {
     dom.addStylesheet(stylesheet);
     dom.addStylesheet(indents);
 
-    Devtools devtools = new Devtools(view, dom);
-    devtools.switchTo(Tabs.INSPECT_ELEMENT);
+    Locale locale = Locale.ENGLISH;
+    String lang = path.getQuery("lang");
+    if (!Strings.isNullOrEmpty(lang)) {
+      locale = Locale.forLanguageTag(lang);
+    }
+
+    Devtools devtools = new Devtools(view, dom, locale);
+    devtools.switchTo(new ElementTreeTab(devtools));
 
     return Result.ok(dom);
   }

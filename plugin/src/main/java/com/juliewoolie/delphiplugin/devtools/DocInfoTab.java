@@ -1,6 +1,7 @@
 package com.juliewoolie.delphiplugin.devtools;
 
-import java.util.stream.Collectors;
+import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
+
 import com.juliewoolie.delphi.PlayerSet;
 import com.juliewoolie.delphi.Screen;
 import com.juliewoolie.delphi.resource.ApiModule;
@@ -9,70 +10,160 @@ import com.juliewoolie.delphi.resource.IoModule;
 import com.juliewoolie.delphi.resource.JarResourceModule;
 import com.juliewoolie.delphi.resource.ViewResources;
 import com.juliewoolie.delphi.resource.ZipModule;
-import com.juliewoolie.delphiplugin.PageView;
-import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.Element;
+import com.juliewoolie.dom.Node;
+import com.juliewoolie.dom.style.Stylesheet;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.entity.Player;
 
-public class DocInfoTab implements DevToolTab {
+public class DocInfoTab extends DevToolTab {
+
+  public DocInfoTab(Devtools devtools) {
+    super(devtools);
+  }
 
   @Override
-  public void onOpen(Devtools devtools) {
-    Document d = devtools.getDocument();
-    PageView view = (PageView) devtools.getTarget();
-
-    Element el = d.createElement("div");
+  public void onOpen() {
+    Element el = document.createElement("div");
     el.setClassName("docinfo");
 
-    PlayerSet set = view.getPlayers();
-    ViewResources resources = view.getResources();
-    Screen screen = view.getScreen();
+    PlayerSet set = targetView.getPlayers();
+    ViewResources resources = targetView.getResources();
+    Screen screen = targetView.getScreen();
 
     String playerListType;
+    Component playerListField = Component.translatable(
+        "delphi.devtools.meta.players",
+        Component.text(set.size())
+    );
+
+    Locale l = devtools.getLocale();
 
     if (set.isServerPlayerSet()) {
-      playerListType = "all";
+      playerListType = translateToString(l, "delphi.devtools.meta.players.all");
     } else if (set.isEmpty()) {
-      playerListType = "none";
+      playerListType = translateToString(l, "delphi.devtools.meta.none");
     } else {
       playerListType = set.stream().map(Player::getName).collect(Collectors.joining(", "));
     }
 
     String moduleType = switch (resources.getModule()) {
-      case ApiModule apiModule -> "api-module";
-      case ZipModule zip -> "zip(" + zip.getZipFile() + ")";
-      case DirectoryModule dir -> "directory(" + dir.getDirectory() + ")";
-      case JarResourceModule jarRes -> "jar-resource";
-      case IoModule io -> "io-module";
-      case null -> "unknown";
+      case ApiModule apiModule -> {
+        yield translateToString(l, "delphi.devtools.meta.moduleType.api");
+      }
+      case ZipModule zip -> {
+        yield translateToString(
+            l,
+            "delphi.devtools.meta.moduleType.zip",
+            path(zip.getZipFile())
+        );
+      }
+      case DirectoryModule dir -> {
+        yield translateToString(
+            l,
+            "delphi.devtools.meta.moduleType.dir",
+            path(dir.getDirectory())
+        );
+      }
+      case JarResourceModule jarRes -> {
+        yield translateToString(l, "delphi.devtools.meta.moduleType.jar");
+      }
+      case IoModule io -> translateToString(l, "delphi.devtools.meta.moduleType.io");
+      case null -> translateToString(l, "delphi.devtools.meta.moduleType.unknown");
     };
 
-    int renderObjects = view.getRenderer().getRenderElements().size();
+    int renderObjects = targetView.getRenderer().getRenderElements().size();
+    int entityCount = targetView.getRenderer().getEntities().size();
 
-    el.appendChild(createField(d, "Players", playerListType));
-    el.appendChild(createField(d, "Instance Name", view.getInstanceName()));
-    el.appendChild(createField(d, "Module Name", resources.getModuleName()));
-    el.appendChild(createField(d, "Resource Path", view.getPath()));
-    el.appendChild(createField(d, "Module Type", moduleType));
-    el.appendChild(createField(d, "Screen Height", screen.getHeight()));
-    el.appendChild(createField(d, "Screen Width", screen.getWidth()));
-    el.appendChild(createField(d, "Render Objects", renderObjects));
-    el.appendChild(createField(d, "Entities", view.getRenderer().getEntities().size()));
+    el.appendChild(createField( playerListField, playerListType));
+    el.appendChild(createField("delphi.devtools.meta.instName", targetView.getInstanceName()));
+    el.appendChild(createField("delphi.devtools.meta.moduleName", resources.getModuleName()));
+    el.appendChild(createField("delphi.devtools.meta.path", targetView.getPath()));
+    el.appendChild(createField("delphi.devtools.meta.moduleType", moduleType));
+    el.appendChild(createField("delphi.devtools.meta.height", screen.getHeight()));
+    el.appendChild(createField("delphi.devtools.meta.width", screen.getWidth()));
+    el.appendChild(createField("delphi.devtools.meta.renderObjects", renderObjects));
+    el.appendChild(createField("delphi.devtools.meta.entities", entityCount));
+
+    List<Stylesheet> stylesheets = targetView.getDocument().getStylesheets();
+    Element stylesheetsDiv;
+    if (stylesheets.isEmpty()) {
+      stylesheetsDiv = createField(
+          "delphi.devtools.meta.stylesheets",
+          translateToString(l, "delphi.devtools.meta.none")
+      );
+    } else {
+      Element stylesheetsEl = document.createElement("ul");
+
+      for (Stylesheet stylesheet : stylesheets) {
+        String source = stylesheet.getSource();
+        String txt;
+
+        String suffix = translateToString(
+            l,
+            "delphi.devtools.meta.stylesheets.rules",
+            Component.text(stylesheet.getLength())
+        );
+
+        switch (source) {
+          case "default-stylesheet":
+            txt = translateToString(l, "delphi.devtools.meta.stylesheets.default");
+            break;
+          case "inline":
+            txt = translateToString(l, "delphi.devtools.meta.stylesheets.inline");
+            break;
+          case "programmatic":
+            txt = translateToString(l, "delphi.devtools.meta.stylesheets.programmatic");
+            break;
+          default:
+            txt = source;
+            break;
+        }
+
+        Element line = document.createElement("div");
+        line.setClassName("stylesheet-name");
+        line.setTextContent("- " + txt + " " + suffix);
+        stylesheetsEl.appendChild(line);
+      }
+      stylesheetsDiv = createField("delphi.devtools.meta.stylesheets", stylesheetsEl);
+    }
+
+    stylesheetsDiv.getClassList().add("mt-2");
+    el.appendChild(stylesheetsDiv);
 
     devtools.getContentEl().appendChild(el);
   }
 
-  private Element createField(Document d, String field, Object o) {
-    Element div = d.createElement("div");
+  private Element createField(Object field, Object o) {
+    Element div = document.createElement("div");
     div.setClassName("docinfo-property");
 
-    Element fieldEl = d.createElement("span");
-    fieldEl.setClassName("docinfo-field");
-    fieldEl.setTextContent(field + ": ");
+    String fieldName;
+    if (field instanceof Component c) {
+      fieldName = PlainTextComponentSerializer.plainText()
+          .serialize(GlobalTranslator.render(c, devtools.getLocale()));
+    } else {
+      fieldName = translateToString(devtools.getLocale(), String.valueOf(field));
+    }
 
-    Element valueEl = d.createElement("span");
+    Element fieldEl = document.createElement("span");
+    fieldEl.setClassName("docinfo-field");
+    fieldEl.setTextContent(fieldName + ": ");
+
+    Element valueEl = document.createElement("span");
     valueEl.setClassName("docinfo-value");
-    valueEl.setTextContent(String.valueOf(o));
+
+    if (o instanceof Node n) {
+      valueEl.appendChild(n);
+    } else {
+      valueEl.setTextContent(String.valueOf(o));
+    }
 
     div.appendChild(fieldEl);
     div.appendChild(valueEl);
@@ -80,8 +171,7 @@ public class DocInfoTab implements DevToolTab {
     return div;
   }
 
-  @Override
-  public void onClose(Devtools devtools) {
-
+  static Component path(Path p) {
+    return Component.text(p.toString().replace("\\", "/"));
   }
 }

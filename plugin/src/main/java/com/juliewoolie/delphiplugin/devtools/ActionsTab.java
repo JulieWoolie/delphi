@@ -6,10 +6,14 @@ import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.TagNames;
 
-public class ActionsTab implements DevToolTab {
+public class ActionsTab extends DevToolTab {
+
+  public ActionsTab(Devtools devtools) {
+    super(devtools);
+  }
 
   @Override
-  public void onOpen(Devtools devtools) {
+  public void onOpen() {
     Document document = devtools.getDocument();
     Element outp = devtools.getContentEl();
 
@@ -37,10 +41,5 @@ public class ActionsTab implements DevToolTab {
     outp.appendChild(forceRealign);
     outp.appendChild(forceReRender);
     outp.appendChild(forceStyleRecalculation);
-  }
-
-  @Override
-  public void onClose(Devtools devtools) {
-
   }
 }

@@ -1,8 +1,8 @@
 package com.juliewoolie.delphiplugin.devtools;
 
+import static com.juliewoolie.delphiplugin.TextUtil.translate;
+
 import com.google.common.base.Strings;
-import java.util.Map.Entry;
-import java.util.Set;
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.Element;
@@ -12,20 +12,39 @@ import com.juliewoolie.dom.TextNode;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
+import io.papermc.paper.dialog.Dialog;
+import io.papermc.paper.registry.data.dialog.ActionButton;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.DialogRegistryEntry;
+import io.papermc.paper.registry.data.dialog.action.DialogAction;
+import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import io.papermc.paper.registry.data.dialog.type.DialogType;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import net.kyori.adventure.text.event.ClickCallback.Options;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
-public class ElementTreeTab implements DevToolTab {
+public class ElementTreeTab extends DevToolTab {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
   static final String SPAN = "span";
   static final String INPUT = "input";
 
+  static final String CROSS = "❌";
+  static final String PLUS = "+";
+
+  public ElementTreeTab(Devtools devtools) {
+    super(devtools);
+  }
+
   @Override
-  public void onOpen(Devtools devtools) {
+  public void onOpen() {
     Element content = devtools.getContentEl();
-    Document document = devtools.getDocument();
     Element targetRoot = devtools.getTarget().getDocument().getDocumentElement();
 
     DomBuilder builder = new DomBuilder(content);
@@ -33,14 +52,9 @@ public class ElementTreeTab implements DevToolTab {
     builder.linebreak();
   }
 
-  @Override
-  public void onClose(Devtools devtools) {
-
-  }
-
   Element createCross(Document document) {
     Element element = document.createElement(SPAN);
-    element.setTextContent("x");
+    element.setTextContent(CROSS);
     element.setClassName("cross");
     return element;
   }
@@ -79,11 +93,18 @@ public class ElementTreeTab implements DevToolTab {
 
     Element element = (Element) node;
 
+    SelectElement selectListener = new SelectElement(devtools, element);
+
     String prefix = "<" + element.getTagName();
     Element prefixEl = document.createElement(SPAN);
     prefixEl.setTextContent(prefix);
     prefixEl.setClassName("xml-tag");
+    prefixEl.onClick(selectListener);
     builder.append(prefixEl);
+
+    if (Objects.equals(devtools.getSelectedElement(), element)) {
+      builder.setLineSelected();
+    }
 
     Set<Entry<String, String>> attrs = element.getAttributeEntries();
 
@@ -109,24 +130,30 @@ public class ElementTreeTab implements DevToolTab {
       attrValue.onInput(new ChangeAttrValue(element, attrKey));
 
       Element removeAttrCross = createCross(document);
+      removeAttrCross.getClassList().add("attr-remove-cross");
       removeAttrCross.onClick(new RemoveAttr(element, attrKey));
 
-      builder.append(attrName);
       builder.append(removeAttrCross);
-      builder.append(attrSep);
-      builder.append(attrValue);
-      builder.append(attrSuffix);
+      builder.append(attrName);
+
+      if (!Strings.isNullOrEmpty(attr.getValue())) {
+        builder.append(attrSep);
+        builder.append(attrValue);
+        builder.append(attrSuffix);
+      }
     }
 
     Element addAttrBtn = document.createElement(SPAN);
-    addAttrBtn.setTextContent("+");
+    addAttrBtn.setTextContent(PLUS);
     addAttrBtn.setClassName("add-attr");
+    addAttrBtn.onClick(new AddAttr(element));
     builder.append(addAttrBtn);
 
     if (!element.canHaveChildren() || !element.hasChildren()) {
       Element suffix = document.createElement(SPAN);
       suffix.setTextContent("/>");
       suffix.setClassName("xml-end-tag");
+      suffix.onClick(selectListener);
       builder.append(suffix);
       return;
     }
@@ -134,6 +161,7 @@ public class ElementTreeTab implements DevToolTab {
     Element suffix = document.createElement(SPAN);
     suffix.setTextContent(">");
     suffix.setClassName("xml-end-tag");
+    suffix.onClick(selectListener);
     builder.append(suffix);
 
     boolean inlineChildren = inlineChildren(element);
@@ -158,6 +186,7 @@ public class ElementTreeTab implements DevToolTab {
     Element endTag = document.createElement(SPAN);
     endTag.setTextContent("</" + element.getTagName() + ">");
     endTag.setClassName("xml-end-tag");
+    endTag.onClick(selectListener);
 
     builder.append(endTag);
   }
@@ -244,6 +273,89 @@ public class ElementTreeTab implements DevToolTab {
     }
   }
 
+  record AddAttr(Element el) implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      Player player = event.getPlayer();
+      Dialog dialog = createDialog(player, el);
+      player.showDialog(dialog);
+    }
+
+    static Dialog createDialog(Player player, Element el) {
+      return Dialog.create(f -> {
+        DialogRegistryEntry.Builder builder = f.empty();
+        builder.type(
+            DialogType.confirmation(
+                ActionButton.builder(translate(player, "delphi.input.yes"))
+                    .action(
+                        DialogAction.customClick(
+                            (response, audience) -> {
+                              String name = response.getText("name");
+                              String value = response.getText("value");
+
+                              if (Strings.isNullOrEmpty(name)) {
+                                return;
+                              }
+
+                              el.setAttribute(name, value);
+                            },
+                            Options.builder().build()
+                        )
+                    )
+                    .build(),
+                ActionButton.builder(translate(player, "delphi.input.no"))
+                    .build()
+            )
+        );
+
+        builder.base(
+            DialogBase.builder(translate(player, "delphi.devtools.addAttr.title"))
+                .inputs(
+                    List.of(
+                        DialogInput.text(
+                            "name",
+                            translate(player, "delphi.devtools.addAttr.nameLabel")
+                        )
+                            .maxLength(Integer.MAX_VALUE)
+                            .initial("")
+                            .width(300)
+                            .build(),
+
+                        DialogInput.text(
+                            "value",
+                            translate(player, "delphi.devtools.addAttr.valueLabel")
+                        )
+                            .maxLength(Integer.MAX_VALUE)
+                            .initial("")
+                            .width(300)
+                            .build()
+                    )
+                )
+                .canCloseWithEscape(true)
+                .build()
+        );
+      });
+    }
+  }
+
+  record SelectElement(
+      Devtools devtools,
+      Element targetElement
+  ) implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      if (Objects.equals(devtools.getSelectedElement(), targetElement)) {
+        return;
+      }
+
+      devtools.setSelectedElement(targetElement);
+      event.stopPropagation();
+      devtools.rerender();
+    }
+  }
+
   class DomBuilder {
 
     static final int MAX_LINE_NUM = 24;
@@ -291,6 +403,14 @@ public class ElementTreeTab implements DevToolTab {
       lineContainer.appendChild(line);
 
       line = null;
+    }
+
+    public void setLineSelected() {
+      if (line == null) {
+        return;
+      }
+
+      line.setAttribute("selected", "true");
     }
   }
 }

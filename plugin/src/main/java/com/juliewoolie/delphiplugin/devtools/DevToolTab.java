@@ -1,8 +1,23 @@
 package com.juliewoolie.delphiplugin.devtools;
 
-public interface DevToolTab {
+import com.juliewoolie.delphiplugin.PageView;
+import com.juliewoolie.dom.Document;
 
-  void onOpen(Devtools devtools);
+public abstract class DevToolTab {
 
-  void onClose(Devtools devtools);
+  protected final Devtools devtools;
+  protected final Document document;
+  protected final PageView targetView;
+
+  public DevToolTab(Devtools devtools) {
+    this.devtools = devtools;
+    this.document = devtools.getDocument();
+    this.targetView = (PageView) devtools.getTarget();
+  }
+
+  public abstract void onOpen();
+
+  public void onClose() {
+
+  }
 }

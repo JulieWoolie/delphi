@@ -1,5 +1,8 @@
 package com.juliewoolie.delphiplugin.devtools;
 
+import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
+
+import java.util.Locale;
 import java.util.Objects;
 import joptsimple.internal.Strings;
 import lombok.Getter;
@@ -28,22 +31,44 @@ public class Devtools {
   private final EventListener rerender;
   private final EventListener onTargetClose;
 
-  public Devtools(DocumentView targetView, Document devtoolsDocument) {
+  private Locale locale;
+
+  public Devtools(DocumentView targetView, Document devtoolsDocument, Locale locale) {
     this.target = targetView;
     this.document = devtoolsDocument;
+    this.locale = locale;
 
     contentEl = document.getElementById("content");
     Objects.requireNonNull(contentEl, "Null content element");
 
-    this.rerender = event -> {
-      contentEl.clearChildren();
-      tab.onOpen(this);
-    };
-    this.onTargetClose = event -> {
-      document.getView().close();
-    };
+    this.rerender = event -> this.rerender();
+    this.onTargetClose = event -> document.getView().close();
 
+    translateTabs();
     registerListeners();
+  }
+
+  public void rerender() {
+    contentEl.clearChildren();
+    tab.onOpen();
+  }
+
+  public void translateTabs() {
+    translateTab("elements", "delphi.devtools.tab.elements");
+    translateTab("styles", "delphi.devtools.tab.styles");
+    translateTab("box", "delphi.devtools.tab.box");
+    translateTab("act", "delphi.devtools.tab.act");
+    translateTab("meta", "delphi.devtools.tab.meta");
+  }
+
+  private void translateTab(String selector, String transKey) {
+    Element element = document.querySelector("[nav=\"" + selector + "\"]");
+    if (element == null) {
+      return;
+    }
+
+    String txt = translateToString(locale, transKey);
+    element.setTextContent(txt);
   }
 
   public void registerListeners() {
@@ -58,6 +83,7 @@ public class Devtools {
     g.addEventListener(EventTypes.MODIFY_ATTR, rerender);
     g.addEventListener(EventTypes.APPEND_CHILD, rerender);
     g.addEventListener(EventTypes.REMOVE_CHILD, rerender);
+    g.addEventListener(EventTypes.CONTENT_CHANGED, rerender);
 
     Element navbar = document.getElementById("navbar");
     if (navbar != null) {
@@ -80,7 +106,7 @@ public class Devtools {
 
     this.tab = tab;
     contentEl.clearChildren();
-    tab.onOpen(this);
+    tab.onOpen();
   }
 
   private void onClose() {
@@ -93,7 +119,7 @@ public class Devtools {
 
     targetDoc.removeEventListener(EventTypes.DOM_CLOSING, onTargetClose);
 
-    tab.onClose(this);
+    tab.onClose();
   }
 
   private void onNavbarClick(MouseEvent event) {
@@ -114,8 +140,8 @@ public class Devtools {
         event.getDocument().getView().close();
       }
 
-      case "dom" -> {
-        switchTo(Tabs.INSPECT_ELEMENT);
+      case "elements" -> {
+        switchTo(new ElementTreeTab(this));
         setActive(target);
       }
 
@@ -123,17 +149,17 @@ public class Devtools {
 
       }
 
-      case "boxmodel" -> {
+      case "box" -> {
 
       }
 
-      case "actions" -> {
-        switchTo(Tabs.ACTIONS);
+      case "act" -> {
+        switchTo(new ActionsTab(this));
         setActive(target);
       }
 
-      case "docinfo" -> {
-        switchTo(Tabs.DOC_INFO);
+      case "meta" -> {
+        switchTo(new DocInfoTab(this));
         setActive(target);
       }
 
