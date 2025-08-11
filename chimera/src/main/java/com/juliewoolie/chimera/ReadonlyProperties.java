@@ -272,6 +272,11 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
+  public @Nullable String getGap() {
+    return get(Properties.GAP);
+  }
+
+  @Override
   public @Nullable String getPropertyValue(String propertyName) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return null;

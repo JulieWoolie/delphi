@@ -783,6 +783,18 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   @Override
+  public StyleProperties setGap(@Nullable String value) {
+    parse(Properties.GAP, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setGap(@Nullable Primitive value) {
+    set(Properties.GAP, value);
+    return triggerChange();
+  }
+
+  @Override
   public StyleProperties setProperty(@NotNull String propertyName, @Nullable String value) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return this;

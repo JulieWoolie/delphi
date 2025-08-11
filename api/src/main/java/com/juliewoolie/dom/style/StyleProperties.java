@@ -811,6 +811,20 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setFlexBasis(@Nullable String value);
 
   /**
+   * Set the {@code gap} property
+   * @param value Gap value
+   * @return {@code this}
+   */
+  StyleProperties setGap(@Nullable Primitive value);
+
+  /**
+   * Set the {@code gap} property
+   * @param value Gap value
+   * @return {@code this}
+   */
+  StyleProperties setGap(@Nullable String value);
+
+  /**
    * Set the value of a CSS property.
    *
    * @param propertyName CSS property name

@@ -149,6 +149,12 @@ public interface StylePropertiesReadonly {
   @Nullable String getFlexBasis();
 
   /**
+   * Get the {@code gap} property.
+   * @return Gap property, or {@code null}, if not set
+   */
+  @Nullable String getGap();
+
+  /**
    * Get a set of CSS property names that are explicitly set
    * by this property set.
    *

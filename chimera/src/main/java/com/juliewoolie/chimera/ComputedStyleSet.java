@@ -114,6 +114,7 @@ public class ComputedStyleSet {
   public ValueOrAuto marginInlineEnd;
 
   public ValueOrAuto flexBasis;
+  public ValueOrAuto gap;
 
   public int zindex;
   public AlignItems alignItems;
