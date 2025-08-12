@@ -38,6 +38,16 @@ public class DelphiInputElement extends DelphiElement implements InputElement {
   }
 
   @Override
+  public String getPrompt() {
+    return getAttribute(Attributes.PROMPT);
+  }
+
+  @Override
+  public void setPrompt(@Nullable String prompt) {
+    setAttribute(Attributes.PROMPT, prompt);
+  }
+
+  @Override
   public void setType(@Nullable InputType type) {
     if (type == null) {
       setAttribute(Attributes.TYPE, null);

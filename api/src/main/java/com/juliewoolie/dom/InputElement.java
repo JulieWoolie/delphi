@@ -41,6 +41,24 @@ public interface InputElement extends Element {
   void setDisabled(boolean disabled);
 
   /**
+   * Get the {@link Attributes#PROMPT} attribute value.
+   * <p>
+   * The prompt is displayed to players when asking for input
+   *
+   * @return Prompt
+   */
+  String getPrompt();
+
+  /**
+   * Set the {@link Attributes#PROMPT} attribute value.
+   * <p>
+   * The prompt is displayed to players when asking for input
+   *
+   * @param prompt Prompt
+   */
+  void setPrompt(@Nullable String prompt);
+
+  /**
    * Get the input type from the {@link Attributes#TYPE} attribute.
    * <p>
    * If the attribute isn't set or its value does not map to an enum value,

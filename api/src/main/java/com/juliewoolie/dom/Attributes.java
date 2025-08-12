@@ -156,6 +156,12 @@ public interface Attributes {
   String HEIGHT = "height";
 
   /**
+   * Attribute for defining an Input element's input prompt
+   * @see InputElement
+   */
+  String PROMPT = "prompt";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the

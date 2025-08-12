@@ -66,6 +66,13 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
     element.setValue(input, player);
   }
 
+  static String getInputLabel(InputElement el) {
+    if (Strings.isNullOrEmpty(el.getPrompt())) {
+      return el.getPlaceholder();
+    }
+    return el.getPrompt();
+  }
+
   static Dialog createDialog(Player player, InputElement element) {
     return Dialog.create(factory -> {
       DialogRegistryEntry.Builder builder = factory.empty();
@@ -91,7 +98,7 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
           DialogBase.builder(translate(player,"delphi.input.title"))
               .inputs(
                   List.of(
-                      DialogInput.text("input_value", Component.text(element.getPlaceholder()))
+                      DialogInput.text("input_value", Component.text(getInputLabel(element)))
                           .maxLength(Integer.MAX_VALUE)
                           .initial(Strings.nullToEmpty(element.getValue()))
                           .width(350)
