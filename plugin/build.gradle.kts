@@ -9,7 +9,7 @@ plugins {
 val minecraftVersion = "1.21.7"
 val pluginBaseName = "delphi-papermc"
 
-version = "$minecraftVersion-0.4.2"
+version = "$minecraftVersion-0.4.3"
 
 paperweight.reobfArtifactConfiguration.set(ReobfArtifactConfiguration.MOJANG_PRODUCTION)
 
