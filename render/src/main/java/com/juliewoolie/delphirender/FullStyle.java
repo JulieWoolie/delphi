@@ -44,6 +44,7 @@ public class FullStyle {
   public float marginInlineEnd = 0.0f;
   public float fontSize = 1.0f;
   public float flexBasis = UNSET;
+  public float gap = 0;
 
   public int zindex = 0;
   public AlignItems alignItems = AlignItems.DEFAULT;
@@ -51,6 +52,8 @@ public class FullStyle {
   public FlexWrap flexWrap = FlexWrap.DEFAULT;
   public JustifyContent justify = JustifyContent.DEFAULT;
   public int order = 0;
+  public int grow = 0;
+  public int shrink = 0;
   public BoxSizing boxSizing = BoxSizing.DEFAULT;
   public Visibility visibility = Visibility.DEFAULT;
 

@@ -128,6 +128,7 @@ public class NLayout {
 
     byte flexBasisAxis = comp.flexDirection == FlexDirection.DEFAULT ? X : Y;
     style.flexBasis = resolve(comp.flexBasis, ctx, 0, flexBasisAxis);
+    style.gap = resolve(comp.gap, ctx, 0, flexBasisAxis);
   }
 
   private static boolean measureElement(ElementRenderObject ro, MeasureContext ctx, Vector2f out) {
