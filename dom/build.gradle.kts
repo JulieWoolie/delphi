@@ -11,5 +11,5 @@ repositories {
 dependencies {
   implementation(project(":api"))
   implementation(project(":chimera"))
-  implementation("org.ccil.cowan.tagsoup:tagsoup:1.2.1")
+  compileOnly("org.ccil.cowan.tagsoup:tagsoup:1.2.1")
 }
