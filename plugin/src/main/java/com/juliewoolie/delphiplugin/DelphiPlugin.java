@@ -11,6 +11,7 @@ import com.juliewoolie.delphiplugin.listeners.PluginDisableListener;
 import com.juliewoolie.delphiplugin.resource.FontMetrics;
 import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.juliewoolie.hephaestus.Scripting;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
@@ -21,10 +22,14 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public class DelphiPlugin extends JavaPlugin {
 
+  static final int BSTATS_PLUGIN_ID = 26906;
+
   private ViewManager viewManager;
   private PluginResources pluginResources;
   private DelphiImpl manager;
   private FontMetrics metrics;
+
+  private Metrics bstats;
 
   @Override
   public void onEnable() {
@@ -44,6 +49,11 @@ public class DelphiPlugin extends JavaPlugin {
 
     ServicesManager services = getServer().getServicesManager();
     services.register(Delphi.class, manager, this, ServicePriority.Highest);
+
+    // Only activate on non-debug servers
+    if (!getSLF4JLogger().isDebugEnabled()) {
+      bstats = new Metrics(this, BSTATS_PLUGIN_ID);
+    }
   }
 
   private void registerEvents() {
@@ -61,6 +71,10 @@ public class DelphiPlugin extends JavaPlugin {
   @Override
   public void onDisable() {
     Scripting.shutdownScripting();
+
+    if (bstats != null) {
+      bstats.shutdown();
+    }
   }
 
   private void printVersions() {

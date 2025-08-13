@@ -3,7 +3,7 @@ import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 plugins {
   java
   id("io.papermc.paperweight.userdev") version "2.0.0-beta.17"
-  id("com.github.johnrengelman.shadow") version "8.1.1"
+  id("com.gradleup.shadow") version "9.0.1"
 }
 
 val minecraftVersion = "1.21.7"
@@ -25,6 +25,8 @@ dependencies {
   implementation(project(":render"))
   implementation(project(":hephaestus"))
 
+  implementation("org.bstats:bstats-bukkit:3.0.2")
+
   paperweight.paperDevBundle("$minecraftVersion-R0.1-SNAPSHOT")
 }
 
@@ -38,6 +40,7 @@ tasks {
   }
   shadowJar {
     archiveBaseName.set(pluginBaseName)
+    relocate("org.bstats", "com.juliewoolie.libs.stupidbstatsrelocate")
   }
 
   processResources {
