@@ -2,13 +2,6 @@ package com.juliewoolie.delphirender;
 
 import static com.juliewoolie.delphirender.Consts.MACRO_LAYER_DEPTH;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import lombok.Getter;
-import lombok.Setter;
 import com.juliewoolie.chimera.ComputedStyleSet;
 import com.juliewoolie.chimera.DirtyBit;
 import com.juliewoolie.chimera.StyleUpdateCallbacks;
@@ -22,7 +15,6 @@ import com.juliewoolie.delphidom.DelphiItemElement;
 import com.juliewoolie.delphidom.DelphiNode;
 import com.juliewoolie.delphidom.ExtendedView;
 import com.juliewoolie.delphidom.Text;
-import com.juliewoolie.delphirender.layout.NLayout;
 import com.juliewoolie.delphirender.math.Rectangle;
 import com.juliewoolie.delphirender.object.CanvasRenderObject;
 import com.juliewoolie.delphirender.object.ComponentRenderObject;
@@ -39,6 +31,13 @@ import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
@@ -104,7 +103,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     renderRoot.moveTo(new Vector2f(0, view.getScreen().getHeight()));
-    NLayout.layout(renderRoot);
+    LayoutCall.nlayout(renderRoot, screen.getDimensions());
 
     renderRoot.killRecursive();
     renderRoot.spawnRecursive();
@@ -125,7 +124,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     if (layoutTriggered) {
       layoutTriggered = false;
-      NLayout.layout(renderRoot);
+      LayoutCall.nlayout(renderRoot, screen.getDimensions());
     }
 
     if (updateTriggered) {
@@ -286,7 +285,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       triggerUpdate();
     } else if (respawn) {
       if (obj instanceof ElementRenderObject er) {
-        NLayout.applyBasicStyle(er.style, styleNode.getComputedSet());
+        LayoutCall.applyVisualStyle(styleNode.getComputedSet(), er.style);
       }
 
       triggerUpdate();
@@ -439,7 +438,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
           obj.moveTo(event.getScreenPosition());
 
           if (obj instanceof ElementRenderObject eObj) {
-            NLayout.layout(eObj);
+            LayoutCall.nlayout(eObj, screen.getDimensions());
           }
 
           obj.spawnRecursive();

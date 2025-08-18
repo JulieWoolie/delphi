@@ -1,5 +1,6 @@
 package com.juliewoolie.delphirender.object;
 
+import com.juliewoolie.nlayout.LayoutBox;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,7 +10,6 @@ import com.juliewoolie.delphidom.Rect;
 import com.juliewoolie.delphirender.Consts;
 import com.juliewoolie.delphirender.FullStyle;
 import com.juliewoolie.delphirender.RenderSystem;
-import com.juliewoolie.delphirender.layout.NLayout;
 import com.juliewoolie.dom.style.DisplayType;
 import com.juliewoolie.dom.style.Visibility;
 import org.bukkit.Color;
@@ -254,6 +254,6 @@ public class ElementRenderObject extends RenderObject {
 
   public void getContentSize(Vector2f out) {
     out.set(size);
-    NLayout.subtractExtraSpace(style, out);
+    LayoutBox.subtractExtraSpace(out, style);
   }
 }

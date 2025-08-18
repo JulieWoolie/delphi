@@ -1,6 +1,8 @@
 package com.juliewoolie.delphirender.object;
 
 import static com.juliewoolie.delphirender.Consts.BOX_OVERPRINT;
+import static com.juliewoolie.delphirender.Consts.CHAR_PX_SIZE_X;
+import static com.juliewoolie.delphirender.Consts.CHAR_PX_SIZE_Y;
 import static com.juliewoolie.delphirender.Consts.EMPTY_CONTENT;
 import static com.juliewoolie.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_X;
 import static com.juliewoolie.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_Y;
@@ -10,6 +12,7 @@ import static com.juliewoolie.delphirender.object.BoxRenderObject.visualCenterOf
 import com.juliewoolie.delphidom.DelphiCanvas;
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.delphirender.RenderSystem;
+import com.juliewoolie.nlayout.MeasureFunc;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +26,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4i;
 import org.slf4j.Logger;
 
-public class CanvasRenderObject extends RenderObject {
+public class CanvasRenderObject extends RenderObject implements MeasureFunc {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -263,6 +266,12 @@ public class CanvasRenderObject extends RenderObject {
       return true;
     }
     return false;
+  }
+
+  @Override
+  public void measure(Vector2f out) {
+    out.x = canvas.getWidth() * CHAR_PX_SIZE_X;
+    out.y = canvas.getHeight() * CHAR_PX_SIZE_Y;
   }
 
   static class PixelMesh {

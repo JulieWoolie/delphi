@@ -22,6 +22,7 @@ dependencies {
   implementation(project(":dom"))
   implementation(project(":chimera"))
   implementation(project(":api"))
+  implementation(project(":nlayout"))
   implementation(project(":render"))
   implementation(project(":hephaestus"))
 

@@ -1,10 +1,17 @@
 package com.juliewoolie.delphirender.object;
 
+import static com.juliewoolie.delphirender.Consts.CHAR_PX_SIZE_X;
+import static com.juliewoolie.delphirender.Consts.CHAR_PX_SIZE_Y;
 import static com.juliewoolie.delphirender.object.BoxRenderObject.NIL_COLOR;
 
+import com.juliewoolie.delphirender.FontMeasureCallback;
 import com.juliewoolie.delphirender.FullStyle;
+import com.juliewoolie.delphirender.MetricTextMeasure;
 import com.juliewoolie.delphirender.RenderSystem;
-import com.juliewoolie.delphirender.layout.NLayout;
+import com.juliewoolie.delphirender.SimpleTextMeasure;
+import com.juliewoolie.delphirender.TextMeasure;
+import com.juliewoolie.delphirender.TextUtil;
+import com.juliewoolie.nlayout.MeasureFunc;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
@@ -15,7 +22,11 @@ import org.bukkit.util.Transformation;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public abstract class TextRenderObject extends SingleEntityRenderObject<TextDisplay> {
+public abstract class TextRenderObject
+    extends SingleEntityRenderObject<TextDisplay>
+    implements MeasureFunc
+{
+  public static final float GLOBAL_FONT_SIZE = 0.5f;
 
   public TextRenderObject(RenderSystem system) {
     super(system);
@@ -45,9 +56,37 @@ public abstract class TextRenderObject extends SingleEntityRenderObject<TextDisp
     trans.getTranslation().x -= BoxRenderObject.visualCenterOffset(trans.getScale().x);
   }
 
+  @Override
+  public void measure(Vector2f out) {
+    measureText(this, text(), out);
+    out.mul(GLOBAL_FONT_SIZE);
+
+    if (parent != null) {
+      out.mul(parent.style.fontSize);
+    }
+  }
+
+  static void measureText(TextRenderObject obj, Component text, Vector2f out) {
+    TextMeasure measure;
+    FontMeasureCallback metrics = obj.system.getFontMetrics();
+
+    if (metrics == null) {
+      measure = new SimpleTextMeasure();
+    } else {
+      measure = new MetricTextMeasure(metrics);
+    }
+
+    TextUtil.FLATTENER.flatten(text, measure);
+
+    measure.outputSize(out);
+
+    out.x *= CHAR_PX_SIZE_X;
+    out.y *= CHAR_PX_SIZE_Y;
+  }
+
   static void configureTextSize(TextRenderObject holder, Component text, Vector3f scale) {
     Vector2f textSize = new Vector2f();
-    NLayout.measureText(holder, text, textSize);
+    measureText(holder, text, textSize);
 
     Vector2f objectSize = holder.size;
 
