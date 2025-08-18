@@ -26,7 +26,8 @@ You can build each module separately with `graldew :<module name>:build` and run
 - `api`: Outlines the API developers can use to interact with the plugin.
 - `chimera`: SCSS implementation and style system.
 - `dom` (`delphidom`): The Document Object Model implementation. (Uses `chimera`)
-- `render` (`delphirender`): The layout and rendering engine.
+- `nlayout` (`nlayout`): The layout engine.
+- `render` (`delphirender`): The rendering engine.
 - `plugin` (`delphiplugin`): The Paper MC plugin.
 - `hephaestus`: JavaScript integration
 
