@@ -1,6 +1,7 @@
 package com.juliewoolie.chimera;
 
 import static com.juliewoolie.chimera.Properties.ALIGN_ITEMS;
+import static com.juliewoolie.chimera.Properties.ALIGN_SELF;
 import static com.juliewoolie.chimera.Properties.BACKGROUND_COLOR;
 import static com.juliewoolie.chimera.Properties.BOLD;
 import static com.juliewoolie.chimera.Properties.BORDER;
@@ -11,12 +12,14 @@ import static com.juliewoolie.chimera.Properties.BORDER_RIGHT;
 import static com.juliewoolie.chimera.Properties.BORDER_TOP;
 import static com.juliewoolie.chimera.Properties.BOX_SIZING;
 import static com.juliewoolie.chimera.Properties.COLOR;
+import static com.juliewoolie.chimera.Properties.COLUMN_GAP;
 import static com.juliewoolie.chimera.Properties.DISPLAY;
 import static com.juliewoolie.chimera.Properties.FLEX_BASIS;
 import static com.juliewoolie.chimera.Properties.FLEX_DIRECTION;
 import static com.juliewoolie.chimera.Properties.FLEX_WRAP;
 import static com.juliewoolie.chimera.Properties.FONT_SIZE;
 import static com.juliewoolie.chimera.Properties.GAP;
+import static com.juliewoolie.chimera.Properties.GROW;
 import static com.juliewoolie.chimera.Properties.HEIGHT;
 import static com.juliewoolie.chimera.Properties.ITALIC;
 import static com.juliewoolie.chimera.Properties.JUSTIFY_CONTENT;
@@ -45,13 +48,17 @@ import static com.juliewoolie.chimera.Properties.PADDING_BOTTOM;
 import static com.juliewoolie.chimera.Properties.PADDING_LEFT;
 import static com.juliewoolie.chimera.Properties.PADDING_RIGHT;
 import static com.juliewoolie.chimera.Properties.PADDING_TOP;
+import static com.juliewoolie.chimera.Properties.ROW_GAP;
+import static com.juliewoolie.chimera.Properties.SHRINK;
 import static com.juliewoolie.chimera.Properties.STRIKETHROUGH;
 import static com.juliewoolie.chimera.Properties.TEXT_SHADOW;
 import static com.juliewoolie.chimera.Properties.UNDERLINED;
+import static com.juliewoolie.chimera.Properties.VERTICAL_ALIGN;
 import static com.juliewoolie.chimera.Properties.VISIBILITY;
 import static com.juliewoolie.chimera.Properties.WIDTH;
 import static com.juliewoolie.chimera.Properties.Z_INDEX;
 
+import com.juliewoolie.dom.style.VerticalAlign;
 import lombok.ToString;
 import com.juliewoolie.chimera.Value.ValueType;
 import com.juliewoolie.dom.style.AlignItems;
@@ -80,6 +87,7 @@ public class ComputedStyleSet {
   public boolean obfuscated;
 
   public DisplayType display;
+  public VerticalAlign verticalAlign;
 
   public ValueOrAuto fontSize;
 
@@ -115,14 +123,19 @@ public class ComputedStyleSet {
   public ValueOrAuto marginInlineEnd;
 
   public ValueOrAuto flexBasis;
-  public ValueOrAuto gap;
+
+  public ValueOrAuto rowGap;
+  public ValueOrAuto columnGap;
 
   public int zindex;
   public AlignItems alignItems;
+  public AlignItems alignSelf;
   public FlexDirection flexDirection;
   public FlexWrap flexWrap;
   public JustifyContent justifyContent;
   public int order;
+  public int grow;
+  public int shrink;
   public BoxSizing boxSizing;
   public Visibility visibility;
 
@@ -144,6 +157,7 @@ public class ComputedStyleSet {
     obfuscated = OBFUSCATED.getDefaultValue();
 
     display = DisplayType.DEFAULT;
+    verticalAlign = VerticalAlign.DEFAULT;
 
     fontSize = ValueOrAuto.ONE;
 
@@ -178,14 +192,18 @@ public class ComputedStyleSet {
     marginInlineEnd = ValueOrAuto.ZERO;
 
     flexBasis = ValueOrAuto.AUTO;
-    gap = ValueOrAuto.AUTO;
+    rowGap = ValueOrAuto.AUTO;
+    columnGap = ValueOrAuto.AUTO;
 
     zindex = 0;
     alignItems = AlignItems.DEFAULT;
+    alignSelf = null;
     flexDirection = FlexDirection.DEFAULT;
     flexWrap = FlexWrap.DEFAULT;
     justifyContent = JustifyContent.DEFAULT;
     order = 0;
+    grow = 0;
+    shrink = 0;
     boxSizing = BoxSizing.DEFAULT;
     visibility = Visibility.DEFAULT;
   }
@@ -222,9 +240,28 @@ public class ComputedStyleSet {
     order = getExplicit(set, ORDER);
     boxSizing = getExplicit(set, BOX_SIZING);
     visibility = getExplicit(set, VISIBILITY);
+    verticalAlign = getExplicit(set, VERTICAL_ALIGN);
+
+    grow = getExplicit(set, GROW);
+    shrink = getExplicit(set, SHRINK);
+
+    if (set.has(ALIGN_SELF)) {
+      alignSelf = getExplicit(set, ALIGN_SELF);
+    } else {
+      alignSelf = null;
+    }
 
     flexBasis = getPrimitive(set, FLEX_BASIS);
-    gap = getPrimitive(set, GAP);
+
+    PrimitiveLeftRight gap = getExplicit(set, GAP);
+    rowGap = ValueOrAuto.valueOf(gap.getLeft());
+    columnGap = ValueOrAuto.valueOf(gap.getRight());
+    if (set.has(ROW_GAP)) {
+      rowGap = getPrimitive(set, ROW_GAP);
+    }
+    if (set.has(COLUMN_GAP)) {
+      columnGap = getPrimitive(set, COLUMN_GAP);
+    }
 
     // Margin inline
     PrimitiveLeftRight lr = getExplicit(set, MARGIN_INLINE);

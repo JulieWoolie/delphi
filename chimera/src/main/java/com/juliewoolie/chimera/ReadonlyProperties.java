@@ -277,6 +277,26 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
+  public @Nullable String getRowGap() {
+    return get(Properties.ROW_GAP);
+  }
+
+  @Override
+  public @Nullable String getColumnGap() {
+    return get(Properties.COLUMN_GAP);
+  }
+
+  @Override
+  public @Nullable String getAlignSelf() {
+    return get(Properties.ALIGN_SELF);
+  }
+
+  @Override
+  public @Nullable String getVerticalAlign() {
+    return get(Properties.VERTICAL_ALIGN);
+  }
+
+  @Override
   public @Nullable String getPropertyValue(String propertyName) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return null;

@@ -1,6 +1,8 @@
 package com.juliewoolie.chimera;
 
 import com.google.common.base.Strings;
+import com.juliewoolie.dom.style.VerticalAlign;
+import java.util.Objects;
 import java.util.Optional;
 import com.juliewoolie.chimera.parse.Chimera;
 import com.juliewoolie.chimera.parse.ChimeraContext;
@@ -789,8 +791,76 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   @Override
+  public StyleProperties setAlignSelf(@Nullable AlignItems value) {
+    set(Properties.ALIGN_SELF, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setAlignSelf(@Nullable String value) {
+    parse(Properties.ALIGN_SELF, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setVerticalAlign(@Nullable VerticalAlign value) {
+    set(Properties.VERTICAL_ALIGN, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setVerticalAlign(@Nullable String string) {
+    parse(Properties.VERTICAL_ALIGN, string);
+    return triggerChange();
+  }
+
+  @Override
   public StyleProperties setGap(@Nullable Primitive value) {
-    set(Properties.GAP, value);
+    if (value == null) {
+      set(Properties.GAP, null);
+    } else {
+      set(Properties.GAP, new PrimitiveLeftRight(value, value));
+    }
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setGap(@Nullable Primitive rowGap, @Nullable Primitive columnGap) {
+    if (rowGap == null && columnGap == null) {
+      set(Properties.GAP, null);
+    } else {
+      set(
+          Properties.GAP,
+          new PrimitiveLeftRight(
+              Objects.requireNonNullElse(rowGap, Primitive.ZERO),
+              Objects.requireNonNullElse(columnGap, Primitive.ZERO)
+          )
+      );
+    }
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setRowGap(@Nullable Primitive value) {
+    set(Properties.ROW_GAP, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setRowGap(@Nullable String value) {
+    parse(Properties.ROW_GAP, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setColumnGap(@Nullable Primitive value) {
+    set(Properties.COLUMN_GAP, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setColumnGap(@Nullable String value) {
+    parse(Properties.COLUMN_GAP, value);
     return triggerChange();
   }
 

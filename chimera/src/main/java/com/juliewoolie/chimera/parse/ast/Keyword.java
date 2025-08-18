@@ -45,6 +45,13 @@ public enum Keyword {
   HIDDEN,
   COLLAPSE,
 
+  // Vertical Align
+  SUB,
+  SUPER,
+  TOP,
+  MIDDLE,
+  BOTTOM,
+
   // Boolean values
   TRUE,
   FALSE,

@@ -155,6 +155,30 @@ public interface StylePropertiesReadonly {
   @Nullable String getGap();
 
   /**
+   * Get the {@code row-gap} property value.
+   * @return Row gap property, or {@code null}, if not set
+   */
+  @Nullable String getRowGap();
+
+  /**
+   * Get the {@code column-gap} property value.
+   * @return Column gap property, or {@code null}, if not set
+   */
+  @Nullable String getColumnGap();
+
+  /**
+   * Get the {@code align-self} property value.
+   * @return Align-self property, or {@code null}, if not set
+   */
+  @Nullable String getAlignSelf();
+
+  /**
+   * Get the {@code vertical-align} property value.
+   * @return Vertical alignment property, or {@code null}, if not set
+   */
+  @Nullable String getVerticalAlign();
+
+  /**
    * Get a set of CSS property names that are explicitly set
    * by this property set.
    *

@@ -811,11 +811,47 @@ public interface StyleProperties extends StylePropertiesReadonly {
   StyleProperties setFlexBasis(@Nullable String value);
 
   /**
-   * Set the {@code gap} property
+   * Set the {@code gap} shorthand property
    * @param value Gap value
    * @return {@code this}
    */
   StyleProperties setGap(@Nullable Primitive value);
+
+  /**
+   * Set the {@code gap} shorthand property.
+   * @param rowGap Row gap value
+   * @param columnGap Column gap value
+   * @return {@code this}
+   */
+  StyleProperties setGap(@Nullable Primitive rowGap, @Nullable Primitive columnGap);
+
+  /**
+   * Set the {@code row-gap} property.
+   * @param value Property value
+   * @return {@code this}
+   */
+  StyleProperties setRowGap(@Nullable Primitive value);
+
+  /**
+   * Set the {@code row-gap} property.
+   * @param value Property value
+   * @return {@code this}
+   */
+  StyleProperties setRowGap(@Nullable String value);
+
+  /**
+   * Set the {@code column-gap} property.
+   * @param value Property value
+   * @return {@code this}
+   */
+  StyleProperties setColumnGap(@Nullable Primitive value);
+
+  /**
+   * Set the {@code column-gap} property.
+   * @param value Property value
+   * @return {@code this}
+   */
+  StyleProperties setColumnGap(@Nullable String value);
 
   /**
    * Set the {@code gap} property
@@ -823,6 +859,35 @@ public interface StyleProperties extends StylePropertiesReadonly {
    * @return {@code this}
    */
   StyleProperties setGap(@Nullable String value);
+
+  /**
+   * Set the {@code align-self} property.
+   * @param value Align-self value
+   * @return {@code this}
+   */
+  StyleProperties setAlignSelf(@Nullable AlignItems value);
+
+  /**
+   * Set the {@code align-self} property.
+   * @param value Align-self value
+   * @return {@code this}
+   */
+  StyleProperties setAlignSelf(@Nullable String value);
+
+  /**
+   * Set the {@code vertical-align} property.
+   * @param value Vertical alignment property
+   * @return {@code this}
+   */
+  StyleProperties setVerticalAlign(@Nullable VerticalAlign value);
+
+  /**
+   * Set the {@code vertical-align} property.
+   * @param value Vertical alignment property
+   * @return {@code this}
+   */
+  StyleProperties setVerticalAlign(@Nullable String value);
+
 
   /**
    * Set the value of a CSS property.

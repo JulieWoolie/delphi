@@ -1776,6 +1776,21 @@ public class ChimeraParser {
       case "collapse":
         keyword = Keyword.COLLAPSE;
         break;
+      case "sub":
+        keyword = Keyword.SUB;
+        break;
+      case "super":
+        keyword = Keyword.SUPER;
+        break;
+      case "top":
+        keyword = Keyword.TOP;
+        break;
+      case "middle":
+        keyword = Keyword.MIDDLE;
+        break;
+      case "bottom":
+        keyword = Keyword.BOTTOM;
+        break;
       case "true":
         keyword = Keyword.TRUE;
         break;

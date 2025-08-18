@@ -5,6 +5,7 @@ import static com.juliewoolie.chimera.PropertyValidator.NON_ANGLE_LR;
 import static com.juliewoolie.chimera.PropertyValidator.NON_ANGLE_RECT;
 import static com.juliewoolie.chimera.PropertyValidator.SCALAR;
 
+import com.juliewoolie.dom.style.VerticalAlign;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.util.Map;
@@ -125,8 +126,22 @@ public final class Properties {
       .validator(NON_ANGLE)
       .build();
 
-  public static final Property<Primitive> GAP = Property.builder(Primitive.class)
-      .defaultValue(Primitive.create(0))
+  public static final Property<PrimitiveLeftRight> GAP = Property.builder(PrimitiveLeftRight.class)
+      .defaultValue(PrimitiveLeftRight.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE_LR)
+      .build();
+
+  public static final Property<Primitive> ROW_GAP = Property.builder(Primitive.class)
+      .defaultValue(Primitive.ZERO)
+      .cascading(false)
+      .layoutAffecting(true)
+      .validator(NON_ANGLE)
+      .build();
+
+  public static final Property<Primitive> COLUMN_GAP = Property.builder(Primitive.class)
+      .defaultValue(Primitive.ZERO)
       .cascading(false)
       .layoutAffecting(true)
       .validator(NON_ANGLE)
@@ -347,6 +362,18 @@ public final class Properties {
       .layoutAffecting(true)
       .build();
 
+  public static final Property<AlignItems> ALIGN_SELF = Property.builder(AlignItems.class)
+      .defaultValue(AlignItems.DEFAULT)
+      .cascading(false)
+      .layoutAffecting(true)
+      .build();
+
+  public static final Property<VerticalAlign> VERTICAL_ALIGN = Property.builder(VerticalAlign.class)
+      .defaultValue(VerticalAlign.BOTTOM)
+      .cascading(false)
+      .layoutAffecting(true)
+      .build();
+
   public static final Property<FlexDirection> FLEX_DIRECTION = Property.builder(FlexDirection.class)
       .defaultValue(FlexDirection.DEFAULT)
       .cascading(false)
@@ -367,6 +394,18 @@ public final class Properties {
       .build();
 
   public static final Property<Integer> ORDER = Property.builder(Integer.class)
+      .defaultValue(0)
+      .cascading(false)
+      .layoutAffecting(true)
+      .build();
+
+  public static final Property<Integer> GROW = Property.builder(Integer.class)
+      .defaultValue(0)
+      .cascading(false)
+      .layoutAffecting(true)
+      .build();
+
+  public static final Property<Integer> SHRINK = Property.builder(Integer.class)
       .defaultValue(0)
       .cascading(false)
       .layoutAffecting(true)
@@ -411,6 +450,7 @@ public final class Properties {
     register("outline-color",         OUTLINE_COLOR);
 
     register("align-items",           ALIGN_ITEMS);
+    register("align-self",            ALIGN_SELF);
     register("flex-direction",        FLEX_DIRECTION);
     register("flex-wrap",             FLEX_WRAP);
     register("justify-content",       JUSTIFY_CONTENT);
@@ -424,6 +464,7 @@ public final class Properties {
     register("font-size",             FONT_SIZE);
     register("z-index",               Z_INDEX);
     register("visibility",            VISIBILITY);
+    register("vertical-align",        VERTICAL_ALIGN);
 
     register("bold",                  BOLD);
     register("italic",                ITALIC);
@@ -433,6 +474,11 @@ public final class Properties {
 
     register("flex-basis",            FLEX_BASIS);
     register("gap",                   GAP);
+    register("row-gap",               ROW_GAP);
+    register("column-gap",            COLUMN_GAP);
+    register("grow",                  GROW);
+    register("shrink",                SHRINK);
+
     register("width",                 WIDTH);
     register("height",                HEIGHT);
 

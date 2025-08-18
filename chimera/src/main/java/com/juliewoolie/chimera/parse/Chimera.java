@@ -1,6 +1,7 @@
 package com.juliewoolie.chimera.parse;
 
 import com.google.common.base.Strings;
+import com.juliewoolie.dom.style.VerticalAlign;
 import java.util.Optional;
 import com.juliewoolie.chimera.ChimeraStylesheet;
 import com.juliewoolie.chimera.PrimitiveLeftRight;
@@ -309,6 +310,12 @@ public final class Chimera {
       case HIDDEN -> Visibility.HIDDEN;
       case COLLAPSE -> Visibility.COLLAPSE;
 
+      case SUB -> VerticalAlign.SUB;
+      case SUPER -> VerticalAlign.SUPER;
+      case TOP -> VerticalAlign.TOP;
+      case MIDDLE -> VerticalAlign.MIDDLE;
+      case BOTTOM -> VerticalAlign.BOTTOM;
+
       case FLEX_START -> {
         if (type == AlignItems.class) {
           yield AlignItems.FLEX_START;
@@ -438,6 +445,15 @@ public final class Chimera {
           case HIDDEN -> Keyword.HIDDEN;
           case VISIBLE -> Keyword.VISIBLE;
           case COLLAPSE -> Keyword.COLLAPSE;
+        };
+      }
+      case VerticalAlign a -> {
+        return switch (a) {
+          case SUB -> Keyword.SUB;
+          case TOP -> Keyword.TOP;
+          case SUPER -> Keyword.SUPER;
+          case BOTTOM -> Keyword.BOTTOM;
+          case MIDDLE -> Keyword.MIDDLE;
         };
       }
 
