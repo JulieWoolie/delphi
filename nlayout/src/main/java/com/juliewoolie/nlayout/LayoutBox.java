@@ -120,7 +120,7 @@ public abstract class LayoutBox extends LayoutNode {
     return resolvePrimitive(v.primitive(), ctx, axis);
   }
 
-  private static float resolvePrimitive(Primitive prim, LayoutContext ctx, byte axis) {
+  public static float resolvePrimitive(Primitive prim, LayoutContext ctx, byte axis) {
     float percent = prim.getValue() * 0.01f;
     float value = prim.getValue();
 
