@@ -31,6 +31,8 @@ public class ElementRenderObject extends RenderObject {
   @Getter
   private final List<RenderObject> childObjects = new ArrayList<>();
 
+  public float depthScale = 1.0f;
+
   public ElementRenderObject(RenderSystem system, ComputedStyleSet set) {
     super(system);
 
@@ -126,7 +128,7 @@ public class ElementRenderObject extends RenderObject {
     // Configure depth values
     for (int i = 0; i < boxes.length; i++) {
       BoxRenderObject box = boxes[i];
-      box.depth = this.depth + (i * Consts.MICRO_LAYER_DEPTH);
+      box.depth = this.depth + (i * Consts.MICRO_LAYER_DEPTH * depthScale);
     }
   }
 

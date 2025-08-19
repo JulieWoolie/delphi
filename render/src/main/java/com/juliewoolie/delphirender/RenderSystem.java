@@ -46,6 +46,8 @@ import org.joml.Vector2f;
 @Getter @Setter
 public class RenderSystem implements StyleUpdateCallbacks {
 
+  static final float TOOLTIP_DEPTH_SCALE = 1.1f;
+
   final ExtendedView view;
   final RenderScreen screen;
 
@@ -169,6 +171,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
   }
 
   public RenderObject initRenderTree(DelphiNode node) {
+    return initRenderTree(node, 1.0f);
+  }
+
+  public RenderObject initRenderTree(DelphiNode node, float depthScale) {
     RenderObject obj;
 
     StyleObjectModel styles = node.getDocument().getStyles();
@@ -179,7 +185,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     ComputedStyleSet styleSet = styleNode.getComputedSet();
-    float depth = ((float) node.getDepth()) * MACRO_LAYER_DEPTH;
+    float depth = ((float) node.getDepth()) * MACRO_LAYER_DEPTH * depthScale;
 
     switch (node) {
       case Text text -> {
@@ -194,6 +200,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         comp.text = chat.getContent();
         comp.depth = depth;
         el.addChild(0, comp);
+        el.depthScale = depthScale;
 
         obj = el;
       }
@@ -204,6 +211,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         itemObj.item = item.getItemStack();
         itemObj.depth = depth;
         el.addChild(0, itemObj);
+        el.depthScale = depthScale;
 
         obj = el;
       }
@@ -214,6 +222,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         sro.content = input.getDisplayText();
         sro.depth = depth + MACRO_LAYER_DEPTH;
         el.addChild(0, sro);
+        el.depthScale = depthScale;
 
         obj = el;
       }
@@ -224,6 +233,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         cro.canvas = canvas.canvas;
         cro.depth = depth + MACRO_LAYER_DEPTH;
         el.addChild(0, cro);
+        el.depthScale = depthScale;
 
         obj = el;
       }
@@ -231,8 +241,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
         ElementRenderObject o = new ElementRenderObject(this, styleSet);
         DelphiElement el = (DelphiElement) node;
 
+        o.depthScale = depthScale;
+
         for (DelphiNode delphiNode : el.childList()) {
-          o.addChild(o.getChildObjects().size(), initRenderTree(delphiNode));
+          o.addChild(o.getChildObjects().size(), initRenderTree(delphiNode, depthScale));
         }
 
         obj = o;
@@ -352,7 +364,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     RenderObject obj = getRenderElement(titleNode);
     if (obj == null) {
-      obj = initRenderTree(titleNode);
+      obj = initRenderTree(titleNode, TOOLTIP_DEPTH_SCALE);
     }
 
     obj.moveTo(view.getCursorScreen());
@@ -433,7 +445,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         case EventTypes.MOUSE_ENTER -> {
           RenderObject obj = getRenderElement(tooltip);
           if (obj == null) {
-            obj = initRenderTree(tooltip);
+            obj = initRenderTree(tooltip, TOOLTIP_DEPTH_SCALE);
           }
 
           el.getDocument().getStyles().updateDomStyle(tooltip);
