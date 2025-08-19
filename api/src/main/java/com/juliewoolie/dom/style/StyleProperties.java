@@ -888,6 +888,27 @@ public interface StyleProperties extends StylePropertiesReadonly {
    */
   StyleProperties setVerticalAlign(@Nullable String value);
 
+  /**
+   * Set the {@code flex-grow} property.
+   * <p>
+   * Any integer value is accepted, note that values {@code 0} or below cause the element's growth
+   * value to be discarded during Flexbox layout.
+   *
+   * @param value Flex growth property
+   * @return {@code this}
+   */
+  StyleProperties setFlexGrow(@Nullable String value);
+
+  /**
+   * Set the {@code flex-shrink} property.
+   * <p>
+   * Any integer value is accepted, note that values {@code 0} or below cause the element's shrink
+   * value to be discarded during Flexbox layout.
+   *
+   * @param value Flex shrink property
+   * @return {@code this}
+   */
+  StyleProperties setFlexShrink(@Nullable String value);
 
   /**
    * Set the value of a CSS property.

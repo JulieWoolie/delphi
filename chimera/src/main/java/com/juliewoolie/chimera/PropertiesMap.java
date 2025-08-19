@@ -865,6 +865,18 @@ public class PropertiesMap extends ReadonlyProperties implements StyleProperties
   }
 
   @Override
+  public StyleProperties setFlexShrink(@Nullable String value) {
+    parse(Properties.SHRINK, value);
+    return triggerChange();
+  }
+
+  @Override
+  public StyleProperties setFlexGrow(@Nullable String value) {
+    parse(Properties.GROW, value);
+    return triggerChange();
+  }
+
+  @Override
   public StyleProperties setProperty(@NotNull String propertyName, @Nullable String value) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return this;

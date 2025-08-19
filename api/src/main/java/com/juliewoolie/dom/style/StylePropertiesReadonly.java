@@ -179,6 +179,18 @@ public interface StylePropertiesReadonly {
   @Nullable String getVerticalAlign();
 
   /**
+   * Get the {@code flex-grow} property value.
+   * @return Flex Grow, or {@code null}, if not set.
+   */
+  @Nullable String getFlexGrow();
+
+  /**
+   * Get the {@code flex-shrink} property value.
+   * @return Flex Shrink, or {@code null}, if not set.
+   */
+  @Nullable String getFlexShrink();
+
+  /**
    * Get a set of CSS property names that are explicitly set
    * by this property set.
    *

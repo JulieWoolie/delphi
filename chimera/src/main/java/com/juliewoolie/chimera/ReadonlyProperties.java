@@ -297,6 +297,16 @@ public class ReadonlyProperties implements StylePropertiesReadonly {
   }
 
   @Override
+  public @Nullable String getFlexGrow() {
+    return get(Properties.GROW);
+  }
+
+  @Override
+  public @Nullable String getFlexShrink() {
+    return get(Properties.SHRINK);
+  }
+
+  @Override
   public @Nullable String getPropertyValue(String propertyName) {
     if (Strings.isNullOrEmpty(propertyName)) {
       return null;
