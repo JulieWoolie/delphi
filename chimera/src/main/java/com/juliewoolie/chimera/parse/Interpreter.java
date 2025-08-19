@@ -579,6 +579,9 @@ public class Interpreter implements NodeVisitor<Object> {
     if (isAngular(p.getUnit())) {
       return p.toDegrees();
     }
+    if (p.getUnit() == Unit.PX) {
+      return p.getValue() * 0.025f;
+    }
     return p.getValue();
   }
 
@@ -588,6 +591,16 @@ public class Interpreter implements NodeVisitor<Object> {
     }
     if (left == Unit.M || right == Unit.M) {
       return Primitive.create(v, Unit.CM);
+    }
+
+    if (left == Unit.PX && right == Unit.PX) {
+      return Primitive.create(v / 0.025f, left);
+    }
+    if (left == Unit.PX) {
+      return Primitive.create(v, right);
+    }
+    if (right == Unit.PX) {
+      return Primitive.create(v, left);
     }
 
     if (left == Unit.NONE) {
