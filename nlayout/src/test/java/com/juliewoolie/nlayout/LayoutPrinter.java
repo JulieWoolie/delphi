@@ -39,6 +39,7 @@ public class LayoutPrinter {
   }
 
   public static void dumpLayout(
+      Path path,
       LayoutBox rootNode,
       int width,
       int height,
@@ -46,11 +47,19 @@ public class LayoutPrinter {
       Vector2f screenSize
   ) throws IOException {
     BufferedImage img = print(rootNode, width, height, elementScale, screenSize);
-    Path path = Path.of("layout.png");
-
     try (OutputStream stream = Files.newOutputStream(path)) {
       ImageIO.write(img, "PNG", stream);
     }
+  }
+
+  public static void dumpLayout(
+      LayoutBox rootNode,
+      int width,
+      int height,
+      Vector2f elementScale,
+      Vector2f screenSize
+  ) throws IOException {
+    dumpLayout(Path.of("layout.png"), rootNode, width, height, elementScale, screenSize);
   }
 
   private static void paint(LayoutNode node, Graphics2D out, Vector2f scale, Vector2f screenSize) {

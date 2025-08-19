@@ -75,7 +75,7 @@ public class FlexLayoutBox extends LayoutBox {
     calculateBasis(ctx);
     calculateItemMainSizes();
     calculateItemCrossSizes();
-    boolean childrenChanged = applyCrossAndMainSizes(ctx);
+    applyCrossAndMainSizes(ctx);
 
     out.set(0);
 
@@ -87,16 +87,19 @@ public class FlexLayoutBox extends LayoutBox {
       out.y = crossSize;
     }
 
-    return childrenChanged || (mainSize != preMainSize || crossSize != preCrossSize);
+    return mainSize != preMainSize || crossSize != preCrossSize;
   }
 
   @Override
   public void layout() {
+    // This function hurts my head, and it's the epitome of having to
+    // juggle x,y vectors as well as tracking the main and cross sizes
+    // of the flex item and container.
+
     Vector2f innerSpace = new Vector2f();
     getInnerSize(innerSpace);
 
     float mainInnerSpace = getMainSize(innerSpace);
-    float freeMainSpace = mainInnerSpace - mainSize;
 
     float mainGap = 0;
     float crossGap = 0;
@@ -111,10 +114,14 @@ public class FlexLayoutBox extends LayoutBox {
 
     JustifyContent justify = style.justify;
 
+    // cpos = current position, basically the position
+    // we're going to place the next element
     Vector2f cpos = new Vector2f();
     getContentStart(cpos);
 
     Vector2f offset = new Vector2f(0);
+
+    // 'align-content'??? Never heard of her
 
     for (int i = 0; i < lines.size(); i++) {
       FlexLine line = lines.get(i);
@@ -128,6 +135,8 @@ public class FlexLayoutBox extends LayoutBox {
         offset.x = 0;
       }
 
+      float freeMainSpace = mainInnerSpace - line.lineLength;
+
       switch (justify) {
         case FLEX_END:
           startingSpace = freeMainSpace;
@@ -135,22 +144,40 @@ public class FlexLayoutBox extends LayoutBox {
         case CENTER:
           startingSpace = freeMainSpace * 0.5f;
           break;
+
+        // There's items-1 gaps between the items, so to get
+        // the size of each gap, divide the free space by items-1
         case SPACE_BETWEEN:
-          lineMainGap = freeMainSpace / line.items.size();
+          lineMainGap = freeMainSpace / (line.items.size() - 1);
           break;
+
+        // Each item has an equal gap on it's left and right (in the case of row direction)
         case SPACE_AROUND:
-          lineMainGap = freeMainSpace / line.items.size();
-          startingSpace = (freeMainSpace / (line.items.size() + 1)) * 0.5f;
+          float d = freeMainSpace / (line.items.size() * 2);
+          lineMainGap = d * 2;
+          startingSpace = d;
           break;
+
+        // There's items+1 gaps between each item (and also before and after)
         case SPACE_EVENLY:
-          lineMainGap = freeMainSpace / line.items.size();
-          startingSpace = (freeMainSpace / (line.items.size() + 2)) * 0.5f;
+          float a = freeMainSpace / (line.items.size() + 1);
+          lineMainGap = a;
+          startingSpace = a;
           break;
       }
+
+      // So, if there's a gap set, we need to use it, even in the case
+      // of the 'space-*' justifies, this max() call is also why we
+      // keep track of totalGap in calculateItemMainSizes()
+      lineMainGap = Math.max(lineMainGap, mainGap);
 
       for (int itemIdx = 0; itemIdx < line.items.size(); itemIdx++) {
         FlexItem item = line.items.get(itemIdx);
 
+        // I hate this, but it works
+        // It offsets the current line's placement position by either
+        // the starting space if this is the first item, or by the gap,
+        // if it's not
         if (itemIdx == 0) {
           if (isMainAxisVertical()) {
             offset.y -= startingSpace;
@@ -168,6 +195,7 @@ public class FlexLayoutBox extends LayoutBox {
         float posx = cpos.x + offset.x;
         float posy = cpos.y + offset.y;
 
+        // Apply item alignments, again, the god-damn axes checks
         if (item.alignSelf == AlignItems.CENTER) {
           float off = (line.crossSize - item.crossSize) * 0.5f;
           if (isMainAxisVertical()) {
@@ -187,6 +215,7 @@ public class FlexLayoutBox extends LayoutBox {
         item.node.position.x = posx;
         item.node.position.y = posy;
 
+        // This is impossible to keep track of in my head
         if (isMainAxisVertical()) {
           offset.y -= item.mainSize;
         } else {
@@ -247,14 +276,13 @@ public class FlexLayoutBox extends LayoutBox {
         .forEach(items::add);
   }
 
-  boolean applyCrossAndMainSizes(LayoutContext ctx) {
+  void applyCrossAndMainSizes(LayoutContext ctx) {
     Vector2f discard = new Vector2f();
-    boolean changed = false;
-
     Vector2f innerSize = new Vector2f();
 
     for (int i = 0; i < lines.size(); i++) {
       FlexLine line = lines.get(i);
+
       for (int itemIdx = 0; itemIdx < line.items.size(); itemIdx++) {
         FlexItem item = line.items.get(itemIdx);
         setSizes(item.node.size, item.mainSize, item.crossSize);
@@ -263,13 +291,11 @@ public class FlexLayoutBox extends LayoutBox {
           box.getInnerSize(innerSize);
 
           ctx.parentSizes.push(innerSize);
-          changed = box.measure(ctx, discard);
+          box.measure(ctx, discard);
           ctx.parentSizes.pop();
         }
       }
     }
-
-    return changed;
   }
 
   void calculateItemCrossSizes() {
@@ -281,6 +307,9 @@ public class FlexLayoutBox extends LayoutBox {
     Vector2f innerSize = new Vector2f();
     getInnerSize(innerSize);
 
+    // There's some stupid stuff here to do with the 'align-items: stretch'
+    // not being applied correctly unless these cstyle.isAuto() checks
+    // weren't here
     if (isMainAxisVertical()) {
       crossGap = style.columnGap;
 
@@ -320,6 +349,7 @@ public class FlexLayoutBox extends LayoutBox {
       for (int lidx = 0; lidx < line.items.size(); lidx++) {
         FlexItem item = line.items.get(lidx);
 
+        // If we're stretching, stretch... duh lmao
         if (item.alignSelf == AlignItems.STRETCH) {
           item.crossSize = line.crossSize;
         }
@@ -329,15 +359,17 @@ public class FlexLayoutBox extends LayoutBox {
 
   void calculateItemMainSizes() {
     mainSize = 0.0f;
-    float gap = 0.0f;
 
-    if (hasGaps()) {
-      gap = isMainAxisVertical() ? style.rowGap : style.columnGap;
-    }
+    float gap = isMainAxisVertical() ? style.rowGap : style.columnGap;
+    float totalGap = 0.0f;
 
+    // Calculate container's main size (kinda) by adding
+    // all flex items' flex-basis together (+ gap)
+    // Save the total gap we've added to the size (we might need it later)
     for (int i = 0; i < items.size(); i++) {
       if (i != 0) {
         mainSize += gap;
+        totalGap += gap;
       }
 
       FlexItem item = items.get(i);
@@ -345,24 +377,27 @@ public class FlexLayoutBox extends LayoutBox {
       item.mainSize = item.flexbasis;
     }
 
+    // Get the inner size of the container (this.size - padding - border - outline)
     Vector2f innerSize = new Vector2f();
     getInnerSize(innerSize);
 
     float availableMainSize = getMainSize(innerSize);
 
+    // If the combined width of all items is greater
+    // than the size actually available to us
     if (mainSize > availableMainSize) {
-      // SHRINK or WRAP
-      //   If WRAP, then growth has to be applied as well to each line separately
-      //   If SHRINK, then idk man, this shit is impossible to do
 
+      // If we're not wrapping, then we have to shrink each item down
       if (isSingleLine()) {
-        // SHRINK if only I knew how
+        // Combine all the 'flex-shrink' values of the items
         int shrinkTotal = items.stream().filter(i -> i.shrink > 0)
             .mapToInt(value -> value.shrink)
             .sum();
 
+        // How much we have to shrink
         float dif = mainSize - availableMainSize;
 
+        // If no elements have a set 'flex-shrink' => Shrink all
         if (shrinkTotal == 0) {
           float perItem = dif / items.size();
           for (int i = 0; i < items.size(); i++) {
@@ -370,6 +405,7 @@ public class FlexLayoutBox extends LayoutBox {
             item.mainSize -= perItem;
           }
         } else {
+          // Some have a set 'flex-shrink' => Shrink those
           float perItem = dif / shrinkTotal;
 
           for (int i = 0; i < items.size(); i++) {
@@ -385,15 +421,18 @@ public class FlexLayoutBox extends LayoutBox {
 
         FlexLine line = new FlexLine();
         line.items.addAll(items);
+        line.lineLength = availableMainSize;
         lines = List.of(line);
 
         return;
       }
 
+      // 'flex-wrap' is set to either 'wrap' or 'wrap-reverse'
       lines = new ObjectArrayList<>();
-
       FlexLine currentLine = null;
 
+      // Stupid bullshit that gathers items into lines by measuring
+      // them and then dividing them (+ gap)
       for (int i = 0; i < this.items.size(); i++) {
         FlexItem item = items.get(i);
 
@@ -432,27 +471,44 @@ public class FlexLayoutBox extends LayoutBox {
         }
       }
 
+      // Apply any set 'flex-grow' on items on any line
       for (int i = 0; i < lines.size(); i++) {
         FlexLine line = lines.get(i);
-        applyGrowth(line.items, line.lineLength, availableMainSize);
+        if (applyGrowth(line.items, line.lineLength, availableMainSize)) {
+          line.lineLength = availableMainSize;
+        }
       }
 
       return;
     }
 
+    // If 'justify-content' is not a basic start, end or center value
+    // This is to prevent it messing with calculations later on when
+    // actually laying out the elments
+    if (!hasGaps()) {
+      mainSize -= totalGap;
+    }
+
     FlexLine line = new FlexLine();
     line.items.addAll(items);
+    line.lineLength = mainSize;
     lines = List.of(line);
 
+    // If we have space left to grow, then grow
     if (mainSize < availableMainSize) {
       boolean anyGrew = applyGrowth(items, mainSize, availableMainSize);
       if (anyGrew) {
         mainSize = availableMainSize;
+        line.lineLength = mainSize;
       }
     }
   }
 
   boolean applyGrowth(List<FlexItem> items, float lineLen, float totalFreeSpace) {
+    // Only items with a non-zero, positive 'flex-grow' value are grown;
+    // the rest keep their size. The 'flex-grow' value also determines
+    // the relative amount of growth they receive, effectively as a growth
+    // weight value.
     int growingItems = items.stream()
         .filter(i -> i.grow > 0)
         .mapToInt(value -> value.grow)
@@ -463,6 +519,10 @@ public class FlexLayoutBox extends LayoutBox {
     }
 
     float dif = totalFreeSpace - lineLen;
+    if (dif <= 0) {
+      return false;
+    }
+
     float growth = dif / growingItems;
 
     for (int i = 0; i < items.size(); i++) {
@@ -478,6 +538,22 @@ public class FlexLayoutBox extends LayoutBox {
 
   void calculateBasis(LayoutContext ctx) {
     float fbBasis = style.flexBasis;
+
+    //
+    // I have no idea if this part follows the W3C spec, but I
+    // can't read that technobabble anyway, so who cares. But
+    // basically, this part uses either the 'flex-basis'
+    // property or a set 'width' property as the base size
+    // of each item.
+    //
+    // If an item doesn't have a set 'flex-basis', use the
+    // flex container's, if set, otherwise, idk, have fun
+    // figuring ts out
+    //
+    // FOR MORE INFO:
+    // https://www.quirksmode.org/css/flexbox-algorithm.html
+    // (love u, Marc Thiele)
+    //
 
     for (FlexItem item : items) {
       Vector2f size = new Vector2f();
