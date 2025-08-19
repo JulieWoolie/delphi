@@ -1,0 +1,25 @@
+<flow print="true">
+  <flex style="width: 100%; gap: 3px;" expect-width="100vw" expect-height="16px">
+    <flow
+      style="width:27px; height: 6px;"
+      expect-x="0"
+      expect-y="2"
+      expect-width="27px"
+      expect-height="6px"
+    />
+    <flow
+      style="width:16px; height: 16px;"
+      expect-x="27px+3px"
+      expect-y="2"
+      expect-width="16px"
+      expect-height="16px"
+    />
+    <flow
+      style="width:10px; height: 8px;"
+      expect-x="27px+16px+6px"
+      expect-y="2"
+      expect-width="10px"
+      expect-height="8px"
+    />
+  </flex>
+</flow>

@@ -1,0 +1,31 @@
+<flow print="true" screen-width="3" screen-height="2">
+  <flex style="width: 100%; justify-content: center;" expect-width="3m" expect-height="16px">
+    <!--
+      The combined size of them all should be: 27px+16px+10px = 53px = 1.325
+      To center it, it should be (3.0 - 1.325) * 0.5 = 0.8375 = 33.5px
+      33.5px causes rounding error though so can't use that
+      3m == screen size
+    -->
+    <flow
+      style="width:27px; height: 6px;"
+      expect-x="0.8375"
+      expect-y="2"
+      expect-width="27px"
+      expect-height="6px"
+    />
+    <flow
+      style="width:16px; height: 16px;"
+      expect-x="0.8375 + 27px"
+      expect-y="2"
+      expect-width="16px"
+      expect-height="16px"
+    />
+    <flow
+      style="width:10px; height: 8px;"
+      expect-x="0.8375 + 27px + 16px"
+      expect-y="2"
+      expect-width="10px"
+      expect-height="8px"
+    />
+  </flex>
+</flow>

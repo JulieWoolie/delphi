@@ -1,0 +1,36 @@
+<flow print="true" screen-width="3" screen-height="2">
+  <flex style="width: 100%; justify-content: space-around;" expect-width="3m" expect-height="16px">
+    <!--
+      The combined size of them all should be: 27px+16px+10px = 53px = 1.325
+      To get the free space between the elements: (3.0 - 1.325) = 1.675
+      To get the space between before and after each element,
+        we do: 1.675 / 6.0 = 0.2791666666666667
+
+      But that's a rounding error so..., screw it, use the full ((3-(27px+16px+10px)) / 6)
+      expression everywhere to compute the gaps.
+
+      God bless me... for writing Chimera's parser and interpreter
+    -->
+    <flow
+      style="width:27px; height: 6px;"
+      expect-x="(3-(27px+16px+10px)) / 6"
+      expect-y="2"
+      expect-width="27px"
+      expect-height="6px"
+    />
+    <flow
+      style="width:16px; height: 16px;"
+      expect-x="27px + (((3-(27px+16px+10px)) / 6) * 3)"
+      expect-y="2"
+      expect-width="16px"
+      expect-height="16px"
+    />
+    <flow
+      style="width:10px; height: 8px;"
+      expect-x="16px + 27px + (((3-(27px+16px+10px)) / 6) * 5)"
+      expect-y="2"
+      expect-width="10px"
+      expect-height="8px"
+    />
+  </flex>
+</flow>
