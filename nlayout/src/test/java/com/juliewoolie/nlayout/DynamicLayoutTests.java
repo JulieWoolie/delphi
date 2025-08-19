@@ -158,7 +158,7 @@ public class DynamicLayoutTests {
 
     void runTestRecursive() {
       assertEq(expectedX, node.position.x, "x position");
-      assertEq(expectedY, node.position.y, "x position");
+      assertEq(expectedY, node.position.y, "y position");
       assertEq(expectedWidth, node.size.x, "width");
       assertEq(expectedHeight, node.size.y, "height");
     }
