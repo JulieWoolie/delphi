@@ -277,10 +277,6 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     if (changed(changes, DirtyBit.LAYOUT)) {
-      if (obj instanceof ElementRenderObject el) {
-        el.sortChildren();
-      }
-
       triggerRealign();
       triggerUpdate();
     } else if (respawn) {
@@ -347,6 +343,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       if (oldRender != null) {
         oldRender.killRecursive();
       }
+      removeRenderElement(old);
     }
 
     if (element == null || !element.hasFlag(NodeFlag.HOVERED)) {
@@ -359,6 +356,11 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     obj.moveTo(view.getCursorScreen());
+
+    if (obj instanceof ElementRenderObject ero) {
+      LayoutCall.nlayout(ero, screen.getDimensions());
+    }
+
     obj.spawnRecursive();
   }
 
