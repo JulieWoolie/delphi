@@ -172,6 +172,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     this.titleNode = (DelphiNode) title;
 
     if (titleNode != null) {
+      titleNode.setDepth(getDepth() + 1);
       document.styles.updateDomStyle(titleNode);
     }
 
