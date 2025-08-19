@@ -171,8 +171,16 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     DelphiNode old = this.titleNode;
     this.titleNode = (DelphiNode) title;
 
+    if (old != null) {
+      old.parent = null;
+      old.removeFlagRecursive(NodeFlag.ADDED);
+    }
+
     if (titleNode != null) {
       titleNode.setDepth(getDepth() + 1);
+      titleNode.parent = this;
+      titleNode.addFlagRecursive(NodeFlag.ADDED);
+
       document.styles.updateDomStyle(titleNode);
     }
 
