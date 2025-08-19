@@ -476,8 +476,8 @@ public final class Properties {
     register("gap",                   GAP);
     register("row-gap",               ROW_GAP);
     register("column-gap",            COLUMN_GAP);
-    register("grow",                  GROW);
-    register("shrink",                SHRINK);
+    register("flex-grow",             GROW);
+    register("flex-shrink",           SHRINK);
 
     register("width",                 WIDTH);
     register("height",                HEIGHT);
