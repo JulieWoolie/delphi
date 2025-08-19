@@ -46,6 +46,7 @@ public class LayoutPrinter {
       Vector2f elementScale,
       Vector2f screenSize
   ) throws IOException {
+    colorIdx = 0;
     BufferedImage img = print(rootNode, width, height, elementScale, screenSize);
     try (OutputStream stream = Files.newOutputStream(path)) {
       ImageIO.write(img, "PNG", stream);
@@ -70,8 +71,6 @@ public class LayoutPrinter {
     Vector2i pos = new Vector2i();
     pos.x  = (int) Math.floor(node.position.x * scale.x);
     pos.y  = (int) Math.floor((screenSize.y - node.position.y) * scale.y);
-
-    System.out.printf("pixelpos=%s pixelsize=%s node.size=%s node.pos=%s\n", pos, size, node.size, node.position);
 
     Color baseColor = nextColor();
 
