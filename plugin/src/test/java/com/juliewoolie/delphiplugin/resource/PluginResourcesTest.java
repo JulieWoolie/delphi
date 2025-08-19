@@ -26,7 +26,7 @@ class PluginResourcesTest {
   static {
     file = new File(PluginResourcesTest.class.getClassLoader().getResource("test-modules").getFile());
     path = file.toPath();
-    PLUGIN_RESOURCES = new PluginResources(path);
+    PLUGIN_RESOURCES = new PluginResources(null, path);
   }
 
   @Test

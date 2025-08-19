@@ -33,9 +33,11 @@ public class DelphiPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
+    Path modulesDir = getDataPath().resolve("modules");
+
     this.metrics = new FontMetrics(this);
     this.viewManager = new ViewManager(this);
-    this.pluginResources = new PluginResources(this);
+    this.pluginResources = new PluginResources(this, modulesDir);
     this.manager = new DelphiImpl(this, pluginResources, viewManager);
 
     viewManager.startTicking();

@@ -30,7 +30,7 @@ class PathParserTest {
   static {
     file = new File(PathParserTest.class.getClassLoader().getResource("test-modules").getFile());
     path = file.toPath();
-    PLUGIN_RESOURCES = new PluginResources(path);
+    PLUGIN_RESOURCES = new PluginResources(null, path);
   }
 
   @Test

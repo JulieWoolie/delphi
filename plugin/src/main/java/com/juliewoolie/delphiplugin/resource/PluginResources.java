@@ -67,9 +67,9 @@ public class PluginResources implements DelphiResources {
 
   public DelphiPlugin plugin;
 
-  public PluginResources(DelphiPlugin plugin) {
+  public PluginResources(DelphiPlugin plugin, Path modulesDir) {
     this.plugin = plugin;
-    this.directory = plugin.getDataPath().resolve("modules");
+    this.directory = modulesDir;
 
     ensureDirectoryExists();
     registerDevtools();
