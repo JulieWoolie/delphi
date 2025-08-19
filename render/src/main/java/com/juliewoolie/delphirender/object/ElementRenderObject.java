@@ -1,10 +1,5 @@
 package com.juliewoolie.delphirender.object;
 
-import com.juliewoolie.nlayout.LayoutBox;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import lombok.Getter;
 import com.juliewoolie.chimera.ComputedStyleSet;
 import com.juliewoolie.delphidom.Rect;
 import com.juliewoolie.delphirender.Consts;
@@ -12,22 +7,14 @@ import com.juliewoolie.delphirender.FullStyle;
 import com.juliewoolie.delphirender.RenderSystem;
 import com.juliewoolie.dom.style.DisplayType;
 import com.juliewoolie.dom.style.Visibility;
+import com.juliewoolie.nlayout.LayoutBox;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
 import org.bukkit.Color;
 import org.joml.Vector2f;
 
 public class ElementRenderObject extends RenderObject {
-
-  static final Comparator<RenderObject> BY_INDEX
-      = Comparator.comparingInt(value -> value.domIndex);
-
-  static final Comparator<RenderObject> BY_ORDER
-      = Comparator.<RenderObject>comparingInt(value -> {
-        if (value instanceof ElementRenderObject el) {
-          return el.style.order;
-        }
-        return 0;
-      })
-      .thenComparing(BY_INDEX);
 
   public static final int BOXES = 3;
   public static final int OUTLINE = 0;
@@ -92,14 +79,6 @@ public class ElementRenderObject extends RenderObject {
     for (RenderObject childObject : childObjects) {
       childObject.spawnRecursive();
     }
-  }
-
-  public void getContentStart(Vector2f out) {
-    float leftOff = style.padding.left + style.border.left + style.outline.left;
-    float topOff = style.padding.top + style.border.top + style.outline.top;
-
-    out.x = position.x + leftOff;
-    out.y = position.y - topOff;
   }
 
   public void configureBoxes() {
@@ -241,15 +220,6 @@ public class ElementRenderObject extends RenderObject {
 
   public <T extends RenderObject> T onlyChild() {
     return (T) childObjects.getFirst();
-  }
-
-  public void sortChildren() {
-    if (style.display == DisplayType.FLEX) {
-      childObjects.sort(BY_ORDER);
-      return;
-    }
-
-    childObjects.sort(BY_INDEX);
   }
 
   public void getContentSize(Vector2f out) {
