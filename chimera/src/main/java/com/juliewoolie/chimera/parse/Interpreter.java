@@ -106,6 +106,8 @@ public class Interpreter implements NodeVisitor<Object> {
   static final FloatBinaryOperator DIVIDE   = (x, y) -> x / y;
   static final FloatBinaryOperator MODULO   = (x, y) -> x % y;
 
+  static final float PIXEL_SIZE = 0.025f;
+
   private final ChimeraContext context;
   private final CompilerErrors errors;
   private final Scope topScope;
@@ -580,7 +582,7 @@ public class Interpreter implements NodeVisitor<Object> {
       return p.toDegrees();
     }
     if (p.getUnit() == Unit.PX) {
-      return p.getValue() * 0.025f;
+      return p.getValue() * PIXEL_SIZE;
     }
     return p.getValue();
   }
@@ -594,7 +596,7 @@ public class Interpreter implements NodeVisitor<Object> {
     }
 
     if (left == Unit.PX && right == Unit.PX) {
-      return Primitive.create(v / 0.025f, left);
+      return Primitive.create(v / PIXEL_SIZE, left);
     }
     if (left == Unit.PX) {
       return Primitive.create(v, right);
