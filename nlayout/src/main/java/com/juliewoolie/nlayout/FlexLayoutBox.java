@@ -268,6 +268,9 @@ public class FlexLayoutBox extends LayoutBox {
             }
           } else {
             i.order = ro.domIndex;
+            i.alignSelf = this.style.alignItems;
+            i.shrink = 0;
+            i.grow = 0;
           }
 
           return i;
