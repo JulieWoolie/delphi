@@ -1,7 +1,6 @@
 package com.juliewoolie.nlayout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.base.Strings;
 import com.juliewoolie.chimera.ComputedStyleSet;
@@ -10,6 +9,9 @@ import com.juliewoolie.chimera.ValueOrAuto;
 import com.juliewoolie.chimera.parse.Chimera;
 import com.juliewoolie.chimera.parse.ChimeraException;
 import com.juliewoolie.chimera.parse.ChimeraParser;
+import com.juliewoolie.chimera.parse.Interpreter;
+import com.juliewoolie.chimera.parse.Scope;
+import com.juliewoolie.chimera.parse.ast.Expression;
 import com.juliewoolie.chimera.parse.ast.InlineStyleStatement;
 import com.juliewoolie.dom.style.BoxSizing;
 import com.juliewoolie.dom.style.Primitive;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.function.Executable;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -50,7 +53,7 @@ public class DynamicLayoutTests {
   void loadFromDir(Path dir, String namePrefix, SAXParserFactory factory, List<DynamicTest> tests)
       throws IOException, ParserConfigurationException, SAXException
   {
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.xml")) {
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
       for (Path path : stream) {
         if (Files.isDirectory(path)) {
           String name = path.getFileName().toString();
@@ -104,6 +107,8 @@ public class DynamicLayoutTests {
 
     @Override
     public void execute() throws Throwable {
+      System.out.printf("Executing layout test '%s': ", displayName);
+
       Vector2f screen = new Vector2f();
       screen.x = screenWidth;
       screen.y = screenHeight;
@@ -130,9 +135,13 @@ public class DynamicLayoutTests {
         LayoutPrinter.dumpLayout(output, node, pxw, pxy, new Vector2f(SCREEN_SCALE), screen);
       }
 
-      assertFalse(false);
-
-      rootNode.runTestRecursive();
+      try {
+        rootNode.runTestRecursive();
+        System.out.print("PASS\n");
+      } catch (Throwable t) {
+        System.out.print("FAIL\n");
+        throw t;
+      }
     }
   }
 
@@ -143,6 +152,9 @@ public class DynamicLayoutTests {
     Float expectedY = null;
     Float expectedWidth = null;
     Float expectedHeight = null;
+
+    int lineno = 0;
+    int colno = 0;
 
     void runTestRecursive() {
       assertEq(expectedX, node.position.x, "x position");
@@ -155,7 +167,13 @@ public class DynamicLayoutTests {
       if (expect == null) {
         return;
       }
-      assertEquals(expect, actual, "Found different " + field + " than expected");
+
+      assertEquals(
+          expect,
+          actual,
+          "Found different " + field + " than expected,"
+              + " line: " + lineno + " column: " + colno
+      );
     }
   }
 
@@ -209,6 +227,37 @@ public class DynamicLayoutTests {
     float screenHeight = 2;
     boolean print = false;
 
+    Locator locator;
+
+    @Override
+    public void setDocumentLocator(Locator locator) {
+      this.locator = locator;
+    }
+
+    float executeFloatExpr(String expr) throws SAXException {
+      ChimeraParser parser = new ChimeraParser(expr);
+      parser.getErrors().setListener(error -> {
+        throw new ChimeraException(error);
+      });
+
+      Expression parsed = parser.expr();
+      Interpreter inter = new Interpreter(parser.createContext(), Scope.createTopLevel());
+      Object o = parsed.visit(inter);
+
+      Primitive primitive = Chimera.coerceValue(Primitive.class, o);
+      if (primitive == null) {
+        throw new SAXException("Invalid expect expression: " + expr);
+      }
+      if (primitive.getUnit() == Unit.PERCENT) {
+        throw new SAXException("'%' unit not supported in expression: " + expr);
+      }
+
+      LayoutContext ctx = new LayoutContext(new Vector2f(screenWidth, screenHeight));
+      ctx.parentSizes.push(ctx.screenSize);
+
+      return LayoutBox.resolvePrimitive(primitive, ctx, LayoutBox.X);
+    }
+
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes)
         throws SAXException
@@ -219,6 +268,7 @@ public class DynamicLayoutTests {
           node = new FlowNode();
           node.node = new FlowLayoutBox(new LayoutStyle(), new ComputedStyleSet());
           break;
+        case "flex":
         case "flexbox":
           node = new FlexNode();
           node.node = new FlexLayoutBox(new LayoutStyle(), new ComputedStyleSet());
@@ -229,8 +279,11 @@ public class DynamicLayoutTests {
           break;
 
         default:
-          throw new SAXException("Invalid test node: " + localName);
+          throw new SAXException("Invalid test node: " + qName);
       }
+
+      node.lineno = locator.getLineNumber();
+      node.colno = locator.getColumnNumber();
 
       if (node instanceof BoxNode box) {
         LayoutBox lbox = (LayoutBox) box.node;
@@ -260,16 +313,16 @@ public class DynamicLayoutTests {
 
         switch (name.toLowerCase()) {
           case "expect-x":
-            node.expectedX = Float.parseFloat(val);
+            node.expectedX = executeFloatExpr(val);
             break;
           case "expect-y":
-            node.expectedY = Float.parseFloat(val);
+            node.expectedY = executeFloatExpr(val);
             break;
           case "expect-width":
-            node.expectedWidth = Float.parseFloat(val);
+            node.expectedWidth = executeFloatExpr(val);
             break;
           case "expect-height":
-            node.expectedHeight = Float.parseFloat(val);
+            node.expectedHeight = executeFloatExpr(val);
             break;
 
           default:
