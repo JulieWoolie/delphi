@@ -44,7 +44,7 @@ public abstract class LayoutBox extends LayoutNode {
     this.cstyle = cstyle;
   }
   
-  protected void calculateSimpleStyle() {
+  protected void transferComputedStyle(LayoutContext ctx) {
     style.display = cstyle.display;
     style.alignItems = cstyle.alignItems;
     style.alignSelf = cstyle.alignSelf;
@@ -56,11 +56,10 @@ public abstract class LayoutBox extends LayoutNode {
     style.shrink = cstyle.shrink;
     style.boxSizing = cstyle.boxSizing;
     style.visibility = cstyle.visibility;
-  }
-  
-  protected void calculateComplexStyle(LayoutContext ctx) {
-    style.size.x = resolve(cstyle.width, ctx, 0f, X);
-    style.size.y = resolve(cstyle.height, ctx, 0f, Y);
+    style.verticalAlign = cstyle.verticalAlign;
+
+    style.size.x = resolve(cstyle.width, ctx, UNSET, X);
+    style.size.y = resolve(cstyle.height, ctx, UNSET, Y);
 
     style.fontSize = resolveFontSize(cstyle.fontSize);
 
@@ -117,6 +116,19 @@ public abstract class LayoutBox extends LayoutNode {
     if (v.isAuto()) {
       return auto;
     }
+
+    // Ts can suck my a**
+    // https://www.w3.org/TR/css-sizing-3/#cyclic-percentage-contribution
+    if (v.is(Unit.PERCENT)) {
+      boolean definite = axis == X
+          ? ctx.isWidthDefinite()
+          : ctx.isHeightDefinite();
+
+      if (!definite) {
+        return auto;
+      }
+    }
+
     return resolvePrimitive(v.primitive(), ctx, axis);
   }
 
@@ -154,108 +166,89 @@ public abstract class LayoutBox extends LayoutNode {
     out.y -= outline.y() + border.y() + padding.y();
   }
 
-  void applyMeasuredSize(Vector2f out) {
-    out.x = 0;
-    out.y = 0;
-
-    ValueOrAuto width = cstyle.width;
-    ValueOrAuto height = cstyle.height;
-
-    getContentSize(out);
-
-    Vector2f growth = new Vector2f();
-    getBordersSizes(growth);
-
-    BoxSizing sizing = style.boxSizing;
-
-    if (width.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
-      out.x += growth.x;
-    }
-    if (height.isAuto() || sizing == BoxSizing.CONTENT_BOX) {
-      out.y += growth.y;
-    }
+  public void reflow(LayoutContext ctx) {
+    measureBox(ctx);
+    layout();
   }
 
-  void getContentSize(Vector2f out) {
-    if (style.size.x != UNSET) {
-      out.x = clamp(style.size.x, style.minSize.x, style.maxSize.x);
+  public boolean measureBox(LayoutContext ctx) {
+    transferComputedStyle(ctx);
+
+    final float prex = size.x;
+    final float prey = size.y;
+
+    if (size.x == UNSET) {
+      if (cstyle.width.isAuto()) {
+        size.x = ctx.parentSizes.peek().x;
+      } else {
+        size.x = style.size.x;
+        if (style.boxSizing == BoxSizing.CONTENT_BOX && !cstyle.width.is(Unit.PERCENT)) {
+          size.x += getXBorder();
+        }
+      }
+    } else if (!cstyle.width.isAuto()) {
+      size.x = style.size.x;
+      if (style.boxSizing == BoxSizing.CONTENT_BOX && !cstyle.width.is(Unit.PERCENT)) {
+        size.x += getXBorder();
+      }
     }
-    if (style.size.y != UNSET) {
-      out.y = clamp(style.size.y, style.minSize.y, style.maxSize.y);
+
+    if (size.y == UNSET) {
+      if (cstyle.height.isAuto()) {
+        size.y = ctx.parentSizes.peek().y;
+      } else {
+        size.y = style.size.y;
+        if (style.boxSizing == BoxSizing.CONTENT_BOX && !cstyle.height.is(Unit.PERCENT)) {
+          size.y += getYBorder();
+        }
+      }
+    } else if (!cstyle.height.isAuto()) {
+      size.y = style.size.y;
+      if (style.boxSizing == BoxSizing.CONTENT_BOX && !cstyle.height.is(Unit.PERCENT)) {
+        size.y += getYBorder();
+      }
     }
-  }
 
-  private static float clamp(float v, float lower, float upper) {
-    float min = lower == UNSET ? Float.MIN_VALUE : lower;
-    float max = upper == UNSET ? Float.MAX_VALUE : upper;
+    Vector2f innerSize = new Vector2f();
+    getInnerSize(innerSize);
 
-    if (v < min) {
-      return min;
-    }
+    boolean parentWidthDefinite = ctx.isWidthDefinite();
+    boolean parentHeightDefinite = ctx.isWidthDefinite();
 
-    return Math.min(v, max);
-  }
+    ctx.parentSizes.push(innerSize);
+    ctx.definiteWidths.push(cstyle.width.isPrimitive());
+    ctx.definiteHeights.push(cstyle.height.isPrimitive());
 
-  void getBordersSizes(Vector2f out) {
-    Rect rect = new Rect();
-
-    rect.set(style.outline);
-    out.x += rect.x();
-    out.y += rect.y();
-
-    rect.set(style.border);
-    out.x += rect.x();
-    out.y += rect.y();
-
-    rect.set(style.padding);
-    out.x += rect.x();
-    out.y += rect.y();
-  }
-
-  public boolean reflow(LayoutContext ctx) {
-    calculateSimpleStyle();
-    calculateComplexStyle(ctx);
-
-    Vector2f preSize = new Vector2f();
-    preSize.set(this.size);
-
-    Vector2f childObjectsSize = new Vector2f(0);
     boolean first = true;
+    Vector2f msize = new Vector2f();
 
-    if (cstyle.width.isAuto()) {
-      style.size.x = ctx.screenSize.x;
-    }
-    if (cstyle.height.isAuto()) {
-      style.size.y = ctx.screenSize.y;
-    }
+    boolean useMeasuredWidth = cstyle.width.isAuto()
+        || (cstyle.width.is(Unit.PERCENT) && !parentWidthDefinite);
+    boolean useMeasuredHeight = cstyle.height.isAuto()
+        || (cstyle.height.is(Unit.PERCENT) && !parentHeightDefinite);
 
-    Vector2f psize = new Vector2f();
-    applyMeasuredSize(psize);
-    subtractExtraSpace(psize, style);
-
-    ctx.parentSizes.push(psize);
-
-    while (measure(ctx, childObjectsSize) || first) {
+    while (measure(ctx, msize) || first) {
       first = false;
 
-      if (cstyle.width.isAuto()) {
-        style.size.x = childObjectsSize.x;
+      if (useMeasuredWidth) {
+        size.x = msize.x + getXBorder();
+        innerSize.x = msize.x;
       }
-      if (cstyle.height.isAuto()) {
-        style.size.y = childObjectsSize.y;
+      if (useMeasuredHeight) {
+        size.y = msize.y + getYBorder();
+        innerSize.y = msize.y;
       }
 
-      applyMeasuredSize(this.size);
-
-      psize.set(this.size);
-      subtractExtraSpace(psize, style);
+      if (size.x > ctx.screenSize.x) {
+        throw new IllegalStateException("KILL YOURSELF YOU FUCKING RETARD");
+      }
     }
 
-    layout();
-
     ctx.parentSizes.pop();
+    ctx.definiteWidths.popBoolean();
+    ctx.definiteHeights.popBoolean();
 
-    return size.x != preSize.x || size.y != preSize.y;
+    return prex != size.x || prey != size.y;
   }
 
   protected abstract boolean measure(LayoutContext ctx, Vector2f out);
@@ -278,6 +271,14 @@ public abstract class LayoutBox extends LayoutNode {
     out.y = position.y - topOff;
   }
 
+  public float getXBorder() {
+    return style.padding.x() + style.outline.x() + style.border.x();
+  }
+
+  public float getYBorder() {
+    return style.padding.y() + style.outline.y() + style.border.y();
+  }
+
   public void getInnerSize(Vector2f out) {
     out.set(size);
     subtractExtraSpace(out, style);
@@ -286,11 +287,12 @@ public abstract class LayoutBox extends LayoutNode {
   protected boolean measure(LayoutNode node, LayoutContext ctx, Vector2f out) {
     if (node instanceof LayoutItem item) {
       item.measure(out);
+      item.size.set(out);
       return false;
     }
 
     LayoutBox box = (LayoutBox) node;
-    boolean changed = box.reflow(ctx);
+    boolean changed = box.measureBox(ctx);
     out.set(box.size);
 
     return changed;
