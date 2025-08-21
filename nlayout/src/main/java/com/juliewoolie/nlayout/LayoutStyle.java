@@ -7,6 +7,7 @@ import com.juliewoolie.dom.style.DisplayType;
 import com.juliewoolie.dom.style.FlexDirection;
 import com.juliewoolie.dom.style.FlexWrap;
 import com.juliewoolie.dom.style.JustifyContent;
+import com.juliewoolie.dom.style.VerticalAlign;
 import com.juliewoolie.dom.style.Visibility;
 import org.joml.Vector2f;
 
@@ -43,4 +44,5 @@ public class LayoutStyle {
   public JustifyContent justify = JustifyContent.DEFAULT;
   public BoxSizing boxSizing = BoxSizing.DEFAULT;
   public Visibility visibility = Visibility.DEFAULT;
+  public VerticalAlign verticalAlign = VerticalAlign.DEFAULT;
 }
