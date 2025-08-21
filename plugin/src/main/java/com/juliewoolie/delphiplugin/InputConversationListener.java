@@ -50,7 +50,7 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
   }
 
   static void submitInput(Player player, InputElement element, String input) {
-    if (element.getType() == InputType.PASSWORD && !Strings.isNullOrEmpty(input)) {
+    if (element.getType() == InputType.NUMBER && !Strings.isNullOrEmpty(input)) {
       try {
         Double.parseDouble(input);
       } catch (NumberFormatException exc) {
