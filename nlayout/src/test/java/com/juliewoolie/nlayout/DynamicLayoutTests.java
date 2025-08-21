@@ -1,11 +1,7 @@
 package com.juliewoolie.nlayout;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.google.common.base.Strings;
 import com.juliewoolie.chimera.ComputedStyleSet;
-import com.juliewoolie.chimera.PropertySet;
-import com.juliewoolie.chimera.ValueOrAuto;
 import com.juliewoolie.chimera.parse.Chimera;
 import com.juliewoolie.chimera.parse.ChimeraException;
 import com.juliewoolie.chimera.parse.ChimeraParser;
@@ -13,7 +9,6 @@ import com.juliewoolie.chimera.parse.Interpreter;
 import com.juliewoolie.chimera.parse.Scope;
 import com.juliewoolie.chimera.parse.ast.Expression;
 import com.juliewoolie.chimera.parse.ast.InlineStyleStatement;
-import com.juliewoolie.dom.style.BoxSizing;
 import com.juliewoolie.dom.style.Primitive;
 import com.juliewoolie.dom.style.Primitive.Unit;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -30,7 +25,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.joml.Vector2f;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.function.Executable;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -86,135 +80,14 @@ public class DynamicLayoutTests {
           t.screenWidth = loader.screenWidth;
           t.screenHeight = loader.screenHeight;
           t.print = loader.print;
+          t.printSizes = loader.printSizes;
+          t.breakpoint = loader.breakpoint;
           t.displayName = uri;
           t.uri = path;
 
           tests.add(DynamicTest.dynamicTest(uri, path.toUri(), t));
         }
       }
-    }
-  }
-
-  static class LayoutTest implements Executable {
-    static final float SCREEN_SCALE = 100;
-
-    BoxNode rootNode;
-    float screenWidth;
-    float screenHeight;
-    boolean print;
-    String displayName;
-    Path uri;
-
-    @Override
-    public void execute() throws Throwable {
-      System.out.printf("Executing layout test '%s': ", displayName);
-
-      Vector2f screen = new Vector2f();
-      screen.x = screenWidth;
-      screen.y = screenHeight;
-
-      LayoutContext ctx = new LayoutContext(screen);
-      LayoutBox node = (LayoutBox) rootNode.node;
-
-      node.cstyle.width = ValueOrAuto.valueOf(Primitive.create(100, Unit.VW));
-      node.cstyle.height = ValueOrAuto.valueOf(Primitive.create(100, Unit.VH));
-      node.cstyle.boxSizing = BoxSizing.BORDER_BOX;
-
-      node.position.y = screen.y;
-      node.reflow(ctx);
-
-      if (print) {
-        Path output = Path.of("test-prints", displayName + ".png").toAbsolutePath();
-        Path parent = output.getParent();
-        if (!Files.isDirectory(parent)) {
-          Files.createDirectories(parent);
-        }
-
-        int pxw = (int) (screenWidth * SCREEN_SCALE);
-        int pxy = (int) (screenHeight * SCREEN_SCALE);
-        LayoutPrinter.dumpLayout(output, node, pxw, pxy, new Vector2f(SCREEN_SCALE), screen);
-      }
-
-      try {
-        rootNode.runTestRecursive();
-        System.out.print("PASS\n");
-      } catch (Throwable t) {
-        System.out.print("FAIL\n");
-        throw t;
-      }
-    }
-  }
-
-  static abstract class TestNode {
-    LayoutNode node;
-
-    Float expectedX = null;
-    Float expectedY = null;
-    Float expectedWidth = null;
-    Float expectedHeight = null;
-
-    int lineno = 0;
-    int colno = 0;
-
-    void runTestRecursive() {
-      assertEq(expectedX, node.position.x, "x position");
-      assertEq(expectedY, node.position.y, "y position");
-      assertEq(expectedWidth, node.size.x, "width");
-      assertEq(expectedHeight, node.size.y, "height");
-    }
-
-    void assertEq(Float expect, float actual, String field) {
-      if (expect == null) {
-        return;
-      }
-
-      assertEquals(
-          expect,
-          actual,
-          "Found different " + field + " than expected,"
-              + " line: " + lineno + " column: " + colno
-      );
-    }
-  }
-
-  static abstract class BoxNode extends TestNode {
-    PropertySet styleProperties = new PropertySet();
-    private final List<TestNode> childNodes = new ObjectArrayList<>();
-
-    public void addChild(TestNode child) {
-      child.node.domIndex = childNodes.size();
-      childNodes.add(child);
-
-      LayoutBox box = (LayoutBox) this.node;
-      box.nodes.add(child.node);
-    }
-
-    @Override
-    void runTestRecursive() {
-      super.runTestRecursive();
-
-      for (TestNode childNode : childNodes) {
-        childNode.runTestRecursive();
-      }
-    }
-  }
-
-  static class FlowNode extends BoxNode {
-
-  }
-
-  static class FlexNode extends BoxNode {
-
-  }
-
-  static class ItemNode extends TestNode implements MeasureFunc {
-    float funcWidth;
-    float funcHeight;
-
-    @Override
-    public void measure(Vector2f out) {
-      out.x = funcWidth;
-      out.y = funcHeight;
     }
   }
 
@@ -225,7 +98,10 @@ public class DynamicLayoutTests {
 
     float screenWidth = 3;
     float screenHeight = 2;
+
     boolean print = false;
+    boolean printSizes = false;
+    boolean breakpoint = false;
 
     Locator locator;
 
@@ -236,6 +112,7 @@ public class DynamicLayoutTests {
 
     float executeFloatExpr(String expr) throws SAXException {
       ChimeraParser parser = new ChimeraParser(expr);
+      parser.getErrors().setSourceName(locator.getPublicId());
       parser.getErrors().setListener(error -> {
         throw new ChimeraException(error);
       });
@@ -275,7 +152,9 @@ public class DynamicLayoutTests {
           break;
         case "item":
           node = new ItemNode();
-          node.node = new LayoutItem();
+          LayoutItem item = new LayoutItem();
+          item.measureFunc = (MeasureFunc) node;
+          node.node = item;
           break;
 
         default:
@@ -291,6 +170,7 @@ public class DynamicLayoutTests {
 
         if (!Strings.isNullOrEmpty(style)) {
           ChimeraParser parser = new ChimeraParser(style);
+          parser.getErrors().setSourceName(locator.getPublicId());
           parser.getErrors().setListener(error -> {
             throw new ChimeraException(error);
           });
@@ -303,8 +183,8 @@ public class DynamicLayoutTests {
       } else if (node instanceof ItemNode i) {
         String funcWidthStr = attributes.getValue("width");
         String funcHeightStr = attributes.getValue("height");
-        i.funcWidth = Float.parseFloat(funcWidthStr);
-        i.funcHeight = Float.parseFloat(funcHeightStr);
+        i.funcWidth = executeFloatExpr(funcWidthStr);
+        i.funcHeight = executeFloatExpr(funcHeightStr);
       }
 
       for (int i = 0; i < attributes.getLength(); i++) {
@@ -338,11 +218,17 @@ public class DynamicLayoutTests {
         rootNode = box;
 
         String printStr = attributes.getValue("print");
+        String printSizesStr = attributes.getValue("print-sizes");
         String screenX = attributes.getValue("screen-width");
         String screenY = attributes.getValue("screen-height");
 
+        this.breakpoint = !Strings.isNullOrEmpty(attributes.getValue("breakpoint"));
+
         if (!Strings.isNullOrEmpty(printStr)) {
           this.print = Boolean.parseBoolean(printStr);
+        }
+        if (!Strings.isNullOrEmpty(printSizesStr)) {
+          this.printSizes = Boolean.parseBoolean(printSizesStr);
         }
         if (!Strings.isNullOrEmpty(screenX)) {
           this.screenWidth = Float.parseFloat(screenX);
