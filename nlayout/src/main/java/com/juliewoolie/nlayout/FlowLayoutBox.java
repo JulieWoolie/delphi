@@ -1,15 +1,21 @@
 package com.juliewoolie.nlayout;
 
 import com.juliewoolie.chimera.ComputedStyleSet;
+import com.juliewoolie.delphidom.Rect;
 import com.juliewoolie.dom.style.DisplayType;
+import com.juliewoolie.dom.style.VerticalAlign;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.ArrayList;
 import java.util.List;
 import org.joml.Vector2f;
 
 public class FlowLayoutBox extends LayoutBox {
 
-  private final List<Line> lines = new ObjectArrayList<>();
+  final List<FlowLine> lines = new ObjectArrayList<>();
+
+  float largestLineWidth = 0.0f;
+  float combinedHeight = 0.0f;
+
+  float availableWidth = 0.0f;
 
   public FlowLayoutBox(LayoutStyle style, ComputedStyleSet cstyle) {
     super(style, cstyle);
@@ -35,69 +41,27 @@ public class FlowLayoutBox extends LayoutBox {
     return er.style.display == DisplayType.NONE;
   }
 
+
   @Override
   protected boolean measure(LayoutContext ctx, Vector2f out) {
-    boolean changed = false;
+    lines.clear();
 
-    out.set(0);
+    float prew = this.largestLineWidth;
+    float preh = this.combinedHeight;
 
-    if (nodes.isEmpty()) {
-      return false;
-    }
+    this.largestLineWidth = 0;
+    this.combinedHeight = 0;
 
-    Vector2f childSize = new Vector2f(0);
-    Vector2f lineSize = new Vector2f(0);
-    Vector2f maxSize = new Vector2f(0);
-    maxSize.set(ctx.screenSize);
+    findAvailableWidth(ctx);
+    divyIntoLines(ctx);
+    calculateVerticalMargins();
+    calculateAutoMargins();
+    sumUpLineSizes();
 
-    for (LayoutNode childObject : nodes) {
-      if (shouldIgnore(childObject)) {
-        continue;
-      }
+    out.x = largestLineWidth;
+    out.y = combinedHeight;
 
-      changed |= measure(childObject, ctx, childSize);
-      childObject.size.set(childSize);
-
-      boolean lbAfter = false;
-      boolean lbBefore = false;
-
-      if (childObject instanceof LayoutBox er) {
-        if (isMarginApplied(er)) {
-          childSize.x += er.style.margin.x();
-          childSize.y += er.style.margin.y();
-        } else {
-          childSize.x += er.style.marginInlineStart + er.style.marginInlineEnd;
-        }
-
-        lbAfter = linebreakAfter(er);
-        lbBefore = linebreakBefore(er);
-      }
-
-      boolean onEmptyLine = lineSize.x == 0 && lineSize.y == 0;
-      boolean tooBig = lineSize.x + childSize.x > maxSize.x;
-
-      if ((lbBefore || tooBig) && !onEmptyLine) {
-        out.y += lineSize.y;
-        out.x = Math.max(lineSize.x, out.x);
-        lineSize.set(0);
-      }
-
-      lineSize.x += childSize.x;
-      lineSize.y = Math.max(lineSize.y, childSize.y);
-
-      if (lbAfter) {
-        out.y += lineSize.y;
-        out.x = Math.max(lineSize.x, out.x);
-        lineSize.set(0);
-      }
-    }
-
-    if (lineSize.x != 0 || lineSize.y != 0) {
-      out.y += lineSize.y;
-      out.x = Math.max(lineSize.x, out.x);
-    }
-
-    return changed;
+    return prew != largestLineWidth || preh != combinedHeight;
   }
 
   @Override
@@ -106,156 +70,221 @@ public class FlowLayoutBox extends LayoutBox {
     layoutChildren();
   }
 
-  public void layoutSelf() {
-    Vector2f pos = new Vector2f();
-    Vector2f childPos = new Vector2f();
-    Vector2f size = new Vector2f();
+  private void layoutSelf() {
+    Vector2f cpos = new Vector2f();
+    Vector2f offset = new Vector2f();
 
-    getContentStart(pos);
-    getInnerSize(size);
+    getContentStart(cpos);
 
-    breakIntoLines(size);
+    for (FlowLine line : lines) {
+      offset.y += line.topMargin;
 
-    for (Line line : lines) {
-      pos.y -= line.lineHeight;
-      float lineX = pos.x;
+      for (LayoutNode node : line.nodes) {
+        VerticalAlign vertAlign;
+        float endGap = 0.0f;
 
-      for (LayoutNode child : line.children) {
-        childPos.set(pos);
-        childPos.y += child.size.y;
-
-        if (child instanceof LayoutBox er) {
-          if (isMarginApplied(er)) {
-            childPos.x += er.style.margin.left;
-            pos.x += er.style.margin.x();
+        if (node instanceof LayoutBox box) {
+          if (isMarginApplied(box)) {
+            offset.x += box.style.margin.left;
+            endGap = box.style.margin.right;
           } else {
-            pos.x += er.style.marginInlineStart + er.style.marginInlineEnd;
-            childPos.x += er.style.marginInlineStart;
+            offset.x += box.style.marginInlineStart;
+            endGap += box.style.marginInlineEnd;
           }
+          vertAlign = box.style.verticalAlign;
+        } else {
+          vertAlign = VerticalAlign.DEFAULT;
         }
 
-        pos.x += child.size.x;
-        child.position.set(childPos);
+        float freeHeight = line.height - node.size.y;
+        float yoff = switch (vertAlign) {
+          case BOTTOM -> freeHeight;
+          case MIDDLE -> freeHeight * 0.5f;
+          case SUB -> freeHeight + (node.size.y * 0.5f);
+          case SUPER -> -(node.size.y * 0.5f);
+          default -> 0.0f;
+        };
+
+        node.position.x = cpos.x + offset.x;
+        node.position.y = cpos.y - offset.y - yoff;
+
+        offset.x += node.size.x + endGap;
       }
 
-      pos.y -= line.largestBottomMargin;
-      pos.x = lineX;
+      offset.x = 0;
+      offset.y += line.height + line.bottomMargin;
     }
+  }
 
-    // Apply "margin-left: auto;" or "margin-right: auto;" values
-    for (LayoutNode childObject : nodes) {
-      if (!(childObject instanceof LayoutBox er)) {
+  private void sumUpLineSizes() {
+    for (FlowLine line : lines) {
+      largestLineWidth = Math.max(largestLineWidth, line.width);
+      combinedHeight += line.height + line.topMargin + line.bottomMargin;
+    }
+  }
+
+  private void calculateAutoMargins() {
+    for (FlowLine line : lines) {
+      if (line.nodes.size() != 1
+          || !(line.nodes.getFirst() instanceof LayoutBox box)
+          || !isMarginApplied(box)
+      ) {
         continue;
       }
 
-      ComputedStyleSet set = er.cstyle;
-      if (!set.marginLeft.isAuto() && !set.marginRight.isAuto()) {
+      boolean leftAuto = box.cstyle.marginLeft.isAuto();
+      boolean rightAuto = box.cstyle.marginRight.isAuto();
+
+      float freeSpace = availableWidth - box.size.x;
+      float leftOffset = 0;
+
+      if (leftAuto && rightAuto) {
+        leftOffset = freeSpace * 0.5f;
+      } else if (leftAuto) {
+        leftOffset = freeSpace;
+      } else {
         continue;
       }
-      if (set.display != DisplayType.BLOCK) {
-        continue;
-      }
 
-      float px = size.x;
-      float cx = childObject.size.x;
+      box.style.margin.left = leftOffset;
+    }
+  }
 
-      float dif = px - cx;
+  private void calculateVerticalMargins() {
+    for (int i = 0; i < lines.size(); i++) {
+      FlowLine line = lines.get(i);
 
-      if (set.marginRight.isAuto() && set.marginLeft.isAuto()) {
-        dif *= 0.5f;
-      }
+      for (int nodeIdx = 0; nodeIdx < line.nodes.size(); nodeIdx++) {
+        LayoutNode node = line.nodes.get(nodeIdx);
 
-      LayoutStyle style = er.style;
+        if (!(node instanceof LayoutBox box)) {
+          continue;
+        }
 
-      if (set.marginLeft.isAuto()) {
-        style.margin.left = dif;
-        childObject.moveTo(childObject.position.x + dif, childObject.position.y);
-      }
-      if (set.marginRight.isAuto()) {
-        style.margin.right = dif;
+        float marginTop = 0.0f;
+        float marginBottom = 0.0f;
+
+        if (isMarginApplied(box)) {
+          marginTop = box.style.margin.top;
+          marginBottom = box.style.margin.bottom;
+        }
+
+        float freeVertSpace = line.height - node.size.y;
+        float halfHeight = node.size.y * 0.5f;
+
+        float effectiveTopMargin;
+        float effectiveBtmMargin;
+
+        switch (box.style.verticalAlign) {
+          case MIDDLE:
+            effectiveTopMargin = marginTop - (freeVertSpace * 0.5f);
+            effectiveBtmMargin = marginBottom - (freeVertSpace * 0.5f);
+            break;
+          case BOTTOM:
+            effectiveTopMargin = marginTop - freeVertSpace;
+            effectiveBtmMargin = marginBottom;
+            break;
+          case TOP:
+            effectiveTopMargin = marginTop;
+            effectiveBtmMargin = marginBottom - freeVertSpace;
+            break;
+          case SUPER:
+            effectiveTopMargin = marginTop + halfHeight;
+            effectiveBtmMargin = marginBottom - freeVertSpace - halfHeight;
+            break;
+          case SUB:
+            effectiveTopMargin = marginTop - freeVertSpace - halfHeight;
+            effectiveBtmMargin = marginBottom + halfHeight;
+            break;
+
+          default:
+            throw new IllegalStateException("Unexpected value: " + box.style.verticalAlign);
+        }
+
+        line.topMargin = Math.max(effectiveTopMargin, line.topMargin);
+        line.bottomMargin = Math.max(effectiveBtmMargin, line.bottomMargin);
       }
     }
   }
 
-  private void breakIntoLines(Vector2f maxSize) {
-    lines.clear();
+  private void divyIntoLines(LayoutContext ctx) {
+    Vector2f childSize = new Vector2f();
+    FlowLine line = null;
+    Rect margin = new Rect();
 
-    float lineSizeX = 0.0f;
-
-    Line currentLine = null;
-
-    for (LayoutNode child : super.nodes) {
-      if (shouldIgnore(child)) {
+    for (LayoutNode node : nodes) {
+      if (shouldIgnore(node)) {
         continue;
       }
 
-      boolean lbBefore = false;
+      if (line == null) {
+        line = new FlowLine();
+      }
+
       boolean lbAfter = false;
+      boolean lbBefore = false;
 
-      float bm = 0.0f;
-      float childMarginX = 0.0f;
+      measure(node, ctx, childSize);
 
-      if (child instanceof LayoutBox er) {
-        lbBefore = linebreakBefore(er);
-        lbAfter = linebreakAfter(er);
+      float yscale = 1.0f;
 
-        if (isMarginApplied(er)) {
-          bm = er.style.margin.bottom;
-          childMarginX = er.style.margin.x();
+      if (node instanceof LayoutBox box) {
+        if (isMarginApplied(box)) {
+          margin.set(box.style.margin);
         } else {
-          childMarginX = er.style.marginInlineStart + er.style.marginInlineEnd;
+          margin.left = box.style.marginInlineStart;
+          margin.right = box.style.marginInlineEnd;
         }
+
+        lbAfter = linebreakAfter(box);
+        lbBefore = linebreakBefore(box);
+
+        if (box.style.verticalAlign == VerticalAlign.SUPER
+            || box.style.verticalAlign == VerticalAlign.SUB
+        ) {
+          yscale = 0.5f;
+        }
+
+      } else {
+        margin.set(0);
       }
 
-      boolean onEmptyLine = currentLine == null;
-      boolean tooBig = lineSizeX + child.size.x > maxSize.x;
+      float w = childSize.x + margin.x();
 
-      if ((tooBig || lbBefore) && !onEmptyLine) {
-        lines.add(currentLine);
-        currentLine = null;
-        lineSizeX = 0.0f;
+      boolean onEmptyLine = line.nodes.isEmpty();
+      boolean tooBig = line.width + w > availableWidth;
+
+      if ((lbBefore || tooBig) && !onEmptyLine) {
+        lines.addLast(line);
+        line = new FlowLine();
       }
 
-      if (currentLine == null) {
-        currentLine = new Line();
-      }
-
-      lineSizeX += child.size.x + childMarginX;
-
-      currentLine.children.add(child);
-      currentLine.largestBottomMargin = Math.max(currentLine.largestBottomMargin, bm);
+      line.width += w;
+      line.height = Math.max(line.height, childSize.y * yscale);
+      line.nodes.add(node);
 
       if (lbAfter) {
-        lines.add(currentLine);
-        currentLine = null;
-        lineSizeX = 0.0f;
+        lines.addLast(line);
+        line = null;
       }
     }
 
-    if (currentLine != null) {
-      lines.add(currentLine);
-    }
-
-    for (Line line : lines) {
-      float largestYSize = 0.0f;
-
-      for (LayoutNode child : line.children) {
-        float y = child.size.y;
-
-        if (child instanceof LayoutBox er && isMarginApplied(er)) {
-          y += er.style.margin.top;
-        }
-
-        largestYSize = Math.max(y, largestYSize);
-      }
-
-      line.lineHeight = largestYSize;
+    if (line != null) {
+      lines.addLast(line);
     }
   }
 
-  private static class Line {
-    final List<LayoutNode> children = new ArrayList<>();
-    float largestBottomMargin = 0.0f;
-    float lineHeight = 0.0f;
+  private void findAvailableWidth(LayoutContext ctx) {
+    availableWidth = size.x - getXBorder();
+  }
+
+  static class FlowLine {
+    List<LayoutNode> nodes = new ObjectArrayList<>();
+
+    float width = 0.0f;
+    float height = 0.0f;
+
+    float topMargin = 0.0f;
+    float bottomMargin = 0.0f;
   }
 }
