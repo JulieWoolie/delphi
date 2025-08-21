@@ -1,0 +1,19 @@
+<flow print="true">
+  <flow style="display:block; border:2px;">
+
+    <flow style="display:inline; width:5px; height: 10px;"/>
+    <flow style="display:inline; width:10px; height: 7px;"/>
+    <flow style="display:inline; width:10px; height: 7px;"/>
+
+    <flow style="display:block; width:10px; height: 7px;"/>
+
+    <flow style="display:inline; width:10px; height: 7px;"/>
+    <flow style="display:inline; width:10px; height: 7px;"/>
+
+    <flow style="display:inline-block; width:10px; height: 7px;"/>
+    <flow style="display:inline; width:10px; height: 7px;"/>
+    <flow style="display:inline; width:10px; height: 7px;"/>
+    <flow style="display:inline; width:35px; height: 7px;"/>
+
+  </flow>
+</flow>
