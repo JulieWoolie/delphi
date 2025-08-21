@@ -42,4 +42,8 @@ public record ValueOrAuto(Primitive primitive) {
 
     return primitive.toString();
   }
+
+  public boolean is(Unit unit) {
+    return primitive != null && primitive.getUnit() == unit;
+  }
 }
