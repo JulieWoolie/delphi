@@ -69,8 +69,11 @@ public class LayoutCall {
     }
 
     box.position.set(object.position);
-    box.size.set(object.size);
     box.domIndex = object.domIndex;
+
+    if (object.size.x > 0 || object.size.y > 0) {
+      box.size.set(object.size);
+    }
 
     lookupMap.add(box, object);
 
