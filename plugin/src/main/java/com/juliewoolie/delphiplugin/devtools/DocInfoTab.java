@@ -127,7 +127,6 @@ public class DocInfoTab extends DevToolTab {
         }
 
         Element line = document.createElement("div");
-        line.setClassName("stylesheet-name");
         line.setTextContent("- " + txt + " " + suffix);
         stylesheetsEl.appendChild(line);
       }
