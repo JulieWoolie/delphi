@@ -86,6 +86,16 @@ p {
   box-sizing: border-box;
   width: 100%;
 }
+sup {
+  vertical-align: super;
+  font-size: 75%;
+  display: inline;
+}
+sub {
+  vertical-align: sub;
+  font-size: 75%;
+  display: inline;
+}
 
 /* New line tag */
 
