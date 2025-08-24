@@ -26,6 +26,13 @@ $border-color: white;
   width: 100%;
 }
 
+navbar {
+  display: flex;
+  width: 100%;
+}
+navbar :first-child {
+  flex-grow: 1;
+}
 navbar navlink {
   font-size: 100%;
 }
@@ -62,14 +69,16 @@ navlink {
     border-bottom: 0;
     padding-bottom: 2px;
   }
-  &[action="close"] {
+  &[nav="close"] {
     background-color: darkred;
+    border-right: 0;
     &:hover {
       background-color: red;
     }
   }
   &[unsupported] {
-    background-color: darkred;
+    strikethrough: true;
+    color: gray;
   }
 }
 
@@ -178,9 +187,6 @@ line {
 .docinfo-field {
   width: 25%;
   box-sizing: border-box;
+  vertical-align: top;
   bold: true;
-}
-
-.mt-2 {
-  margin-top: 2px;
 }
