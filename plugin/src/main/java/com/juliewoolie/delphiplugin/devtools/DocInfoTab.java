@@ -133,7 +133,6 @@ public class DocInfoTab extends DevToolTab {
       stylesheetsDiv = createField("delphi.devtools.meta.stylesheets", stylesheetsEl);
     }
 
-    stylesheetsDiv.getClassList().add("mt-2");
     el.appendChild(stylesheetsDiv);
 
     devtools.getContentEl().appendChild(el);
