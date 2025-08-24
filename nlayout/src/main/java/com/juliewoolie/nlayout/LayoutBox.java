@@ -238,10 +238,6 @@ public abstract class LayoutBox extends LayoutNode {
         size.y = msize.y + getYBorder();
         innerSize.y = msize.y;
       }
-
-      if (size.x > ctx.screenSize.x) {
-        throw new IllegalStateException("KILL YOURSELF YOU FUCKING RETARD");
-      }
     }
 
     ctx.parentSizes.pop();
