@@ -196,6 +196,8 @@ public class DelphiCommand {
 
   private static LiteralCommandNode<CommandSourceStack> devtools() {
     return literal("devtools")
+        .requires(s -> s.getSender().hasPermission(Permissions.DEVTOOLS))
+
         .executes(context -> {
           PageView view = getAnyTargeted(context);
           return openDevtools(context.getSource(), view);
