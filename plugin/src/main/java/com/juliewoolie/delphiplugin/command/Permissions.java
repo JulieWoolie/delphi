@@ -10,11 +10,13 @@ public final class Permissions {
   public static final String COMMANDS = "delphi.commands";
   public static final String DEBUG = "delphi.commands.debug";
   public static final String DEVTOOLS = "delphi.commands.devtools";
+  public static final String PLAYERS = "delphi.commands.players";
 
   public static void registerAll() {
     register(COMMANDS);
     register(DEBUG);
     register(DEVTOOLS);
+    register(PLAYERS);
   }
 
   private static void register(String name) {

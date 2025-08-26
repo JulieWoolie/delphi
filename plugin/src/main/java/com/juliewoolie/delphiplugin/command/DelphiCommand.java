@@ -21,6 +21,7 @@ import static io.papermc.paper.command.brigadier.Commands.literal;
 import com.juliewoolie.delphi.DelphiProvider;
 import com.juliewoolie.delphi.DocumentView;
 import com.juliewoolie.delphi.DocumentViewBuilder;
+import com.juliewoolie.delphi.PlayerSet;
 import com.juliewoolie.delphi.resource.DelphiException;
 import com.juliewoolie.delphi.resource.ResourcePath;
 import com.juliewoolie.delphi.util.Result;
@@ -62,8 +63,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -71,11 +74,13 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.imageio.ImageIO;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -87,6 +92,8 @@ import org.slf4j.LoggerFactory;
 public class DelphiCommand {
 
   static final Component PREFIX = Component.translatable("delphi.prefix");
+
+  static final int TOO_MANY_PLAYERS = 10;
 
   static final CommandExceptionType NOP = new CommandExceptionType() {};
 
@@ -156,6 +163,24 @@ public class DelphiCommand {
   static final TranslatableExceptionType DEVTOOLS_OPEN_FAILED
       = new TranslatableExceptionType("delphi.devtools.alreadyHasDevtools");
 
+  static final TranslatableExceptionType CANNOT_REMOVE_FROM_SERVER_LIST
+      = new TranslatableExceptionType("delphi.players.error.cannotRemoveFromServerList");
+
+  static final TranslatableExceptionType CANNOT_ADD_TO_SERVER_LIST
+      = new TranslatableExceptionType("delphi.players.error.cannotAddToServerList");
+
+  static final TranslatableExceptionType ALREADY_VIEWER
+      = new TranslatableExceptionType("delphi.players.error.alreadyViewer");
+
+  static final TranslatableExceptionType ALL_ALREADY_VIEWERS
+      = new TranslatableExceptionType("delphi.players.error.allAlreadyViewers");
+
+  static final TranslatableExceptionType NOT_A_VIEWER
+      = new TranslatableExceptionType("delphi.players.error.notAViewer");
+
+  static final TranslatableExceptionType NOT_VIEWERS
+      = new TranslatableExceptionType("delphi.players.error.notViewers");
+
   public static LiteralCommandNode<CommandSourceStack> createCommand() {
     LiteralArgumentBuilder<CommandSourceStack> literal = literal("delphi");
 
@@ -168,6 +193,8 @@ public class DelphiCommand {
     literal.then(reloadConfig());
 
     literal.then(devtools());
+
+    literal.then(players());
 
     return literal.build();
   }
@@ -192,6 +219,229 @@ public class DelphiCommand {
     }
 
     return (PageView) opt.get();
+  }
+
+  private static LiteralCommandNode<CommandSourceStack> players() {
+    return literal("players")
+        .requires(s -> s.getSender().hasPermission(Permissions.PLAYERS))
+
+        .then(literal("list")
+            .then(literal("targeted")
+                .executes(c -> {
+                  return listPlayers(c, getAnyTargeted(c));
+                })
+            )
+
+            .then(argument("view", new InstanceNameType())
+                .executes(c -> {
+                  PageView view = c.getArgument("view", PageView.class);
+                  return listPlayers(c, view);
+                })
+            )
+        )
+
+        .then(literal("add")
+            .then(literal("targeted")
+                .then(argument("players", ArgumentTypes.players())
+                    .executes(c -> {
+                      return addPlayers(c, getAnyTargeted(c));
+                    })
+                )
+            )
+
+            .then(argument("view", new InstanceNameType())
+                .then(argument("players", ArgumentTypes.players())
+                    .executes(c -> {
+                      PageView view = c.getArgument("view", PageView.class);
+                      return addPlayers(c, view);
+                    })
+                )
+            )
+        )
+
+        .then(literal("remove")
+            .then(literal("targeted")
+                .then(argument("players", ArgumentTypes.players())
+                    .executes(c -> {
+                      return removePlayers(c, getAnyTargeted(c));
+                    })
+                )
+            )
+
+            .then(argument("view", new InstanceNameType())
+                .then(argument("players", ArgumentTypes.players())
+                    .executes(c -> {
+                      PageView view = c.getArgument("view", PageView.class);
+                      return removePlayers(c, view);
+                    })
+                )
+            )
+        )
+
+        .build();
+  }
+
+  private static int addPlayers(CommandContext<CommandSourceStack> c, PageView view)
+      throws CommandSyntaxException
+  {
+    List<Player> players = c.getArgument("players", PlayerSelectorArgumentResolver.class)
+        .resolve(c.getSource());
+
+    Component viewName = Component.text(view.getInstanceName());
+
+    PlayerSet playerSet = view.getPlayers();
+    if (playerSet.isServerPlayerSet()) {
+      throw CANNOT_ADD_TO_SERVER_LIST.create(viewName);
+    }
+
+    int presize = playerSet.size();
+    boolean changed = playerSet.addAll(players);
+    int postsize = playerSet.size();
+    int added = postsize - presize;
+
+    Component msg;
+    CommandSender sender = c.getSource().getSender();
+
+    if (players.size() == 1) {
+      if (!changed) {
+        throw ALREADY_VIEWER.create(players.getFirst().teamDisplayName(), viewName);
+      }
+
+      msg = prefixTranslatable(
+          "delphi.players.added.single",
+          NamedTextColor.GRAY,
+          players.getFirst().teamDisplayName(),
+          viewName
+      );
+    } else if (added != players.size()) {
+      if (!changed) {
+        throw ALL_ALREADY_VIEWERS.create(formatNumber(sender, players.size()), viewName);
+      }
+
+      msg = prefixTranslatable(
+          "delphi.players.added.multiple.skipped",
+          NamedTextColor.GRAY,
+          formatNumber(sender, added),
+          viewName,
+          formatNumber(sender, players.size() - added)
+      );
+    } else {
+      msg = prefixTranslatable(
+          "delphi.players.added.multiple",
+          NamedTextColor.GRAY,
+          formatNumber(sender, added),
+          viewName
+      );
+    }
+
+    sender.sendMessage(msg);
+    return SINGLE_SUCCESS;
+  }
+
+  private static int removePlayers(CommandContext<CommandSourceStack> c, PageView view)
+      throws CommandSyntaxException
+  {
+    List<Player> players = c.getArgument("players", PlayerSelectorArgumentResolver.class)
+        .resolve(c.getSource());
+
+    Component viewName = Component.text(view.getInstanceName());
+
+    PlayerSet playerSet = view.getPlayers();
+    if (playerSet.isServerPlayerSet()) {
+      throw CANNOT_REMOVE_FROM_SERVER_LIST.create(viewName);
+    }
+
+    int presize = playerSet.size();
+    boolean changed = playerSet.removeAll(players);
+    int postsize = playerSet.size();
+    int removed = presize - postsize;
+
+    Component msg;
+    CommandSender sender = c.getSource().getSender();
+
+    if (players.size() == 1) {
+      if (!changed) {
+        throw NOT_A_VIEWER.create(players.getFirst().teamDisplayName(), viewName);
+      }
+
+      msg = prefixTranslatable(
+          "delphi.players.removed.single",
+          NamedTextColor.GRAY,
+          players.getFirst().teamDisplayName(),
+          viewName
+      );
+    } else if (removed != players.size()) {
+      if (!changed) {
+        throw NOT_VIEWERS.create(formatNumber(sender, players.size()), viewName);
+      }
+
+      msg = prefixTranslatable(
+          "delphi.players.removed.multiple.skipped",
+          NamedTextColor.GRAY,
+          formatNumber(sender, removed),
+          viewName,
+          formatNumber(sender, players.size() - removed)
+      );
+    } else {
+      msg = prefixTranslatable(
+          "delphi.players.removed.multiple",
+          NamedTextColor.GRAY,
+          formatNumber(sender, players.size()),
+          viewName
+      );
+    }
+
+    sender.sendMessage(msg);
+    return SINGLE_SUCCESS;
+  }
+
+  private static int listPlayers(CommandContext<CommandSourceStack> c, PageView view) {
+    PlayerSet players = view.getPlayers();
+    Component text;
+    Component viewName = Component.text(view.getInstanceName());
+    CommandSender sender = c.getSource().getSender();
+    Component playerCount = formatNumber(sender, players.size());
+
+    if (players.isServerPlayerSet()) {
+      text = prefixTranslatable("delphi.playerList.server", NamedTextColor.GRAY, viewName);
+    } else if (players.isEmpty()) {
+      text = prefixTranslatable("delphi.playerList.none", NamedTextColor.GRAY, viewName);
+    } else if (players.size() > TOO_MANY_PLAYERS) {
+      text = prefixTranslatable("delphi.playerList.tooMany", NamedTextColor.GRAY, viewName, playerCount);
+    } else {
+      Builder builder = Component.text();
+      Iterator<Player> it = players.iterator();
+
+      while (it.hasNext()) {
+        Player p = it.next();
+        builder.append(p.teamDisplayName());
+        if (it.hasNext()) {
+          builder.append(Component.text(", "));
+        }
+      }
+
+      text = prefixTranslatable(
+          "delphi.playerList.list", NamedTextColor.GRAY,
+          viewName,
+          playerCount,
+          builder.build()
+      );
+    }
+
+    sender.sendMessage(text);
+    return SINGLE_SUCCESS;
+  }
+
+  private static Component formatNumber(CommandSender sender, int number) {
+    NumberFormat format;
+    if (sender instanceof Player player) {
+      Locale l = player.locale();
+      format = NumberFormat.getNumberInstance(l);
+    } else {
+      format = NumberFormat.getNumberInstance();
+    }
+
+    return Component.text(format.format(number));
   }
 
   private static LiteralCommandNode<CommandSourceStack> devtools() {
