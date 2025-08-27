@@ -89,7 +89,7 @@ public class FlowLayoutBox extends LayoutBox {
             endGap = box.style.margin.right;
           } else {
             offset.x += box.style.marginInlineStart;
-            endGap += box.style.marginInlineEnd;
+            endGap = box.style.marginInlineEnd;
           }
           vertAlign = box.style.verticalAlign;
         } else {
@@ -98,10 +98,10 @@ public class FlowLayoutBox extends LayoutBox {
 
         float freeHeight = line.height - node.size.y;
         float yoff = switch (vertAlign) {
-          case BOTTOM -> freeHeight;
-          case MIDDLE -> freeHeight * 0.5f;
-          case SUB -> freeHeight + (node.size.y * 0.5f);
           case SUPER -> -(node.size.y * 0.5f);
+          case MIDDLE -> freeHeight * 0.5f;
+          case BOTTOM -> freeHeight;
+          case SUB -> freeHeight + (node.size.y * 0.5f);
           default -> 0.0f;
         };
 
