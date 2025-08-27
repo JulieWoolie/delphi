@@ -739,7 +739,7 @@ public class ChimeraParser {
     }
     
     Token p = peek();
-    error(p.location(), "Expected ';' to end statement, found %s", p.info());
+    warn(p.location(), "Expected ';' to end statement, found %s", p.info());
   }
 
   IfStatement ifStatement() {
