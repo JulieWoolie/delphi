@@ -8,11 +8,15 @@
  <flow
    style="width: auto; border:4px; display: block; margin-bottom: 2px;"
    expect-width="10px+4px+8px+8px"
+   expect-x="0"
+   expect-y="2"
  >
    <flow
      style="height: 20px; border: 2px; display: block;"
      expect-width="10px+4px"
      expect-height="20px+4px"
+     expect-x="4px"
+     expect-y="2 - 4px"
    >
      <item width="10px" height="10px"/>
    </flow>
@@ -20,6 +24,8 @@
    <flow
      style="width: 100%; border:4px; display: block;"
      expect-width="10px+4px+8px"
+     expect-x="4px"
+     expect-y="2 - 4px - 24px"
    >
      <flow
        style="height: 20px; border: 2px;"
