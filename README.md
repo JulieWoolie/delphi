@@ -13,7 +13,7 @@ A plugin for making menus with XML, styling them with CSS and adding functionali
 * Fully documented Java API and JavaScript integration for easy scripting
 * Contuing development and new features being added all the time.
 * Extensive documentation (at [dev.juliewoolie.com](https://dev.juliewoolie.com/menus))
-* Fully documented Java API (at [dev.juliewoolie.com/menus/javadoc/0.5.0](/menus/javadoc/0.5.0/))
+* Fully documented Java API (at [dev.juliewoolie.com/menus/javadoc/0.5.0](https://dev.juliewoolie.com/menus/javadoc/0.5.0/))
 * Devtools to help you create menus and fix issues.
 * All Delphi commands can be used in the `/execute` command and by datapack functions!
 
