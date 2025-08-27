@@ -22,7 +22,6 @@ import com.juliewoolie.delphirender.object.ElementRenderObject;
 import com.juliewoolie.delphirender.object.ItemRenderObject;
 import com.juliewoolie.delphirender.object.RenderObject;
 import com.juliewoolie.delphirender.object.StringRenderObject;
-import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Node;
 import com.juliewoolie.dom.NodeFlag;
 import com.juliewoolie.dom.event.EventListener;
@@ -33,9 +32,11 @@ import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.World;
@@ -46,7 +47,7 @@ import org.joml.Vector2f;
 @Getter @Setter
 public class RenderSystem implements StyleUpdateCallbacks {
 
-  static final float TOOLTIP_DEPTH_SCALE = 1.1f;
+  static final float TOOLTIP_DEPTH_SCALE = 1.2f;
 
   final ExtendedView view;
   final RenderScreen screen;
@@ -60,8 +61,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
   private final Map<DelphiNode, RenderObject> renderElements = new Object2ObjectOpenHashMap<>();
   private ElementRenderObject renderRoot = null;
 
-  private boolean layoutTriggered = false;
-  private boolean updateTriggered = false;
+  private Queue<ElementRenderObject> awaitingLayout = new ArrayDeque<>(3);
+  private Queue<ElementRenderObject> awaitingRedraw = new ArrayDeque<>(3);
 
   public RenderSystem(ExtendedView view, RenderScreen screen) {
     this.view = view;
@@ -124,14 +125,14 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    if (layoutTriggered) {
-      layoutTriggered = false;
-      LayoutCall.nlayout(renderRoot, screen.getDimensions());
+    while (!awaitingLayout.isEmpty()) {
+      ElementRenderObject ero = awaitingLayout.poll();
+      LayoutCall.nlayout(ero, screen.getDimensions());
     }
 
-    if (updateTriggered) {
-      updateTriggered = false;
-      renderRoot.spawnRecursive();
+    while (!awaitingRedraw.isEmpty()) {
+      ElementRenderObject ero = awaitingRedraw.poll();
+      ero.spawnRecursive();
     }
   }
 
@@ -141,12 +142,46 @@ public class RenderSystem implements StyleUpdateCallbacks {
   // in that time are all executed and laid out in a single go.
   //
 
-  public void triggerRealign() {
-    layoutTriggered = true;
+  private DelphiNode getTooltipRootElement(DelphiNode node) {
+    if (node.getParent() == null) {
+      return null;
+    }
+    if (node.getParent().getTitleNode() == node) {
+      return node;
+    }
+    return getTooltipRootElement(node.getParent());
   }
 
-  public void triggerUpdate() {
-    updateTriggered = true;
+  private ElementRenderObject findRelevantRoot(DelphiNode node) {
+    if (node.hasFlag(NodeFlag.TOOLTIP)) {
+      DelphiNode rootNode = getTooltipRootElement(node);
+      return (ElementRenderObject) getRenderElement(rootNode);
+    }
+    return renderRoot;
+  }
+
+  public void triggerRealign(DelphiNode node) {
+    ElementRenderObject ero = findRelevantRoot(node);
+    if (ero == null) {
+      return;
+    }
+    if (awaitingLayout.contains(ero)) {
+      return;
+    }
+
+    awaitingLayout.add(ero);
+  }
+
+  public void triggerRedraw(DelphiNode node) {
+    ElementRenderObject ero = findRelevantRoot(node);
+    if (ero == null) {
+      return;
+    }
+    if (awaitingRedraw.contains(ero)) {
+      return;
+    }
+
+    awaitingRedraw.add(ero);
   }
 
   public RenderObject getRenderElement(Node node) {
@@ -288,15 +323,17 @@ public class RenderSystem implements StyleUpdateCallbacks {
       respawn = changed(changes, DirtyBit.VISUAL);
     }
 
+    DelphiNode domNode = (DelphiNode) styleNode.getDomNode();
+
     if (changed(changes, DirtyBit.LAYOUT)) {
-      triggerRealign();
-      triggerUpdate();
+      triggerRealign(domNode);
+      triggerRedraw(domNode);
     } else if (respawn) {
       if (obj instanceof ElementRenderObject er) {
         LayoutCall.applyVisualStyle(styleNode.getComputedSet(), er.style);
       }
 
-      triggerUpdate();
+      triggerRedraw(domNode);
     }
   }
 
@@ -306,7 +343,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    triggerUpdate();
+    triggerRedraw(el);
   }
 
   public void contentChanged(DelphiNode node) {
@@ -339,10 +376,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     if (reflow) {
-      triggerRealign();
+      triggerRealign(node);
     }
 
-    triggerUpdate();
+    triggerRedraw(node);
   }
 
   public void tooltipChanged(DelphiElement element, DelphiNode old, DelphiNode titleNode) {
@@ -367,6 +404,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       obj = initRenderTree(titleNode, TOOLTIP_DEPTH_SCALE);
     }
 
+    titleNode.getDocument().getStyles().updateDomStyle(titleNode);
     obj.moveTo(view.getCursorScreen());
 
     if (obj instanceof ElementRenderObject ero) {
@@ -484,7 +522,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     @Override
     public void handleEvent(MutationEvent event) {
-      Element parent = event.getTarget();
+      DelphiElement parent = (DelphiElement) event.getTarget();
       ElementRenderObject parentObj = (ElementRenderObject) getRenderElement(parent);
 
       if (parentObj == null || parent == null) {
@@ -518,8 +556,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
         }
       }
 
-      triggerRealign();
-      triggerUpdate();
+      triggerRealign(parent);
+      triggerRedraw(parent);
     }
   }
 
@@ -548,8 +586,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
       sro.content = ncontent;
 
-      triggerRealign();
-      triggerUpdate();
+      triggerRealign(target);
+      triggerRedraw(target);
     }
   }
 }

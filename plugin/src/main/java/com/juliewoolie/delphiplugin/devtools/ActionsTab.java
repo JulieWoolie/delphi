@@ -1,6 +1,7 @@
 package com.juliewoolie.delphiplugin.devtools;
 
 import com.juliewoolie.delphidom.DelphiDocument;
+import com.juliewoolie.delphidom.DelphiNode;
 import com.juliewoolie.delphiplugin.PageView;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.Element;
@@ -17,17 +18,19 @@ public class ActionsTab extends DevToolTab {
     Document document = devtools.getDocument();
     Element outp = devtools.getContentEl();
 
+    DelphiNode body = (DelphiNode) devtools.getTarget().getDocument().getBody();
+
     Element forceRealign = document.createElement(TagNames.BUTTON);
     forceRealign.onClick(event -> {
       PageView target = (PageView) devtools.getTarget();
-      target.getRenderer().triggerRealign();
+      target.getRenderer().triggerRealign(body);
     });
     forceRealign.setTextContent("Force re-layout");
 
     Element forceReRender = document.createElement(TagNames.BUTTON);
     forceReRender.onClick(event -> {
       PageView target = (PageView) devtools.getTarget();
-      target.getRenderer().triggerUpdate();
+      target.getRenderer().triggerRedraw(body);
     });
     forceReRender.setTextContent("Force re-render");
 

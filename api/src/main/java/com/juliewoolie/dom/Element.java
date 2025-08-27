@@ -185,7 +185,7 @@ public interface Element extends Node, EventTarget, DomQueryable {
    *
    * @return Title node
    */
-  @Nullable Node getTitleNode();
+  @Nullable Element getTitleNode();
 
   /**
    * Sets the element's title node.
@@ -194,7 +194,7 @@ public interface Element extends Node, EventTarget, DomQueryable {
    *
    * @param title Title node
    */
-  void setTitleNode(@Nullable Node title);
+  void setTitleNode(@Nullable Element title);
 
   /**
    * Adds a child node to the end of this element's child nodes.

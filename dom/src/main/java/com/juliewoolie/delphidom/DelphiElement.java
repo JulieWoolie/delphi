@@ -44,7 +44,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   final EventListenerList listenerList;
 
   @Getter
-  DelphiNode titleNode;
+  DelphiElement titleNode;
 
   ClassList classList;
   boolean listUpdatesSupressed = false;
@@ -162,24 +162,28 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   }
 
   @Override
-  public DelphiNode getTooltip() {
+  public DelphiElement getTooltip() {
     return titleNode;
   }
 
   @Override
-  public void setTitleNode(@Nullable Node title) {
-    DelphiNode old = this.titleNode;
-    this.titleNode = (DelphiNode) title;
+  public void setTitleNode(@Nullable Element title) {
+    DelphiElement old = this.titleNode;
+    this.titleNode = (DelphiElement) title;
 
     if (old != null) {
       old.parent = null;
       old.removeFlagRecursive(NodeFlag.ADDED);
+      old.removeFlagRecursive(NodeFlag.TOOLTIP);
     }
 
     if (titleNode != null) {
+      orphan(titleNode);
+
       titleNode.setDepth(getDepth() + 1);
       titleNode.parent = this;
       titleNode.addFlagRecursive(NodeFlag.ADDED);
+      titleNode.addFlagRecursive(NodeFlag.TOOLTIP);
 
       document.styles.updateDomStyle(titleNode);
     }
@@ -187,6 +191,19 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     if (document.view != null) {
       document.view.tooltipChanged(this, old, titleNode);
     }
+  }
+
+  private void orphan(DelphiNode node) {
+    DelphiElement parent = node.parent;
+    if (parent == null) {
+      return;
+    }
+
+    if (parent.titleNode == node) {
+      parent.setTitleNode(null);
+    }
+
+    parent.removeChild(node);
   }
 
   @Override
@@ -262,7 +279,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     }
 
     if (node.getParent() != null) {
-      node.getParent().removeChild(node);
+      orphan(node);
     }
 
     if (!node.getDocument().equals(document)) {

@@ -30,6 +30,14 @@ public enum NodeFlag {
    * The element is the root element of its {@link Document}
    */
   ROOT,
+
+  /**
+   * This node is part of a tooltip tree (A tree of nodes that acts as a
+   * tooltip for another element)
+   * @see Element#setTitleNode(Node)
+   * @see Element#getTitleNode()
+   */
+  TOOLTIP,
   ;
 
   /**

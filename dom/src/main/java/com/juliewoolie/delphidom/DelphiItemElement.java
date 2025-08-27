@@ -56,7 +56,7 @@ public class DelphiItemElement extends DelphiElement implements ItemElement {
   }
 
   @Override
-  public @Nullable DelphiNode getTooltip() {
+  public @Nullable DelphiElement getTooltip() {
     if (getTooltipHidden() || itemTooltip == null) {
       return super.getTooltip();
     }
