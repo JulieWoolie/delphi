@@ -29,6 +29,15 @@ public class LayoutCall {
     RenderToLayoutMapper lookupMap = new RenderToLayoutMapper(100);
     LayoutBox box = createLayoutTree(root, lookupMap);
 
+    // Apply visual style before layout calculation, as layout may change
+    // with visual changes, such as bold making text wider
+    for (int i = 0; i < lookupMap.length; i++) {
+      RenderObject obj = lookupMap.renderObjects[i];
+      if (obj instanceof ElementRenderObject ero) {
+        applyVisualStyle(ero.computedStyleSet, ero.style);
+      }
+    }
+
     LayoutContext ctx = new LayoutContext(screenSize);
     box.reflow(ctx);
 
@@ -38,10 +47,6 @@ public class LayoutCall {
 
       obj.size.set(layout.size);
       obj.moveTo(layout.position);
-
-      if (obj instanceof ElementRenderObject ero) {
-        applyVisualStyle(ero.computedStyleSet, ero.style);
-      }
     }
   }
 
