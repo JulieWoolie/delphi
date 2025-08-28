@@ -1,4 +1,4 @@
-<flow print="true" print-sizes="true" style="padding: 2px;" breakpoint="true">
+<flow print="true" style="padding: 2px;" breakpoint="true">
   <flow style="width: 100%; border: 2px; box-sizing: border-box;">
     <flow style="border: 2px;">
       <item width="4ch" height="7px"/>
