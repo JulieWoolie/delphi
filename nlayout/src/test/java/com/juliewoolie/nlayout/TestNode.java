@@ -2,6 +2,8 @@ package com.juliewoolie.nlayout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.base.Strings;
+
 abstract class TestNode {
 
   LayoutNode node;
@@ -13,6 +15,8 @@ abstract class TestNode {
 
   int lineno = 0;
   int colno = 0;
+
+  String testCaseName;
 
   void runTestRecursive() {
     assertEq(expectedX, node.position.x, "x position");
@@ -31,6 +35,7 @@ abstract class TestNode {
         actual,
         "Found different " + field + " than expected,"
             + " line: " + lineno + " column: " + colno
+            + (Strings.isNullOrEmpty(testCaseName) ? "" : (" test-case: " + testCaseName))
     );
   }
 }

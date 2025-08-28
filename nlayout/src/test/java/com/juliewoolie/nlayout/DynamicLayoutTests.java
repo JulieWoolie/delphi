@@ -187,6 +187,11 @@ public class DynamicLayoutTests {
         i.funcHeight = executeFloatExpr(funcHeightStr);
       }
 
+      String testCase = attributes.getValue("test-case");
+      if (!Strings.isNullOrEmpty(testCase)) {
+        node.testCaseName = testCase;
+      }
+
       for (int i = 0; i < attributes.getLength(); i++) {
         String name = attributes.getLocalName(i);
         String val = attributes.getValue(i);

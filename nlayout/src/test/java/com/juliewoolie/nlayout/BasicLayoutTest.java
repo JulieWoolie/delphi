@@ -26,13 +26,13 @@ public class BasicLayoutTest {
     root.cstyle.paddingLeft = ValueOrAuto.valueOf(Primitive.create(5, Unit.PX));
     root.cstyle.paddingBottom = ValueOrAuto.valueOf(Primitive.create(5, Unit.PX));
     root.cstyle.paddingRight = ValueOrAuto.valueOf(Primitive.create(5, Unit.PX));
-    root.cstyle.verticalAlign = VerticalAlign.TOP;
 
     root.cstyle.boxSizing = BoxSizing.BORDER_BOX;
 
     FlowLayoutBox child1 = new FlowLayoutBox(new LayoutStyle(), new ComputedStyleSet());
     child1.cstyle.width = ValueOrAuto.valueOf(Primitive.create(50f, Unit.PERCENT));
     child1.cstyle.height = ValueOrAuto.valueOf(Primitive.create(12, Unit.PX));
+    child1.cstyle.verticalAlign = VerticalAlign.SUPER;
 
     FlowLayoutBox nested = new FlowLayoutBox(new LayoutStyle(), new ComputedStyleSet());
     nested.cstyle.width = ValueOrAuto.valueOf(Primitive.create(50f, Unit.PERCENT));
@@ -48,15 +48,9 @@ public class BasicLayoutTest {
     child3.cstyle.width = ValueOrAuto.valueOf(Primitive.create(25, Unit.PX));
     child3.cstyle.marginInlineStart = ValueOrAuto.valueOf(Primitive.create(2, Unit.PX));
 
-    FlowLayoutBox child4 = new FlowLayoutBox(new LayoutStyle(), new ComputedStyleSet());
-    child4.cstyle.height = ValueOrAuto.valueOf(Primitive.create(16, Unit.PX));
-    child4.cstyle.width = ValueOrAuto.valueOf(Primitive.create(18, Unit.PX));
-
-    child1.nodes.add(nested);
     root.nodes.add(child1);
     root.nodes.add(child2);
     root.nodes.add(child3);
-    root.nodes.add(child4);
 
     LayoutContext ctx = new LayoutContext(screen);
     root.reflow(ctx);
