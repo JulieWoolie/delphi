@@ -1,0 +1,33 @@
+<flow print="true">
+  <flow
+    style="min-width: 20px; display: block;"
+    expect-width="20px"
+    expect-height="10px"
+    test-case="min-width with auto size below min"
+  >
+    <item width="15px" height="10px"/>
+  </flow>
+
+  <flow
+    style="min-width: 20px; display: block;"
+    expect-width="25px"
+    expect-height="10px"
+    test-case="min-width with auto size above min"
+  >
+    <item width="25px" height="10px"/>
+  </flow>
+
+  <flow
+    style="min-width: 20px; width: 10px; height: 10px; display: block;"
+    expect-width="20px"
+    expect-height="10px"
+    test-case="min-width with explicit size below min"
+  />
+
+  <flow
+    style="min-width: 20px; width: 25px; height: 10px; display: block;"
+    expect-width="25px"
+    expect-height="10px"
+    test-case="min-width with explicit size above min"
+  />
+</flow>
