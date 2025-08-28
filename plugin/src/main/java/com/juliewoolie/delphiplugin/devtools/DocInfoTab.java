@@ -103,28 +103,13 @@ public class DocInfoTab extends DevToolTab {
 
       for (Stylesheet stylesheet : stylesheets) {
         String source = stylesheet.getSource();
-        String txt;
+        String txt = translateSheetSource(l, source);
 
         String suffix = translateToString(
             l,
             "delphi.devtools.meta.stylesheets.rules",
             Component.text(stylesheet.getLength())
         );
-
-        switch (source) {
-          case "default-stylesheet":
-            txt = translateToString(l, "delphi.devtools.meta.stylesheets.default");
-            break;
-          case "inline":
-            txt = translateToString(l, "delphi.devtools.meta.stylesheets.inline");
-            break;
-          case "programmatic":
-            txt = translateToString(l, "delphi.devtools.meta.stylesheets.programmatic");
-            break;
-          default:
-            txt = source;
-            break;
-        }
 
         Element line = document.createElement("div");
         line.setTextContent("- " + txt + " " + suffix);
@@ -136,6 +121,15 @@ public class DocInfoTab extends DevToolTab {
     el.appendChild(stylesheetsDiv);
 
     devtools.getContentEl().appendChild(el);
+  }
+
+  static String translateSheetSource(Locale l, String source) {
+    return switch (source) {
+      case "default-stylesheet" -> translateToString(l, "delphi.stylesheets.default");
+      case "inline" -> translateToString(l, "delphi.stylesheets.inline");
+      case "programmatic" -> translateToString(l, "delphi.stylesheets.programmatic");
+      default -> source;
+    };
   }
 
   private Element createField(Object field, Object o) {
