@@ -166,6 +166,21 @@ public abstract class LayoutBox extends LayoutNode {
     out.y -= outline.y() + border.y() + padding.y();
   }
 
+  private static float clampSize(float n, ValueOrAuto cmin, ValueOrAuto cmax, float min, float max) {
+    if (!cmin.isAuto()) {
+      n = Math.max(n, min);
+    }
+    if (!cmax.isAuto()) {
+      n = Math.min(n, max);
+    }
+    return n;
+  }
+
+  private void clampBoxSize() {
+    size.x = clampSize(size.x, cstyle.minWidth, cstyle.maxWidth, style.minSize.x, style.maxSize.x);
+    size.y = clampSize(size.y, cstyle.minHeight, cstyle.maxHeight, style.minSize.y, style.maxSize.y);
+  }
+
   public void reflow(LayoutContext ctx) {
     measureBox(ctx);
     layout();
@@ -209,6 +224,8 @@ public abstract class LayoutBox extends LayoutNode {
       }
     }
 
+    clampBoxSize();
+
     Vector2f innerSize = new Vector2f();
     getInnerSize(innerSize);
 
@@ -232,12 +249,13 @@ public abstract class LayoutBox extends LayoutNode {
 
       if (useMeasuredWidth) {
         size.x = msize.x + getXBorder();
-        innerSize.x = msize.x;
       }
       if (useMeasuredHeight) {
         size.y = msize.y + getYBorder();
-        innerSize.y = msize.y;
       }
+
+      clampBoxSize();
+      getInnerSize(innerSize);
     }
 
     ctx.parentSizes.pop();
@@ -249,7 +267,12 @@ public abstract class LayoutBox extends LayoutNode {
 
   protected abstract boolean measure(LayoutContext ctx, Vector2f out);
 
-  public abstract void layout();
+  public void layout() {
+    layoutSelf();
+    layoutChildren();
+  }
+
+  protected abstract void layoutSelf();
 
   protected void layoutChildren() {
     for (LayoutNode node : nodes) {

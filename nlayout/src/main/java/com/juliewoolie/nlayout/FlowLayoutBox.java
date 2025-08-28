@@ -65,12 +65,7 @@ public class FlowLayoutBox extends LayoutBox {
   }
 
   @Override
-  public void layout() {
-    layoutSelf();
-    layoutChildren();
-  }
-
-  private void layoutSelf() {
+  protected void layoutSelf() {
     Vector2f cpos = new Vector2f();
     Vector2f offset = new Vector2f();
 

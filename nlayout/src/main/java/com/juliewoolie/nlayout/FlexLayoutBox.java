@@ -91,7 +91,7 @@ public class FlexLayoutBox extends LayoutBox {
   }
 
   @Override
-  public void layout() {
+  protected void layoutSelf() {
     // This function hurts my head, and it's the epitome of having to
     // juggle x,y vectors as well as tracking the main and cross sizes
     // of the flex item and container.
@@ -231,8 +231,6 @@ public class FlexLayoutBox extends LayoutBox {
         offset.y -= line.crossSize + crossGap;
       }
     }
-
-    layoutChildren();
   }
 
   private void gatherItems() {
