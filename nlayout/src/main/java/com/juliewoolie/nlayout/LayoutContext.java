@@ -19,15 +19,6 @@ public class LayoutContext {
     parentSizes.push(screenSize);
   }
 
-  public void parentSize(Vector2f out) {
-    if (parentSizes.isEmpty()) {
-      out.set(screenSize);
-      return;
-    }
-
-    out.set(parentSizes.peek());
-  }
-
   boolean isWidthDefinite() {
     return definiteWidths.topBoolean();
   }
