@@ -269,6 +269,22 @@ public final class PropertySet {
     return new PropertyIterator();
   }
 
+  public int size() {
+    if (values == null) {
+      return 0;
+    }
+
+    int l = 0;
+    for (Value value : values) {
+      if (value == null) {
+        continue;
+      }
+      l++;
+    }
+
+    return l;
+  }
+
   public class PropertyIterator {
 
     int index = 0;
