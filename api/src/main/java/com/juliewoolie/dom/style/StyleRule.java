@@ -16,4 +16,10 @@ public interface StyleRule {
    * @return Rule properties
    */
   StylePropertiesReadonly getProperties();
+
+  /**
+   * Get the stylesheet the rule belongs to
+   * @return Stylesheet
+   */
+  Stylesheet getStylesheet();
 }

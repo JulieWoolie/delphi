@@ -17,6 +17,8 @@ public class Rule implements StyleRule, Comparable<Rule> {
   @Getter
   private final Spec spec;
 
+  ChimeraStylesheet stylesheet;
+
   public Rule(Selector selector, PropertySet properties) {
     this.selector = selector;
     this.properties = properties;
@@ -34,6 +36,11 @@ public class Rule implements StyleRule, Comparable<Rule> {
   @Override
   public StylePropertiesReadonly getProperties() {
     return apiProperties;
+  }
+
+  @Override
+  public ChimeraStylesheet getStylesheet() {
+    return stylesheet;
   }
 
   public Selector getSelectorObject() {

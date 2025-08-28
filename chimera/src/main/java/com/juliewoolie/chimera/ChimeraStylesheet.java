@@ -20,6 +20,10 @@ public class ChimeraStylesheet implements Stylesheet {
 
   public ChimeraStylesheet(Rule[] rules) {
     this.rules = rules;
+
+    for (Rule rule : rules) {
+      rule.stylesheet = this;
+    }
   }
 
   @Override
