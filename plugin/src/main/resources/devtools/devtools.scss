@@ -190,3 +190,130 @@ line {
   vertical-align: top;
   bold: true;
 }
+
+.style-page-select {
+  font-size: 75%;
+  margin-top: 2px;
+  margin-left: 2px;
+
+  .pagenum {
+    width: 12.5px;
+
+    div {
+      width: auto;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+}
+.style-page-select span {
+  vertical-align: middle;
+}
+
+.style-name {
+  margin-inline-start: 2px;
+}
+.style-src {
+  margin-inline-start: 2px;
+}
+.style-prop {
+  width: 25%;
+  margin-inline-start: 1px;
+  &:hover {
+    background-color: gray;
+    color: white;
+  }
+}
+.style-value:hover {
+  background-color: gray;
+  color: white;
+}
+.style-props {
+  padding: 1px;
+  border: 0.5px;
+  border-color: $border-color;
+  width: 95%;
+  margin-left: 2px;
+}
+
+.style-prop-checkbox {
+  width: 1.5px;
+  height: 1.5px;
+  vertical-align: middle;
+  background-color: black;
+  visibility: hidden;
+  margin-inline-start: 1px;
+  border: 0.25px;
+  border-color: $border-color;
+
+  &:hover {
+    background-color: darkgray;
+  }
+}
+.style-props-line:hover {
+  background-color: dimgray;
+
+  .style-prop-checkbox {
+    visibility: visible;
+  }
+}
+.style-props-line[disabled] {
+  .style-prop-checkbox {
+    background-color: rgb(220 220 220);
+    visibility: visible;
+  }
+
+  .style-prop {
+    strikethrough: true;
+  }
+  .style-value {
+    strikethrough: true;
+  }
+}
+.add-extra-style {
+  margin-inline-start: 4px;
+  background-color: white;
+  padding: 0 1px;
+  color: black;
+  &:hover {
+    background-color: gray;
+  }
+}
+
+.style-meta {
+  margin-left: 2px;
+  margin-top: 2px;
+}
+.style-meta-field {
+  width: 25%;
+  bold: true;
+}
+.style-meta-title {
+  font-size: 60%;
+  margin-bottom: 1px;
+}
+.style-props-title {
+  font-size: 60%;
+  margin-left: 2px;
+  margin-top: 2px;
+  margin-bottom: 1px;
+}
+
+.style-page-btn {
+  border: 0;
+  outline: 0;
+  padding-left: 1px;
+  padding-right: 1px;
+  background-color: white;
+  color: black;
+  vertical-align: middle;
+  &:hover {
+    background-color: lightgray;
+  }
+  &:active {
+    background-color: gray;
+  }
+  &:disabled {
+    background-color: dimgray;
+  }
+}

@@ -6,7 +6,7 @@
   <body>
     <navbar id="navbar">
       <navlink active="true" nav="elements">Elements</navlink>
-      <navlink unsupported="true" nav="styles">Styles</navlink>
+      <navlink nav="styles">Styles</navlink>
       <navlink unsupported="true" nav="box">Box Model</navlink>
       <navlink nav="act">Actions</navlink>
       <navlink nav="meta">Meta</navlink>

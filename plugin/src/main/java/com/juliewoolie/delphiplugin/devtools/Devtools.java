@@ -146,7 +146,8 @@ public class Devtools {
       }
 
       case "styles" -> {
-
+        switchTo(new StylesTab(this));
+        setActive(target);
       }
 
       case "box" -> {
