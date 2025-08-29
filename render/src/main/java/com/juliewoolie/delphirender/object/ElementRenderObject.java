@@ -168,10 +168,15 @@ public class ElementRenderObject extends RenderObject {
     if (outline.isNotZero()) {
       bgRequired = true;
       boxes[OUTLINE].spawn();
+    } else {
+      boxes[OUTLINE].killRecursive();
     }
+
     if (border.isNotZero()) {
       bgRequired = true;
       boxes[BORDER].spawn();
+    } else {
+      boxes[BORDER].killRecursive();
     }
 
     if (bgRequired || style.backgroundColor.asRGB() != 0) {
