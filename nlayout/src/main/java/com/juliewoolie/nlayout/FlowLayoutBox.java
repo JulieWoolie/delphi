@@ -22,15 +22,18 @@ public class FlowLayoutBox extends LayoutBox {
   }
 
   boolean linebreakBefore(LayoutBox ro) {
-    return ro.style.display != DisplayType.INLINE;
+    return ro.style.display != DisplayType.INLINE
+        && ro.style.display != DisplayType.INLINE_FLEX;
   }
 
   boolean linebreakAfter(LayoutBox ro) {
-    return ro.style.display == DisplayType.BLOCK;
+    return ro.style.display == DisplayType.BLOCK
+        || ro.style.display == DisplayType.FLEX;
   }
 
   boolean isMarginApplied(LayoutBox er) {
-    return er.style.display != DisplayType.INLINE;
+    return er.style.display != DisplayType.INLINE
+        && er.style.display != DisplayType.INLINE_FLEX;
   }
 
   boolean shouldIgnore(LayoutNode object) {
