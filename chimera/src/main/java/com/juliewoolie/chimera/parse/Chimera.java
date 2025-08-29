@@ -289,6 +289,7 @@ public final class Chimera {
       case INLINE -> DisplayType.INLINE;
       case INLINE_BLOCK -> DisplayType.INLINE_BLOCK;
       case FLEX -> DisplayType.FLEX;
+      case INLINE_FLEX -> DisplayType.INLINE_FLEX;
 
       case ROW -> FlexDirection.ROW;
       case ROW_REVERSE -> FlexDirection.ROW_REVERSE;
@@ -398,6 +399,7 @@ public final class Chimera {
           case NONE -> Keyword.NONE;
           case INLINE -> Keyword.INLINE;
           case INLINE_BLOCK -> Keyword.INLINE_BLOCK;
+          case INLINE_FLEX -> Keyword.INLINE_FLEX;
         };
       }
       case FlexDirection dir -> {

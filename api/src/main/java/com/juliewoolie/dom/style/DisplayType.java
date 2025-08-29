@@ -9,6 +9,7 @@ public enum DisplayType implements KeywordRepresentable {
   BLOCK ("block"),
   INLINE_BLOCK ("inline-block"),
   FLEX ("flex"),
+  INLINE_FLEX ("inline-flex")
   ;
 
   public static final DisplayType DEFAULT = INLINE;

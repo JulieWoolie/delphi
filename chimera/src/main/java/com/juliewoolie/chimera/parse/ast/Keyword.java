@@ -19,6 +19,7 @@ public enum Keyword {
   BLOCK,
   INLINE_BLOCK,
   FLEX,
+  INLINE_FLEX,
 
   // Flex types
   ROW,

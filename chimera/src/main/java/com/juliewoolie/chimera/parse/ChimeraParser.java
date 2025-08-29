@@ -1731,6 +1731,9 @@ public class ChimeraParser {
       case "flex":
         keyword = Keyword.FLEX;
         break;
+      case "inline-flex":
+        keyword = Keyword.INLINE_FLEX;
+        break;
       case "row":
         keyword = Keyword.ROW;
         break;
