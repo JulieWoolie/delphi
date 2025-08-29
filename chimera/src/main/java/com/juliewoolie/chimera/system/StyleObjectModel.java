@@ -141,6 +141,13 @@ public class StyleObjectModel {
     return new ChimeraSheetBuilder(this);
   }
 
+  public void updateFromRoot() {
+    if (rootNode == null) {
+      return;
+    }
+    rootNode.updateStyle();
+  }
+
   public void updateDomStyle(Node domNode) {
     StyleNode node = getStyleNode(domNode);
     if (node == null) {
