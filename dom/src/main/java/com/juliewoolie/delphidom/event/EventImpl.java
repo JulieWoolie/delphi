@@ -90,6 +90,6 @@ public class EventImpl implements Event {
       return;
     }
 
-    flags |= FLAG_CANCELLABLE;
+    flags |= FLAG_CANCELLED;
   }
 }
