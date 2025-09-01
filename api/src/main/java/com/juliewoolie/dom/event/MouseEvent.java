@@ -28,14 +28,6 @@ public interface MouseEvent extends Event {
   MouseButton getButton();
 
   /**
-   * Gets the scroll direction, or {@link ScrollDirection#NONE}, if this event is not
-   * related to a scroll action.
-   *
-   * @return Scroll direction.
-   */
-  ScrollDirection getScrollDirection();
-
-  /**
    * Gets the screen coordinates of the viewer's cursor
    * @return Cursor screen position
    */

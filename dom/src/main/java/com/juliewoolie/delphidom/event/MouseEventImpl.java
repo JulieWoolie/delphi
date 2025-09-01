@@ -5,7 +5,6 @@ import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphidom.DelphiElement;
 import com.juliewoolie.dom.event.MouseButton;
 import com.juliewoolie.dom.event.MouseEvent;
-import com.juliewoolie.dom.event.ScrollDirection;
 import org.bukkit.entity.Player;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -15,7 +14,6 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
 
   boolean shiftPressed;
   MouseButton button;
-  ScrollDirection scrollDirection;
 
   Vector2f screenPosition;
   Vector3f worldPosition;
@@ -33,7 +31,6 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
       Player player,
       boolean shiftPressed,
       MouseButton button,
-      ScrollDirection direction,
       Vector2f screenPosition,
       Vector3f worldPosition
   ) {
@@ -41,7 +38,6 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
     this.player = player;
     this.shiftPressed = shiftPressed;
     this.button = button;
-    this.scrollDirection = direction;
     this.screenPosition = screenPosition;
     this.worldPosition = worldPosition;
   }

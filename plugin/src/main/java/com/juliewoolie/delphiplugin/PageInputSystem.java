@@ -10,7 +10,6 @@ import com.juliewoolie.dom.NodeFlag;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.MouseButton;
 import com.juliewoolie.dom.event.MouseEvent;
-import com.juliewoolie.dom.event.ScrollDirection;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.entity.Player;
 
@@ -68,7 +67,6 @@ public class PageInputSystem {
         player,
         shift,
         button,
-        ScrollDirection.NONE,
         view.cursorScreen,
         view.cursorWorld
     );
