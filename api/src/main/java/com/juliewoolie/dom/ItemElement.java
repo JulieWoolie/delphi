@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents an ItemStack element
  * <pre><code>
- * <item src="./item.json" />
+ * &lt;item src="./item.json" /&gt;
  * </code></pre>
  */
 public interface ItemElement extends Element {
@@ -71,13 +71,13 @@ public interface ItemElement extends Element {
    * Gets the element's tooltip.
    * <p>
    * May return the item stack's tooltip, unless the element's tooltip has been overridden with
-   * {@link #setTitleNode(Node)} or if the {@link Attributes#ITEM_TOOLTIP_HIDE} has been set to
+   * {@link #setTitleNode(Element)} or if the {@link Attributes#ITEM_TOOLTIP_HIDE} has been set to
    * {@code true}
    *
    * @return Element tooltip
    */
   @Override
-  Node getTooltip();
+  Element getTooltip();
 
   /**
    * Gets the element's item stack

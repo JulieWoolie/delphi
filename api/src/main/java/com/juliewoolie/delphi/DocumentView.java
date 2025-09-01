@@ -87,7 +87,7 @@ public interface DocumentView {
   /**
    * Tests if this view is currently being looked at by the player.
    *
-   * @return {@code true}, if {@link #getPlayer()} is currently looking at the view,
+   * @return {@code true}, if any player in {@link #getPlayers()} is currently looking at the view,
    *         {@code false} otherwise.
    */
   boolean isSelected();
@@ -188,7 +188,8 @@ public interface DocumentView {
    * @see #cancelTask(int)
    * @see #runRepeating(long, long, Runnable)
    */
-  int runLater(long tickDelay, @NotNull Runnable task) throws IllegalArgumentException;
+  int runLater(long tickDelay, @NotNull Runnable task)
+      throws NullPointerException, IllegalStateException;
 
   /**
    * Execute a task repeatedly
@@ -209,7 +210,7 @@ public interface DocumentView {
    * @see #runLater(long, Runnable)
    */
   int runRepeating(long tickDelay, long tickInterval, @NotNull Runnable task)
-      throws NullPointerException;
+      throws NullPointerException, IllegalStateException;
 
   /**
    * Cancel a scheduled task.
