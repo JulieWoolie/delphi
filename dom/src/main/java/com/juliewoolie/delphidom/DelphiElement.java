@@ -2,6 +2,8 @@ package com.juliewoolie.delphidom;
 
 import com.google.common.base.Strings;
 import com.google.common.xml.XmlEscapers;
+import com.juliewoolie.delphidom.event.TooltipEventImpl;
+import com.juliewoolie.dom.event.EventTypes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -168,6 +170,10 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
 
   @Override
   public void setTitleNode(@Nullable Element title) {
+    if (this.titleNode == title) {
+      return;
+    }
+
     DelphiElement old = this.titleNode;
     this.titleNode = (DelphiElement) title;
 
@@ -187,6 +193,10 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
 
       document.styles.updateDomStyle(titleNode);
     }
+
+    TooltipEventImpl event = new TooltipEventImpl(EventTypes.TOOLTIP_CHANGED, document);
+    event.initEvent(this, true, false, old, titleNode);
+    dispatchEvent(event);
 
     if (document.view != null) {
       document.view.tooltipChanged(this, old, titleNode);

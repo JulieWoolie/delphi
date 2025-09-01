@@ -426,4 +426,29 @@ public interface EventTypes {
    * </table>
    */
   String VIEW_MOVED = "view-moved";
+
+  /**
+   * Called when an element's tooltip is changed.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code true}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link TooltipEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>All</td>
+   *   </tr>
+   * </table>
+   */
+  String TOOLTIP_CHANGED = "tooltip";
 }
