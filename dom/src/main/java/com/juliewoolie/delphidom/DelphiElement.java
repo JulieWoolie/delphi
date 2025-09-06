@@ -51,6 +51,8 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   ClassList classList;
   boolean listUpdatesSupressed = false;
 
+  public int forcedFlags = 0;
+
   public DelphiElement(DelphiDocument document, String tagName) {
     super(document);
     this.tagName = tagName;
@@ -59,6 +61,19 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     this.listenerList.setIgnoreCancelled(true);
     this.listenerList.setIgnorePropagationStops(false);
     this.listenerList.setRealTarget(this);
+  }
+
+  public void forceState(NodeFlag flag) {
+    this.forcedFlags |= flag.mask;
+  }
+
+  public void undoStateForce(NodeFlag flag) {
+    this.forcedFlags &= ~flag.mask;
+  }
+
+  @Override
+  public boolean hasFlag(NodeFlag flag) {
+    return super.hasFlag(flag) || (this.forcedFlags & flag.mask) == flag.mask;
   }
 
   @Override
