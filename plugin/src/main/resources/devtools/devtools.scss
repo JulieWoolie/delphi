@@ -35,6 +35,8 @@ navbar :first-child {
 }
 navbar navlink {
   font-size: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 body {
