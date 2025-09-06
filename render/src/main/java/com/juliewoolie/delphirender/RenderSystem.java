@@ -47,7 +47,7 @@ import org.joml.Vector2f;
 @Getter @Setter
 public class RenderSystem implements StyleUpdateCallbacks {
 
-  static final float TOOLTIP_DEPTH_SCALE = 1.25f;
+  static final float TOOLTIP_DEPTH_SCALE = 1.5f;
 
   final ExtendedView view;
   final RenderScreen screen;
