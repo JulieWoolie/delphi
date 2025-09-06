@@ -93,7 +93,16 @@ public class ElementStyleNode extends StyleNode {
       it.next();
 
       Property<Object> property = it.property();
-      Value<Object> value = resolveValue(property, it.value());
+      Value<Object> initial = it.value();
+
+      if (!initial.isEnabled()) {
+        continue;
+      }
+
+      Value<Object> value = resolveValue(property, initial);
+      if (value == null || !value.isEnabled()) {
+        continue;
+      }
 
       trySet(property, value, target);
     }

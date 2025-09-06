@@ -11,6 +11,7 @@ public class Value<T> {
   private ValueType type = ValueType.INITIAL;
   private T value;
   private boolean important;
+  private boolean enabled = true;
 
   public static <T> Value<T> create(T value) {
     Value<T> v = new Value<>();
