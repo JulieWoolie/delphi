@@ -97,4 +97,9 @@ public interface TagNames {
    * Canvas element
    */
   String CANVAS = "canvas";
+
+  /**
+   * Tooltip element.
+   */
+  String TOOLTIP = "tooltip";
 }
