@@ -47,7 +47,7 @@ import org.joml.Vector2f;
 @Getter @Setter
 public class RenderSystem implements StyleUpdateCallbacks {
 
-  static final float TOOLTIP_DEPTH_SCALE = 1.2f;
+  static final float TOOLTIP_DEPTH_SCALE = 1.25f;
 
   final ExtendedView view;
   final RenderScreen screen;
@@ -60,6 +60,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
   private final Map<DelphiNode, RenderObject> renderElements = new Object2ObjectOpenHashMap<>();
   private ElementRenderObject renderRoot = null;
+  private ElementRenderObject activeTooltip = null;
 
   private Queue<ElementRenderObject> awaitingLayout = new ArrayDeque<>(3);
   private Queue<ElementRenderObject> awaitingRedraw = new ArrayDeque<>(3);
@@ -155,7 +156,13 @@ public class RenderSystem implements StyleUpdateCallbacks {
   private ElementRenderObject findRelevantRoot(DelphiNode node) {
     if (node.hasFlag(NodeFlag.TOOLTIP)) {
       DelphiNode rootNode = getTooltipRootElement(node);
-      return (ElementRenderObject) getRenderElement(rootNode);
+      RenderObject re = getRenderElement(rootNode);
+
+      if (re != activeTooltip) {
+        return null;
+      }
+
+      return (ElementRenderObject) re;
     }
     return renderRoot;
   }
@@ -387,12 +394,15 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
+    boolean isCurrent = false;
+
     if (old != null) {
       RenderObject oldRender = getRenderElement(old);
       if (oldRender != null) {
         oldRender.killRecursive();
       }
       removeRenderElement(old);
+      isCurrent = oldRender == activeTooltip;
     }
 
     if (element == null || !element.hasFlag(NodeFlag.HOVERED)) {
@@ -407,11 +417,13 @@ public class RenderSystem implements StyleUpdateCallbacks {
     titleNode.getDocument().getStyles().updateDomStyle(titleNode);
     obj.moveTo(view.getCursorScreen());
 
-    if (obj instanceof ElementRenderObject ero) {
-      LayoutCall.nlayout(ero, screen.getDimensions());
+    if (isCurrent) {
+      if (obj instanceof ElementRenderObject ero) {
+        LayoutCall.nlayout(ero, screen.getDimensions());
+        activeTooltip = ero;
+      }
+      obj.spawnRecursive();
     }
-
-    obj.spawnRecursive();
   }
 
   public void screenSizeChanged(float newHeight) {
@@ -491,6 +503,11 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
           if (obj instanceof ElementRenderObject eObj) {
             LayoutCall.nlayout(eObj, screen.getDimensions());
+
+            if (activeTooltip != null) {
+              activeTooltip.killRecursive();
+            }
+            activeTooltip = eObj;
           }
 
           obj.spawnRecursive();
@@ -504,6 +521,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
           }
 
           obj.killRecursive();
+          
+          if (obj == activeTooltip) {
+            activeTooltip = null;
+          }
         }
 
         case EventTypes.MOUSE_MOVE -> {
