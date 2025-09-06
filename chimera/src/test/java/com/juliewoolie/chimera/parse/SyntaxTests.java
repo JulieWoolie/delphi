@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.juliewoolie.chimera.parse.ast.Node;
+import com.juliewoolie.chimera.parse.ast.SheetStatement;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -80,6 +82,18 @@ public class SyntaxTests {
         if (fname.endsWith(SCSS_SUFFIX)) {
           test.parserCall = "execute";
           test.scssSource = Files.readString(path, StandardCharsets.UTF_8);
+
+          int firstLineBreak = test.scssSource.indexOf('\n');
+          if (firstLineBreak != -1 && test.scssSource.startsWith("//")) {
+            String firstLine = test.scssSource.substring(0, firstLineBreak);
+            if (firstLine.contains("COMPILE") || firstLine.contains("EXECUTE")) {
+              test.parserCall = "execute";
+            }
+            if (firstLine.contains("PRINT-AST")) {
+              test.printAst = true;
+            }
+          }
+
         } else {
           loadFromJson(test, fname, dir, path);
         }
@@ -222,6 +236,14 @@ public class SyntaxTests {
     int outputIdx = 0;
     ExpectedError[] errors = null;
 
+    public boolean printAst = false;
+
+    private void printAst(Node node) {
+      XmlPrintVisitor visitor = new XmlPrintVisitor();
+      node.visit(visitor);
+      System.out.printf("AST-PRINT (%s): %s\n", displayName, visitor);
+    }
+
     public void execute() throws Exception {
       ChimeraParser parser = new ChimeraParser(scssSource);
       parser.getErrors().setSourceName(displayName);
@@ -252,7 +274,11 @@ public class SyntaxTests {
           case "" -> output = parser.stylesheet();
 
           case "execute" -> {
-            var sheet = parser.stylesheet();
+            SheetStatement sheet = parser.stylesheet();
+
+            if (printAst) {
+              printAst(sheet);
+            }
 
             ChimeraContext ctx = parser.createContext();
             ctx.setIgnoringAsserts(false);
@@ -264,12 +290,20 @@ public class SyntaxTests {
 
           case "selector" -> {
             SelectorExpression selector = parser.selector();
+            if (printAst) {
+              printAst(selector);
+            }
+
             CompilerErrors errors = parser.getErrors();
             output = selector.compile(errors);
           }
 
           case "expr" -> {
             Expression expr = parser.expr();
+
+            if (printAst) {
+              printAst(expr);
+            }
 
             ChimeraContext ctx = parser.createContext();
             ctx.setIgnoringAsserts(false);
