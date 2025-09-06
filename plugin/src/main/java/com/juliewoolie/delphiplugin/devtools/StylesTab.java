@@ -4,11 +4,9 @@ import static com.juliewoolie.delphiplugin.TextUtil.translate;
 import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
 
 import com.google.common.base.Strings;
-import com.juliewoolie.chimera.ChimeraStylesheet;
 import com.juliewoolie.chimera.Properties;
 import com.juliewoolie.chimera.Property;
 import com.juliewoolie.chimera.PropertySet;
-import com.juliewoolie.chimera.Rule;
 import com.juliewoolie.chimera.Value;
 import com.juliewoolie.chimera.parse.Chimera;
 import com.juliewoolie.chimera.parse.ChimeraException;
@@ -21,6 +19,9 @@ import com.juliewoolie.chimera.parse.ast.Expression;
 import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphidom.DelphiElement;
 import com.juliewoolie.delphidom.Loggers;
+import com.juliewoolie.delphiplugin.devtools.style.InlineEntity;
+import com.juliewoolie.delphiplugin.devtools.style.RuleEntity;
+import com.juliewoolie.delphiplugin.devtools.style.StyleEntity;
 import com.juliewoolie.dom.ButtonElement;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.InputElement;
@@ -39,6 +40,7 @@ import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback.Options;
@@ -54,7 +56,7 @@ public class StylesTab extends DevToolTab {
     super(devtools);
   }
 
-  List<Rule> getRules() {
+  List<StyleEntity> getEntities() {
     Element selected = devtools.getSelectedElement();
     DelphiDocument doc = (DelphiDocument) devtools.getTarget().getDocument();
 
@@ -62,21 +64,22 @@ public class StylesTab extends DevToolTab {
       return null;
     }
 
-    return doc.getStyles()
+    List<StyleEntity> entities = doc.getStyles()
         .getRules()
         .stream()
         .filter(rule -> rule.getSelectorObject().test(selected))
         .sorted(Comparator.reverseOrder())
-        .toList();
-  }
+        .map(rule -> (StyleEntity) new RuleEntity(rule))
+        .collect(Collectors.toList());
 
-  static boolean isDefaultRule(Rule rule) {
-    return (rule.getStylesheet().getFlags() & ChimeraStylesheet.FLAG_DEFAULT_STYLE) != 0;
+    entities.addFirst(new InlineEntity((DelphiElement) selected));
+
+    return entities;
   }
 
   @Override
   public void onOpen() {
-    List<Rule> rules = getRules();
+    List<StyleEntity> rules = getEntities();
     Locale l = devtools.getLocale();
 
     Element out = devtools.getContentEl();
@@ -95,7 +98,7 @@ public class StylesTab extends DevToolTab {
       return;
     }
 
-    Rule rule = rules.get(page);
+    StyleEntity rule = rules.get(page);
     createProperties(out, rule, l);
     createMetadata(out, rule, l);
     createForceState(out, l);
@@ -147,13 +150,13 @@ public class StylesTab extends DevToolTab {
     out.appendChild(div);
   }
 
-  void createMetadata(Element out, Rule rule, Locale l) {
+  void createMetadata(Element out, StyleEntity rule, Locale l) {
     String[] fields = {
         "delphi.devtools.styles.meta.spec",
         "delphi.devtools.styles.meta.properties"
     };
     String[] values = {
-        rule.getSpec().toString(),
+        rule.getSpec(),
         String.valueOf(rule.getPropertySet().size())
     };
 
@@ -168,6 +171,10 @@ public class StylesTab extends DevToolTab {
     for (int i = 0; i < fields.length; i++) {
       String field = translateToString(l, fields[i]);
       String value = values[i];
+
+      if (Strings.isNullOrEmpty(value)) {
+        continue;
+      }
 
       Element fieldDiv = document.createElement("div");
       Element fieldName = document.createElement("span");
@@ -186,7 +193,7 @@ public class StylesTab extends DevToolTab {
     out.appendChild(div);
   }
 
-  void createProperties(Element out, Rule rule, Locale l) {
+  void createProperties(Element out, StyleEntity rule, Locale l) {
     Element p = document.createElement("p");
     p.setClassName("style-props-title");
     p.setTextContent(
@@ -219,13 +226,14 @@ public class StylesTab extends DevToolTab {
       nameSpan.setClassName("style-prop");
       valueSpan.setClassName("style-value");
 
-      if (isDefaultRule(rule)) {
+      if (!rule.isModifiable()) {
         nameSpan.setDisabled(true);
         valueSpan.setDisabled(true);
       } else {
         PropertyRef ref = new PropertyRef();
         ref.propertyName = propertyName;
         ref.property = Properties.getByKey(propertyName);
+        ref.entity = rule;
 
         nameSpan.onInput(new RenameProperty(ref, propertySet, targetDoc));
         valueSpan.onInput(new ChangeValue(ref, propertySet, targetDoc));
@@ -251,12 +259,12 @@ public class StylesTab extends DevToolTab {
       div.appendChild(line);
     }
 
-    if (!isDefaultRule(rule)) {
+    if (rule.isModifiable()) {
       Element plusDiv = document.createElement("div");
       Element plusSpan = document.createElement("span");
       plusSpan.setTextContent("+");
       plusSpan.setClassName("add-extra-style");
-      plusSpan.onClick(new AddProperty(propertySet, targetDoc, devtools));
+      plusSpan.onClick(new AddProperty(propertySet, targetDoc, devtools, rule));
       plusDiv.appendChild(plusSpan);
       div.appendChild(plusDiv);
     }
@@ -265,7 +273,7 @@ public class StylesTab extends DevToolTab {
     out.appendChild(div);
   }
 
-  Element createTitlePart(int idx, List<Rule> rules) {
+  Element createTitlePart(int idx, List<StyleEntity> rules) {
     Element div = document.createElement("div");
     div.setClassName("style-page-select");
 
@@ -325,14 +333,16 @@ public class StylesTab extends DevToolTab {
 
       styleName.appendChild(i);
     } else {
-      Rule r = rules.get(idx);
-      String source = r.getStylesheet().getSource();
+      StyleEntity r = rules.get(idx);
 
-      styleName.setTextContent(r.getSelector());
+      String selector = r.getSelector();
+      if (!Strings.isNullOrEmpty(selector)) {
+        styleName.setTextContent(selector);
+      }
 
       Element i = document.createElement("i");
       i.setClassName("style-src");
-      i.setTextContent("(" + DocInfoTab.translateSheetSource(l, source) + ")");
+      i.setTextContent("(" + r.getSource(l) + ")");
 
       styleName.appendChild(i);
     }
@@ -412,6 +422,7 @@ public class StylesTab extends DevToolTab {
   }
 
   static class PropertyRef {
+    StyleEntity entity;
     Property<Object> property;
     String propertyName;
   }
@@ -445,6 +456,7 @@ public class StylesTab extends DevToolTab {
       boolean newState = !val.isEnabled();
       val.setEnabled(newState);
 
+      ref.entity.postUpdateCallback();
       targetDoc.getStyles().updateFromRoot();
 
       if (newState) {
@@ -474,6 +486,7 @@ public class StylesTab extends DevToolTab {
       }
 
       set.setValue(current.property, parsed);
+      current.entity.postUpdateCallback();
       targetDoc.getStyles().updateFromRoot();
     }
   }
@@ -501,6 +514,7 @@ public class StylesTab extends DevToolTab {
         parent.getParent().removeChild(parent);
 
         targetDoc.getStyles().updateFromRoot();
+        current.entity.postUpdateCallback();
         return;
       }
 
@@ -547,13 +561,14 @@ public class StylesTab extends DevToolTab {
       set.setValue(property, oldPropValue);
 
       targetDoc.getStyles().updateFromRoot();
+      current.entity.postUpdateCallback();
 
       current.property = property;
       current.propertyName = newName;
     }
   }
 
-  record AddProperty(PropertySet set, DelphiDocument targetDoc, Devtools devtools)
+  record AddProperty(PropertySet set, DelphiDocument targetDoc, Devtools devtools, StyleEntity e)
       implements EventListener.Typed<MouseEvent>
   {
 
@@ -585,6 +600,7 @@ public class StylesTab extends DevToolTab {
 
       set.setValue(property, parsed);
       targetDoc.getStyles().updateFromRoot();
+      e.postUpdateCallback();
 
       devtools.rerender();
     }

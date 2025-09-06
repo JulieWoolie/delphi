@@ -5,11 +5,13 @@ import java.util.HashSet;
 import java.util.Set;
 import com.juliewoolie.chimera.PropertySet.PropertyIterator;
 import com.juliewoolie.dom.style.StylePropertiesReadonly;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ReadonlyProperties implements StylePropertiesReadonly {
 
+  @Getter
   protected final PropertySet set;
 
   public ReadonlyProperties(PropertySet set) {

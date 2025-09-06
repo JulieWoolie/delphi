@@ -2,20 +2,24 @@ package com.juliewoolie.delphiplugin.devtools;
 
 import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
 
+import com.juliewoolie.chimera.system.ElementStyleNode;
+import com.juliewoolie.delphi.DocumentView;
+import com.juliewoolie.delphidom.DelphiDocument;
+import com.juliewoolie.delphiplugin.PageInputSystem;
+import com.juliewoolie.dom.Attributes;
+import com.juliewoolie.dom.Document;
+import com.juliewoolie.dom.Element;
+import com.juliewoolie.dom.Node;
+import com.juliewoolie.dom.event.AttributeMutateEvent;
+import com.juliewoolie.dom.event.EventListener;
+import com.juliewoolie.dom.event.EventTarget;
+import com.juliewoolie.dom.event.EventTypes;
+import com.juliewoolie.dom.event.MouseEvent;
 import java.util.Locale;
 import java.util.Objects;
 import joptsimple.internal.Strings;
 import lombok.Getter;
 import lombok.Setter;
-import com.juliewoolie.delphi.DocumentView;
-import com.juliewoolie.delphiplugin.PageInputSystem;
-import com.juliewoolie.dom.Document;
-import com.juliewoolie.dom.Element;
-import com.juliewoolie.dom.Node;
-import com.juliewoolie.dom.event.EventListener;
-import com.juliewoolie.dom.event.EventTarget;
-import com.juliewoolie.dom.event.EventTypes;
-import com.juliewoolie.dom.event.MouseEvent;
 
 @Getter @Setter
 public class Devtools {
@@ -41,7 +45,22 @@ public class Devtools {
     contentEl = document.getElementById("content");
     Objects.requireNonNull(contentEl, "Null content element");
 
-    this.rerender = event -> this.rerender();
+    this.rerender = event -> {
+      if (event.getType().equals(EventTypes.MODIFY_ATTR) && tab instanceof StylesTab) {
+        AttributeMutateEvent attrEvent = (AttributeMutateEvent) event;
+        DelphiDocument doc = (DelphiDocument) target.getDocument();
+
+        if (attrEvent.getKey().equals(Attributes.STYLE)) {
+          ElementStyleNode styleNode = (ElementStyleNode) doc.getStyles().getStyleNode(event.getTarget());
+
+          if (styleNode.isSuppressingInlineUpdates()) {
+            return;
+          }
+        }
+      }
+
+      this.rerender();
+    };
     this.onTargetClose = event -> document.getView().close();
 
     translateTabs();
