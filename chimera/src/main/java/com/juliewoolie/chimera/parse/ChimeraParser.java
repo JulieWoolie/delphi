@@ -57,6 +57,8 @@ import static com.juliewoolie.chimera.parse.Token.STRING;
 import static com.juliewoolie.chimera.parse.Token.WALL_EQ;
 import static com.juliewoolie.chimera.parse.Token.WHITESPACE;
 
+import com.juliewoolie.chimera.selector.Selector;
+import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 import lombok.Getter;
@@ -284,38 +286,39 @@ public class ChimeraParser {
 
     // An ident followed by anything other than a ':' or '('
     // token is also considered a nested selector.
-    try (StreamState state = stream.saveState()) {
-      next();
+    CompilerErrorListener listener = errors.getListener();
+    errors.setListener(null);
 
-      if (!hasNext()) {
-        return false;
-      }
-      if (!matches(COLON, BRACKET_OPEN, EQUALS)) {
-        return true;
-      }
+    List<ChimeraError> errorList = errors.getErrors();
+    int errorCount = errorList.size();
 
-      var l = next().location();
-      if (!matches(ID)) {
-        return false;
-      }
+    boolean result = false;
+    StreamState state = stream.saveState();
 
-      next();
-      if (matches(SEMICOLON)) {
-        return false;
+    try {
+      SelectorExpression expr = selector();
+      Selector selector;
+      if (expr != null) {
+        selector = expr.compile(errors);
+      } else {
+        selector = null;
       }
 
-      return matches(
-          SQUIG_OPEN,
-          DOT,
-          HASHTAG,
-          SQUARE_OPEN,
-          ANGLE_RIGHT,
-          PLUS,
-          SQUIGLY,
-          STAR,
-          COLON
-      );
+      if (!matches(SQUIG_OPEN)) {
+        result = false;
+      } else if (selector != null && errorCount == errorList.size()){
+        result = true;
+      }
+    } finally {
+      if (errorList.size() > errorCount) {
+        errorList.subList(errorCount, errorList.size()).clear();
+      }
+
+      errors.setListener(listener);
+      stream.restoreState(state);
     }
+
+    return result;
   }
 
   SelectorExpression selector() {
@@ -588,8 +591,9 @@ public class ChimeraParser {
 
     skipWhitespace();
     Token endToken = expect(BRACKET_CLOSE);
-
-    expr.setEnd(endToken.end());
+    if (endToken != null) {
+      expr.setEnd(endToken.end());
+    }
 
     return expr;
   }
@@ -1138,7 +1142,7 @@ public class ChimeraParser {
 
         try (StreamState stat = stream.saveState()) {
           next();
-          property = matches(COLON);
+          property = matches(COLON) && !matches(BRACKET_OPEN);
         }
 
         if (property) {
