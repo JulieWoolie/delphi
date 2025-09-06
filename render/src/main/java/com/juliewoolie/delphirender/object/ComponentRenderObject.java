@@ -1,6 +1,7 @@
 package com.juliewoolie.delphirender.object;
 
 import com.juliewoolie.delphirender.RenderSystem;
+import java.util.Objects;
 import net.kyori.adventure.text.Component;
 
 public class ComponentRenderObject extends TextRenderObject  {
@@ -13,6 +14,6 @@ public class ComponentRenderObject extends TextRenderObject  {
 
   @Override
   protected Component baseText() {
-    return text;
+    return Objects.requireNonNullElse(text, Component.empty());
   }
 }
