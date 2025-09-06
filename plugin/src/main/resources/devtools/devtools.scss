@@ -319,3 +319,41 @@ line {
     background-color: dimgray;
   }
 }
+
+.style-forcestate {
+  margin-top: 1px;
+}
+.style-forcestate-title {
+  margin-left: 2px;
+  margin-bottom: 1px;
+}
+.style-forcestate-flex {
+  width: 98%;
+  margin-left: 2px;
+
+  span:not(:first-child) {
+    margin-inline-start: 2px;
+  }
+}
+
+.forcestate-checkbox {
+  width: 1.5px;
+  height: 1.5px;
+  vertical-align: middle;
+  background-color: black;
+  visibility: visible;
+  margin-inline-start: 1px;
+  border: 0.25px;
+  border-color: $border-color;
+
+  &:hover {
+    background-color: darkgray;
+  }
+
+  &[checked] {
+    background-color: rgb(220 220 220);
+  }
+}
+.forcestate-text {
+  margin-inline-start: 1px;
+}

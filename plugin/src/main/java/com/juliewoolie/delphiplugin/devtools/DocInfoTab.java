@@ -123,7 +123,7 @@ public class DocInfoTab extends DevToolTab {
     devtools.getContentEl().appendChild(el);
   }
 
-  static String translateSheetSource(Locale l, String source) {
+  public static String translateSheetSource(Locale l, String source) {
     return switch (source) {
       case "default-stylesheet" -> translateToString(l, "delphi.stylesheets.default");
       case "inline" -> translateToString(l, "delphi.stylesheets.inline");

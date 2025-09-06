@@ -19,10 +19,12 @@ import com.juliewoolie.chimera.parse.Location;
 import com.juliewoolie.chimera.parse.Scope;
 import com.juliewoolie.chimera.parse.ast.Expression;
 import com.juliewoolie.delphidom.DelphiDocument;
+import com.juliewoolie.delphidom.DelphiElement;
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.dom.ButtonElement;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.InputElement;
+import com.juliewoolie.dom.NodeFlag;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
@@ -96,6 +98,53 @@ public class StylesTab extends DevToolTab {
     Rule rule = rules.get(page);
     createProperties(out, rule, l);
     createMetadata(out, rule, l);
+    createForceState(out, l);
+  }
+
+  void createForceState(Element out, Locale l) {
+    Element div = document.createElement("div");
+    div.setClassName("style-forcestate");
+
+    Element title = document.createElement("p");
+    title.setClassName("style-forcestate-title");
+    title.setTextContent(translateToString(l, "delphi.devtools.styles.forcestate.title"));
+
+    Element container = document.createElement("div");
+    container.setClassName("style-forcestate-flex");
+
+    String[] labels = {":hover", ":active"};
+    NodeFlag[] flags = {NodeFlag.HOVERED, NodeFlag.CLICKED};
+
+    DelphiElement selected = (DelphiElement) devtools.getSelectedElement();
+
+    for (int i = 0; i < labels.length; i++) {
+      String label = labels[i];
+      NodeFlag flag = flags[i];
+
+      Element span = document.createElement("span");
+
+      Element checkbox = document.createElement("span");
+      checkbox.setClassName("forcestate-checkbox");
+      checkbox.onClick(new ToggleForceState(selected, flag, devtools));
+
+      if ((selected.forcedFlags & flag.mask) == flag.mask) {
+        checkbox.setAttribute("checked", "yes");
+      }
+
+      Element labelSpan = document.createElement("span");
+      labelSpan.setTextContent(label);
+      labelSpan.setClassName("forcestate-text");
+
+      span.appendChild(checkbox);
+      span.appendChild(labelSpan);
+
+      container.appendChild(span);
+    }
+
+    div.appendChild(title);
+    div.appendChild(container);
+
+    out.appendChild(div);
   }
 
   void createMetadata(Element out, Rule rule, Locale l) {
@@ -207,7 +256,7 @@ public class StylesTab extends DevToolTab {
       Element plusSpan = document.createElement("span");
       plusSpan.setTextContent("+");
       plusSpan.setClassName("add-extra-style");
-      plusSpan.onClick(new AddProperty(propertySet, targetDoc));
+      plusSpan.onClick(new AddProperty(propertySet, targetDoc, devtools));
       plusDiv.appendChild(plusSpan);
       div.appendChild(plusDiv);
     }
@@ -342,6 +391,23 @@ public class StylesTab extends DevToolTab {
     public void handleEvent(MouseEvent event) {
       tab.page = newpage;
       tab.devtools.rerender();
+    }
+  }
+
+  record ToggleForceState(DelphiElement target, NodeFlag flag, Devtools devtools)
+      implements EventListener.Typed<MouseEvent>
+  {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      if ((target.forcedFlags & flag.mask) == flag.mask) {
+        target.undoStateForce(flag);
+      } else {
+        target.forceState(flag);
+      }
+
+      target.getDocument().getStyles().updateFromRoot();
+      devtools.rerender();
     }
   }
 
@@ -487,7 +553,7 @@ public class StylesTab extends DevToolTab {
     }
   }
 
-  record AddProperty(PropertySet set, DelphiDocument targetDoc)
+  record AddProperty(PropertySet set, DelphiDocument targetDoc, Devtools devtools)
       implements EventListener.Typed<MouseEvent>
   {
 
@@ -519,6 +585,8 @@ public class StylesTab extends DevToolTab {
 
       set.setValue(property, parsed);
       targetDoc.getStyles().updateFromRoot();
+
+      devtools.rerender();
     }
 
     Dialog createExtraPropertyDialog(Player p) {
