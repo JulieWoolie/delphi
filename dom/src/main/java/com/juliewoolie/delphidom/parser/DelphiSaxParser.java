@@ -91,11 +91,20 @@ public class DelphiSaxParser extends DefaultHandler {
     return handler;
   }
 
+  boolean isTooltip(DelphiElement elem) {
+    String role = elem.getAttribute(com.juliewoolie.dom.Attributes.ROLE);
+    return "tooltip".equalsIgnoreCase(role);
+  }
+
   public void pushNode(DelphiNode node) {
     if (!elementStack.isEmpty()) {
       DelphiNode p = elementStack.peek();
       if (p instanceof DelphiElement elem) {
-        elem.appendChild(node);
+        if (node instanceof DelphiElement e && isTooltip(e)) {
+          elem.setTitleNode(e);
+        } else {
+          elem.appendChild(node);
+        }
       }
     } else {
       DelphiDocumentElement docElem = (DelphiDocumentElement) node;
@@ -184,6 +193,13 @@ public class DelphiSaxParser extends DefaultHandler {
     appendCharsIfNotEmpty();
 
     DelphiElement element = document.createElement(qName);
+
+    // Dumb stupid hack to make sure the element is set as tooltip correctly
+    String role = attributes.getValue(com.juliewoolie.dom.Attributes.ROLE);
+    if (!Strings.isNullOrEmpty(role)) {
+      element.setAttribute(com.juliewoolie.dom.Attributes.ROLE, role);
+    }
+
     pushNode(element);
 
     for (int i = 0; i < attributes.getLength(); i++) {

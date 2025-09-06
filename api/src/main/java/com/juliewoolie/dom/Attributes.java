@@ -162,6 +162,28 @@ public interface Attributes {
   String PROMPT = "prompt";
 
   /**
+   * Attribute for defining the role of an element.
+   * <p>
+   * When Delphi is loading a page from XML, this attribute is used in some special cases.
+   * <table>
+   *   <caption>Supported values</caption>
+   *   <thead>
+   *     <tr>
+   *       <th>Value</th>
+   *       <th>Usage</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>{@code tooltip}</td>
+   *       <td>The element is set as its parent tooltip element (With {@link Element#setTitleNode(Element)})</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   */
+  String ROLE = "role";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
