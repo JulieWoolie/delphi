@@ -34,7 +34,11 @@ public enum NodeFlag {
   /**
    * This node is part of a tooltip tree (A tree of nodes that acts as a
    * tooltip for another element)
-   * @see Element#setTitleNode(Node)
+   * <p>
+   * Note that if this flag is set, it does not mean the element itself is the tooltip of it's
+   * parent, just that it's part of the elements that are an element's tooltip.
+   *
+   * @see Element#setTitleNode(Element)
    * @see Element#getTitleNode()
    */
   TOOLTIP,
