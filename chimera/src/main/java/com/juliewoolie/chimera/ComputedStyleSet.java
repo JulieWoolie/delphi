@@ -271,7 +271,7 @@ public class ComputedStyleSet {
       marginInlineStart = getPrimitive(set, MARGIN_INLINE_START);
     }
     if (set.has(MARGIN_INLINE_END)) {
-      marginInlineStart = getPrimitive(set, MARGIN_INLINE_END);
+      marginInlineEnd = getPrimitive(set, MARGIN_INLINE_END);
     }
 
     // Padding
