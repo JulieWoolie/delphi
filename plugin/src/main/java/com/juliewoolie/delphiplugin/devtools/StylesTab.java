@@ -183,6 +183,13 @@ public class StylesTab extends DevToolTab {
 
         nameSpan.setPrompt(namePrompt);
         valueSpan.setPrompt(valuePrompt);
+
+        Value<Object> val = propertySet.get(ref.property);
+        if (!val.isEnabled()) {
+          line.setAttribute("disabled", "yes");
+        }
+
+        checkbox.onClick(new ToggleDisabledState(ref, propertySet, line, targetDoc));
       }
 
       nameSpan.setValue(propertyName);
@@ -341,6 +348,45 @@ public class StylesTab extends DevToolTab {
   static class PropertyRef {
     Property<Object> property;
     String propertyName;
+  }
+
+  static class ToggleDisabledState implements EventListener.Typed<MouseEvent> {
+
+    private final PropertyRef ref;
+    private final PropertySet set;
+    private final Element lineElement;
+    private final DelphiDocument targetDoc;
+
+    public ToggleDisabledState(
+        PropertyRef ref,
+        PropertySet set,
+        Element lineElement,
+        DelphiDocument targetDoc
+    ) {
+      this.ref = ref;
+      this.set = set;
+      this.lineElement = lineElement;
+      this.targetDoc = targetDoc;
+    }
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      Value<Object> val = set.get(ref.property);
+      if (val == null) {
+        return;
+      }
+
+      boolean newState = !val.isEnabled();
+      val.setEnabled(newState);
+
+      targetDoc.getStyles().updateFromRoot();
+
+      if (newState) {
+        lineElement.removeAttribute("disabled");
+      } else {
+        lineElement.setAttribute("disabled", "yes");
+      }
+    }
   }
 
   @RequiredArgsConstructor
