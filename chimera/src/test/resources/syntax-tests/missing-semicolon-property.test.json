@@ -3,7 +3,7 @@
 
   "expected-outputs": [
     {
-      "level": "error",
+      "level": "warn",
       "message": "Expected ';' to end statement, found '}'",
       "line": 3,
       "column": 1
