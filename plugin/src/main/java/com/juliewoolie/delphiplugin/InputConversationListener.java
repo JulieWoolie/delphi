@@ -24,8 +24,6 @@ import org.bukkit.entity.Player;
 
 public class InputConversationListener implements EventListener.Typed<MouseEvent> {
 
-  static final String CLEAR_CHAR = "-";
-
   @Override
   public void handleEvent(MouseEvent event) {
     if (!(event.getTarget() instanceof InputElement el)) {
