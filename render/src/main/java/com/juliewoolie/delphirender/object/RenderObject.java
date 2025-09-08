@@ -62,7 +62,7 @@ public abstract class RenderObject {
     out.set(pos.x, pos.y, pos.z);
   }
 
-  protected float getZIndexDepth() {
+  public float getZIndexDepth() {
     if (parent != null) {
       return parent.style.zindex * Consts.MACRO_LAYER_DEPTH;
     }
@@ -84,7 +84,7 @@ public abstract class RenderObject {
     }
   }
 
-  protected static Transformation newTransform() {
+  public static Transformation newTransform() {
     return new Transformation(
         new Vector3f(0),
         new Quaternionf(),

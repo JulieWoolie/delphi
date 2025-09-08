@@ -6,6 +6,7 @@ import com.juliewoolie.chimera.system.ElementStyleNode;
 import com.juliewoolie.delphi.DocumentView;
 import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphiplugin.PageInputSystem;
+import com.juliewoolie.delphiplugin.PageView;
 import com.juliewoolie.dom.Attributes;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.Element;
@@ -36,6 +37,8 @@ public class Devtools {
   private final EventListener onTargetClose;
 
   private Locale locale;
+
+  private Highlighter highlighter;
 
   public Devtools(DocumentView targetView, Document devtoolsDocument, Locale locale) {
     this.target = targetView;
@@ -114,10 +117,25 @@ public class Devtools {
         domNav.setAttribute("active", "true");
       }
     }
+
+    document.addEventListener(EventTypes.DOM_LOADED, ev -> {
+      if (highlighter != null) {
+        return;
+      }
+
+      PageView tv = (PageView) this.target;
+      PageView sv = (PageView) this.document.getView();
+      highlighter = new Highlighter(sv.getWorld(), tv.getScreen(), tv.getRenderer(), sv);
+    });
   }
 
   public void switchTo(DevToolTab tab) {
     Objects.requireNonNull(tab, "Null tab");
+
+    // If switching away from the tree tab, unhighlight
+    if (this.tab instanceof ElementTreeTab && !(tab instanceof ElementTreeTab)) {
+      highlighter.highlight(null);
+    }
 
     if (this.tab == tab) {
       return;
@@ -139,6 +157,10 @@ public class Devtools {
     targetDoc.removeEventListener(EventTypes.DOM_CLOSING, onTargetClose);
 
     tab.onClose();
+
+    if (highlighter != null) {
+      highlighter.kill();
+    }
   }
 
   private void onNavbarClick(MouseEvent event) {

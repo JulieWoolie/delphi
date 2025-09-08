@@ -10,6 +10,7 @@ import com.juliewoolie.dom.InputElement;
 import com.juliewoolie.dom.Node;
 import com.juliewoolie.dom.TextNode;
 import com.juliewoolie.dom.event.EventListener;
+import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
 import io.papermc.paper.dialog.Dialog;
@@ -60,6 +61,8 @@ public class ElementTreeTab extends DevToolTab {
   }
 
   void createElementLines(Node node, Document document, DomBuilder builder) {
+    HighlightElement highlight = new HighlightElement(devtools, node);
+
     if (node instanceof TextNode txt) {
       String noWhiteSpace = StringUtils.deleteWhitespace(txt.getTextContent());
       if (Strings.isNullOrEmpty(noWhiteSpace)) {
@@ -77,6 +80,7 @@ public class ElementTreeTab extends DevToolTab {
         Element txtNode = document.createElement(SPAN);
         txtNode.setTextContent(content);
         txtNode.setClassName("xml-text");
+        txtNode.onMouseEnter(highlight);
         builder.append(txtNode);
 
         if (i != contentArr.length - 1) {
@@ -100,6 +104,7 @@ public class ElementTreeTab extends DevToolTab {
     prefixEl.setTextContent(prefix);
     prefixEl.setClassName("xml-tag");
     prefixEl.onClick(selectListener);
+    prefixEl.onMouseEnter(highlight);
     builder.append(prefixEl);
 
     if (Objects.equals(devtools.getSelectedElement(), element)) {
@@ -154,6 +159,7 @@ public class ElementTreeTab extends DevToolTab {
       suffix.setTextContent("/>");
       suffix.setClassName("xml-end-tag");
       suffix.onClick(selectListener);
+      suffix.onMouseEnter(highlight);
       builder.append(suffix);
       return;
     }
@@ -162,6 +168,7 @@ public class ElementTreeTab extends DevToolTab {
     suffix.setTextContent(">");
     suffix.setClassName("xml-end-tag");
     suffix.onClick(selectListener);
+    suffix.onMouseEnter(highlight);
     builder.append(suffix);
 
     boolean inlineChildren = inlineChildren(element);
@@ -187,6 +194,7 @@ public class ElementTreeTab extends DevToolTab {
     endTag.setTextContent("</" + element.getTagName() + ">");
     endTag.setClassName("xml-end-tag");
     endTag.onClick(selectListener);
+    endTag.onMouseEnter(highlight);
 
     builder.append(endTag);
   }
@@ -226,6 +234,18 @@ public class ElementTreeTab extends DevToolTab {
     }
 
     return desc;
+  }
+
+  record HighlightElement(Devtools devtools, Node node) implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      if (event.getType().equals(EventTypes.MOUSE_ENTER)) {
+        devtools.getHighlighter().highlight(node);
+      } else {
+        devtools.getHighlighter().highlight(null);
+      }
+    }
   }
 
   record RemoveNode(Node node) implements EventListener.Typed<MouseEvent> {
