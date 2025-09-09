@@ -21,6 +21,7 @@ import com.juliewoolie.delphirender.object.ElementRenderObject;
 import com.juliewoolie.delphirender.object.ItemRenderObject;
 import com.juliewoolie.delphirender.object.RenderObject;
 import com.juliewoolie.delphirender.object.StringRenderObject;
+import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Node;
 import com.juliewoolie.dom.NodeFlag;
 import com.juliewoolie.dom.event.EventListener;
@@ -215,6 +216,12 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
 
     parent.removeChild(obj);
+
+    if (element instanceof Element e) {
+      for (int i = 0; i < e.getChildCount(); i++) {
+        removeRenderElement(e.getChild(i));
+      }
+    }
   }
 
   public RenderObject initRenderTree(DelphiNode node) {
