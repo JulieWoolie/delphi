@@ -226,6 +226,9 @@ public class StylesTab extends DevToolTab {
       nameSpan.setClassName("style-prop");
       valueSpan.setClassName("style-value");
 
+      nameSpan.setValue(propertyName);
+      valueSpan.setValue(propertyValue);
+
       if (!rule.isModifiable()) {
         nameSpan.setDisabled(true);
         valueSpan.setDisabled(true);
@@ -248,9 +251,6 @@ public class StylesTab extends DevToolTab {
 
         checkbox.onClick(new ToggleDisabledState(ref, propertySet, line, targetDoc));
       }
-
-      nameSpan.setValue(propertyName);
-      valueSpan.setValue(propertyValue);
 
       line.appendChild(checkbox);
       line.appendChild(nameSpan);
