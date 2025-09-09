@@ -67,7 +67,9 @@ public class LayoutCall {
 
   static LayoutBox createLayoutTree(ElementRenderObject object, RenderToLayoutMapper lookupMap) {
     LayoutBox box;
-    if (object.computedStyleSet.display == DisplayType.FLEX) {
+    DisplayType display = object.computedStyleSet.display;
+
+    if (display == DisplayType.FLEX || display == DisplayType.INLINE_FLEX) {
       box = new FlexLayoutBox(object.style, object.computedStyleSet);
     } else {
       box = new FlowLayoutBox(object.style, object.computedStyleSet);
