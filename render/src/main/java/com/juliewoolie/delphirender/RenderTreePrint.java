@@ -288,6 +288,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
     if (object instanceof SingleEntityRenderObject<?> single) {
       Display entity = single.entity;
       if (entity != null && !entity.isDead()) {
+        nlIndent().append("entity-state: alive");
+
         Vector3f pos = new Vector3f();
         pos.x = (float) entity.getX();
         pos.y = (float) entity.getY();
@@ -307,10 +309,12 @@ public class RenderTreePrint extends XmlPrintVisitor {
         indent--;
 
         if (entity instanceof TextDisplay txt) {
-          nlIndent().append("  entity-background: ").append(txt.getBackgroundColor());
-          nlIndent().append("  entity-text-opacity: ").append(txt.getTextOpacity());
-          nlIndent().append("  entity-text-shadowed: ").append(txt.isShadowed());
+          nlIndent().append("entity-background: ").append(txt.getBackgroundColor());
+          nlIndent().append("entity-text-opacity: ").append(txt.getTextOpacity());
+          nlIndent().append("entity-text-shadowed: ").append(txt.isShadowed());
         }
+      } else {
+        nlIndent().append("entity-state: not-spawned");
       }
     }
 
