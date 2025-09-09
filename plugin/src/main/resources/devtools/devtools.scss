@@ -357,3 +357,88 @@ line {
 .forcestate-text {
   margin-inline-start: 1px;
 }
+
+$boxscale: 0.66;
+
+$margin-color: #FFC0A1;
+$outline-color: #fad384;
+$border-color: #FDDD9D;
+$padding-color: #C4D08C;
+$content-color: #8CB6C1;
+
+.margin {background-color: $margin-color !important;}
+.outline {background-color: $outline-color !important;}
+.border {background-color: $border-color !important;}
+.padding {background-color: $padding-color !important;}
+.content {background-color: $content-color !important;}
+
+.upper-content {
+  display: flex;
+  margin-top: 2px;
+  margin-left: 2px;
+  width: 95%;
+  gap: 2px;
+  font-size: 30% * $boxscale;
+}
+
+.boxmetadata {
+  font-size: 50%;
+}
+
+.topbox {
+  width: 50%;
+}
+.box {
+  color: black;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+
+  $gapvar: 1px * $boxscale;
+  gap: $gapvar;
+  padding-top: $gapvar;
+  padding-bottom: $gapvar;
+}
+.box-firstline {
+  flex-basis: 100%;
+}
+.x-measurement {
+  width: 10%;
+}
+.box-middle {
+  width: 75%;
+  flex-grow: 1;
+}
+.center {
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+}
+.bottombox {
+  padding: 1px * $boxscale;
+  gap: 0;
+  height: 10px;
+}
+.mt-quarter {
+  margin-top: 2.33px;
+}
+.boxmetadata {
+  width: auto;
+  font-size: 40%;
+}
+.box-meta-property {
+  display: flex;
+  gap: 2px;
+  width: auto;
+  padding: 0.5px;
+  background-color: lightgray;
+  color: black;
+}
+.box-meta-field {
+  width: 25px;
+}
+.box-meta-value {
+  width: 25px;
+}

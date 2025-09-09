@@ -192,7 +192,8 @@ public class Devtools {
       }
 
       case "box" -> {
-
+        switchTo(new BoxModelTab(this));
+        setActive(target);
       }
 
       case "act" -> {
