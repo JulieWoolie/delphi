@@ -15,7 +15,6 @@ import com.juliewoolie.delphidom.DelphiItemElement;
 import com.juliewoolie.delphidom.DelphiNode;
 import com.juliewoolie.delphidom.ExtendedView;
 import com.juliewoolie.delphidom.Text;
-import com.juliewoolie.delphirender.math.Rectangle;
 import com.juliewoolie.delphirender.object.CanvasRenderObject;
 import com.juliewoolie.delphirender.object.ComponentRenderObject;
 import com.juliewoolie.delphirender.object.ElementRenderObject;
@@ -33,8 +32,10 @@ import com.juliewoolie.dom.event.MutationEvent;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Queue;
 import lombok.Getter;
@@ -46,6 +47,10 @@ import org.joml.Vector2f;
 
 @Getter @Setter
 public class RenderSystem implements StyleUpdateCallbacks {
+
+  static final Comparator<Entry<DelphiNode, RenderObject>> HIGHEST_TO_LOWEST_DEPTH
+      = Comparator.<Entry<DelphiNode, RenderObject>, Float>comparing(e -> e.getValue().depth)
+      .reversed();
 
   static final float TOOLTIP_DEPTH_SCALE = 1.5f;
 
@@ -442,42 +447,26 @@ public class RenderSystem implements StyleUpdateCallbacks {
     view.handleEntityVisibility(display);
   }
 
+  private boolean contains(Vector2f point, Vector2f pos, Vector2f size) {
+    if (point.x < pos.x || point.y > pos.y) {
+      return false;
+    }
+
+    float xdif = point.x - pos.x;
+    float ydif = pos.y - point.y;
+    return xdif < size.x && ydif < size.y;
+  }
+
   public DelphiElement findCursorContainingNode(Vector2f cursorScreen) {
-    DelphiElement p = (DelphiElement) view.getDocument().getBody();
-
-    if (p == null) {
-      return null;
-    }
-
-    Rectangle rectangle = new Rectangle();
-
-    outer: while (true) {
-      if (p.getChildren().isEmpty()) {
-        return p;
-      }
-
-      for (DelphiNode child : p.childList()) {
-        if (!(child instanceof DelphiElement el)) {
-          continue;
-        }
-
-        RenderObject obj = getRenderElement(el);
-        if (obj == null) {
-          continue;
-        }
-
-        obj.getBounds(rectangle);
-
-        if (!rectangle.contains(cursorScreen)) {
-          continue;
-        }
-
-        p = el;
-        continue outer;
-      }
-
-      return p;
-    }
+    return renderElements.entrySet().stream()
+        .filter(e -> e.getKey() instanceof DelphiElement)
+        .filter(e -> {
+          RenderObject ro = e.getValue();
+          return contains(cursorScreen, ro.position, ro.size);
+        })
+        .min(HIGHEST_TO_LOWEST_DEPTH)
+        .map(e -> (DelphiElement) e.getKey())
+        .orElse(null);
   }
 
   class TooltipListener implements EventListener.Typed<MouseEvent> {
