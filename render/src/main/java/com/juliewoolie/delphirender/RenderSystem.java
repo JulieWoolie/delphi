@@ -208,7 +208,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    obj.kill();
+    obj.killRecursive();
 
     ElementRenderObject parent = obj.parent;
     if (parent == null) {
@@ -560,7 +560,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         }
 
         // Remove node and kill
-        parentObj.removeChild(nodeObj);
+        removeRenderElement(event.getNode());
         nodeObj.killRecursive();
 
         // Update source indexes
