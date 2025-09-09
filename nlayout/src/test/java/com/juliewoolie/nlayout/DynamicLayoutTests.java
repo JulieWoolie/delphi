@@ -33,6 +33,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class DynamicLayoutTests {
 
+  String ONLY_RUN = "";
+
   @TestFactory
   Iterable<DynamicTest> loadTests() throws IOException, ParserConfigurationException, SAXException {
     Path resourcesDirectory = Path.of("src", "test", "resources").toAbsolutePath();
@@ -63,6 +65,10 @@ public class DynamicLayoutTests {
           int dotIdx = uri.lastIndexOf('.');
           if (dotIdx != -1) {
             uri = uri.substring(0, dotIdx);
+          }
+
+          if (!Strings.isNullOrEmpty(ONLY_RUN) && !ONLY_RUN.equals(uri)) {
+            continue;
           }
 
           InputSource source = new InputSource(reader);

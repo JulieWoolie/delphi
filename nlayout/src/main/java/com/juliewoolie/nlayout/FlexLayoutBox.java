@@ -559,6 +559,7 @@ public class FlexLayoutBox extends LayoutBox {
     for (FlexItem item : items) {
       Vector2f size = new Vector2f();
       measure(item.node, ctx, size);
+      float measuredMain = getMainSize(size);
 
       if (item.node instanceof LayoutBox ero) {
         ComputedStyleSet cstyle = ero.cstyle;
@@ -571,19 +572,22 @@ public class FlexLayoutBox extends LayoutBox {
           if (fbBasis > 0) {
             item.flexbasis = fbBasis;
           } else {
-            item.flexbasis = getMainSize(size);
+            item.flexbasis = measuredMain;
           }
           continue;
         }
 
         if (!mainSize.isAuto()) {
           item.flexbasis = getMainSize(style.size);
-          continue;
+        } else {
+          item.flexbasis = style.flexBasis;
         }
 
-        item.flexbasis = style.flexBasis;
+        if (item.flexbasis == UNSET) {
+          item.flexbasis = measuredMain;
+        }
       } else {
-        item.flexbasis = getMainSize(item.node.size);
+        item.flexbasis = measuredMain;
       }
     }
   }

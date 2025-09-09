@@ -1,0 +1,23 @@
+<flow
+  print="true"
+  print-sizes="true"
+  style="font-size: 0.19800001; width:95%; gap:2px; margin-top: 2px; box-sizing: border-box;"
+>
+  <flow style="display:block; width: auto; font-size: 40%; box-sizing: border-box;">
+    <flex style="gap:2px; width: auto; font-size: 40%; box-sizing: border-box; padding: 0.5px;">
+
+      <flow style="width:25px; font-size: 40%; box-sizing: border-box;">
+        <item width="0.16" height="0.055"/>
+      </flow>
+
+      <!--
+        Parent size is auto, meaning the 100% cannot resolve against the parent's size,
+        as percents can only resolve against definite values.
+      -->
+      <flow style="width:100%; font-size: 40%; box-sizing: border-box;">
+        <item width="0.61" height="0.055"/>
+      </flow>
+
+    </flex>
+  </flow>
+</flow>
