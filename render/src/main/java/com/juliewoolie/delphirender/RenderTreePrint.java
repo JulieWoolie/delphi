@@ -43,6 +43,7 @@ import com.juliewoolie.dom.style.StylePropertiesReadonly;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.util.Transformation;
 import org.joml.Vector3f;
 
@@ -149,14 +150,22 @@ public class RenderTreePrint extends XmlPrintVisitor {
     nlIndent().append("min-size: ").append(style.minSize);
     nlIndent().append("max-size: ").append(style.maxSize);
 
+    nlIndent().append("flex-basis: ").append(style.flexBasis);
+    nlIndent().append("row-gap: ").append(style.rowGap);
+    nlIndent().append("column-gap: ").append(style.columnGap);
+
     nlIndent().append("z-index: ").append(style.zindex);
     nlIndent().append("align-items: ").append(style.alignItems);
+    nlIndent().append("align-self: ").append(style.alignSelf);
     nlIndent().append("flex-direction: ").append(style.flexDirection);
     nlIndent().append("flex-wrap: ").append(style.flexWrap);
     nlIndent().append("justify-content: ").append(style.justify);
     nlIndent().append("order: ").append(style.order);
+    nlIndent().append("flex-grow: ").append(style.grow);
+    nlIndent().append("flex-shrink: ").append(style.shrink);
     nlIndent().append("box-sizing: ").append(style.boxSizing);
     nlIndent().append("visibility: ").append(style.visibility);
+    nlIndent().append("vertical-align: ").append(style.verticalAlign);
   }
 
   private void appendRect(Rect rect) {
@@ -291,13 +300,17 @@ public class RenderTreePrint extends XmlPrintVisitor {
 
         nlIndent().append("entity-transformation:");
         indent++;
-
         nlIndent().append("translation: ").append(trans.getTranslation());
         nlIndent().append("left-rotation: ").append(trans.getLeftRotation());
         nlIndent().append("scale: ").append(trans.getScale());
         nlIndent().append("right-rotation: ").append(trans.getRightRotation());
-
         indent--;
+
+        if (entity instanceof TextDisplay txt) {
+          nlIndent().append("  entity-background: ").append(txt.getBackgroundColor());
+          nlIndent().append("  entity-text-opacity: ").append(txt.getTextOpacity());
+          nlIndent().append("  entity-text-shadowed: ").append(txt.isShadowed());
+        }
       }
     }
 
@@ -316,6 +329,9 @@ public class RenderTreePrint extends XmlPrintVisitor {
       case ComponentRenderObject comp -> {
         nlIndent().append("component: ")
             .append(GsonComponentSerializer.gson().serialize(comp.text));
+      }
+      case BoxRenderObject box -> {
+        nlIndent().append("box-color: ").append(box.color);
       }
       case ElementRenderObject el -> {
         nlIndent().append("spawned: ").append(el.spawned);
