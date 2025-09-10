@@ -82,7 +82,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   }
 
   @Override
-  public StyleProperties getInlineStyle() {
+  public StyleProperties getStyle() {
     return document.getInlineStyle(this);
   }
 

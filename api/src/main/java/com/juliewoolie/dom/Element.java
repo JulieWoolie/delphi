@@ -44,7 +44,7 @@ public interface Element extends Node, EventTarget, DomQueryable {
    *
    * @return Inline style
    */
-  StyleProperties getInlineStyle();
+  StyleProperties getStyle();
 
   /**
    * Get the element's current style.

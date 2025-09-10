@@ -26,7 +26,7 @@ class DocumentStylesTest {
 
     body.setAttribute(Attributes.STYLE, "padding-left: 4px;");
     StylePropertiesReadonly map = body.getCurrentStyle();
-    StyleProperties inline = body.getInlineStyle();
+    StyleProperties inline = body.getStyle();
 
     assertEquals("4px", map.getPaddingLeft());
     assertEquals("4px", inline.getPaddingLeft());
@@ -74,7 +74,7 @@ class DocumentStylesTest {
     assertEquals("test", body.getAttribute(Attributes.CLASS));
 
     StylePropertiesReadonly map = body.getCurrentStyle();
-    StyleProperties inline = body.getInlineStyle();
+    StyleProperties inline = body.getStyle();
 
     String v = "4px";
 

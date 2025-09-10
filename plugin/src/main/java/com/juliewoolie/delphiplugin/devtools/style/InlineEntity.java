@@ -28,7 +28,7 @@ public record InlineEntity(DelphiElement target) implements StyleEntity {
 
   @Override
   public StylePropertiesReadonly getProperties() {
-    return target.getInlineStyle();
+    return target.getStyle();
   }
 
   @Override
