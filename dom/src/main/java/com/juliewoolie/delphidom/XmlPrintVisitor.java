@@ -1,5 +1,6 @@
 package com.juliewoolie.delphidom;
 
+import com.google.common.base.Strings;
 import com.google.common.xml.XmlEscapers;
 import java.util.Map.Entry;
 import com.juliewoolie.dom.ComponentElement;
@@ -59,7 +60,12 @@ public class XmlPrintVisitor implements Visitor {
 
   @Override
   public void enterText(TextNode text) {
-    nlIndent().append(text.getTextContent());
+    String textContent = text.getTextContent();
+    if (Strings.isNullOrEmpty(textContent)) {
+      return;
+    }
+
+    nlIndent().append(XmlEscapers.xmlContentEscaper().escape(textContent));
   }
 
   @Override
