@@ -51,6 +51,7 @@ import org.slf4j.event.Level;
 public class StylesTab extends DevToolTab {
 
   int page = 0;
+  Element lastSelected;
 
   public StylesTab(Devtools devtools) {
     super(devtools);
@@ -81,8 +82,19 @@ public class StylesTab extends DevToolTab {
   public void onOpen() {
     List<StyleEntity> rules = getEntities();
     Locale l = devtools.getLocale();
+    Element selected = devtools.getSelectedElement();
+
+    if (lastSelected != selected) {
+      page = 0;
+    }
+
+    lastSelected = selected;
 
     Element out = devtools.getContentEl();
+
+    if (rules != null && page >= rules.size()) {
+      page = rules.size() - 1;
+    }
 
     Element titleDiv = createTitlePart(page, rules);
     out.appendChild(titleDiv);
