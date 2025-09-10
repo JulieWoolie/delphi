@@ -12,9 +12,4 @@ public abstract class LayoutNode {
   public LayoutNode() {
 
   }
-
-  protected void moveTo(float x, float y) {
-    position.x = x;
-    position.y = y;
-  }
 }
