@@ -1,9 +1,11 @@
 package com.juliewoolie.delphiplugin.devtools;
 
 import static com.juliewoolie.delphiplugin.TextUtil.translate;
+import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
 
 import com.google.common.base.Strings;
 import com.juliewoolie.delphidom.Loggers;
+import com.juliewoolie.dom.ButtonElement;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.InputElement;
@@ -20,7 +22,9 @@ import io.papermc.paper.registry.data.dialog.DialogRegistryEntry;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +35,8 @@ import org.slf4j.Logger;
 
 public class ElementTreeTab extends DevToolTab {
 
+  static final int LINES_PER_PAGE = 23;
+
   private static final Logger LOGGER = Loggers.getLogger();
 
   static final String SPAN = "span";
@@ -38,6 +44,8 @@ public class ElementTreeTab extends DevToolTab {
 
   static final String CROSS = "❌";
   static final String PLUS = "+";
+
+  int page = 0;
 
   public ElementTreeTab(Devtools devtools) {
     super(devtools);
@@ -48,9 +56,68 @@ public class ElementTreeTab extends DevToolTab {
     Element content = devtools.getContentEl();
     Element targetRoot = devtools.getTarget().getDocument().getDocumentElement();
 
-    DomBuilder builder = new DomBuilder(content);
+    DomBuilder builder = new DomBuilder();
     createElementLines(targetRoot, document, builder);
     builder.linebreak();
+
+    int maxPages = builder.lineContainer.size() / LINES_PER_PAGE
+        + (builder.lineContainer.size() % LINES_PER_PAGE == 0 ? 0 : 1);
+
+    if (page > maxPages) {
+      page = maxPages;
+    }
+
+    int startIdx = page * LINES_PER_PAGE;
+    int endIdx = Math.min(startIdx + LINES_PER_PAGE, builder.lineContainer.size());
+
+    Element head = createHeader(maxPages);
+    content.appendChild(head);
+
+    for (Element element : builder.lineContainer.subList(startIdx, endIdx)) {
+      content.appendChild(element);
+    }
+  }
+
+  Element createHeader(int pageCount) {
+    Element div = document.createElement("div");
+    div.setClassName("element-tree-page-select");
+
+    ButtonElement backwardBtn = (ButtonElement) document.createElement("button");
+    ButtonElement forwardBtn = (ButtonElement) document.createElement("button");
+
+    backwardBtn.setClassName("style-page-btn");
+    forwardBtn.setClassName("style-page-btn");
+
+    backwardBtn.onClick(new MovePage(this, -1, pageCount));
+    forwardBtn.onClick(new MovePage(this, 1, pageCount));
+
+    Locale l = devtools.getLocale();
+    backwardBtn.setTextContent(
+        translateToString(l, "delphi.devtools.styles.pageButton.backward")
+    );
+    forwardBtn.setTextContent(
+        translateToString(l, "delphi.devtools.styles.pageButton.forward")
+    );
+
+
+    Element pageNumber = document.createElement("span");
+    Element pgNumDiv = document.createElement("div");
+    pageNumber.appendChild(pgNumDiv);
+    pageNumber.setClassName("pagenum");
+    pgNumDiv.setTextContent(String.format("%s / %s", (page + 1), pageCount));
+
+    if (page == 0) {
+      backwardBtn.setEnabled(false);
+    }
+    if ((page + 1) >= pageCount) {
+      forwardBtn.setEnabled(false);
+    }
+
+    div.appendChild(backwardBtn);
+    div.appendChild(pageNumber);
+    div.appendChild(forwardBtn);
+
+    return div;
   }
 
   Element createCross(Document document) {
@@ -236,6 +303,19 @@ public class ElementTreeTab extends DevToolTab {
     return desc;
   }
 
+  record MovePage(ElementTreeTab tab, int dir, int max) implements EventListener.Typed<MouseEvent> {
+
+    @Override
+    public void handleEvent(MouseEvent event) {
+      int npage = tab.page + dir;
+      if (npage < 0 || npage >= max) {
+        return;
+      }
+      tab.page = npage;
+      tab.devtools.rerender();
+    }
+  }
+
   record HighlightElement(Devtools devtools, Node node) implements EventListener.Typed<MouseEvent> {
 
     @Override
@@ -377,22 +457,17 @@ public class ElementTreeTab extends DevToolTab {
   }
 
   class DomBuilder {
-
-    static final int MAX_LINE_NUM = 24;
-
-    private final Element lineContainer;
+    private final List<Element> lineContainer;
     private int lineCount = 1;
     private int indent = 0;
     private Element line;
 
-    public DomBuilder(Element lineContainer) {
-      this.lineContainer = lineContainer;
+    public DomBuilder() {
+      this.lineContainer = new ArrayList<>();
     }
 
     public void append(Node n) {
       if (line == null) {
-        Document document = lineContainer.getOwningDocument();
-
         line = document.createElement("div");
         line.getClassList().add("xml-line");
         line.setAttribute("line-num", String.valueOf(lineCount));
@@ -415,12 +490,9 @@ public class ElementTreeTab extends DevToolTab {
       if (line == null) {
         return;
       }
-      if (lineCount > MAX_LINE_NUM) {
-        return;
-      }
 
       lineCount++;
-      lineContainer.appendChild(line);
+      lineContainer.addLast(line);
 
       line = null;
     }

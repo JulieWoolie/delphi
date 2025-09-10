@@ -173,6 +173,25 @@ line {
   }
 }
 
+.element-tree-page-select {
+  $vert-margin: 0.25px;
+  margin-top: $vert-margin;
+  margin-bottom: $vert-margin;
+
+  margin-left: 1px;
+  font-size: 50%;
+
+  .pagenum {
+    width: 12.5px;
+
+    div {
+      width: auto;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+}
+
 .docinfo {
   font-size: 50%;
   margin-left: 2px;
