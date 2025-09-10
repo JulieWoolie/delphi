@@ -115,6 +115,13 @@ public class StyleObjectModel {
     StyleNode n = getStyleNode(node);
 
     if (n != null) {
+      if (node instanceof Element el) {
+        ElementStyleNode esn = (ElementStyleNode) n;
+        for (Node child : el.getChildren()) {
+          esn.addChild(createNode(child), child.getSiblingIndex());
+        }
+      }
+
       return n;
     }
 
