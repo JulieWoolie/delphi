@@ -136,7 +136,7 @@ public class DevtoolModule implements ApiModule {
     }
 
     Devtools devtools = new Devtools(view, dom, locale);
-    devtools.switchTo(new ElementTreeTab(devtools));
+    devtools.switchTo(devtools.getTreeTab());
 
     return Result.ok(dom);
   }

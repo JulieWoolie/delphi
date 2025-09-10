@@ -40,10 +40,22 @@ public class Devtools {
 
   private Highlighter highlighter;
 
+  private final ElementTreeTab treeTab;
+  private final StylesTab stylesTab;
+  private final BoxModelTab boxModelTab;
+  private final ActionsTab actionsTab;
+  private final DocInfoTab metaTab;
+
   public Devtools(DocumentView targetView, Document devtoolsDocument, Locale locale) {
     this.target = targetView;
     this.document = devtoolsDocument;
     this.locale = locale;
+
+    this.treeTab = new ElementTreeTab(this);
+    this.stylesTab = new StylesTab(this);
+    this.boxModelTab = new BoxModelTab(this);
+    this.actionsTab = new ActionsTab(this);
+    this.metaTab = new DocInfoTab(this);
 
     contentEl = document.getElementById("content");
     Objects.requireNonNull(contentEl, "Null content element");
@@ -182,27 +194,27 @@ public class Devtools {
       }
 
       case "elements" -> {
-        switchTo(new ElementTreeTab(this));
+        switchTo(treeTab);
         setActive(target);
       }
 
       case "styles" -> {
-        switchTo(new StylesTab(this));
+        switchTo(stylesTab);
         setActive(target);
       }
 
       case "box" -> {
-        switchTo(new BoxModelTab(this));
+        switchTo(boxModelTab);
         setActive(target);
       }
 
       case "act" -> {
-        switchTo(new ActionsTab(this));
+        switchTo(actionsTab);
         setActive(target);
       }
 
       case "meta" -> {
-        switchTo(new DocInfoTab(this));
+        switchTo(metaTab);
         setActive(target);
       }
 
