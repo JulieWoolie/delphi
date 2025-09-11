@@ -155,6 +155,9 @@ button {
   &:active {
     background-color: $button-bg-active;
   }
+  &:disabled {
+    background-color: #6180ad;
+  }
 }
 
 /* Input elements */
