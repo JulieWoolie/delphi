@@ -199,14 +199,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     }
 
     if (titleNode != null) {
-      orphan(titleNode);
-
-      titleNode.setDepth(getDepth() + 1);
-      titleNode.parent = this;
-      titleNode.addFlagRecursive(NodeFlag.ADDED);
-      titleNode.addFlagRecursive(NodeFlag.TOOLTIP);
-
-      document.styles.updateDomStyle(titleNode);
+      configureAsTitle(titleNode);
     }
 
     TooltipEventImpl event = new TooltipEventImpl(EventTypes.TOOLTIP_CHANGED, document);
@@ -216,6 +209,17 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     if (document.view != null) {
       document.view.tooltipChanged(this, old, titleNode);
     }
+  }
+
+  protected void configureAsTitle(DelphiElement titleNode) {
+    orphan(titleNode);
+
+    titleNode.setDepth(getDepth() + 1);
+    titleNode.parent = this;
+    titleNode.addFlagRecursive(NodeFlag.ADDED);
+    titleNode.addFlagRecursive(NodeFlag.TOOLTIP);
+
+    document.styles.updateDomStyle(titleNode);
   }
 
   private void orphan(DelphiNode node) {
