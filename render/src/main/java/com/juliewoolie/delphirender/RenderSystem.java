@@ -454,19 +454,16 @@ public class RenderSystem implements StyleUpdateCallbacks {
     view.handleEntityVisibility(display);
   }
 
-  private boolean contains(Vector2f point, Vector2f pos, Vector2f size) {
-    if (point.x < pos.x || point.y > pos.y) {
-      return false;
-    }
-
-    float xdif = point.x - pos.x;
-    float ydif = pos.y - point.y;
-    return xdif < size.x && ydif < size.y;
+  private boolean contains(Vector2f cursor, Vector2f pos, Vector2f size) {
+    return cursor.x >= pos.x && cursor.x <= (pos.x + size.x)
+        && cursor.y <= pos.y && cursor.y >= (pos.y - size.y);
   }
 
   public DelphiElement findCursorContainingNode(Vector2f cursorScreen) {
-    return renderElements.entrySet().stream()
+    return renderElements.entrySet()
+        .stream()
         .filter(e -> e.getKey() instanceof DelphiElement)
+        .filter(e -> !e.getKey().hasFlag(NodeFlag.TOOLTIP))
         .filter(e -> {
           RenderObject ro = e.getValue();
           return contains(cursorScreen, ro.position, ro.size);
