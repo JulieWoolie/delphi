@@ -11,6 +11,7 @@ public final class Permissions {
   public static final String DEBUG = "delphi.commands.debug";
   public static final String DEVTOOLS = "delphi.commands.devtools";
   public static final String PLAYERS = "delphi.commands.players";
+  public static final String UPDATE_NOTICE = "delphi.updatenotice";
 
   public static void registerAll() {
     register(COMMANDS);

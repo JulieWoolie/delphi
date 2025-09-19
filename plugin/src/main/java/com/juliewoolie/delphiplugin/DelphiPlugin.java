@@ -1,16 +1,17 @@
 package com.juliewoolie.delphiplugin;
 
-import java.io.File;
-import java.io.Reader;
-import java.nio.file.Path;
-import lombok.Getter;
 import com.juliewoolie.delphi.Delphi;
+import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.command.Permissions;
 import com.juliewoolie.delphiplugin.listeners.PlayerListener;
 import com.juliewoolie.delphiplugin.listeners.PluginDisableListener;
 import com.juliewoolie.delphiplugin.resource.FontMetrics;
 import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.juliewoolie.hephaestus.Scripting;
+import java.io.File;
+import java.io.Reader;
+import java.nio.file.Path;
+import lombok.Getter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
@@ -28,6 +29,9 @@ public class DelphiPlugin extends JavaPlugin {
   private PluginResources pluginResources;
   private DelphiImpl manager;
   private FontMetrics metrics;
+  private DelphiConfig delphiConfig;
+
+  private PluginVersion foundLatest;
 
   private Metrics bstats;
 
@@ -35,6 +39,7 @@ public class DelphiPlugin extends JavaPlugin {
   public void onEnable() {
     Path modulesDir = getDataPath().resolve("modules");
 
+    this.delphiConfig = new DelphiConfig();
     this.metrics = new FontMetrics(this);
     this.viewManager = new ViewManager(this);
     this.pluginResources = new PluginResources(this, modulesDir);
@@ -42,6 +47,7 @@ public class DelphiPlugin extends JavaPlugin {
 
     viewManager.startTicking();
 
+    saveDefaultConfig();
     reloadConfig();
     registerEvents();
     Permissions.registerAll();
@@ -56,6 +62,16 @@ public class DelphiPlugin extends JavaPlugin {
     if (!getSLF4JLogger().isDebugEnabled()) {
       bstats = new Metrics(this, BSTATS_PLUGIN_ID);
     }
+
+    foundLatest = PluginUpdater.checkForUpdates(getPluginMeta().getVersion());
+
+    if (delphiConfig.autoUpdatePlugin && foundLatest != null) {
+      PluginUpdater.downloadUpdate(foundLatest);
+    } else if (foundLatest != null) {
+      getSLF4JLogger().warn("New plugin version available! Version: {}, download URL: {}",
+          foundLatest.version(), foundLatest.downloadUrl()
+      );
+    }
   }
 
   private void registerEvents() {
@@ -66,8 +82,12 @@ public class DelphiPlugin extends JavaPlugin {
 
   @Override
   public void reloadConfig() {
+    super.reloadConfig();
+
     pluginResources.loadDefaultStyle();
     metrics.loadFonts();
+
+    delphiConfig.load(getConfig());
   }
 
   @Override

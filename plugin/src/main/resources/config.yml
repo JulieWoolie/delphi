@@ -1,0 +1,11 @@
+#
+# Enables Delphi's auto updater
+#
+# The auto update is checked each time the plugin starts. If a new version is found, it's
+# automatically downloaded and when the server is restarted, the new version is applied
+# using the 'update' folder in the 'plugins' folder.
+#
+# If this is disabled, only a notice message will be displayed when a new version is
+# available
+#
+enable-auto-updater: true

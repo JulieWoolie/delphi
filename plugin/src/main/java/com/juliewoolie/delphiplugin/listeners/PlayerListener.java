@@ -1,14 +1,21 @@
 package com.juliewoolie.delphiplugin.listeners;
 
-import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
-import java.util.ArrayList;
-import java.util.List;
+import static com.juliewoolie.delphiplugin.command.DelphiCommand.prefixTranslatable;
+
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.delphiplugin.DelphiPlugin;
 import com.juliewoolie.delphiplugin.PageView;
+import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.ViewManager;
 import com.juliewoolie.delphiplugin.ViewManager.ViewEntry;
+import com.juliewoolie.delphiplugin.command.Permissions;
 import com.juliewoolie.dom.event.MouseButton;
+import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
+import java.util.ArrayList;
+import java.util.List;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -18,6 +25,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.slf4j.Logger;
 
@@ -29,6 +37,32 @@ public class PlayerListener implements Listener {
 
   public PlayerListener(DelphiPlugin plugin) {
     this.plugin = plugin;
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onPlayerJoin(PlayerJoinEvent event) {
+    PluginVersion latest = plugin.getFoundLatest();
+    if (latest == null) {
+      return;
+    }
+
+    Player player = event.getPlayer();
+    if (!player.hasPermission(Permissions.UPDATE_NOTICE)) {
+      return;
+    }
+    if (plugin.getDelphiConfig().autoUpdatePlugin) {
+      return;
+    }
+
+    player.sendMessage(
+        prefixTranslatable(
+            "delphi.updateNotice",
+            NamedTextColor.GRAY,
+            Component.text(latest.version()),
+            Component.text(latest.downloadUrl())
+                .clickEvent(ClickEvent.openUrl(latest.downloadUrl()))
+        )
+    );
   }
 
   @EventHandler

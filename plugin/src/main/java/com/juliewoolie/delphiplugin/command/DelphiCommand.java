@@ -199,7 +199,7 @@ public class DelphiCommand {
     return literal.build();
   }
 
-  private static Component prefixTranslatable(String message, TextColor color, Component... args) {
+  public static Component prefixTranslatable(String message, TextColor color, Component... args) {
     TranslatableComponent msg = Component.translatable(message, color, args);
     return Component.text().append(PREFIX, Component.space(), msg).build();
   }
