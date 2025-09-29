@@ -2,8 +2,24 @@ package com.juliewoolie.delphidom;
 
 import com.google.common.base.Strings;
 import com.google.common.xml.XmlEscapers;
+import com.juliewoolie.chimera.StringUtil;
+import com.juliewoolie.chimera.parse.Chimera;
+import com.juliewoolie.chimera.selector.Selector;
+import com.juliewoolie.delphidom.event.DelegateTarget;
+import com.juliewoolie.delphidom.event.EventImpl;
+import com.juliewoolie.delphidom.event.EventListenerList;
 import com.juliewoolie.delphidom.event.TooltipEventImpl;
+import com.juliewoolie.dom.Attributes;
+import com.juliewoolie.dom.Element;
+import com.juliewoolie.dom.Node;
+import com.juliewoolie.dom.NodeFlag;
+import com.juliewoolie.dom.TooltipBehaviour;
+import com.juliewoolie.dom.Visitor;
+import com.juliewoolie.dom.event.Event;
+import com.juliewoolie.dom.event.EventPhase;
 import com.juliewoolie.dom.event.EventTypes;
+import com.juliewoolie.dom.style.StyleProperties;
+import com.juliewoolie.dom.style.StylePropertiesReadonly;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,21 +32,7 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
-import com.juliewoolie.chimera.StringUtil;
-import com.juliewoolie.chimera.parse.Chimera;
-import com.juliewoolie.chimera.selector.Selector;
-import com.juliewoolie.delphidom.event.DelegateTarget;
-import com.juliewoolie.delphidom.event.EventImpl;
-import com.juliewoolie.delphidom.event.EventListenerList;
-import com.juliewoolie.dom.Attributes;
-import com.juliewoolie.dom.Element;
-import com.juliewoolie.dom.Node;
-import com.juliewoolie.dom.NodeFlag;
-import com.juliewoolie.dom.Visitor;
-import com.juliewoolie.dom.event.Event;
-import com.juliewoolie.dom.event.EventPhase;
-import com.juliewoolie.dom.style.StyleProperties;
-import com.juliewoolie.dom.style.StylePropertiesReadonly;
+import net.kyori.adventure.util.Ticks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -209,6 +211,94 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     if (document.view != null) {
       document.view.tooltipChanged(this, old, titleNode);
     }
+  }
+
+  @Override
+  public long getTooltipDelay() {
+    String string = getAttribute(Attributes.TOOLTIP_DELAY);
+    if (Strings.isNullOrEmpty(string)) {
+      return 0L;
+    }
+
+    int i = 0;
+    while (i < string.length()) {
+      char ch = string.charAt(i);
+
+      if (Character.isDigit(ch) || ch == '.') {
+        i++;
+        continue;
+      }
+
+      break;
+    }
+
+    if (i == 0) {
+      return 0L;
+    }
+
+    double num;
+    try {
+      String sub = string.substring(0, i);
+      num = Double.parseDouble(sub);
+    } catch (NumberFormatException ignored) {
+      return 0L;
+    }
+
+    String suffix = string.substring(i).toLowerCase().trim();
+
+    switch (suffix) {
+      case "ms":
+      case "millis":
+      case "milliseconds":
+        return (long) (num / Ticks.SINGLE_TICK_DURATION_MS);
+
+      case "s":
+      case "second":
+      case "seconds":
+        return (long) (num * Ticks.TICKS_PER_SECOND);
+
+      case "":
+      case "t":
+      case "tick":
+      case "ticks":
+        return (long) num;
+
+      default:
+        return 0L;
+    }
+  }
+
+  @Override
+  public void setTooltipDelay(@Nullable String timeString) {
+    setAttribute(Attributes.TOOLTIP_DELAY, timeString);
+  }
+
+  @Override
+  public @NotNull TooltipBehaviour getTooltipBehaviour() {
+    String string = getAttribute(Attributes.TOOLTIP_BEHAVIOUR);
+    if (Strings.isNullOrEmpty(string)) {
+      return TooltipBehaviour.CURSOR_STICKY;
+    }
+
+    for (TooltipBehaviour value : TooltipBehaviour.values()) {
+      if (!value.getAttributeValue().equalsIgnoreCase(string)) {
+        continue;
+      }
+
+      return value;
+    }
+
+    return TooltipBehaviour.CURSOR_STICKY;
+  }
+
+  @Override
+  public void setTooltipBehaviour(@Nullable TooltipBehaviour mode) {
+    if (mode == null) {
+      removeAttribute(Attributes.TOOLTIP_BEHAVIOUR);
+      return;
+    }
+
+    setAttribute(Attributes.TOOLTIP_BEHAVIOUR, mode.getAttributeValue());
   }
 
   protected void configureAsTitle(DelphiElement titleNode) {

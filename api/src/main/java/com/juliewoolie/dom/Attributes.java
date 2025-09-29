@@ -184,6 +184,65 @@ public interface Attributes {
   String ROLE = "role";
 
   /**
+   * Attribute which defines the delay before a tooltip appears on an element.
+   * <p>
+   * Values are specified as numbers, optionally followed by one of the following units:
+   * <ul>
+   *   <li>{@code seconds}, or just {@code s}</li>
+   *   <li>{@code millis}, {@code milliseconds} or just {@code ms}</li>
+   *   <li>{@code ticks} or just {@code t}</li>
+   * </ul>
+   *
+   * If the attribute's value cannot be parsed, or if an invalid unit was used, then the tooltip's
+   * delay will default to {@code 0}.
+   * <p>
+   * Examples:
+   * <ul>
+   *   <li>{@code 0.5seconds}</li>
+   *   <li>{@code 500ms}</li>
+   *   <li>{@code 10t}</li>
+   * </ul>
+   *
+   * @implNote No matter what unit is used, the resulting value will be rounded to the nearest tick
+   *           duration for Minecraft.
+   * @apiNote This attribute should be specified on an element with a tooltip, not on the
+   *          tooltip itself.
+   */
+  String TOOLTIP_DELAY = "tooltip-delay";
+
+  /**
+   * Attribute which defines the behaviour of an element's tooltip.
+   * <p>
+   * Accepts one of the following values:
+   * <dl>
+   *   <dt>{@code cursor-sticky}</dt>
+   *   <dd>Tooltip will follow the cursor</dd>
+   *
+   *   <dt>{@code cursor}</dt>
+   *   <dd>
+   *     Tooltip will appear where the element hovered over the element, but will not move until
+   *     the element itself is unhovered.
+   *   </dd>
+   *
+   *   <dt>{@code left}</dt>
+   *   <dd>Tooltip will appear on the left side of the element.</dd>
+   *
+   *   <dt>{@code right}</dt>
+   *   <dd>Tooltip will appear on the right side of the element.</dd>
+   *
+   *   <dt>{@code above}</dt>
+   *   <dd>Tooltip will appear on top of the element.</dd>
+   *
+   *   <dt>{@code below}</dt>
+   *   <dd>Tooltip will appear on below the element.</dd>
+   * </dl>
+   *
+   * @apiNote This attribute should be specified on an element with a tooltip, not on the
+   *          tooltip itself.
+   */
+  String TOOLTIP_BEHAVIOUR = "tooltip-behaviour";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the

@@ -197,6 +197,53 @@ public interface Element extends Node, EventTarget, DomQueryable {
   void setTitleNode(@Nullable Element title);
 
   /**
+   * Get the tooltip appearance delay in ticks.
+   * <p>
+   * Shorthand for accessing the {@link Attributes#TOOLTIP_DELAY} attribute's parsed value.
+   * <p>
+   * If the attribute cannot be parsed, wasn't set, or an unknown time unit was used, this method
+   * defaults to {@code 0}.
+   *
+   * @return Tooltip delay in ticks.
+   * @see Attributes#TOOLTIP_DELAY
+   */
+  long getTooltipDelay();
+
+  /**
+   * Set the tooltip appearance delay in ticks.
+   * <p>
+   * Shorthand for modifying the {@link Attributes#TOOLTIP_DELAY} attribute value.
+   *
+   * @param timeString Tooltip delay, or {@code null}, to remove the attribute.
+   *
+   * @see Attributes#TOOLTIP_DELAY
+   */
+  void setTooltipDelay(@Nullable String timeString);
+
+  /**
+   * Get the tooltip behaviour.
+   * <p>
+   * Shorthand for accessing the {@link Attributes#TOOLTIP_BEHAVIOUR} attribute's parsed value.
+   * <p>
+   * If the value of the attribute couldn't be parsed or wasn't set, then
+   * {@link TooltipBehaviour#CURSOR_STICKY} is returned.
+   *
+   * @return Tooltip behaviour
+   * @see Attributes#TOOLTIP_BEHAVIOUR
+   */
+  @NotNull
+  TooltipBehaviour getTooltipBehaviour();
+
+  /**
+   * Set the tooltip behaviour.
+   * <p>
+   * Shorthand for modifying the {@link Attributes#TOOLTIP_BEHAVIOUR} attribute's value.
+   *
+   * @param mode Tooltip behaviour, or {@code null}, to remove the attribute's value
+   */
+  void setTooltipBehaviour(@Nullable TooltipBehaviour mode);
+
+  /**
    * Adds a child node to the end of this element's child nodes.
    * <p>
    * If the specified {@code node} belongs to a different document, it will be adopted to the

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.juliewoolie.dom.Attributes;
 import java.util.List;
 import java.util.Set;
 import com.juliewoolie.dom.Element;
@@ -520,5 +521,49 @@ class DelphiElementTest {
 
     body.setTextContent(content);
     assertFalse(bool.getValue());
+  }
+
+  @Test
+  void should_getTooltipDelay_when_justNumber() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    body.setAttribute(Attributes.TOOLTIP_DELAY, "30");
+
+    long delay = body.getTooltipDelay();
+    assertEquals(30, delay);
+  }
+
+  @Test
+  void should_getTooltipDelay_when_tickUnitSpecified() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    body.setAttribute(Attributes.TOOLTIP_DELAY, "30t");
+
+    long delay = body.getTooltipDelay();
+    assertEquals(30, delay);
+  }
+
+  @Test
+  void should_getTooltipDelay_when_msUnitSpecified() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    body.setAttribute(Attributes.TOOLTIP_DELAY, "1500ms");
+
+    long delay = body.getTooltipDelay();
+    assertEquals(30, delay);
+  }
+
+  @Test
+  void should_getTooltipDelay_when_sUnitSpecified() {
+    DelphiDocument doc = createDoc();
+    DelphiElement body = doc.getBody();
+
+    body.setAttribute(Attributes.TOOLTIP_DELAY, "1.5 seconds");
+
+    long delay = body.getTooltipDelay();
+    assertEquals(30, delay);
   }
 }
