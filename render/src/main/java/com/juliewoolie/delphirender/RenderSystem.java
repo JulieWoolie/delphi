@@ -538,28 +538,16 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
           switch (behaviour) {
             case ABOVE:
-              obj.moveTo(
-                  parent.position.x,
-                  parent.position.y + obj.size.y
-              );
+              obj.moveTo(parent.position.x, parent.position.y + obj.size.y);
               break;
             case RIGHT:
-              obj.moveTo(
-                  parent.position.x + parent.size.x,
-                  parent.position.y
-              );
+              obj.moveTo(parent.position.x + parent.size.x, parent.position.y);
               break;
             case BELOW:
-              obj.moveTo(
-                  parent.position.x,
-                  parent.position.y - parent.size.y
-              );
+              obj.moveTo(parent.position.x, parent.position.y - parent.size.y);
               break;
             case LEFT:
-              obj.moveTo(
-                  parent.position.x - obj.size.x,
-                  parent.position.y
-              );
+              obj.moveTo(parent.position.x - obj.size.x, parent.position.y);
               break;
 
             default:
