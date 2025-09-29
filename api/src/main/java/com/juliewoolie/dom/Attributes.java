@@ -184,7 +184,7 @@ public interface Attributes {
   String ROLE = "role";
 
   /**
-   * Attribute which defines the delay before a tooltip appears on an element.
+   * Attribute which defines the delay before a tooltip becomes visible.
    * <p>
    * Values are specified as numbers, optionally followed by one of the following units:
    * <ul>
@@ -193,8 +193,9 @@ public interface Attributes {
    *   <li>{@code ticks} or just {@code t}</li>
    * </ul>
    *
-   * If the attribute's value cannot be parsed, or if an invalid unit was used, then the tooltip's
-   * delay will default to {@code 0}.
+   * If the attribute's value cannot be parsed, a negative value was set, or if an invalid unit was
+   * used, then the tooltip's delay will default to {@code 0}.
+   *
    * <p>
    * Examples:
    * <ul>
@@ -205,13 +206,11 @@ public interface Attributes {
    *
    * @implNote No matter what unit is used, the resulting value will be rounded to the nearest tick
    *           duration for Minecraft.
-   * @apiNote This attribute should be specified on an element with a tooltip, not on the
-   *          tooltip itself.
    */
   String TOOLTIP_DELAY = "tooltip-delay";
 
   /**
-   * Attribute which defines the behaviour of an element's tooltip.
+   * Attribute which defines the behaviour of a tooltip.
    * <p>
    * Accepts one of the following values:
    * <dl>
@@ -236,9 +235,6 @@ public interface Attributes {
    *   <dt>{@code below}</dt>
    *   <dd>Tooltip will appear on below the element.</dd>
    * </dl>
-   *
-   * @apiNote This attribute should be specified on an element with a tooltip, not on the
-   *          tooltip itself.
    */
   String TOOLTIP_BEHAVIOUR = "tooltip-behaviour";
 
