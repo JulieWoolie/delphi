@@ -24,6 +24,7 @@ import com.juliewoolie.delphirender.object.StringRenderObject;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Node;
 import com.juliewoolie.dom.NodeFlag;
+import com.juliewoolie.dom.TooltipBehaviour;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.EventTarget;
 import com.juliewoolie.dom.event.EventTypes;
@@ -66,7 +67,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
   private final Map<DelphiNode, RenderObject> renderElements = new Object2ObjectOpenHashMap<>();
   private ElementRenderObject renderRoot = null;
+
   private ElementRenderObject activeTooltip = null;
+  private long tooltipDelay = -1;
+  private TooltipBehaviour tooltipBehaviour = TooltipBehaviour.CURSOR_STICKY;
 
   private Queue<ElementRenderObject> awaitingLayout = new ArrayDeque<>(3);
   private Queue<ElementRenderObject> awaitingRedraw = new ArrayDeque<>(3);
@@ -140,6 +144,19 @@ public class RenderSystem implements StyleUpdateCallbacks {
     while (!awaitingRedraw.isEmpty()) {
       ElementRenderObject ero = awaitingRedraw.poll();
       ero.spawnRecursive();
+    }
+
+    if (tooltipDelay != -1) {
+      tooltipDelay--;
+
+      if (tooltipDelay < 1) {
+        if (tooltipBehaviour == TooltipBehaviour.CURSOR) {
+          activeTooltip.moveTo(view.getCursorScreen());
+        }
+
+        activeTooltip.spawnRecursive();
+        tooltipDelay = -1;
+      }
     }
   }
 
@@ -444,6 +461,20 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
   }
 
+  public void setTooltip(ElementRenderObject ero, long delay) {
+    if (activeTooltip != null) {
+      activeTooltip.killRecursive();
+    }
+
+    activeTooltip = ero;
+
+    if (delay > 0) {
+      this.tooltipDelay = delay;
+    } else {
+      this.tooltipDelay = -1;
+    }
+  }
+
   public void removeEntity(Display entity) {
     entities.remove(entity);
   }
@@ -478,11 +509,14 @@ public class RenderSystem implements StyleUpdateCallbacks {
     @Override
     public void handleEvent(MouseEvent event) {
       final DelphiElement el = (DelphiElement) event.getTarget();
-      DelphiNode tooltip = el.getTooltip();
+      DelphiElement tooltip = el.getTooltip();
 
       if (tooltip == null) {
         return;
       }
+
+      TooltipBehaviour behaviour = tooltip.getTooltipBehaviour();
+      long tooltipDelay = tooltip.getTooltipDelay();
 
       switch (event.getType()) {
         case EventTypes.MOUSE_ENTER -> {
@@ -492,18 +526,49 @@ public class RenderSystem implements StyleUpdateCallbacks {
           }
 
           el.getDocument().getStyles().updateDomStyle(tooltip);
-          obj.moveTo(event.getScreenPosition());
 
           if (obj instanceof ElementRenderObject eObj) {
             LayoutCall.nlayout(eObj, screen.getDimensions());
-
-            if (activeTooltip != null) {
-              activeTooltip.killRecursive();
-            }
-            activeTooltip = eObj;
+            setTooltip(eObj, tooltipDelay);
           }
 
-          obj.spawnRecursive();
+          ElementRenderObject parent = (ElementRenderObject) getRenderElement(el);
+          assert parent != null;
+
+          switch (behaviour) {
+            case ABOVE:
+              obj.moveTo(
+                  parent.position.x,
+                  parent.position.y + obj.size.y
+              );
+              break;
+            case RIGHT:
+              obj.moveTo(
+                  parent.position.x + parent.size.x,
+                  parent.position.y
+              );
+              break;
+            case BELOW:
+              obj.moveTo(
+                  parent.position.x,
+                  parent.position.y - parent.size.y
+              );
+              break;
+            case LEFT:
+              obj.moveTo(
+                  parent.position.x - obj.size.x,
+                  parent.position.y
+              );
+              break;
+
+            default:
+              obj.moveTo(event.getScreenPosition());
+              break;
+          }
+
+          if (tooltipDelay < 1) {
+            obj.spawnRecursive();
+          }
         }
 
         case EventTypes.MOUSE_LEAVE -> {
@@ -516,13 +581,13 @@ public class RenderSystem implements StyleUpdateCallbacks {
           obj.killRecursive();
           
           if (obj == activeTooltip) {
-            activeTooltip = null;
+            setTooltip(null, 0);
           }
         }
 
         case EventTypes.MOUSE_MOVE -> {
           RenderObject obj = getRenderElement(tooltip);
-          if (obj == null) {
+          if (obj == null || behaviour != TooltipBehaviour.CURSOR_STICKY) {
             return;
           }
 
