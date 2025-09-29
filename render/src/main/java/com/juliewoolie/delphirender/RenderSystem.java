@@ -461,12 +461,13 @@ public class RenderSystem implements StyleUpdateCallbacks {
     }
   }
 
-  public void setTooltip(ElementRenderObject ero, long delay) {
+  public void setTooltip(ElementRenderObject ero, long delay, TooltipBehaviour b) {
     if (activeTooltip != null) {
       activeTooltip.killRecursive();
     }
 
     activeTooltip = ero;
+    tooltipBehaviour = b;
 
     if (delay > 0) {
       this.tooltipDelay = delay;
@@ -529,7 +530,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
           if (obj instanceof ElementRenderObject eObj) {
             LayoutCall.nlayout(eObj, screen.getDimensions());
-            setTooltip(eObj, tooltipDelay);
+            setTooltip(eObj, tooltipDelay, behaviour);
           }
 
           ElementRenderObject parent = (ElementRenderObject) getRenderElement(el);
@@ -581,7 +582,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
           obj.killRecursive();
           
           if (obj == activeTooltip) {
-            setTooltip(null, 0);
+            setTooltip(null, 0, TooltipBehaviour.CURSOR_STICKY);
           }
         }
 
