@@ -39,7 +39,7 @@ public class PluginUpdater {
 
   public static final int HTTP_OK = 200;
 
-  static void downloadUpdate(PluginVersion version) {
+  public static void downloadUpdate(PluginVersion version) {
     Path pluginsDirectory = Bukkit.getServer().getPluginsFolder().toPath();
     Path updateDir = pluginsDirectory.resolve("update");
 
