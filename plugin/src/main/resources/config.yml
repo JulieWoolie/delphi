@@ -8,4 +8,4 @@
 # If this is disabled, only a notice message will be displayed when a new version is
 # available
 #
-enable-auto-updater: true
+enable-auto-updater: false
