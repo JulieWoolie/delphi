@@ -20,10 +20,6 @@ import org.jetbrains.annotations.Nullable;
  *   <li>
  *     The JavaScript VM is only closed when the page is closed.
  *   </li>
- *   <li>
- *     JavaScript support needs to be explicitly enabled by going to {@code /plugins/Delphi/data/scripting.properties}
- *     and setting {@code enabled} to {@code true}
- *   </li>
  * </ul>
  */
 public interface ScriptElement extends Element {
