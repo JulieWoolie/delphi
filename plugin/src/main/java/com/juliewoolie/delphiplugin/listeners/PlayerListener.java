@@ -5,15 +5,18 @@ import static com.juliewoolie.delphiplugin.command.DelphiCommand.prefixTranslata
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.delphiplugin.DelphiPlugin;
 import com.juliewoolie.delphiplugin.PageView;
+import com.juliewoolie.delphiplugin.PluginUpdater;
 import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.ViewManager;
 import com.juliewoolie.delphiplugin.ViewManager.ViewEntry;
 import com.juliewoolie.delphiplugin.command.Permissions;
 import com.juliewoolie.dom.event.MouseButton;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickCallback.Options;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.ArmorStand;
@@ -35,6 +38,9 @@ public class PlayerListener implements Listener {
 
   private final DelphiPlugin plugin;
 
+  ClickEvent silentlyUpdate;
+  boolean downloaded = false;
+
   public PlayerListener(DelphiPlugin plugin) {
     this.plugin = plugin;
   }
@@ -54,13 +60,44 @@ public class PlayerListener implements Listener {
       return;
     }
 
+    if (silentlyUpdate == null) {
+      silentlyUpdate = ClickEvent.callback(
+          audience -> {
+            if (downloaded) {
+              audience.sendMessage(Component.translatable("delphi.update.alreadyDownloaded"));
+              return;
+            }
+
+            PluginUpdater.downloadUpdate(plugin.getFoundLatest());
+            downloaded = true;
+
+            audience.sendMessage(
+                Component.translatable("delphi.update.downloaded",
+                    Component.text(plugin.getFoundLatest().version())
+                )
+            );
+          },
+          Options.builder()
+              .lifetime(Duration.ofDays(365))
+              .uses(-1)
+              .build()
+      );
+    }
+
     player.sendMessage(
         prefixTranslatable(
-            "delphi.updateNotice",
+            "delphi.update.notice",
             NamedTextColor.GRAY,
+
             Component.text(latest.version()),
-            Component.text(latest.downloadUrl())
+
+            Component.translatable("delphi.update.openUrl")
                 .clickEvent(ClickEvent.openUrl(latest.downloadUrl()))
+                .hoverEvent(Component.text(latest.downloadUrl())),
+
+            Component.translatable("delphi.update.download")
+                .clickEvent(silentlyUpdate)
+                .hoverEvent(Component.translatable("delphi.update.download.hover"))
         )
     );
   }
