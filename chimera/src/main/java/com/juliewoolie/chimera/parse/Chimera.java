@@ -135,11 +135,6 @@ public final class Chimera {
       return sval;
     }
 
-    System.out.println(value);
-    if (value instanceof ScssList list) {
-      System.out.println(list.get(0));
-      System.out.println(list.get(0).getClass());
-    }
     errors.error(l, "Invalid value for property %s. Expected %s, got %s",
         property.getKey(),
         type.getSimpleName(),
