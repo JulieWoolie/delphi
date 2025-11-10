@@ -461,3 +461,63 @@ $content-color: #8CB6C1;
 .box-meta-value {
   width: 25px;
 }
+
+
+.actions-container {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1px;
+  gap: 1px;
+  align-items: stretch;
+}
+
+.actions-box {
+  padding: 1px;
+  width: 49%;
+  outline: 0.5px;
+  outline-color: white;
+
+  &:hover {
+    background-color: rgb(50, 50, 50);
+    outline-color: lightgray;
+  }
+}
+
+.actions-title {
+  margin-bottom: 1px;
+  font-size: 75%;
+}
+.actions-box:hover .actions-title {
+  color: lightgray;
+}
+
+.actions-buttons {
+  display: flex;
+  gap: 1px;
+  flex-wrap: wrap;
+
+  tooltip {
+    font-size: 50%;
+  }
+}
+
+.tp-input {
+  width: 10px;
+  outline-color: initial;
+  outline: 0.25px;
+  padding: 0.50px;
+
+  &:hover {
+    outline-color: lightgray;
+  }
+  &:active {
+    outline-color: gray;
+  }
+}
+.tp-input-world {
+  width: 15px;
+}
+
+.grow {
+  flex-grow: 1;
+}
