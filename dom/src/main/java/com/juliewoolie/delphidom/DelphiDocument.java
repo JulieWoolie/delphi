@@ -213,12 +213,12 @@ public class DelphiDocument implements Document, DelegateTarget {
   }
 
   @Override
-  public DelphiElement createElement(@NotNull String tagName) {
+  public <T extends Element> T createElement(@NotNull String tagName) {
     Objects.requireNonNull(tagName, "Null tag name");
 
     tagName = tagName.toLowerCase();
 
-    return switch (tagName) {
+    DelphiElement el = switch (tagName) {
       case TagNames.ITEM -> new DelphiItemElement(this);
       case TagNames.BUTTON -> new DelphiButtonElement(this);
       case TagNames.COMPONENT -> new ChatElement(this);
@@ -234,6 +234,8 @@ public class DelphiDocument implements Document, DelegateTarget {
 
       default -> new DelphiElement(this, tagName);
     };
+
+    return (T) el;
   }
 
   @Override

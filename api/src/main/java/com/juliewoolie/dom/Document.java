@@ -71,6 +71,8 @@ public interface Document extends EventTarget, DomQueryable {
    * Creates an element with a specified {@code tagName}.
    * <p>
    * The type returned by this method corresponds to the specified tag name.
+   * <p>
+   * Uses parameterized return type to make assigning variables using this method easier.
    *
    * <table>
    *   <caption>Tag types</caption>
@@ -139,7 +141,7 @@ public interface Document extends EventTarget, DomQueryable {
    * @return Created element
    * @throws NullPointerException if {@code tagName} is {@code null}
    */
-  Element createElement(@NotNull String tagName);
+  <T extends Element> T createElement(@NotNull String tagName);
 
   /**
    * Create an {@code <item>} element.
