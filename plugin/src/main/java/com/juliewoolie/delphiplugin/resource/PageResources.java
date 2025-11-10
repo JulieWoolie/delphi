@@ -109,7 +109,7 @@ public class PageResources implements ViewResources {
     return resolve(uri).flatMap(this::loadBuffer);
   }
 
-  private Result<StringBuffer, DelphiException> loadBuffer(ResourcePath path) {
+  public Result<StringBuffer, DelphiException> loadBuffer(ResourcePath path) {
     if (!(module instanceof IoModule io)) {
       return Result.err(new DelphiException(ERR_API_MODULE));
     }

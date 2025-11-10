@@ -117,6 +117,8 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
       return;
     }
 
+    resources.resolve(uri).ifSuccess(rpath -> element.resourcePath = rpath);
+
     String content = result.value().orElseThrow().toString();
     scriptExec(element, uri, content);
   }
