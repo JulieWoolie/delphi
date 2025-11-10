@@ -12,7 +12,7 @@ public abstract class DevToolTab {
   public DevToolTab(Devtools devtools) {
     this.devtools = devtools;
     this.document = devtools.getDocument();
-    this.targetView = (PageView) devtools.getTarget();
+    this.targetView = devtools.getTarget();
   }
 
   public abstract void onOpen();

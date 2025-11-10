@@ -1,11 +1,13 @@
 package com.juliewoolie.delphiplugin.devtools;
 
-import com.juliewoolie.delphidom.DelphiDocument;
-import com.juliewoolie.delphidom.DelphiNode;
-import com.juliewoolie.delphiplugin.PageView;
-import com.juliewoolie.dom.Document;
+import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
+
+import com.juliewoolie.delphidom.DelphiBodyElement;
+import com.juliewoolie.delphirender.RenderSystem;
+import com.juliewoolie.dom.ButtonElement;
 import com.juliewoolie.dom.Element;
-import com.juliewoolie.dom.TagNames;
+import java.util.Locale;
+import java.util.function.Consumer;
 
 public class ActionsTab extends DevToolTab {
 
@@ -15,34 +17,78 @@ public class ActionsTab extends DevToolTab {
 
   @Override
   public void onOpen() {
-    Document document = devtools.getDocument();
-    Element outp = devtools.getContentEl();
+    Locale l = devtools.getLocale();
 
-    DelphiNode body = (DelphiNode) devtools.getTarget().getDocument().getBody();
+    RenderSystem renderer = targetView.getRenderer();
 
-    Element forceRealign = document.createElement(TagNames.BUTTON);
-    forceRealign.onClick(event -> {
-      PageView target = (PageView) devtools.getTarget();
-      target.getRenderer().triggerRealign(body);
+    DelphiBodyElement body = targetView.getDocument().getBody();
+
+    Element qa = createSection("delphi.devtools.actions.quickActions", element -> {
+      ButtonElement rerender
+          = createButton(translateToString(l, "delphi.devtools.actions.rerender"));
+      ButtonElement relayout
+          = createButton(translateToString(l, "delphi.devtools.actions.relayout"));
+      ButtonElement style
+          = createButton(translateToString(l, "delphi.devtools.actions.styleUpdate"));
+      ButtonElement close
+          = createButton(translateToString(l, "delphi.devtools.actions.close"));
+
+      rerender.onClick(event -> {
+        if (body == null) {
+          return;
+        }
+        renderer.triggerRedraw(body);
+      });
+      relayout.onClick(event -> {
+        if (body == null) {
+          return;
+        }
+        renderer.triggerRealign(body);
+      });
+      style.onClick(event -> {
+        targetView.getDocument().getStyles().updateFromRoot();
+      });
+      close.onClick(event -> {
+        targetView.close();
+      });
+
+      element.appendChild(rerender);
+      element.appendChild(relayout);
+      element.appendChild(style);
+      element.appendChild(close);
     });
-    forceRealign.setTextContent("Force re-layout");
 
-    Element forceReRender = document.createElement(TagNames.BUTTON);
-    forceReRender.onClick(event -> {
-      PageView target = (PageView) devtools.getTarget();
-      target.getRenderer().triggerRedraw(body);
-    });
-    forceReRender.setTextContent("Force re-render");
+    Element container = document.createElement("div");
+    container.setClassName("actions-container");
+    container.appendChild(qa);
 
-    Element forceStyleRecalculation = document.createElement(TagNames.BUTTON);
-    forceStyleRecalculation.onClick(event -> {
-      DelphiDocument targetDoc = (DelphiDocument) devtools.getTarget().getDocument();
-      targetDoc.getStyles().updateDomStyle(targetDoc.getDocumentElement());
-    });
-    forceStyleRecalculation.setTextContent("Force style update");
+    devtools.getContentEl().appendChild(container);
+  }
 
-    outp.appendChild(forceRealign);
-    outp.appendChild(forceReRender);
-    outp.appendChild(forceStyleRecalculation);
+  private ButtonElement createButton(String transKey) {
+    ButtonElement btn = document.createElement("button");
+    btn.setClassName("style-page-btn");
+    btn.setTextContent(translateToString(devtools.getLocale(), transKey));
+    return btn;
+  }
+
+  private Element createSection(String titleTransKey, Consumer<Element> factory) {
+    Element div = document.createElement("div");
+    div.setClassName("actions-box");
+
+    Element title = document.createElement("p");
+    title.setClassName("actions-title");
+    title.setTextContent(translateToString(devtools.getLocale(), titleTransKey));
+
+    Element container = document.createElement("div");
+    container.setClassName("actions-buttons");
+    if (factory != null) {
+      factory.accept(container);
+    }
+
+    div.appendChild(title);
+    div.appendChild(container);
+
+    return div;
   }
 }

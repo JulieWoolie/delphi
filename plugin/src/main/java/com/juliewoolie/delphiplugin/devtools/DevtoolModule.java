@@ -9,6 +9,7 @@ import com.juliewoolie.delphi.resource.DocumentContext;
 import com.juliewoolie.delphi.resource.ResourceModule;
 import com.juliewoolie.delphi.resource.ResourcePath;
 import com.juliewoolie.delphi.util.Result;
+import com.juliewoolie.delphiplugin.PageView;
 import com.juliewoolie.delphiplugin.math.Screen;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.style.Stylesheet;
@@ -135,7 +136,7 @@ public class DevtoolModule implements ApiModule {
       locale = Locale.forLanguageTag(lang);
     }
 
-    Devtools devtools = new Devtools(view, dom, locale);
+    Devtools devtools = new Devtools((PageView) view, dom, locale);
     devtools.switchTo(devtools.getTreeTab());
 
     return Result.ok(dom);

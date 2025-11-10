@@ -3,7 +3,6 @@ package com.juliewoolie.delphiplugin.devtools;
 import static com.juliewoolie.delphiplugin.TextUtil.translateToString;
 
 import com.juliewoolie.chimera.system.ElementStyleNode;
-import com.juliewoolie.delphi.DocumentView;
 import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphiplugin.PageInputSystem;
 import com.juliewoolie.delphiplugin.PageView;
@@ -25,7 +24,7 @@ import lombok.Setter;
 @Getter @Setter
 public class Devtools {
 
-  private final DocumentView target;
+  private final PageView target;
   private Element selectedElement;
 
   private final Document document;
@@ -46,7 +45,7 @@ public class Devtools {
   private final ActionsTab actionsTab;
   private final DocInfoTab metaTab;
 
-  public Devtools(DocumentView targetView, Document devtoolsDocument, Locale locale) {
+  public Devtools(PageView targetView, Document devtoolsDocument, Locale locale) {
     this.target = targetView;
     this.document = devtoolsDocument;
     this.locale = locale;
