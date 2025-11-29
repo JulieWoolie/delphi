@@ -3,6 +3,7 @@ package com.juliewoolie.delphiplugin;
 import com.juliewoolie.delphi.Delphi;
 import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.command.Permissions;
+import com.juliewoolie.delphiplugin.listeners.ChunkListener;
 import com.juliewoolie.delphiplugin.listeners.PlayerListener;
 import com.juliewoolie.delphiplugin.listeners.PluginDisableListener;
 import com.juliewoolie.delphiplugin.resource.FontMetrics;
@@ -78,6 +79,7 @@ public class DelphiPlugin extends JavaPlugin {
     PluginManager pl = getServer().getPluginManager();
     pl.registerEvents(new PlayerListener(this), this);
     pl.registerEvents(new PluginDisableListener(this), this);
+    pl.registerEvents(new ChunkListener(this),  this);
   }
 
   @Override
