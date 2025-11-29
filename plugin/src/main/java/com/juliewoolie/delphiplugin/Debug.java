@@ -1,13 +1,6 @@
 package com.juliewoolie.delphiplugin;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.delphiplugin.command.Permissions;
 import com.juliewoolie.delphiplugin.math.Screen;
@@ -15,12 +8,19 @@ import com.juliewoolie.delphirender.RenderTreePrint;
 import com.juliewoolie.delphirender.math.Rectangle;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Visitor;
+import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector3d;
 import org.slf4j.Logger;
 
 public final class Debug {
@@ -73,13 +73,13 @@ public final class Debug {
   }
 
   public static void drawScreen(Screen screen, World world) {
-    Vector3f loRight = screen.getLowerRight();
-    Vector3f hiRight = screen.getUpperRight();
-    Vector3f loLeft = screen.getLowerLeft();
-    Vector3f hiLeft = screen.getUpperLeft();
+    Vector3d loRight = screen.getLowerRight();
+    Vector3d hiRight = screen.getUpperRight();
+    Vector3d loLeft = screen.getLowerLeft();
+    Vector3d hiLeft = screen.getUpperLeft();
 
-    Vector3f center = screen.center();
-    Vector3f normal = screen.normal();
+    Vector3d center = screen.center();
+    Vector3d normal = screen.normal();
 
     normal.add(center);
 
@@ -107,10 +107,10 @@ public final class Debug {
     screenLoRight.set(screenHiRight);
     screenLoRight.y = screenLoLeft.y;
 
-    Vector3f loLeft = new Vector3f();
-    Vector3f hiLeft = new Vector3f();
-    Vector3f loRight = new Vector3f();
-    Vector3f hiRight = new Vector3f();
+    Vector3d loLeft = new Vector3d();
+    Vector3d hiLeft = new Vector3d();
+    Vector3d loRight = new Vector3d();
+    Vector3d hiRight = new Vector3d();
 
     Screen screen = view.getScreen();
     screen.screenToWorld(screenLoLeft, loLeft);
@@ -140,13 +140,13 @@ public final class Debug {
     return builder;
   }
 
-  private static void line(Vector3f origin, Vector3f target, ParticleBuilder builder, World world) {
-    Vector3f dir = new Vector3f(target).sub(origin);
+  private static void line(Vector3d origin, Vector3d target, ParticleBuilder builder, World world) {
+    Vector3d dir = new Vector3d(target).sub(origin);
 
-    float len = dir.length();
+    double len = dir.length();
     dir.normalize();
 
-    Vector3f point = new Vector3f();
+    Vector3d point = new Vector3d();
 
     for (float c = 0; c <= len; c += POINT_DIST) {
       dir.mul(c, point);

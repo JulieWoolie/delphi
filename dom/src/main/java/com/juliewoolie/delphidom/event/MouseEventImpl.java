@@ -1,13 +1,13 @@
 package com.juliewoolie.delphidom.event;
 
-import lombok.Getter;
 import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphidom.DelphiElement;
 import com.juliewoolie.dom.event.MouseButton;
 import com.juliewoolie.dom.event.MouseEvent;
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector3d;
 
 @Getter
 public class MouseEventImpl extends EventImpl implements MouseEvent {
@@ -16,7 +16,7 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
   MouseButton button;
 
   Vector2f screenPosition;
-  Vector3f worldPosition;
+  Vector3d worldPosition;
 
   Player player;
 
@@ -32,7 +32,7 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
       boolean shiftPressed,
       MouseButton button,
       Vector2f screenPosition,
-      Vector3f worldPosition
+      Vector3d worldPosition
   ) {
     super.initEvent(target, bubbles, cancellable);
     this.player = player;
@@ -48,7 +48,7 @@ public class MouseEventImpl extends EventImpl implements MouseEvent {
   }
 
   @Override
-  public Vector3f getWorldPosition() {
-    return new Vector3f(worldPosition);
+  public Vector3d getWorldPosition() {
+    return new Vector3d(worldPosition);
   }
 }

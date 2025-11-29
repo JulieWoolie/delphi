@@ -17,6 +17,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
@@ -44,10 +45,10 @@ public class ViewManager {
   // They're used for page ray cast calculations to determine which page a player
   // is aiming at.
   //
-  private final Vector3f targetPos = new Vector3f();
+  private final Vector3d targetPos = new Vector3d();
   private final Vector2f screenPos = new Vector2f();
   private final Vector2f cursorDif = new Vector2f();
-  private float screenDist;
+  private double screenDist;
 
   public ViewManager(Plugin plugin) {
     this.plugin = plugin;
@@ -183,7 +184,7 @@ public class ViewManager {
 
   private PageView findTargeted(Player player, ViewEntry entry) {
     PageView ownTargeted = rayCastPage(player, entry.views);
-    float ownDist = screenDist;
+    double ownDist = screenDist;
 
     // Store the current screen and target positions, because the rayCastPage
     // call after these will change the screenPos and targetPos values, but
@@ -193,7 +194,7 @@ public class ViewManager {
     Vector3f targetPosStore = new Vector3f(targetPos);
 
     PageView allTargeted = rayCastPage(player, allPlayerViews);
-    float allDist = screenDist;
+    double allDist = screenDist;
 
     if (allTargeted == null || ownDist < allDist) {
       screenPos.set(screenPosStore);
@@ -218,12 +219,12 @@ public class ViewManager {
     RayScan scan = RayScan.ofPlayer(player);
 
     PageView closest = null;
-    float closestDistSq = Float.MAX_VALUE;
+    double closestDistSq = Float.MAX_VALUE;
 
     Vector2f closestScreenHit = new Vector2f(0);
-    Vector3f closestHit = new Vector3f(0);
+    Vector3d closestHit = new Vector3d(0);
 
-    Vector3f targetPos = new Vector3f();
+    Vector3d targetPos = new Vector3d();
     Vector2f screenPos = new Vector2f();
 
     for (int i = 0; i < views.size(); i++) {
@@ -242,7 +243,7 @@ public class ViewManager {
         continue;
       }
 
-      float distSq = targetPos.distanceSquared(scan.getOrigin());
+      double distSq = targetPos.distanceSquared(scan.getOrigin());
       if (distSq >= scan.getMaxLengthSq() || distSq >= closestDistSq) {
         continue;
       }

@@ -2,41 +2,43 @@ package com.juliewoolie.delphiplugin.math;
 
 import com.juliewoolie.delphirender.RenderScreen;
 import org.bukkit.util.Transformation;
-import org.joml.Intersectionf;
+import org.joml.Intersectiond;
 import org.joml.Quaternionf;
+import org.joml.Vector2d;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 public class Screen implements RenderScreen {
 
   static final float EPSILON = 0.0000001f;
 
-  final Vector2f dimensions = new Vector2f(0);
-  public final Vector3f center = new Vector3f(0);
+  final Vector2d dimensions = new Vector2d(0);
+  public final Vector3d center = new Vector3d(0);
 
   // The actual dimensions of the screen in world space
-  final Vector2f worldDimensions = new Vector2f(0);
+  final Vector2d worldDimensions = new Vector2d(0);
 
   // Scale of the screen relative to the dimensions field
-  public final Vector2f screenScale = new Vector2f(1);
+  public final Vector2d screenScale = new Vector2d(1);
 
   // Screen plane normal
-  final Vector3f normal = new Vector3f(0, 0, 1);
+  final Vector3d normal = new Vector3d(0, 0, 1);
 
   // Points of the screen
-  public final Vector3f loRight = new Vector3f(0);
-  public final Vector3f hiRight = new Vector3f(0);
-  public final Vector3f loLeft = new Vector3f(0);
-  public final Vector3f hiLeft = new Vector3f(0);
+  public final Vector3d loRight = new Vector3d(0);
+  public final Vector3d hiRight = new Vector3d(0);
+  public final Vector3d loLeft = new Vector3d(0);
+  public final Vector3d hiLeft = new Vector3d(0);
 
   // Transformations
   public final Vector3f scale = new Vector3f(1);
   public final Quaternionf leftRotation = new Quaternionf();
   public final Quaternionf rightRotation = new Quaternionf();
 
-  public final Vector3f boundingBoxSize = new Vector3f();
-  public final Vector3f boundingBoxMin = new Vector3f();
-  public final Vector3f boundingBoxMax = new Vector3f();
+  public final Vector3d boundingBoxSize = new Vector3d();
+  public final Vector3d boundingBoxMin = new Vector3d();
+  public final Vector3d boundingBoxMax = new Vector3d();
 
   public static void lookInDirection(Quaternionf lrot, Vector3f dir) {
     // I've definitely fucked up some order of operations here,
@@ -59,6 +61,10 @@ public class Screen implements RenderScreen {
   public void apply(Transformation trans) {
     translate(trans.getTranslation());
     multiply(trans.getScale(), trans.getLeftRotation(), trans.getRightRotation());
+  }
+
+  public void translate(Vector3d offset) {
+    center.add(offset);
   }
 
   public void translate(Vector3f offset) {
@@ -84,13 +90,13 @@ public class Screen implements RenderScreen {
     recalculate();
   }
 
-  public void set(Vector3f center, float w, float h) {
+  public void set(Vector3d center, float w, float h) {
     this.center.set(center);
     this.dimensions.set(w, h).absolute();
     recalculate();
   }
 
-  public void transformPoint(Vector3f point) {
+  public void transformPoint(Vector3d point) {
     leftRotation.transform(point);
     point.mul(scale);
     rightRotation.transform(point);
@@ -103,8 +109,8 @@ public class Screen implements RenderScreen {
 
     findPoints();
 
-    Vector3f lrDif = new Vector3f(); // Left-Right dif
-    Vector3f udDif = new Vector3f(); // Up-Down dif
+    Vector3d lrDif = new Vector3d(); // Left-Right dif
+    Vector3d udDif = new Vector3d(); // Up-Down dif
 
     loRight.sub(hiRight, udDif);
     loRight.sub(loLeft, lrDif);
@@ -121,13 +127,13 @@ public class Screen implements RenderScreen {
   }
 
   void findPoints() {
-    Vector3f up = new Vector3f(0, 1, 0);
+    Vector3d up = new Vector3d(0, 1, 0);
 
     // Transform so it's screen's up direction
     transformPoint(up);
     up.normalize();
 
-    Vector3f right = new Vector3f();
+    Vector3d right = new Vector3d();
     normal.cross(up, right);
 
     right.mul(dimensions.x * 0.5f);
@@ -148,23 +154,25 @@ public class Screen implements RenderScreen {
 
   /* --------------------------- coordinate space conversion ---------------------------- */
 
-  public void screenToWorld(Vector2f screenPoint, Vector3f out) {
+  public void screenToWorld(Vector2f screenPoint, Vector3d out) {
     Vector2f in = new Vector2f();
     screenToScreenspace(screenPoint, in);
     screenspaceToWorld(in, out);
   }
 
   public void screenToScreenspace(Vector2f in, Vector2f out) {
-    out.set(in).div(dimensions.x, dimensions.y);
+    out.x = (float) (in.x / dimensions.x);
+    out.y = (float) (in.y / dimensions.y);
   }
 
   public void screenspaceToScreen(Vector2f in, Vector2f out) {
-    out.set(in).mul(dimensions.x, dimensions.y);
+    out.x = (float) (in.x * dimensions.x);
+    out.y = (float) (in.y * dimensions.y);
   }
 
-  public void screenspaceToWorld(Vector2f screenPoint, Vector3f out) {
-    Vector3f height = new Vector3f(hiLeft).sub(loLeft);
-    Vector3f width = new Vector3f(loRight).sub(loLeft);
+  public void screenspaceToWorld(Vector2f screenPoint, Vector3d out) {
+    Vector3d height = new Vector3d(hiLeft).sub(loLeft);
+    Vector3d width = new Vector3d(loRight).sub(loLeft);
 
     height.mul(screenPoint.y);
     width.mul(screenPoint.x);
@@ -176,7 +184,7 @@ public class Screen implements RenderScreen {
 
   /* --------------------------- ray casting ---------------------------- */
 
-  public boolean castRay(RayScan scan, Vector3f out, Vector2f screenOut) {
+  public boolean castRay(RayScan scan, Vector3d out, Vector2f screenOut) {
     if (!planeIntersect(scan, out)) {
       return false;
     }
@@ -187,20 +195,20 @@ public class Screen implements RenderScreen {
         && (screenOut.y >= 0 && screenOut.y <= 1);
   }
 
-  public void screenHitPoint(Vector3f hitPoint, Vector2f out) {
-    Vector3f height = new Vector3f(hiLeft).sub(loLeft);
-    Vector3f width = new Vector3f(loRight).sub(loLeft);
+  public void screenHitPoint(Vector3d hitPoint, Vector2f out) {
+    Vector3d height = new Vector3d(hiLeft).sub(loLeft);
+    Vector3d width = new Vector3d(loRight).sub(loLeft);
 
-    Vector3f relativePoint = new Vector3f(hitPoint).sub(loLeft);
+    Vector3d relativePoint = new Vector3d(hitPoint).sub(loLeft);
 
-    float x = relativePoint.dot(width) / width.lengthSquared();
-    float y = relativePoint.dot(height) / height.lengthSquared();
+    double x = relativePoint.dot(width) / width.lengthSquared();
+    double y = relativePoint.dot(height) / height.lengthSquared();
 
     out.set(x, y);
   }
 
-  public boolean planeIntersect(RayScan scan, Vector3f out) {
-    float t = Intersectionf.intersectRayPlane(
+  public boolean planeIntersect(RayScan scan, Vector3d out) {
+    double t = Intersectiond.intersectRayPlane(
         scan.getOrigin(),
         scan.getDirection(),
         center,
@@ -229,14 +237,13 @@ public class Screen implements RenderScreen {
     Vector3f translate = transform.getTranslation();
     Vector3f scale = transform.getScale();
 
-    Vector2f screenDimScale = screen.getScreenScale();
     Vector3f screenWorldScale = screen.getScale();
 
     Quaternionf lrot = screen.getLeftRotation();
     Quaternionf rrot = screen.getRightRotation();
 
-    translate.x *= screenDimScale.x;
-    translate.y *= screenDimScale.y;
+    translate.x *= (float) screen.getScreenScale().x;
+    translate.y *= (float) screen.getScreenScale().y;
 
     scale.mul(screenWorldScale);
 
@@ -260,7 +267,7 @@ public class Screen implements RenderScreen {
   }
 
   @Override
-  public Vector2f getScreenScale() {
+  public Vector2d getScreenScale() {
     return screenScale;
   }
 
@@ -270,33 +277,33 @@ public class Screen implements RenderScreen {
   }
 
   @Override
-  public float getWidth() {
+  public double getWidth() {
     return dimensions.x;
   }
 
   @Override
-  public float getHeight() {
+  public double getHeight() {
     return dimensions.y;
   }
 
   @Override
-  public float getWorldWidth() {
+  public double getWorldWidth() {
     return worldDimensions.x;
   }
 
   @Override
-  public float getWorldHeight() {
+  public double getWorldHeight() {
     return worldDimensions.y;
   }
 
   @Override
-  public Vector3f normal() {
-    return new Vector3f(normal);
+  public Vector3d normal() {
+    return new Vector3d(normal);
   }
 
   @Override
-  public Vector3f center() {
-    return new Vector3f(center);
+  public Vector3d center() {
+    return new Vector3d(center);
   }
 
   @Override
@@ -304,28 +311,29 @@ public class Screen implements RenderScreen {
     return new Vector2f(dimensions);
   }
 
+  @Override
   public void getDimensions(Vector2f out) {
     out.set(dimensions);
   }
 
   @Override
-  public Vector3f getLowerLeft() {
-    return new Vector3f(loLeft);
+  public Vector3d getLowerLeft() {
+    return new Vector3d(loLeft);
   }
 
   @Override
-  public Vector3f getLowerRight() {
-    return new Vector3f(loRight);
+  public Vector3d getLowerRight() {
+    return new Vector3d(loRight);
   }
 
   @Override
-  public Vector3f getUpperLeft() {
-    return new Vector3f(hiLeft);
+  public Vector3d getUpperLeft() {
+    return new Vector3d(hiLeft);
   }
 
   @Override
-  public Vector3f getUpperRight() {
-    return new Vector3f(hiRight);
+  public Vector3d getUpperRight() {
+    return new Vector3d(hiRight);
   }
 
   /* --------------------------- to string ---------------------------- */

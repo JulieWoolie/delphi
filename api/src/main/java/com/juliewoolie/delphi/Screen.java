@@ -2,7 +2,7 @@ package com.juliewoolie.delphi;
 
 import org.bukkit.util.Transformation;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector3d;
 
 /**
  * The plane a {@link DocumentView} exists on.
@@ -52,37 +52,37 @@ public interface Screen {
    * Gets the width of the screen
    * @return Screen width
    */
-  float getWidth();
+  double getWidth();
 
   /**
    * Get the actual width of the screen in world space size
    * @return Actual screen width
    */
-  float getWorldWidth();
+  double getWorldWidth();
 
   /**
    * Gets the height of the screen
    * @return Screen height
    */
-  float getHeight();
+  double getHeight();
 
   /**
    * Get the actual height of the screen in the world space size
    * @return Actual screen height
    */
-  float getWorldHeight();
+  double getWorldHeight();
 
   /**
    * Gets the normal (direction) of the screen's plane
    * @return Screen normal
    */
-  Vector3f normal();
+  Vector3d normal();
 
   /**
    * Gets the center point of the screen
    * @return Screen center
    */
-  Vector3f center();
+  Vector3d center();
 
   /**
    * Gets the width and height of the screen
@@ -94,25 +94,25 @@ public interface Screen {
    * Gets the lower left corner of the screen from the viewer's perspective
    * @return Lower left corner
    */
-  Vector3f getLowerLeft();
+  Vector3d getLowerLeft();
 
   /**
    * Gets the lower right corner of the screen from the viewer's perspective
    * @return Lower right corner
    */
-  Vector3f getLowerRight();
+  Vector3d getLowerRight();
 
   /**
    * Gets the upper left corner of the screen from the viewer's perspective
    * @return Upper left corner
    */
-  Vector3f getUpperLeft();
+  Vector3d getUpperLeft();
 
   /**
    * Gets the upper right corner of the screen from the viewer's perspective
    * @return Upper right corner
    */
-  Vector3f getUpperRight();
+  Vector3d getUpperRight();
 
   /**
    * Maps screen coordinates in range [0..{@link #getDimensions()}] to world coordinates and stores
@@ -121,7 +121,7 @@ public interface Screen {
    * @param screenPoint Screen point, in space [0..{@link #getDimensions()}]
    * @param out Result destination
    */
-  void screenToWorld(Vector2f screenPoint, Vector3f out);
+  void screenToWorld(Vector2f screenPoint, Vector3d out);
 
   /**
    * Maps screen coordinates in range [0..{@link #getDimensions()}] to [0..1] space and stores the
@@ -148,7 +148,7 @@ public interface Screen {
    * @param screenPoint Screen point, in space [0..1]
    * @param out Result destination
    */
-  void screenspaceToWorld(Vector2f screenPoint, Vector3f out);
+  void screenspaceToWorld(Vector2f screenPoint, Vector3d out);
 
   /**
    * Transform the specified {@code transformation} so that it is aligned, rotated and scaled to

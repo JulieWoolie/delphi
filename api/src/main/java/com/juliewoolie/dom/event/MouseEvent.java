@@ -2,7 +2,7 @@ package com.juliewoolie.dom.event;
 
 import org.bukkit.entity.Player;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector3d;
 
 /**
  * Provides contextual information about mouse movement and what button caused the event.
@@ -37,7 +37,7 @@ public interface MouseEvent extends Event {
    * Gets the world space position of the viewer's cursor
    * @return Cursor world position
    */
-  Vector3f getWorldPosition();
+  Vector3d getWorldPosition();
 
   /**
    * Gets the player that caused this event

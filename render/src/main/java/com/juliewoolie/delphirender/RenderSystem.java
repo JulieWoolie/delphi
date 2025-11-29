@@ -54,7 +54,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       = Comparator.<Entry<DelphiNode, RenderObject>, Float>comparing(e -> e.getValue().depth)
       .reversed();
 
-  static final float TOOLTIP_DEPTH_SCALE = 1.5f;
+  static final float TOOLTIP_DEPTH_SCALE = 1.0f;
 
   final ExtendedView view;
   final RenderScreen screen;
@@ -116,7 +116,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    renderRoot.moveTo(new Vector2f(0, view.getScreen().getHeight()));
+    renderRoot.moveTo(new Vector2f(0, (float) view.getScreen().getHeight()));
     LayoutCall.nlayout(renderRoot, screen.getDimensions());
 
     renderRoot.killRecursive();
@@ -257,6 +257,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     ComputedStyleSet styleSet = styleNode.getComputedSet();
     float depth = ((float) node.getDepth()) * MACRO_LAYER_DEPTH * depthScale;
+    float next = (node.getDepth() + 1.0f) * MACRO_LAYER_DEPTH * depthScale;
 
     switch (node) {
       case Text text -> {
@@ -269,7 +270,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         ComponentRenderObject comp = new ComponentRenderObject(this);
 
         comp.text = chat.getContent();
-        comp.depth = depth;
+        comp.depth = next;
         el.addChild(0, comp);
         el.depthScale = depthScale;
 
@@ -280,7 +281,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         ItemRenderObject itemObj = new ItemRenderObject(this);
 
         itemObj.item = item.getItemStack();
-        itemObj.depth = depth;
+        itemObj.depth = next;
         el.addChild(0, itemObj);
         el.depthScale = depthScale;
 
@@ -291,7 +292,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         StringRenderObject sro = new StringRenderObject(this);
 
         sro.content = input.getDisplayText();
-        sro.depth = depth + MACRO_LAYER_DEPTH;
+        sro.depth = next;
         el.addChild(0, sro);
         el.depthScale = depthScale;
 
@@ -302,7 +303,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
         CanvasRenderObject cro = new CanvasRenderObject(this);
 
         cro.canvas = canvas.canvas;
-        cro.depth = depth + MACRO_LAYER_DEPTH;
+        cro.depth = next;
         el.addChild(0, cro);
         el.depthScale = depthScale;
 

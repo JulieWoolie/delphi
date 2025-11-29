@@ -68,7 +68,7 @@ public class PageView implements ExtendedView {
   @Getter
   public final Vector2f cursorScreen = new Vector2f();
   @Getter
-  public final Vector3f cursorWorld = new Vector3f();
+  public final Vector3d cursorWorld = new Vector3d();
 
   @Getter
   private final PlayerSet players;
@@ -154,15 +154,15 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    float height = screen.boundingBoxSize.y;
-    float width = Math.max(screen.boundingBoxSize.x, screen.boundingBoxSize.z);
+    double height = screen.boundingBoxSize.y;
+    double width = Math.max(screen.boundingBoxSize.x, screen.boundingBoxSize.z);
 
-    interaction.setInteractionWidth(width);
-    interaction.setInteractionHeight(height);
+    interaction.setInteractionWidth((float) width);
+    interaction.setInteractionHeight((float) height);
   }
 
   private Location getSpawnInteractionLocation() {
-    Vector3f center = screen.center();
+    Vector3d center = screen.center();
     return new Location(world, center.x, screen.boundingBoxMin.y, center.z);
   }
 
@@ -298,8 +298,8 @@ public class PageView implements ExtendedView {
       return;
     }
 
-    float h = screen.getHeight() * 0.5f;
-    Vector3f off = new Vector3f(x, y + h, z);
+    double h = screen.getHeight() * 0.5f;
+    Vector3d off = new Vector3d(x, y + h, z);
     off.sub(screen.center());
 
     if (off.lengthSquared() <= 0) {
@@ -398,12 +398,12 @@ public class PageView implements ExtendedView {
     Location location = player.getEyeLocation();
     Vector direction = location.getDirection();
 
-    Vector3f pos = new Vector3f();
+    Vector3d pos = new Vector3d();
     Vector3f dir = new Vector3f();
 
-    pos.x = (float) location.getX();
-    pos.y = (float) location.getY();
-    pos.z = (float) location.getZ();
+    pos.x = location.getX();
+    pos.y = location.getY();
+    pos.z = location.getZ();
 
     dir.x = (float) direction.getX();
     dir.y = (float) direction.getY();
@@ -419,8 +419,8 @@ public class PageView implements ExtendedView {
       dir.normalize();
     }
 
-    final float width = screen.getWidth();
-    final float height = screen.getHeight();
+    final float width = (float) screen.getWidth();
+    final float height = (float) screen.getHeight();
     final float distanceFromPlayer = width * 0.5f;
 
     pos.x += (dir.x * distanceFromPlayer);
@@ -655,7 +655,7 @@ public class PageView implements ExtendedView {
     input.triggerClickEvent(player, button, shift);
   }
 
-  public void cursorMoveTo(Player player, Vector2f screenPos, Vector3f targetPos) {
+  public void cursorMoveTo(Player player, Vector2f screenPos, Vector3d targetPos) {
     selectedPlayer = player;
 
     if (screenPos.equals(this.cursorScreen)) {
@@ -675,7 +675,7 @@ public class PageView implements ExtendedView {
     input.unselectHovered();
   }
 
-  public void onSelect(Player player, Vector2f screenPos, Vector3f targetPos) {
+  public void onSelect(Player player, Vector2f screenPos, Vector3d targetPos) {
     cursorMoveTo(player, screenPos, targetPos);
   }
 
@@ -728,9 +728,9 @@ public class PageView implements ExtendedView {
 
       if (isWidth) {
         w = newDimension;
-        h = screen.getHeight();
+        h = (float) screen.getHeight();
       } else {
-        w = screen.getWidth();
+        w = (float) screen.getWidth();
         h = newDimension;
       }
 

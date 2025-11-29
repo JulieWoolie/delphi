@@ -2,6 +2,7 @@ package com.juliewoolie.delphirender;
 
 import com.juliewoolie.delphi.Screen;
 import org.joml.Quaternionf;
+import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -10,7 +11,7 @@ public interface RenderScreen extends Screen {
 
   Quaternionf getRightRotation();
 
-  Vector2f getScreenScale();
+  Vector2d getScreenScale();
 
   Vector3f getScale();
 

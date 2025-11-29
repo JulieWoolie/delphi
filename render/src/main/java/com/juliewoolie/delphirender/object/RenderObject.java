@@ -12,6 +12,7 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 public abstract class RenderObject {
@@ -57,7 +58,7 @@ public abstract class RenderObject {
   }
 
   protected void screenLocation(Vector2f screenPos, Location out) {
-    Vector3f pos = new Vector3f();
+    Vector3d pos = new Vector3d();
     screen.screenToWorld(screenPos, pos);
     out.set(pos.x, pos.y, pos.z);
   }

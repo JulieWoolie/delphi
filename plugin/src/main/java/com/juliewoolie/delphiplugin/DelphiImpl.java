@@ -1,14 +1,6 @@
 package com.juliewoolie.delphiplugin;
 
 import com.google.common.base.Strings;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import com.juliewoolie.chimera.ChimeraSheetBuilder;
 import com.juliewoolie.delphi.Delphi;
 import com.juliewoolie.delphi.DocumentView;
@@ -30,12 +22,20 @@ import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.juliewoolie.delphiplugin.resource.ViewBuilderImpl;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.style.StylesheetBuilder;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector3d;
 
 public class DelphiImpl implements Delphi {
 
@@ -138,9 +138,9 @@ public class DelphiImpl implements Delphi {
     RayScan ray = RayScan.ofPlayer(player);
 
     Vector2f screenOut = new Vector2f();
-    Vector3f hitOut = new Vector3f();
+    Vector3d hitOut = new Vector3d();
 
-    float closestDistSq = Float.MAX_VALUE;
+    double closestDistSq = Float.MAX_VALUE;
     PageView closest = null;
 
     for (PageView view : views.getOpenViews()) {
@@ -152,7 +152,7 @@ public class DelphiImpl implements Delphi {
         continue;
       }
 
-      float distSq = hitOut.distanceSquared(ray.getOrigin());
+      double distSq = hitOut.distanceSquared(ray.getOrigin());
       if (distSq >= ray.getMaxLengthSq()) {
         continue;
       }

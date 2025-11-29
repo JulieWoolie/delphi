@@ -9,7 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-import org.joml.Vector3f;
+import org.joml.Vector3d;
 
 public class ChunkListener implements Listener {
 
@@ -32,7 +32,7 @@ public class ChunkListener implements Listener {
     int cz1 = cz0 + 16;
 
     for (PageView openView : plugin.getViewManager().getOpenViews()) {
-      Vector3f center = openView.getScreen().center;
+      Vector3d center = openView.getScreen().center;
 
       if (!inChunk(center, cx0, cz0, cx1, cz1)) {
         continue;
@@ -42,7 +42,7 @@ public class ChunkListener implements Listener {
     }
   }
 
-  boolean inChunk(Vector3f p, int cx0, int cz0, int cx1, int cz1) {
+  boolean inChunk(Vector3d p, int cx0, int cz0, int cx1, int cz1) {
     return (p.x >= cx0 && p.x <= cx1)
         && (p.z >= cz0 && p.z <= cz1);
   }
@@ -61,7 +61,7 @@ public class ChunkListener implements Listener {
     int cz1 = cz0 + 16;
 
     for (PageView openView : plugin.getViewManager().getOpenViews()) {
-      Vector3f center = openView.getScreen().center;
+      Vector3d center = openView.getScreen().center;
 
       if (!inChunk(center, cx0, cz0, cx1, cz1)) {
         continue;

@@ -16,6 +16,7 @@ import org.bukkit.World;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.util.Transformation;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 public class ElementHighlight {
@@ -40,7 +41,7 @@ public class ElementHighlight {
   }
 
   private Location getSpawnLocation() {
-    Vector3f out = new Vector3f();
+    Vector3d out = new Vector3d();
     screen.screenToWorld(position, out);
     return new Location(world, out.x, out.y, out.z);
   }

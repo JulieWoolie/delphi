@@ -44,7 +44,7 @@ public class DevtoolModule implements ApiModule {
     Vector3f right = new Vector3f();
 
     Screen screen = (Screen) targetView.getScreen();
-    Vector3f normal = screen.normal();
+    Vector3f normal = new Vector3f(screen.normal());
 
     normal.cross(globalUp, right);
     right.normalize();
@@ -53,9 +53,9 @@ public class DevtoolModule implements ApiModule {
     Vector3f left = new Vector3f(right).mul(-1);
 
     Vector3f pos = new Vector3f();
-    pos.x = screen.loLeft.x + (left.x * DEVTOOLS_DIST_FROM_TARGET);
-    pos.y = screen.loLeft.y + (left.y * DEVTOOLS_DIST_FROM_TARGET);
-    pos.z = screen.loLeft.z + (left.z * DEVTOOLS_DIST_FROM_TARGET);
+    pos.x = ((float) screen.loLeft.x) + (left.x * DEVTOOLS_DIST_FROM_TARGET);
+    pos.y = ((float) screen.loLeft.y) + (left.y * DEVTOOLS_DIST_FROM_TARGET);
+    pos.z = ((float) screen.loLeft.z) + (left.z * DEVTOOLS_DIST_FROM_TARGET);
 
     left.mul(DEVTOOLS_WIDTH * 0.5f);
     Quaternionf quat = new Quaternionf();
