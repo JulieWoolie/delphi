@@ -223,6 +223,11 @@ public class RenderTreePrint extends XmlPrintVisitor {
   }
 
   private void appendRenderElementComment(DelphiNode node, RenderObject re) {
+    nlIndent().append("node-depth: ").append(node.getDepth());
+    nlIndent().append("sibling-index: ").append(node.getSiblingIndex());
+
+    nlIndent();
+
     nlIndent().append("render-object:");
     indent++;
 
@@ -339,6 +344,7 @@ public class RenderTreePrint extends XmlPrintVisitor {
       }
       case ElementRenderObject el -> {
         nlIndent().append("spawned: ").append(el.spawned);
+        nlIndent().append("depth-scale: ").append(el.depthScale);
 
         nlIndent();
         nlIndent().append("full-style:");
