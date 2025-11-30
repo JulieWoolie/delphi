@@ -114,7 +114,7 @@ public interface Consts {
    * so it doesn't look like elements are floating above other elements too
    * obviously.
    */
-  float MICRO_LAYER_DEPTH = 0.00125f;
+  float MICRO_LAYER_DEPTH = 0.000125f;
 
   /**
    * The distance between each render object on the Z axis.
