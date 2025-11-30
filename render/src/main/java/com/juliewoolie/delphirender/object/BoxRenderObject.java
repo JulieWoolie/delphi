@@ -3,6 +3,7 @@ package com.juliewoolie.delphirender.object;
 import static com.juliewoolie.delphirender.Consts.BLOCK_OFFSET_X;
 import static com.juliewoolie.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_X;
 import static com.juliewoolie.delphirender.Consts.EMPTY_TD_BLOCK_SIZE_Y;
+import static com.juliewoolie.delphirender.Consts.MICRO_LAYER_DEPTH;
 
 import com.juliewoolie.delphirender.Consts;
 import com.juliewoolie.delphirender.RenderSystem;
@@ -25,6 +26,7 @@ import org.joml.Vector3f;
 public class BoxRenderObject extends SingleEntityRenderObject<Display> {
 
   public static final Color NIL_COLOR = Color.fromARGB(0);
+  public static final float BLOCK_Z_SCALE = MICRO_LAYER_DEPTH * 0.5f;
 
   public Color color;
   public BlockData blockData;
@@ -73,7 +75,7 @@ public class BoxRenderObject extends SingleEntityRenderObject<Display> {
 
     scale.x = (float) (size.x / blockSize.x);
     scale.y = (float) (size.y / blockSize.y);
-    scale.z = 0.0f;
+    scale.z = BLOCK_Z_SCALE;
 
     offset.x = 0.0f;
   }
