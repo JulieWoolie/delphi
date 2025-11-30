@@ -54,7 +54,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       = Comparator.<Entry<DelphiNode, RenderObject>, Float>comparing(e -> e.getValue().depth)
       .reversed();
 
-  static final float TOOLTIP_DEPTH_SCALE = 1.0f;
+  static final float TOOLTIP_DEPTH_SCALE = 1.5f;
 
   final ExtendedView view;
   final RenderScreen screen;
