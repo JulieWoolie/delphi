@@ -20,6 +20,8 @@ import com.juliewoolie.dom.style.JustifyContent;
 import com.juliewoolie.dom.style.NamedColor;
 import com.juliewoolie.dom.style.Primitive;
 import com.juliewoolie.dom.style.Visibility;
+import org.bukkit.block.BlockType;
+import org.bukkit.block.data.BlockData;
 
 public final class Properties {
   private Properties() {}
@@ -427,6 +429,30 @@ public final class Properties {
       .visualAffecting(true)
       .build();
 
+  public static final Property<BlockData> BACKGROUND_BLOCK = Property.builder(BlockData.class)
+      .defaultValue(BlockType.AIR.createBlockData())
+      .cascading(false)
+      .layoutAffecting(false)
+      .contentAffecting(false)
+      .visualAffecting(true)
+      .build();
+
+  public static final Property<BlockData> BORDER_BLOCK = Property.builder(BlockData.class)
+      .defaultValue(BlockType.AIR.createBlockData())
+      .cascading(false)
+      .layoutAffecting(false)
+      .contentAffecting(false)
+      .visualAffecting(true)
+      .build();
+
+  public static final Property<BlockData> OUTLINE_BLOCK = Property.builder(BlockData.class)
+      .defaultValue(BlockType.AIR.createBlockData())
+      .cascading(false)
+      .layoutAffecting(false)
+      .contentAffecting(false)
+      .visualAffecting(true)
+      .build();
+
   static {
     registerAll();
   }
@@ -516,6 +542,10 @@ public final class Properties {
     register("outline",               OUTLINE);
     register("border",                BORDER);
     register("margin",                MARGIN);
+
+    register("background-block",      BACKGROUND_BLOCK);
+    register("border-block",          BORDER_BLOCK);
+    register("outline-block",         OUTLINE_BLOCK);
   }
 
   private static <T> void register(String key, Property<T> property) {

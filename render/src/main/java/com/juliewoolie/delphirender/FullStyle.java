@@ -4,6 +4,7 @@ import com.juliewoolie.chimera.Properties;
 import com.juliewoolie.nlayout.LayoutStyle;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Color;
+import org.bukkit.block.data.BlockData;
 
 public class FullStyle extends LayoutStyle {
 
@@ -13,6 +14,10 @@ public class FullStyle extends LayoutStyle {
   public Color backgroundColor = toBukkitColor(Properties.BACKGROUND_COLOR.getDefaultValue());
   public Color borderColor = toBukkitColor(Properties.BORDER_COLOR.getDefaultValue());
   public Color outlineColor = toBukkitColor(Properties.OUTLINE_COLOR.getDefaultValue());
+
+  public BlockData backgroundBlock = null;
+  public BlockData borderBlock = null;
+  public BlockData outlineBlock = null;
 
   public boolean textShadowed;
   public boolean bold;

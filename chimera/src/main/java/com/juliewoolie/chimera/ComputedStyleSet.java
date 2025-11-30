@@ -2,9 +2,11 @@ package com.juliewoolie.chimera;
 
 import static com.juliewoolie.chimera.Properties.ALIGN_ITEMS;
 import static com.juliewoolie.chimera.Properties.ALIGN_SELF;
+import static com.juliewoolie.chimera.Properties.BACKGROUND_BLOCK;
 import static com.juliewoolie.chimera.Properties.BACKGROUND_COLOR;
 import static com.juliewoolie.chimera.Properties.BOLD;
 import static com.juliewoolie.chimera.Properties.BORDER;
+import static com.juliewoolie.chimera.Properties.BORDER_BLOCK;
 import static com.juliewoolie.chimera.Properties.BORDER_BOTTOM;
 import static com.juliewoolie.chimera.Properties.BORDER_COLOR;
 import static com.juliewoolie.chimera.Properties.BORDER_LEFT;
@@ -38,6 +40,7 @@ import static com.juliewoolie.chimera.Properties.MIN_WIDTH;
 import static com.juliewoolie.chimera.Properties.OBFUSCATED;
 import static com.juliewoolie.chimera.Properties.ORDER;
 import static com.juliewoolie.chimera.Properties.OUTLINE;
+import static com.juliewoolie.chimera.Properties.OUTLINE_BLOCK;
 import static com.juliewoolie.chimera.Properties.OUTLINE_BOTTOM;
 import static com.juliewoolie.chimera.Properties.OUTLINE_COLOR;
 import static com.juliewoolie.chimera.Properties.OUTLINE_LEFT;
@@ -70,6 +73,7 @@ import com.juliewoolie.dom.style.FlexWrap;
 import com.juliewoolie.dom.style.JustifyContent;
 import com.juliewoolie.dom.style.Primitive;
 import com.juliewoolie.dom.style.Visibility;
+import org.bukkit.block.data.BlockData;
 
 @ToString
 public class ComputedStyleSet {
@@ -78,6 +82,10 @@ public class ComputedStyleSet {
   public Color backgroundColor;
   public Color borderColor;
   public Color outlineColor;
+
+  public BlockData backgroundBlock;
+  public BlockData borderBlock;
+  public BlockData outlineBlock;
 
   public boolean textShadow;
   public boolean bold;
@@ -149,6 +157,10 @@ public class ComputedStyleSet {
     outlineColor = OUTLINE_COLOR.getDefaultValue();
     borderColor = BORDER_COLOR.getDefaultValue();
 
+    backgroundBlock = null;
+    borderBlock = null;
+    outlineBlock = null;
+
     textShadow = TEXT_SHADOW.getDefaultValue();
     bold = BOLD.getDefaultValue();
     italic = ITALIC.getDefaultValue();
@@ -206,6 +218,8 @@ public class ComputedStyleSet {
     shrink = 0;
     boxSizing = BoxSizing.DEFAULT;
     visibility = Visibility.DEFAULT;
+
+
   }
   
   public void putAll(PropertySet set) {
@@ -213,6 +227,10 @@ public class ComputedStyleSet {
     backgroundColor = getExplicit(set, BACKGROUND_COLOR);
     borderColor = getExplicit(set, BORDER_COLOR);
     outlineColor = getExplicit(set, OUTLINE_COLOR);
+
+    backgroundBlock = getBlockData(set, BACKGROUND_BLOCK);
+    borderBlock = getBlockData(set, BORDER_BLOCK);
+    outlineBlock = getBlockData(set, OUTLINE_BLOCK);
 
     textShadow = getExplicit(set, TEXT_SHADOW);
     bold = getExplicit(set, BOLD);
@@ -370,6 +388,17 @@ public class ComputedStyleSet {
     }
 
     return ValueOrAuto.valueOf(v.getValue());
+  }
+
+  private static BlockData getBlockData(PropertySet set, Property<BlockData> proper) {
+    BlockData d = getExplicit(set, proper);
+    if (d == null) {
+      return null;
+    }
+    if (d.getMaterial().isAir()) {
+      return null;
+    }
+    return d;
   }
 
   private static <T> T getExplicit(PropertySet set, Property<T> property) {

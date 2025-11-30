@@ -98,6 +98,11 @@ public class ElementRenderObject extends RenderObject {
     border.color = style.borderColor;
     bg.color = style.backgroundColor;
 
+    // Configure layer colors
+    outline.blockData = style.outlineBlock;
+    border.blockData = style.borderBlock;
+    bg.blockData = style.backgroundBlock;
+
     // box.size = previousBox.size - previousBox.borderSizes
     // box.pos = previousBox.pos + previousBox.borderSizes.topLeft
 
@@ -179,7 +184,7 @@ public class ElementRenderObject extends RenderObject {
       boxes[BORDER].killRecursive();
     }
 
-    if (bgRequired || style.backgroundColor.asRGB() != 0) {
+    if (bgRequired || style.backgroundColor.asRGB() != 0 || style.backgroundBlock != null) {
       boxes[BACKGROUND].spawn();
     } else {
       boxes[BACKGROUND].killRecursive();

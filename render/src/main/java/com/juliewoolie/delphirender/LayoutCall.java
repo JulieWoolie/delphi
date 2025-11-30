@@ -63,6 +63,10 @@ public class LayoutCall {
     style.strikethrough = cstyle.strikethrough;
     style.obfuscated = cstyle.obfuscated;
     style.zindex = cstyle.zindex;
+
+    style.backgroundBlock = cstyle.backgroundBlock;
+    style.borderBlock = cstyle.borderBlock;
+    style.outlineBlock = cstyle.outlineBlock;
   }
 
   static LayoutBox createLayoutTree(ElementRenderObject object, RenderToLayoutMapper lookupMap) {

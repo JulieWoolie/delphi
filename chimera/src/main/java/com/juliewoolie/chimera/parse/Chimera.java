@@ -1,8 +1,6 @@
 package com.juliewoolie.chimera.parse;
 
 import com.google.common.base.Strings;
-import com.juliewoolie.dom.style.VerticalAlign;
-import java.util.Optional;
 import com.juliewoolie.chimera.ChimeraStylesheet;
 import com.juliewoolie.chimera.PrimitiveLeftRight;
 import com.juliewoolie.chimera.PrimitiveRect;
@@ -24,7 +22,12 @@ import com.juliewoolie.dom.style.FlexDirection;
 import com.juliewoolie.dom.style.FlexWrap;
 import com.juliewoolie.dom.style.JustifyContent;
 import com.juliewoolie.dom.style.Primitive;
+import com.juliewoolie.dom.style.VerticalAlign;
 import com.juliewoolie.dom.style.Visibility;
+import java.util.Optional;
+import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.block.data.BlockData;
 import org.slf4j.LoggerFactory;
 
 public final class Chimera {
@@ -173,6 +176,24 @@ public final class Chimera {
         return prim.getValue();
       }
       return prim;
+    }
+
+    if (type == BlockData.class) {
+      if (!(object instanceof String str)) {
+        return object;
+      }
+
+      Server server = Bukkit.getServer();
+      if (server == null) {
+        // Testing lol
+        return object;
+      }
+
+      try {
+        return server.createBlockData(str);
+      } catch (IllegalArgumentException arg) {
+        return object;
+      }
     }
 
     if (!(object instanceof Keyword key)) {
