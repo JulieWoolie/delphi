@@ -31,6 +31,8 @@ import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
+import com.juliewoolie.dom.style.DisplayType;
+import com.juliewoolie.dom.style.Visibility;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayDeque;
@@ -500,6 +502,13 @@ public class RenderSystem implements StyleUpdateCallbacks {
         .filter(e -> {
           RenderObject ro = e.getValue();
           return contains(cursorScreen, ro.position, ro.size);
+        })
+        .filter(ro -> {
+          ElementRenderObject ero = (ElementRenderObject) ro;
+          if (ero.style.display == DisplayType.NONE) {
+            return false;
+          }
+          return ero.style.visibility == Visibility.VISIBLE;
         })
         .min(HIGHEST_TO_LOWEST_DEPTH)
         .map(e -> (DelphiElement) e.getKey())
