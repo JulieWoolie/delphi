@@ -31,8 +31,6 @@ import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
-import com.juliewoolie.dom.style.DisplayType;
-import com.juliewoolie.dom.style.Visibility;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayDeque;
@@ -494,6 +492,16 @@ public class RenderSystem implements StyleUpdateCallbacks {
         && cursor.y <= pos.y && cursor.y >= (pos.y - size.y);
   }
 
+  boolean recursiveIsHidden(ElementRenderObject ero) {
+    if (ero.isHidden()) {
+      return true;
+    }
+    if (ero.parent == null) {
+      return false;
+    }
+    return recursiveIsHidden(ero.parent);
+  }
+
   public DelphiElement findCursorContainingNode(Vector2f cursorScreen) {
     return renderElements.entrySet()
         .stream()
@@ -504,11 +512,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
           return contains(cursorScreen, ro.position, ro.size);
         })
         .filter(ro -> {
-          ElementRenderObject ero = (ElementRenderObject) ro;
-          if (ero.style.display == DisplayType.NONE) {
-            return false;
-          }
-          return ero.style.visibility == Visibility.VISIBLE;
+          ElementRenderObject ero = (ElementRenderObject) ro.getValue();
+          return !recursiveIsHidden(ero);
         })
         .min(HIGHEST_TO_LOWEST_DEPTH)
         .map(e -> (DelphiElement) e.getKey())
