@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DelphiInputElement extends DelphiElement implements InputElement {
+public class DelphiInputElement extends DisableableElement implements InputElement {
 
   private String value;
 
@@ -20,21 +20,6 @@ public class DelphiInputElement extends DelphiElement implements InputElement {
   @Override
   public boolean canHaveChildren() {
     return false;
-  }
-
-  @Override
-  public boolean isDisabled() {
-    return !Attributes.boolAttribute(getAttribute(Attributes.ENABLED), true);
-  }
-
-  @Override
-  public void setDisabled(boolean disabled) {
-    if (!disabled) {
-      setAttribute(Attributes.ENABLED, null);
-      return;
-    }
-
-    setAttribute(Attributes.ENABLED, "false");
   }
 
   @Override

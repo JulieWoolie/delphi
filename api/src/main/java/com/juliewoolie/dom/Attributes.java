@@ -239,6 +239,11 @@ public interface Attributes {
   String TOOLTIP_BEHAVIOUR = "tooltip-behaviour";
 
   /**
+   * Attribute used to disable input elements.
+   */
+  String DISABLED = "disabled";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the

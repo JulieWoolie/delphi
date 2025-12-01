@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * An element that can take in a player's input
  */
-public interface InputElement extends Element {
+public interface InputElement extends Element, Disableable {
 
   /**
    * Default placeholder value returned by {@link #getPlaceholder()}
@@ -22,23 +22,6 @@ public interface InputElement extends Element {
    */
   @Override @Contract("-> false")
   boolean canHaveChildren();
-
-  /**
-   * Test if the element is disabled.
-   * <p>
-   * This element can be disabled by setting the {@link Attributes#ENABLED}
-   * attribute to {@code false}.
-   *
-   * @return {@code true}, if the element is disabled, {@code false} otherwise
-   */
-  boolean isDisabled();
-
-  /**
-   * Set the {@link Attributes#ENABLED} attribute
-   * @param disabled {@code true} to disable the element,
-   *                 {@code false} otherwise.
-   */
-  void setDisabled(boolean disabled);
 
   /**
    * Get the {@link Attributes#PROMPT} attribute value.

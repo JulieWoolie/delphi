@@ -8,22 +8,12 @@ import com.juliewoolie.dom.TagNames;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DelphiButtonElement extends DelphiElement implements ButtonElement {
+public class DelphiButtonElement extends DisableableElement implements ButtonElement {
 
   char TYPE_CMD_SEPARATOR = ':';
 
   public DelphiButtonElement(DelphiDocument document) {
     super(document, TagNames.BUTTON);
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return Attributes.boolAttribute(getAttribute(Attributes.ENABLED), true);
-  }
-
-  @Override
-  public void setEnabled(boolean enabled) {
-    setAttribute(Attributes.ENABLED, String.valueOf(enabled));
   }
 
   @Override
