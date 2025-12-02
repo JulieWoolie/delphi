@@ -1,5 +1,6 @@
 package com.juliewoolie.dom.event;
 
+import com.juliewoolie.delphi.DocumentView;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.InputElement;
 
@@ -426,4 +427,60 @@ public interface EventTypes {
    * </table>
    */
   String TOOLTIP_CHANGED = "tooltip";
+
+  /**
+   * Called when a player is added to a {@link com.juliewoolie.delphi.DocumentView}s player set.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link PlayerSetEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>{@link com.juliewoolie.dom.TagNames#ROOT}</td>
+   *   </tr>
+   * </table>
+   *
+   * @see DocumentView#getPlayers()
+   */
+  String PLAYER_ADDED = "player-added";
+
+  /**
+   * Called when a player is removed from a {@link com.juliewoolie.delphi.DocumentView}s
+   * player set.
+   *
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code false}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link PlayerSetEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>{@link com.juliewoolie.dom.TagNames#ROOT}</td>
+   *   </tr>
+   * </table>
+   *
+   * @see DocumentView#getPlayers()
+   */
+  String PLAYER_REMOVED = "player-removed";
+
 }

@@ -18,6 +18,7 @@ import com.juliewoolie.delphidom.ExtendedView;
 import com.juliewoolie.delphidom.Rect;
 import com.juliewoolie.delphidom.event.EventImpl;
 import com.juliewoolie.delphidom.event.EventListenerList;
+import com.juliewoolie.delphiplugin.event.PlayerSetEventImpl;
 import com.juliewoolie.delphiplugin.math.Screen;
 import com.juliewoolie.delphiplugin.resource.FontMetrics;
 import com.juliewoolie.delphiplugin.resource.PageResources;
@@ -264,9 +265,9 @@ public class PageView implements ExtendedView {
 
     moveTo(
         location.getWorld(),
-        (float) location.getX(),
-        (float) location.getY(),
-        (float) location.getZ(),
+        location.getX(),
+        location.getY(),
+        location.getZ(),
         location
     );
   }
@@ -278,9 +279,9 @@ public class PageView implements ExtendedView {
 
     moveTo(
         location.getWorld(),
-        (float) location.getX(),
-        (float) location.getY(),
-        (float) location.getZ(),
+        location.getX(),
+        location.getY(),
+        location.getZ(),
         changeRotation ? location : null
     );
   }
@@ -293,7 +294,7 @@ public class PageView implements ExtendedView {
     moveTo(world, position.x, position.y, position.z, null);
   }
 
-  private void moveTo(World world, float x, float y, float z, Location l) {
+  private void moveTo(World world, double x, double y, double z, Location l) {
     if (state == ViewState.CLOSED) {
       return;
     }
@@ -688,6 +689,7 @@ public class PageView implements ExtendedView {
     }
 
     plugin.getViewManager().playerRemoved(this, player);
+    firePlayerChangeEvent(EventTypes.PLAYER_REMOVED, player);
   }
 
   void onPlayerAdded(Player player) {
@@ -699,6 +701,22 @@ public class PageView implements ExtendedView {
     }
 
     plugin.getViewManager().playerAdded(this, player);
+    firePlayerChangeEvent(EventTypes.PLAYER_ADDED, player);
+  }
+
+  void firePlayerChangeEvent(String type, Player player) {
+    if (document == null) {
+      return;
+    }
+
+    DelphiDocumentElement docElem = document.getDocumentElement();
+    if (docElem == null) {
+      return;
+    }
+
+    PlayerSetEventImpl event = new PlayerSetEventImpl(type, document);
+    event.initEvent(docElem, false, false, player);
+    docElem.dispatchEvent(event);
   }
 
   /* --------------------------- sub classes ---------------------------- */
