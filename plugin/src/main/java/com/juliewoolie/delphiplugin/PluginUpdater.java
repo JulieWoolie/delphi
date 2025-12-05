@@ -48,6 +48,7 @@ public class PluginUpdater {
         Files.createDirectories(updateDir);
       } catch (IOException io) {
         LOGGER.error("Error creating {} directory", updateDir, io);
+        return;
       }
     }
 
