@@ -683,7 +683,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   @Override
   public @Nullable DelphiElement querySelector(@NotNull String query) {
     Selector selector = Chimera.parseSelector(query);
-    return matchFirst(this, selector);
+    return matchFirst(selector);
   }
 
   @Override
@@ -692,7 +692,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
     return compiled.test(this);
   }
 
-  public DelphiElement matchFirst(DelphiElement root, Selector group) {
+  public DelphiElement matchFirst(Selector group) {
     if (group.test(this)) {
       return this;
     }
@@ -702,7 +702,7 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
         continue;
       }
 
-      DelphiElement result = el.matchFirst(root, group);
+      DelphiElement result = el.matchFirst(group);
 
       if (result != null) {
         return result;

@@ -160,7 +160,7 @@ public class OptionElementSystem extends ElementTrackingSystem<DelphiOptionEleme
       selectorList.add(nameAttrSelector);
       selectorList.setType(ListType.AND);
 
-      DelphiOptionElement found = (DelphiOptionElement) header.matchFirst(header, selectorList);
+      DelphiOptionElement found = (DelphiOptionElement) header.matchFirst(selectorList);
 
       if (Strings.isNullOrEmpty(value)) {
         if (found == null || found.suppressingUpdates) {
