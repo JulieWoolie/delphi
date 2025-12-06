@@ -56,6 +56,10 @@ public class ElementTreeTab extends DevToolTab {
     Element content = devtools.getContentEl();
     Element targetRoot = devtools.getTarget().getDocument().getDocumentElement();
 
+    if (targetRoot == null) {
+      return;
+    }
+
     DomBuilder builder = new DomBuilder();
     createElementLines(targetRoot, document, builder);
     builder.linebreak();
