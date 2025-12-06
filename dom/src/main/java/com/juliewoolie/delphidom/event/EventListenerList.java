@@ -1,5 +1,7 @@
 package com.juliewoolie.delphidom.event;
 
+import com.juliewoolie.dom.event.PlayerSetEvent;
+import com.juliewoolie.dom.event.TooltipEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -381,6 +383,56 @@ public class EventListenerList implements EventTarget {
   @Override
   public @Nullable EventListener getOnClosing() {
     return getListenerProperty("closing");
+  }
+
+  @Override
+  public void onContentChanged(@Nullable EventListener listener) {
+    setListenerProperty("contentchange", EventTypes.CONTENT_CHANGED, listener);
+  }
+
+  @Override
+  public @Nullable EventListener getOnContentChanged() {
+    return getListenerProperty("contentchange");
+  }
+
+  @Override
+  public void onViewMoved(@Nullable EventListener listener) {
+    setListenerProperty("viewmove", EventTypes.VIEW_MOVED, listener);
+  }
+
+  @Override
+  public @Nullable EventListener getOnViewMoved() {
+    return getListenerProperty("viewmove");
+  }
+
+  @Override
+  public void onTooltipChanged(@Nullable EventListener.Typed<TooltipEvent> listener) {
+    setListenerProperty("tooltipchange", EventTypes.TOOLTIP_CHANGED, listener);
+  }
+
+  @Override
+  public @Nullable EventListener.Typed<TooltipEvent> getOnTooltipChanged() {
+    return getListenerProperty("tooltipchange");
+  }
+
+  @Override
+  public void onPlayerAdded(@Nullable EventListener.Typed<PlayerSetEvent> listener) {
+    setListenerProperty("playeradd", EventTypes.PLAYER_ADDED, listener);
+  }
+
+  @Override
+  public @Nullable EventListener.Typed<PlayerSetEvent> getOnPlayerAdded() {
+    return getListenerProperty("playeradd");
+  }
+
+  @Override
+  public void onPlayerRemoved(@Nullable EventListener.Typed<PlayerSetEvent> listener) {
+    setListenerProperty("playerremove", EventTypes.PLAYER_REMOVED, listener);
+  }
+
+  @Override
+  public @Nullable EventListener.Typed<PlayerSetEvent> getOnPlayerRemoved() {
+    return getListenerProperty("playerremove");
   }
 
   record ListenerProperty(String eventType, EventListener listener) {

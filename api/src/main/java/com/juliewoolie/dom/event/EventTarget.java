@@ -1,5 +1,6 @@
 package com.juliewoolie.dom.event;
 
+import com.juliewoolie.delphi.DocumentView;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.InputElement;
 import com.juliewoolie.dom.Node;
@@ -413,4 +414,82 @@ public interface EventTarget {
    * @return DOM closing listener, or {@code null}, if not set
    */
   @Nullable EventListener getOnClosing();
+
+  /**
+   * Set the text content change listener. The listener is called when a text node is modified.
+   * <p>
+   * Can be removed by setting this to {@code null} and overridden by calling this method again.
+   *
+   * @param listener Content change listener
+   */
+  void onContentChanged(@Nullable EventListener listener);
+
+  /**
+   * Get the text content change listener.
+   * @return text content change listener, or {@code null}, if not set
+   */
+  @Nullable EventListener getOnContentChanged();
+
+  /**
+   * Set the view move listener. The listener is called when the
+   * {@link com.juliewoolie.delphi.DocumentView} is moved.
+   * <p>
+   * Can be removed by setting this to {@code null} and overridden by calling this method again.
+   *
+   * @param listener View move listener
+   */
+  void onViewMoved(@Nullable EventListener listener);
+
+  /**
+   * Get the view move listener.
+   * @return View move listener, or {@code null}, if not set
+   */
+  @Nullable EventListener getOnViewMoved();
+
+  /**
+   * Set the tooltip change listener. The listener is called when an element's tooltip is changed
+   * <p>
+   * Can be removed by setting this to {@code null} and overridden by calling this method again.
+   *
+   * @param listener Tooltip change listener
+   */
+  void onTooltipChanged(@Nullable EventListener.Typed<TooltipEvent> listener);
+
+  /**
+   * Get the tooltip change listener.
+   * @return Tooltip change listener, or {@code null}, if not set
+   */
+  @Nullable EventListener.Typed<TooltipEvent> getOnTooltipChanged();
+
+  /**
+   * Set the player add listener. The listener is called when a player is added to the
+   * {@link DocumentView#getPlayers()} player set.
+   * <p>
+   * Can be removed by setting this to {@code null} and overridden by calling this method again.
+   *
+   * @param listener Content change listener
+   */
+  void onPlayerAdded(@Nullable EventListener.Typed<PlayerSetEvent> listener);
+
+  /**
+   * Get the player add listener.
+   * @return Player add listener, or {@code null}, if not set
+   */
+  @Nullable EventListener.Typed<PlayerSetEvent> getOnPlayerAdded();
+
+  /**
+   * Set the player removal listener. The listener is called when a player is removed from the
+   * {@link DocumentView#getPlayers()} player set.
+   * <p>
+   * Can be removed by setting this to {@code null} and overridden by calling this method again.
+   *
+   * @param listener Content change listener
+   */
+  void onPlayerRemoved(@Nullable EventListener.Typed<PlayerSetEvent> listener);
+
+  /**
+   * Get the player removal listener.
+   * @return Player removal listener, or {@code null}, if not set
+   */
+  @Nullable EventListener.Typed<PlayerSetEvent> getOnPlayerRemoved();
 }

@@ -6,6 +6,8 @@ import com.juliewoolie.dom.event.EventTarget;
 import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
+import com.juliewoolie.dom.event.PlayerSetEvent;
+import com.juliewoolie.dom.event.TooltipEvent;
 import org.jetbrains.annotations.Nullable;
 
 public interface DelegateTarget extends EventTarget {
@@ -229,5 +231,60 @@ public interface DelegateTarget extends EventTarget {
   @Nullable
   default EventListener getOnClosing() {
     return getListenerList().getOnClosing();
+  }
+
+  @Override
+  default void onContentChanged(@Nullable EventListener listener) {
+    getListenerList().onContentChanged(listener);
+  }
+
+  @Override
+  @Nullable
+  default EventListener getOnContentChanged() {
+    return getListenerList().getOnContentChanged();
+  }
+
+  @Override
+  default void onViewMoved(@Nullable EventListener listener) {
+    getListenerList().onViewMoved(listener);
+  }
+
+  @Override
+  @Nullable
+  default EventListener getOnViewMoved() {
+    return getListenerList().getOnViewMoved();
+  }
+
+  @Override
+  default void onTooltipChanged(@Nullable EventListener.Typed<TooltipEvent> listener) {
+    getListenerList().onTooltipChanged(listener);
+  }
+
+  @Override
+  @Nullable
+  default EventListener.Typed<TooltipEvent> getOnTooltipChanged() {
+    return getListenerList().getOnTooltipChanged();
+  }
+
+  @Override
+  default void onPlayerAdded(@Nullable EventListener.Typed<PlayerSetEvent> listener) {
+    getListenerList().onPlayerAdded(listener);
+  }
+
+  @Override
+  @Nullable
+  default EventListener.Typed<PlayerSetEvent> getOnPlayerAdded() {
+    return getListenerList().getOnPlayerAdded();
+  }
+
+  @Override
+  default void onPlayerRemoved(@Nullable EventListener.Typed<PlayerSetEvent> listener) {
+    getListenerList().onPlayerRemoved(listener);
+  }
+
+  @Override
+  @Nullable
+  default EventListener.Typed<PlayerSetEvent> getOnPlayerRemoved() {
+    return getListenerList().getOnPlayerRemoved();
   }
 }
