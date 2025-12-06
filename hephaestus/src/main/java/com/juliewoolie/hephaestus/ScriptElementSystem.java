@@ -206,19 +206,28 @@ public class ScriptElementSystem extends ParsedDataElementSystem<DelphiScriptEle
     final Map<Element, Map<String, ScriptedAttribute>> trackingMap = new Object2ObjectOpenHashMap<>();
 
     String toEventType(String attrKey) {
+      if (attrKey.startsWith("on-")) {
+        attrKey = attrKey.substring(3);
+      } else if (attrKey.startsWith("on")) {
+        attrKey = attrKey.substring(2);
+      }
+
       return switch (attrKey) {
-        case "onmouseenter" -> EventTypes.MOUSE_ENTER;
-        case "onmouseexit" -> EventTypes.MOUSE_LEAVE;
-        case "onmousemove" -> EventTypes.MOUSE_MOVE;
-        case "onclickexpire" -> EventTypes.CLICK_EXPIRE;
-        case "onappend" -> EventTypes.APPEND_CHILD;
-        case "onremovechild" -> EventTypes.REMOVE_CHILD;
-        case "onmodifyattr" -> EventTypes.MODIFY_ATTR;
-        case "onmodifyoption" -> EventTypes.MODIFY_OPTION;
-        case "onspawn" -> EventTypes.DOM_SPAWNED;
-        case "oncontentchanged" -> EventTypes.CONTENT_CHANGED;
-        case "onviewmoved" -> EventTypes.VIEW_MOVED;
-        default -> attrKey.substring(2);
+        case "mouseenter" -> EventTypes.MOUSE_ENTER;
+        case "mouseexit" -> EventTypes.MOUSE_LEAVE;
+        case "mousemove" -> EventTypes.MOUSE_MOVE;
+        case "clickexpire" -> EventTypes.CLICK_EXPIRE;
+        case "append" -> EventTypes.APPEND_CHILD;
+        case "removechild" -> EventTypes.REMOVE_CHILD;
+        case "modifyattr" -> EventTypes.MODIFY_ATTR;
+        case "modifyoption" -> EventTypes.MODIFY_OPTION;
+        case "spawn" -> EventTypes.DOM_SPAWNED;
+        case "contentchanged" -> EventTypes.CONTENT_CHANGED;
+        case "viewmoved" -> EventTypes.VIEW_MOVED;
+        case "tooltip" -> EventTypes.TOOLTIP_CHANGED;
+        case "playeradd", "onplayeradded" -> EventTypes.PLAYER_ADDED;
+        case "playerremove", "onplayerremoved" -> EventTypes.PLAYER_REMOVED;
+        default -> attrKey;
       };
     }
 
