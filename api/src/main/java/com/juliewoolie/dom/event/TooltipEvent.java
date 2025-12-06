@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents an event fired when an element's tooltip, aka title, element is changed.
  */
-public interface TooltipEvent {
+public interface TooltipEvent extends Event {
 
   /**
    * Get the old tooltip element being removed.
