@@ -1,10 +1,10 @@
 package com.juliewoolie.delphidom;
 
 import com.google.common.base.Strings;
-import java.util.Objects;
 import com.juliewoolie.dom.Attributes;
 import com.juliewoolie.dom.InputElement;
 import com.juliewoolie.dom.TagNames;
+import java.util.Objects;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

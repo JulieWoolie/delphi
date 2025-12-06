@@ -3,6 +3,8 @@ package com.juliewoolie.delphiplugin;
 import static com.juliewoolie.delphiplugin.TextUtil.translate;
 
 import com.google.common.base.Strings;
+import com.juliewoolie.delphidom.DelphiFieldSetElement;
+import com.juliewoolie.dom.FieldSetElement;
 import com.juliewoolie.dom.InputElement;
 import com.juliewoolie.dom.InputElement.InputType;
 import com.juliewoolie.dom.event.EventListener;
@@ -27,6 +29,11 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
   @Override
   public void handleEvent(MouseEvent event) {
     if (!(event.getTarget() instanceof InputElement el)) {
+      return;
+    }
+
+    FieldSetElement fieldset = DelphiFieldSetElement.getFieldSetParent(el);
+    if (fieldset != null) {
       return;
     }
 

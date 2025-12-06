@@ -376,6 +376,7 @@ public class PageView implements ExtendedView {
     g.addEventListener(EventTypes.CLICK, new ButtonClickListener());
 
     g.addEventListener(EventTypes.CLICK, new InputConversationListener());
+    g.addEventListener(EventTypes.CLICK, new FieldSetDialogListener());
 
     renderer.init();
 

@@ -95,6 +95,7 @@ public interface TagNames {
 
   /**
    * Canvas element
+   * @see CanvasElement
    */
   String CANVAS = "canvas";
 
@@ -102,4 +103,10 @@ public interface TagNames {
    * Tooltip element.
    */
   String TOOLTIP = "tooltip";
+
+  /**
+   * Field set element
+   * @see FieldSetElement
+   */
+  String FIELDSET = "fieldset";
 }
