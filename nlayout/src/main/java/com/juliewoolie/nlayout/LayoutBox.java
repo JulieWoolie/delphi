@@ -283,6 +283,10 @@ public abstract class LayoutBox extends LayoutNode {
   }
 
   public void getContentStart(Vector2f out) {
+    getContentStart(out, position, style);
+  }
+
+  public static void getContentStart(Vector2f out, Vector2f position, LayoutStyle style) {
     float leftOff = style.padding.left + style.border.left + style.outline.left;
     float topOff = style.padding.top + style.border.top + style.outline.top;
 
