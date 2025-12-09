@@ -109,4 +109,10 @@ public interface TagNames {
    * @see FieldSetElement
    */
   String FIELDSET = "fieldset";
+
+  /**
+   * Slider element
+   * @see SliderElement
+   */
+  String SLIDER = "slider";
 }

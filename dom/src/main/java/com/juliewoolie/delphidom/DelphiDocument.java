@@ -232,6 +232,7 @@ public class DelphiDocument implements Document, DelegateTarget {
       case TagNames.SCRIPT -> new DelphiScriptElement(this);
       case TagNames.ROOT -> new DelphiDocumentElement(this);
       case TagNames.FIELDSET -> new DelphiFieldSetElement(this);
+      case TagNames.SLIDER -> new DelphiSliderElement(this);
 
       default -> new DelphiElement(this, tagName);
     };

@@ -243,6 +243,17 @@ public interface Attributes {
    */
   String DISABLED = "disabled";
 
+  /** Minimum */
+  String MIN = "min";
+
+  /** Maximum */
+  String MAX = "max";
+
+  /**
+   * Step attribute used by slider elements
+   */
+  String STEP = "step";
+
   /**
    * Parses a float attribute value.
    * <p>

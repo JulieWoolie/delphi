@@ -136,6 +136,10 @@ public interface Document extends EventTarget, DomQueryable {
    *       <td>{@link FieldSetElement}</td>
    *     </tr>
    *     <tr>
+   *       <td>{@link TagNames#SLIDER}</td>
+   *       <td>{@link SliderElement}</td>
+   *     </tr>
+   *     <tr>
    *       <td>Any other tag name</td>
    *       <td>{@link Element}</td>
    *     </tr>
