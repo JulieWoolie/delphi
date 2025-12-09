@@ -5,7 +5,6 @@ import com.juliewoolie.dom.RenderBounds;
 import org.bukkit.entity.Entity;
 import org.joml.Vector2f;
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 
 public interface ExtendedView extends DocumentView {
 
@@ -22,6 +21,8 @@ public interface ExtendedView extends DocumentView {
   void handleEntityVisibility(Entity entity);
 
   RenderBounds renderBounds(DelphiNode delphiNode);
+
+  RenderBounds innerRenderBounds(DelphiElement delphiElement);
 
   void canvasSizeChanged(DelphiCanvasElement element);
 }

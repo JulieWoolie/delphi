@@ -22,6 +22,7 @@ import com.juliewoolie.delphiplugin.event.PlayerSetEventImpl;
 import com.juliewoolie.delphiplugin.math.Screen;
 import com.juliewoolie.delphiplugin.resource.FontMetrics;
 import com.juliewoolie.delphiplugin.resource.PageResources;
+import com.juliewoolie.delphirender.FullStyle;
 import com.juliewoolie.delphirender.RenderSystem;
 import com.juliewoolie.delphirender.math.Rectangle;
 import com.juliewoolie.delphirender.object.ElementRenderObject;
@@ -34,6 +35,7 @@ import com.juliewoolie.dom.event.AttributeMutateEvent;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.MouseButton;
+import com.juliewoolie.nlayout.LayoutBox;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -571,6 +573,24 @@ public class PageView implements ExtendedView {
     }
 
     return new RenderBoundsImpl(obj.position, obj.size);
+  }
+
+  @Override
+  public RenderBounds innerRenderBounds(DelphiElement delphiElement) {
+    RenderObject ro = renderer.getRenderElement(delphiElement);
+    if (!(ro instanceof ElementRenderObject ero)) {
+      return null;
+    }
+
+    FullStyle style = ero.style;
+
+    Vector2f pos = new Vector2f(ero.position);
+    Vector2f size = new Vector2f(ero.size);
+
+    LayoutBox.subtractExtraSpace(size, style);
+    LayoutBox.getContentStart(pos, ero.position, style);
+
+    return new RenderBoundsImpl(pos, size);
   }
 
   @Override

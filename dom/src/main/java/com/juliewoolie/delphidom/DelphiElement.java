@@ -13,6 +13,7 @@ import com.juliewoolie.dom.Attributes;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Node;
 import com.juliewoolie.dom.NodeFlag;
+import com.juliewoolie.dom.RenderBounds;
 import com.juliewoolie.dom.TooltipBehaviour;
 import com.juliewoolie.dom.Visitor;
 import com.juliewoolie.dom.event.Event;
@@ -690,6 +691,14 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
   public boolean matches(String selector) {
     Selector compiled = Chimera.parseSelector(selector);
     return compiled.test(this);
+  }
+
+  @Override
+  public RenderBounds getInnerRenderingBounds() {
+    if (document.view == null) {
+      return null;
+    }
+    return document.view.innerRenderBounds(this);
   }
 
   public DelphiElement matchFirst(Selector group) {

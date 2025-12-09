@@ -556,4 +556,20 @@ public interface Element extends Node, EventTarget, DomQueryable {
    *         {@code false} otherwise
    */
   boolean matches(String selector);
+
+  /**
+   * Get the render bounds of an element's inner content area.
+   * <p>
+   * The inner area of an element is defined as the area of an element inside the outline,
+   * border and padding.
+   * <p>
+   * <b>Note</b>: If the node has not been appended to a document, or if the
+   * {@link #getOwningDocument()}'s view has not been spawned, then this will
+   * return {@code null}.
+   * <p>
+   * The returned reference is not updated after it is returned.
+   *
+   * @return Inner render bounds, or {@code null}, if the element hasn't been rendered yet.
+   */
+  RenderBounds getInnerRenderingBounds();
 }
