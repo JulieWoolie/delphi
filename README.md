@@ -1,6 +1,8 @@
 # Delphi Menu plugin
 A plugin for making menus with XML, styling them with CSS and adding functionality with either Java or JavaScript.
 
+[![Showcase Video](https://img.youtube.com/vi/e39J9rUJCV0/0.jpg)](https://www.youtube.com/watch?v=e39J9rUJCV0)
+
 ## Links
 - Documentation: https://dev.juliewoolie.com/menus
 - Dev journal: https://juliewoolie.com/delphi/devjournal/
