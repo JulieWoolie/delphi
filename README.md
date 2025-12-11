@@ -1,7 +1,11 @@
-# Delphi Menu plugin
-A plugin for making menus with XML, styling them with CSS and adding functionality with either Java or JavaScript.
+<div align="center">
+  <img width="4019" height="1377" alt="logo-longways-1" src="https://github.com/user-attachments/assets/3b7ec4b6-59f1-41e0-b2c4-b8831470d3aa" />
 
-[![Showcase Video](https://img.youtube.com/vi/e39J9rUJCV0/0.jpg)](https://www.youtube.com/watch?v=e39J9rUJCV0)
+  <a href="https://modrinth.com/plugin/delphi" target="_blank">![modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/modrinth_46h.png)</a>
+  <a href="https://dev.juliewoolie.com/menus" target="_blank">![hangar](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/hangar_46h.png)</a>
+  <a href="https://hangar.papermc.io/JulieWoolie/delphi" target="_blank">![generic](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/documentation/generic_46h.png)</a>
+  ![spigot](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/unsupported/spigot_46h.png)
+</div>
 
 ## Links
 - Documentation: https://dev.juliewoolie.com/menus
