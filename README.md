@@ -2,8 +2,8 @@
   <img width="4019" height="1377" alt="logo-longways-1" src="https://github.com/user-attachments/assets/3b7ec4b6-59f1-41e0-b2c4-b8831470d3aa" />
 
   <a href="https://modrinth.com/plugin/delphi" target="_blank">![modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/modrinth_46h.png)</a>
-  <a href="https://dev.juliewoolie.com/menus" target="_blank">![hangar](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/hangar_46h.png)</a>
-  <a href="https://hangar.papermc.io/JulieWoolie/delphi" target="_blank">![generic](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/documentation/generic_46h.png)</a>
+  <a href="https://hangar.papermc.io/JulieWoolie/delphi" target="_blank">![hangar](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/available/hangar_46h.png)</a>
+  <a href="https://dev.juliewoolie.com/menus" target="_blank">![generic](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/documentation/generic_46h.png)</a>
   ![spigot](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/unsupported/spigot_46h.png)
 </div>
 
