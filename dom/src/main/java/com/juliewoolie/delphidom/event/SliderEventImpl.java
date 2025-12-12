@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 @Getter
 public class SliderEventImpl extends EventImpl implements SliderEvent {
 
-  Double oldValue;
+  Double previousValue;
   Double newValue;
   Player player;
 
@@ -31,7 +31,7 @@ public class SliderEventImpl extends EventImpl implements SliderEvent {
       Player player
   ) {
     super.initEvent(target, bubbles, cancellable);
-    this.oldValue = oldVal;
+    this.previousValue = oldVal;
     this.newValue = newVal;
     this.player = player;
   }
