@@ -19,9 +19,11 @@ import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.List;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback.Options;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 public class InputConversationListener implements EventListener.Typed<MouseEvent> {
@@ -71,11 +73,15 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
     element.setValue(input, player);
   }
 
-  static String getInputLabel(InputElement el) {
+  static Component getInputLabel(InputElement el, Audience target) {
+    String string;
     if (Strings.isNullOrEmpty(el.getPrompt())) {
-      return el.getPlaceholder();
+      string = el.getPlaceholder();
+    } else {
+      string = el.getPrompt();
     }
-    return el.getPrompt();
+
+    return MiniMessage.miniMessage().deserialize(string, target);
   }
 
   static Dialog createDialog(Player player, InputElement element) {
@@ -103,7 +109,7 @@ public class InputConversationListener implements EventListener.Typed<MouseEvent
           DialogBase.builder(translate(player,"delphi.input.title"))
               .inputs(
                   List.of(
-                      DialogInput.text("input_value", Component.text(getInputLabel(element)))
+                      DialogInput.text("input_value", getInputLabel(element, player))
                           .maxLength(Integer.MAX_VALUE)
                           .initial(Strings.nullToEmpty(element.getValue()))
                           .width(350)

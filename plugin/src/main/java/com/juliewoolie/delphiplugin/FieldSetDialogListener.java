@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback.Options;
 import org.bukkit.entity.Player;
 
@@ -99,7 +98,7 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
         DialogInput input;
 
         if (element instanceof InputElement inp) {
-          input = DialogInput.text(inv.get(inp), Component.text(getInputLabel(inp)))
+          input = DialogInput.text(inv.get(inp), getInputLabel(inp, player))
               .maxLength(Integer.MAX_VALUE)
               .initial(Strings.nullToEmpty(inp.getValue()))
               .width(350)
