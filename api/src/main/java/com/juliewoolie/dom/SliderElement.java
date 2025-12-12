@@ -1,6 +1,7 @@
 package com.juliewoolie.dom;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -35,13 +36,18 @@ public interface SliderElement extends Element, Disableable {
   /**
    * Set the slider value.
    * @param value Slider value, or {@code null} to unset the value
+   * @see #setValue(Double, Player)
    */
   void setValue(@Nullable Double value);
 
   /**
-   * Set the slider value with a specified player
+   * Set the slider value with a specified player.
+   * <p>
+   * Triggers a {@link com.juliewoolie.dom.event.EventTypes#SLIDER} event to trigger, after which,
+   * the {@link Attributes#VALUE} attribute will be set to the value specified.
+   *
    * @param value Slider value, or {@code null} to unset the value
-   * @param player Source of the change
+   * @param player Source of the change, or {@code null}, if there is no source.
    */
   void setValue(@Nullable Double value, @Nullable Player player);
 
@@ -104,4 +110,57 @@ public interface SliderElement extends Element, Disableable {
    * @param step Step value, or {@code null}, to unset
    */
   void setStep(@Nullable Double step);
+
+  /**
+   * Get the slider's orientation.
+   * <p>
+   * Shorthand for accessing the {@link Attributes#ORIENT} attribute's value.
+   * <p>
+   * If the orient attribute is not set, then {@link SliderOrient#DEFAULT} is returned.
+   *
+   * @return Slider orientation
+   */
+  @NotNull SliderOrient getOrient();
+
+  /**
+   * Set the slider's orientation.
+   * <p>
+   * Shorthand for setting the {@link Attributes#ORIENT} attribute value.
+   *
+   * @param orient Orient value, or {@code null}, to unset.
+   */
+  void setOrient(@Nullable SliderOrient orient);
+
+  /**
+   * Represents a slider's orientation
+   */
+  enum SliderOrient {
+    /** Horizontal, left to right slider */
+    HORIZONTAL ("horizontal"),
+
+    /** Vertical, up and down slider */
+    VERTICAL ("vertical"),
+    ;
+
+    /**
+     * Default orient value
+     * @see #HORIZONTAL
+     */
+    public static final SliderOrient DEFAULT = HORIZONTAL;
+
+    private final String value;
+
+    SliderOrient(String value) {
+      this.value = value;
+    }
+
+    /**
+     * Get the attribute value of the slider orientation.
+     * @return Attribute value
+     */
+    public String getValue() {
+      return value;
+    }
+  }
+
 }

@@ -4,6 +4,7 @@ import static com.juliewoolie.delphirender.object.ElementRenderObject.BORDER;
 import static com.juliewoolie.delphirender.object.ElementRenderObject.OUTLINE;
 
 import com.google.common.base.Strings;
+import com.juliewoolie.dom.SliderElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -234,7 +235,8 @@ public class RenderTreePrint extends XmlPrintVisitor {
     boolean appendChildren
          = node instanceof ComponentElement
         || node instanceof ItemElement
-        || node instanceof CanvasElement;
+        || node instanceof CanvasElement
+        || node instanceof SliderElement;
 
     appendRenderObject(re, appendChildren);
 

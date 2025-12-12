@@ -1,16 +1,51 @@
 package com.juliewoolie.delphidom;
 
 import com.google.common.base.Strings;
+import com.juliewoolie.delphidom.event.SliderEventImpl;
 import com.juliewoolie.dom.Attributes;
 import com.juliewoolie.dom.SliderElement;
 import com.juliewoolie.dom.TagNames;
+import com.juliewoolie.dom.event.EventTypes;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class DelphiSliderElement extends DisableableElement implements SliderElement {
 
   public DelphiSliderElement(DelphiDocument document) {
     super(document, TagNames.SLIDER);
+  }
+
+  public double getRatio() {
+    double min = getMin();
+    double max = getMax();
+    double val = getValue();
+
+    if (max < min) {
+      double d = max;
+      max = min;
+      min = d;
+    }
+
+    if (val < min) {
+      return 0.0d;
+    }
+    if (val > max) {
+      return 1.0d;
+    }
+
+    double dif = max - min;
+    double r = val - min;
+
+    return r / dif;
+  }
+
+  public void setRatio(double ratio, Player player) {
+    double min = getMin();
+    double max = getMax();
+    double val = ((max - min) * ratio) + min;
+
+    setValue(val, player);
   }
 
   @Override
@@ -50,7 +85,17 @@ public class DelphiSliderElement extends DisableableElement implements SliderEle
 
   @Override
   public void setValue(@Nullable Double value, @Nullable Player player) {
+    Double oldVal = getValue();
 
+    SliderEventImpl event = new SliderEventImpl(EventTypes.SLIDER, document);
+    event.initEvent(this, true, true, oldVal, value, player);
+    dispatchEvent(event);
+
+    if (event.isCancelled()) {
+      return;
+    }
+
+    setDoubleAttr(Attributes.VALUE, value);
   }
 
   @Override
@@ -89,5 +134,29 @@ public class DelphiSliderElement extends DisableableElement implements SliderEle
   @Override
   public void setStep(@Nullable Double step) {
     setDoubleAttr(Attributes.STEP, step);
+  }
+
+  @Override
+  public @NotNull SliderOrient getOrient() {
+    String value = getAttribute(Attributes.ORIENT);
+
+    if (Strings.isNullOrEmpty(value)) {
+      return SliderOrient.HORIZONTAL;
+    }
+
+    return switch (value.toLowerCase()) {
+      case "vertical" -> SliderOrient.VERTICAL;
+      default -> SliderOrient.HORIZONTAL;
+    };
+  }
+
+  @Override
+  public void setOrient(@Nullable SliderOrient orient) {
+    if (orient == null) {
+      removeAttribute(Attributes.ORIENT);
+      return;
+    }
+
+    setAttribute(Attributes.ORIENT, orient.getValue());
   }
 }

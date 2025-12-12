@@ -483,4 +483,27 @@ public interface EventTypes {
    */
   String PLAYER_REMOVED = "player-removed";
 
+  /**
+   * Slider value changed event
+   * <table>
+   *   <caption>Details</caption>
+   *   <tr>
+   *     <td>Bubbles</td>
+   *     <td>{@code true}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Cancellable</td>
+   *     <td>{@code true}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Type</td>
+   *     <td>{@link SliderEvent}</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Tags</td>
+   *     <td>{@link com.juliewoolie.dom.TagNames#SLIDER}</td>
+   *   </tr>
+   * </table>
+   */
+  String SLIDER = "slider";
 }

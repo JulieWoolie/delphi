@@ -187,6 +187,23 @@ input {
   }
 }
 
+slider {
+  display: block;
+  outline-color: white;
+  outline: 0.5px;
+  box-sizing: border-box;
+  background-color: black;
+  color: $button-bg;
+
+  width: 20px;
+  height: 5px;
+
+  &[orient="vertical"] {
+    width: 5px;
+    height: 20px;
+  }
+}
+
 /*
  * Script element,
  * Hide this, no one needs to see it.

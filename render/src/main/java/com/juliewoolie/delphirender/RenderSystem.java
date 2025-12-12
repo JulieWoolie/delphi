@@ -13,6 +13,7 @@ import com.juliewoolie.delphidom.DelphiElement;
 import com.juliewoolie.delphidom.DelphiInputElement;
 import com.juliewoolie.delphidom.DelphiItemElement;
 import com.juliewoolie.delphidom.DelphiNode;
+import com.juliewoolie.delphidom.DelphiSliderElement;
 import com.juliewoolie.delphidom.ExtendedView;
 import com.juliewoolie.delphidom.Text;
 import com.juliewoolie.delphirender.object.CanvasRenderObject;
@@ -20,11 +21,14 @@ import com.juliewoolie.delphirender.object.ComponentRenderObject;
 import com.juliewoolie.delphirender.object.ElementRenderObject;
 import com.juliewoolie.delphirender.object.ItemRenderObject;
 import com.juliewoolie.delphirender.object.RenderObject;
+import com.juliewoolie.delphirender.object.SliderRenderObject;
 import com.juliewoolie.delphirender.object.StringRenderObject;
+import com.juliewoolie.dom.Attributes;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.Node;
 import com.juliewoolie.dom.NodeFlag;
 import com.juliewoolie.dom.TooltipBehaviour;
+import com.juliewoolie.dom.event.AttributeMutateEvent;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.EventTarget;
 import com.juliewoolie.dom.event.EventTypes;
@@ -40,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.World;
@@ -99,6 +104,8 @@ public class RenderSystem implements StyleUpdateCallbacks {
     g.addEventListener(EventTypes.MOUSE_ENTER, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
     g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
+
+    g.addEventListener(EventTypes.MODIFY_ATTR, new SliderUpdateListener());
 
     g.addEventListener(EventTypes.INPUT, inputListener);
   }
@@ -305,6 +312,18 @@ public class RenderSystem implements StyleUpdateCallbacks {
         cro.canvas = canvas.canvas;
         cro.depth = next;
         el.addChild(0, cro);
+        el.depthScale = depthScale;
+
+        obj = el;
+      }
+      case DelphiSliderElement slider -> {
+        ElementRenderObject el = new ElementRenderObject(this, styleSet);
+        SliderRenderObject bro = new SliderRenderObject(this);
+
+        bro.depth = next;
+        bro.ratio = slider.getRatio();
+        bro.orient = slider.getOrient();
+        el.addChild(0, bro);
         el.depthScale = depthScale;
 
         obj = el;
@@ -671,6 +690,36 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
       triggerRealign(target);
       triggerRedraw(target);
+    }
+  }
+
+  class SliderUpdateListener implements EventListener.Typed<AttributeMutateEvent> {
+
+    static final Set<String> ATTRIBUTES_OF_INTEREST
+        = Set.of(Attributes.VALUE, Attributes.MIN, Attributes.MAX);
+
+    @Override
+    public void handleEvent(AttributeMutateEvent event) {
+      if (!(event.getTarget() instanceof DelphiSliderElement slider)) {
+        return;
+      }
+
+      ElementRenderObject ero = (ElementRenderObject) getRenderElement(slider);
+      if (ero == null) {
+        return;
+      }
+
+      SliderRenderObject sro = ero.onlyChild();
+
+      if (event.getKey().equals(Attributes.ORIENT)) {
+        sro.orient = slider.getOrient();
+      } else if (!ATTRIBUTES_OF_INTEREST.contains(event.getKey())) {
+        return;
+      }
+
+      sro.ratio = slider.getRatio();
+      sro.updateFromParentSize();
+      triggerRedraw(slider);
     }
   }
 }

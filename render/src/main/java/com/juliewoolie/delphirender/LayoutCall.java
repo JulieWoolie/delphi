@@ -8,6 +8,7 @@ import com.juliewoolie.chimera.ComputedStyleSet;
 import com.juliewoolie.delphirender.object.ElementRenderObject;
 import com.juliewoolie.delphirender.object.ItemRenderObject;
 import com.juliewoolie.delphirender.object.RenderObject;
+import com.juliewoolie.delphirender.object.SliderRenderObject;
 import com.juliewoolie.dom.style.DisplayType;
 import com.juliewoolie.nlayout.FlexLayoutBox;
 import com.juliewoolie.nlayout.FlowLayoutBox;
@@ -24,6 +25,8 @@ public class LayoutCall {
   static final MeasureFunc ITEM_MEASURE_FUNC = out -> {
     out.set(ITEM_SPRITE_SIZE);
   };
+
+  static final MeasureFunc ZERO = out -> out.set(0);
 
   static void nlayout(ElementRenderObject root, Vector2f screenSize) {
     RenderToLayoutMapper lookupMap = new RenderToLayoutMapper(100);
@@ -47,6 +50,10 @@ public class LayoutCall {
 
       obj.size.set(layout.size);
       obj.moveTo(layout.position);
+
+      if (obj instanceof SliderRenderObject slider) {
+        slider.updateFromParentSize();
+      }
     }
   }
 
@@ -117,7 +124,7 @@ public class LayoutCall {
         item.measureFunc = ITEM_MEASURE_FUNC;
       }
       default -> {
-        throw new IllegalArgumentException();
+        item.measureFunc = ZERO;
       }
     }
 

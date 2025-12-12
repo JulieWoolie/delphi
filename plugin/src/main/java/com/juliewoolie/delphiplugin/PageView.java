@@ -380,6 +380,8 @@ public class PageView implements ExtendedView {
     g.addEventListener(EventTypes.CLICK, new InputConversationListener());
     g.addEventListener(EventTypes.CLICK, new FieldSetDialogListener());
 
+    g.addEventListener(EventTypes.CLICK, new SliderInputListener());
+
     renderer.init();
 
     document.getStyles().setUpdateCallbacks(renderer);

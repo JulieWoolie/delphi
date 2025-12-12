@@ -255,6 +255,11 @@ public interface Attributes {
   String STEP = "step";
 
   /**
+   * Orientation of slider elements.
+   */
+  String ORIENT = "orient";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
