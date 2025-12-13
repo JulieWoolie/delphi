@@ -26,7 +26,7 @@ public interface SliderEvent extends Event {
    * Get the previous slider value
    * @return Previous slider value
    */
-   @Nullable Double getPreviousValue();
+  @Nullable Double getPreviousValue();
 
   /**
    * Get the source of the change
