@@ -36,6 +36,8 @@ public class SliderInputListener implements EventListener.Typed<MouseEvent> {
       ratio = 1.0d - screenPosition.y;
     }
 
+    ratio = Math.clamp(ratio, 0.0d, 1.0d);
+
     double min = slider.getMin();
     double max = slider.getMax();
 
