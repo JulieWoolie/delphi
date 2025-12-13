@@ -65,7 +65,7 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
 
     Player player = event.getPlayer();
 
-    FieldSetContext ctx = new FieldSetContext(keyMap, fieldSetElements);
+    FieldSetContext ctx = new FieldSetContext(keyMap, fieldSetElements, fieldset);
     Dialog dialog = createDialog(player, ctx);
 
     player.showDialog(dialog);
@@ -85,6 +85,15 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
     }
 
     return MiniMessage.miniMessage().deserialize(prompt, viewer);
+  }
+
+  static Component getTitle(Player player, FieldSetElement element) {
+    String dialogTitle = element.getDialogTitle();
+    if (dialogTitle == null) {
+      return translate(player,"delphi.input.title");
+    }
+
+    return MiniMessage.miniMessage().deserialize(dialogTitle, player);
   }
 
   static Dialog createDialog(Player player, FieldSetContext ctx) {
@@ -156,7 +165,7 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
       }
 
       builder.base(
-          DialogBase.builder(translate(player,"delphi.input.title"))
+          DialogBase.builder(getTitle(player, ctx.element))
               .inputs(inputs)
               .afterAction(DialogAfterAction.CLOSE)
               .canCloseWithEscape(true)
@@ -190,7 +199,7 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
     }
   }
 
-  record FieldSetContext(BiMap<String, Element> keyMap, List<Element> elementList) {
+  record FieldSetContext(BiMap<String, Element> keyMap, List<Element> elementList, FieldSetElement element) {
 
   }
 }

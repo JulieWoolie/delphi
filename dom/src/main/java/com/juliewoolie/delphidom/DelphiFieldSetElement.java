@@ -1,5 +1,6 @@
 package com.juliewoolie.delphidom;
 
+import com.juliewoolie.dom.Attributes;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.FieldSetElement;
 import com.juliewoolie.dom.InputElement;
@@ -8,11 +9,22 @@ import com.juliewoolie.dom.SliderElement;
 import com.juliewoolie.dom.TagNames;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class DelphiFieldSetElement extends DelphiElement implements FieldSetElement {
 
   public DelphiFieldSetElement(DelphiDocument document) {
     super(document, TagNames.FIELDSET);
+  }
+
+  @Override
+  public @Nullable String getDialogTitle() {
+    return getAttribute(Attributes.DIALOG_TITLE);
+  }
+
+  @Override
+  public void setDialogTitle(@Nullable String title) {
+    setAttribute(Attributes.DIALOG_TITLE, title);
   }
 
   @Override

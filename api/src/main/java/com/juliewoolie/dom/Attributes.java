@@ -260,6 +260,11 @@ public interface Attributes {
   String ORIENT = "orient";
 
   /**
+   * Dialog title.
+   */
+  String DIALOG_TITLE = "dialog-title";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the
