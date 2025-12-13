@@ -42,6 +42,11 @@ tasks {
   shadowJar {
     archiveBaseName.set(pluginBaseName)
     relocate("org.bstats", "com.juliewoolie.libs.stupidbstatsrelocate")
+
+    val outputDir = System.getenv("DELPHI_OUTPUT_DIR")
+    if (outputDir != null) {
+      destinationDirectory = file(outputDir)
+    }
   }
 
   processResources {
