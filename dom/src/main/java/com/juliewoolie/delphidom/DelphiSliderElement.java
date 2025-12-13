@@ -159,4 +159,14 @@ public class DelphiSliderElement extends DisableableElement implements SliderEle
 
     setAttribute(Attributes.ORIENT, orient.getValue());
   }
+
+  @Override
+  public @Nullable String getPrompt() {
+    return getAttribute(Attributes.PROMPT);
+  }
+
+  @Override
+  public void setPrompt(@Nullable String prompt) {
+    setAttribute(Attributes.PROMPT, prompt);
+  }
 }

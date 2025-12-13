@@ -4,6 +4,7 @@ import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.FieldSetElement;
 import com.juliewoolie.dom.InputElement;
 import com.juliewoolie.dom.Node;
+import com.juliewoolie.dom.SliderElement;
 import com.juliewoolie.dom.TagNames;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class DelphiFieldSetElement extends DelphiElement implements FieldSetElem
   }
 
   public static boolean isInputElement(Element element) {
-    return element instanceof InputElement;
+    return element instanceof InputElement || element instanceof SliderElement;
   }
 
   public static FieldSetElement getFieldSetParent(Element element) {
