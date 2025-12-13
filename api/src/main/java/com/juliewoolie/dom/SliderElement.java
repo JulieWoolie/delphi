@@ -132,6 +132,26 @@ public interface SliderElement extends Element, Disableable {
   void setOrient(@Nullable SliderOrient orient);
 
   /**
+   * Get the prompt that will be shown to players if the slider element is opened in a
+   * {@link FieldSetElement} dialog.
+   * <p>
+   * Input element dialogs use minimessage rendering to support color codes and formatting codes.
+   *
+   * @return Dialog prompt.
+   */
+  @Nullable String getPrompt();
+
+  /**
+   * Set the dialog prompt that will be shown to players if the slider element is opened in a
+   * {@link FieldSetElement} dialog.
+   * <p>
+   * Input element dialogs use minimessage rendering to support color codes and formatting codes.
+   *
+   * @param prompt Dialog prompt.
+   */
+  void setPrompt(@Nullable String prompt);
+
+  /**
    * Represents a slider's orientation
    */
   enum SliderOrient {
