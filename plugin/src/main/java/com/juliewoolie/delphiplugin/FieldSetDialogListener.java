@@ -11,6 +11,7 @@ import com.juliewoolie.dom.Disableable;
 import com.juliewoolie.dom.Element;
 import com.juliewoolie.dom.FieldSetElement;
 import com.juliewoolie.dom.InputElement;
+import com.juliewoolie.dom.SliderElement;
 import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.MouseEvent;
 import io.papermc.paper.dialog.Dialog;
@@ -22,12 +23,15 @@ import io.papermc.paper.registry.data.dialog.DialogRegistryEntry.Builder;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.action.DialogActionCallback;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import io.papermc.paper.registry.data.dialog.input.NumberRangeDialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback.Options;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
@@ -35,7 +39,7 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
   @Override
   public void handleEvent(MouseEvent event) {
     Element target = event.getTarget();
-    if (!DelphiFieldSetElement.isInputElement(target)) {
+    if (!DelphiFieldSetElement.isInputElement(target) || target instanceof SliderElement) {
       return;
     }
 
@@ -74,6 +78,15 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
     return dis.isDisabled();
   }
 
+  static Component getSliderPrompt(SliderElement slider, Audience viewer) {
+    String prompt = slider.getPrompt();
+    if (Strings.isNullOrEmpty(prompt)) {
+      return Component.empty();
+    }
+
+    return MiniMessage.miniMessage().deserialize(prompt, viewer);
+  }
+
   static Dialog createDialog(Player player, FieldSetContext ctx) {
     return Dialog.create(factory -> {
       Builder builder = factory.empty();
@@ -97,12 +110,44 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
       for (Element element : ctx.elementList) {
         DialogInput input;
 
+        if (isDisabled(element)) {
+          continue;
+        }
+
         if (element instanceof InputElement inp) {
           input = DialogInput.text(inv.get(inp), getInputLabel(inp, player))
               .maxLength(Integer.MAX_VALUE)
               .initial(Strings.nullToEmpty(inp.getValue()))
               .width(350)
               .build();
+        } else if (element instanceof SliderElement slider) {
+          double min = slider.getMin();
+          double max = slider.getMax();
+
+          if (max < min) {
+            continue;
+          }
+
+          Component prompt = getSliderPrompt(slider, player);
+
+          NumberRangeDialogInput.Builder inpBuilder = DialogInput
+              .numberRange(
+                  inv.get(slider),
+                  prompt,
+                  (float) min,
+                  (float) max
+              )
+              .width(350);
+
+          Double step = slider.getStep();
+          if (step != null) {
+            inpBuilder.step(step.floatValue());
+          }
+          if (prompt == Component.empty()) {
+            inpBuilder.labelFormat("%s%s");
+          }
+
+          input = inpBuilder.build();
         } else {
           continue;
         }
@@ -137,6 +182,9 @@ public class FieldSetDialogListener implements EventListener.Typed<MouseEvent> {
         if (value instanceof InputElement inp) {
           String str = Strings.nullToEmpty(response.getText(key));
           inp.setValue(str, player);
+        } else if (value instanceof SliderElement slider) {
+          float f = response.getFloat(key);
+          slider.setValue((double) f, player);
         }
       }
     }
