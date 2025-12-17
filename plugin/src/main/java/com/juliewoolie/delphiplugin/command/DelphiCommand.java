@@ -31,6 +31,8 @@ import com.juliewoolie.delphiplugin.DelphiPlugin;
 import com.juliewoolie.delphiplugin.PageView;
 import com.juliewoolie.delphiplugin.ViewManager;
 import com.juliewoolie.delphiplugin.devtools.DevtoolModule;
+import com.juliewoolie.delphiplugin.gimbal.DelphiGizmo;
+import com.juliewoolie.delphiplugin.gimbal.GizmoManager;
 import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.juliewoolie.dom.Canvas;
 import com.juliewoolie.dom.CanvasElement;
@@ -50,7 +52,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
 import io.papermc.paper.command.brigadier.argument.resolvers.FinePositionResolver;
@@ -83,6 +84,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector4i;
 import org.slf4j.Logger;
@@ -557,6 +559,44 @@ public class DelphiCommand {
             .executes(dumpCanvas())
         )
         .then(toggleDebugLines())
+
+        .then(literal("kill-gizmos")
+            .executes(c -> {
+              DelphiPlugin pl = getPlugin();
+              GizmoManager gimbals = pl.getGizmoManager();
+              gimbals.killAll();
+              return SINGLE_SUCCESS;
+            })
+        )
+
+        .then(literal("spawn-debug-gimbal")
+            .then(argument("yrot", FloatArgumentType.floatArg(-180, 180))
+                .executes(c -> {
+                  DelphiPlugin pl = getPlugin();
+                  GizmoManager gimbals = pl.getGizmoManager();
+
+                  float yRot = FloatArgumentType.getFloat(c, "yrot");
+
+                  DelphiGizmo gimbal = gimbals.createGimbal();
+                  Location location = c.getSource().getLocation();
+                  Player player = ((Player) c.getSource().getSender());
+
+                  gimbal.setPlayer(player);
+                  gimbal.moveTo(location);
+
+                  if (yRot != 0.0f) {
+                    Transformation baseTransform = gimbal.getBaseTransform();
+                    baseTransform.getLeftRotation().rotateY((float) Math.toRadians(yRot));
+                    gimbal.setBaseTransform(baseTransform);
+                  }
+
+                  gimbal.spawn();
+
+                  return SINGLE_SUCCESS;
+                })
+            )
+        )
+
         .build();
   }
 
@@ -633,7 +673,7 @@ public class DelphiCommand {
   }
 
   private static LiteralCommandNode<CommandSourceStack> toggleDebugLines() {
-    return Commands.literal("toggle-outlines")
+    return literal("toggle-outlines")
         .executes(c -> {
           boolean state = Debug.debugOutlines;
           Component text;
@@ -653,7 +693,7 @@ public class DelphiCommand {
   }
 
   private static LiteralCommandNode<CommandSourceStack> open() {
-    return Commands.literal("open")
+    return literal("open")
         .then(argument("player", ArgumentTypes.players())
             .then(createOpenPath(false))
         )

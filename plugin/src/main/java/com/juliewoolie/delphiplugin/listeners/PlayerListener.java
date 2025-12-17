@@ -10,6 +10,8 @@ import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.ViewManager;
 import com.juliewoolie.delphiplugin.ViewManager.ViewEntry;
 import com.juliewoolie.delphiplugin.command.Permissions;
+import com.juliewoolie.delphiplugin.gimbal.DelphiGizmo;
+import com.juliewoolie.delphiplugin.gimbal.GizmoManager;
 import com.juliewoolie.dom.event.MouseButton;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import java.time.Duration;
@@ -163,6 +165,17 @@ public class PlayerListener implements Listener {
   }
 
   private void tryInteract(Player player, Cancellable event, MouseButton button) {
+    if (button == MouseButton.LEFT) {
+      GizmoManager gizmos = plugin.getGizmoManager();
+      DelphiGizmo gizmo = gizmos.getSelectedByPlayer(player);
+
+      if (gizmo != null) {
+        gizmo.onClick();
+        event.setCancelled(true);
+        return;
+      }
+    }
+
     ViewManager views = plugin.getViewManager();
     ViewEntry entry = views.getByPlayer().get(player);
 

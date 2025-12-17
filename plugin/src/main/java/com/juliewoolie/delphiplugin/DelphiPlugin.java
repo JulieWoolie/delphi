@@ -3,6 +3,7 @@ package com.juliewoolie.delphiplugin;
 import com.juliewoolie.delphi.Delphi;
 import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.command.Permissions;
+import com.juliewoolie.delphiplugin.gimbal.GizmoManager;
 import com.juliewoolie.delphiplugin.listeners.ChunkListener;
 import com.juliewoolie.delphiplugin.listeners.PlayerListener;
 import com.juliewoolie.delphiplugin.listeners.PluginDisableListener;
@@ -31,6 +32,7 @@ public class DelphiPlugin extends JavaPlugin {
   private DelphiImpl manager;
   private FontMetrics metrics;
   private DelphiConfig delphiConfig;
+  private GizmoManager gizmoManager;
 
   private PluginVersion foundLatest;
 
@@ -45,8 +47,10 @@ public class DelphiPlugin extends JavaPlugin {
     this.viewManager = new ViewManager(this);
     this.pluginResources = new PluginResources(this, modulesDir);
     this.manager = new DelphiImpl(this, pluginResources, viewManager);
+    this.gizmoManager = new GizmoManager(this);
 
     viewManager.startTicking();
+    gizmoManager.startTicking();
 
     saveDefaultConfig();
     reloadConfig();
@@ -95,6 +99,10 @@ public class DelphiPlugin extends JavaPlugin {
   @Override
   public void onDisable() {
     Scripting.shutdownScripting();
+
+    if (gizmoManager != null) {
+      gizmoManager.stopTicking();
+    }
 
     if (bstats != null) {
       bstats.shutdown();
