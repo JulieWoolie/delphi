@@ -127,7 +127,7 @@ public final class Debug {
     line(loRight, hiRight, builder, w);
   }
 
-  private static ParticleBuilder particleBuilder(Color color) {
+  public static ParticleBuilder particleBuilder(Color color) {
     ParticleBuilder builder = Particle.DUST.builder()
         .color(color, 0.33f);
 
@@ -140,8 +140,8 @@ public final class Debug {
     return builder;
   }
 
-  private static void line(Vector3d origin, Vector3d target, ParticleBuilder builder, World world) {
-    Vector3d dir = new Vector3d(target).sub(origin);
+  public static void line(Vector3d origin, Vector3d end, ParticleBuilder builder, World world) {
+    Vector3d dir = new Vector3d(end).sub(origin);
 
     double len = dir.length();
     dir.normalize();
