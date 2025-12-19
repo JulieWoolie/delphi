@@ -1,4 +1,4 @@
-package com.juliewoolie.delphiplugin.gimbal;
+package com.juliewoolie.delphiplugin.gizmo;
 
 import com.juliewoolie.delphiplugin.math.RayScan;
 import com.juliewoolie.delphirender.object.RenderObject;

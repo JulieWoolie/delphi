@@ -1,4 +1,4 @@
-package com.juliewoolie.delphiplugin.gimbal;
+package com.juliewoolie.delphiplugin.gizmo;
 
 import com.juliewoolie.delphiplugin.TextUtil;
 import net.kyori.adventure.text.Component;

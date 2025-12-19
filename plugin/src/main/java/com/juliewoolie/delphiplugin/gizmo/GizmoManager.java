@@ -1,4 +1,4 @@
-package com.juliewoolie.delphiplugin.gimbal;
+package com.juliewoolie.delphiplugin.gizmo;
 
 import static com.juliewoolie.delphiplugin.Debug.line;
 

@@ -3,7 +3,7 @@ package com.juliewoolie.delphiplugin;
 import com.juliewoolie.delphi.Delphi;
 import com.juliewoolie.delphiplugin.PluginUpdater.PluginVersion;
 import com.juliewoolie.delphiplugin.command.Permissions;
-import com.juliewoolie.delphiplugin.gimbal.GizmoManager;
+import com.juliewoolie.delphiplugin.gizmo.GizmoManager;
 import com.juliewoolie.delphiplugin.listeners.ChunkListener;
 import com.juliewoolie.delphiplugin.listeners.PlayerListener;
 import com.juliewoolie.delphiplugin.listeners.PluginDisableListener;

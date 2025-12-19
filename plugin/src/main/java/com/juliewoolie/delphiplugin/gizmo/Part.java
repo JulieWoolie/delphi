@@ -1,4 +1,4 @@
-package com.juliewoolie.delphiplugin.gimbal;
+package com.juliewoolie.delphiplugin.gizmo;
 
 import com.juliewoolie.delphi.gimbal.GizmoAbility;
 import net.kyori.adventure.translation.Translatable;
