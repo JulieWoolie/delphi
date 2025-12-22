@@ -7,6 +7,7 @@ import com.juliewoolie.dom.event.InputEvent;
 import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
 import com.juliewoolie.dom.event.PlayerSetEvent;
+import com.juliewoolie.dom.event.SliderEvent;
 import com.juliewoolie.dom.event.TooltipEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -286,5 +287,16 @@ public interface DelegateTarget extends EventTarget {
   @Nullable
   default EventListener.Typed<PlayerSetEvent> getOnPlayerRemoved() {
     return getListenerList().getOnPlayerRemoved();
+  }
+
+  @Override
+  default void onSlider(@Nullable EventListener.Typed<SliderEvent> listener) {
+    getListenerList().onSlider(listener);
+  }
+
+  @Override
+  @Nullable
+  default EventListener.Typed<SliderEvent> getOnSlider() {
+    return getListenerList().getOnSlider();
   }
 }

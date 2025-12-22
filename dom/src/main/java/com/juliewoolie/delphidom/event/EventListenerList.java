@@ -1,6 +1,7 @@
 package com.juliewoolie.delphidom.event;
 
 import com.juliewoolie.dom.event.PlayerSetEvent;
+import com.juliewoolie.dom.event.SliderEvent;
 import com.juliewoolie.dom.event.TooltipEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -433,6 +434,16 @@ public class EventListenerList implements EventTarget {
   @Override
   public @Nullable EventListener.Typed<PlayerSetEvent> getOnPlayerRemoved() {
     return getListenerProperty("playerremove");
+  }
+
+  @Override
+  public void onSlider(@Nullable EventListener.Typed<SliderEvent> listener) {
+    setListenerProperty("slider", EventTypes.SLIDER, listener);
+  }
+
+  @Override
+  public @Nullable EventListener.Typed<SliderEvent> getOnSlider() {
+    return getListenerProperty("slider");
   }
 
   record ListenerProperty(String eventType, EventListener listener) {

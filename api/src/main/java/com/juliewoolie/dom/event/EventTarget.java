@@ -467,7 +467,7 @@ public interface EventTarget {
    * <p>
    * Can be removed by setting this to {@code null} and overridden by calling this method again.
    *
-   * @param listener Content change listener
+   * @param listener Player added listener
    */
   void onPlayerAdded(@Nullable EventListener.Typed<PlayerSetEvent> listener);
 
@@ -483,7 +483,7 @@ public interface EventTarget {
    * <p>
    * Can be removed by setting this to {@code null} and overridden by calling this method again.
    *
-   * @param listener Content change listener
+   * @param listener Player remove listener
    */
   void onPlayerRemoved(@Nullable EventListener.Typed<PlayerSetEvent> listener);
 
@@ -492,4 +492,20 @@ public interface EventTarget {
    * @return Player removal listener, or {@code null}, if not set
    */
   @Nullable EventListener.Typed<PlayerSetEvent> getOnPlayerRemoved();
+
+  /**
+   * Set the slider value change listener. The listener is called when a
+   * {@link com.juliewoolie.dom.SliderElement}'s value is changed.
+   * <p>
+   * Can be removed by setting this to {@code null} and overridden by calling this method again.
+   *
+   * @param listener Slider value change listener
+   */
+  void onSlider(@Nullable EventListener.Typed<SliderEvent> listener);
+
+  /**
+   * Get the slider value change listener.
+   * @return Slider value change listener, or {@code null}, if not set
+   */
+  @Nullable EventListener.Typed<SliderEvent> getOnSlider();
 }
