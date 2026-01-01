@@ -123,7 +123,7 @@ public interface Element extends Node, EventTarget, DomQueryable {
    * @see #getAttribute(String)
    * @see Attributes#ID
    */
-  default String getId() {
+  default @Nullable String getId() {
     return getAttribute(Attributes.ID);
   }
 
@@ -151,7 +151,7 @@ public interface Element extends Node, EventTarget, DomQueryable {
    * Sets the element's {@link Attributes#CLASS} attribute value
    * @param className Class name
    */
-  default void setClassName(String className) {
+  default void setClassName(@Nullable String className) {
     setAttribute(Attributes.CLASS, className);
   }
 

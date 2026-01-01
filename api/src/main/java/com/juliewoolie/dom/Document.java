@@ -140,6 +140,14 @@ public interface Document extends EventTarget, DomQueryable {
    *       <td>{@link SliderElement}</td>
    *     </tr>
    *     <tr>
+   *       <td>{@link TagNames#SELECT}</td>
+   *       <td>{@link SelectElement}</td>
+   *     </tr>
+   *     <tr>
+   *       <td>{@link TagNames#CHOICE}</td>
+   *       <td>{@link ChoiceElement}</td>
+   *     </tr>
+   *     <tr>
    *       <td>Any other tag name</td>
    *       <td>{@link Element}</td>
    *     </tr>

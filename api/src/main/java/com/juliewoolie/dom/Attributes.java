@@ -265,6 +265,12 @@ public interface Attributes {
   String DIALOG_TITLE = "dialog-title";
 
   /**
+   * Selected attribute
+   * @see ChoiceElement#isSelected()
+   */
+  String SELECTED = "selected";
+
+  /**
    * Parses a float attribute value.
    * <p>
    * If the specified {@code value} cannot be parsed into a float, an erroneous result with the

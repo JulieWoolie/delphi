@@ -115,4 +115,16 @@ public interface TagNames {
    * @see SliderElement
    */
   String SLIDER = "slider";
+
+  /**
+   * Select element
+   * @see SelectElement
+   */
+  String SELECT = "select";
+
+  /**
+   * Choice element
+   * @see ChoiceElement
+   */
+  String CHOICE = "choice";
 }
