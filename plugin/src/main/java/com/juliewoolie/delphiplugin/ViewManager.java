@@ -226,6 +226,7 @@ public class ViewManager {
 
     Vector3d targetPos = new Vector3d();
     Vector2f screenPos = new Vector2f();
+    Vector2f cursorPos = new Vector2f();
 
     for (int i = 0; i < views.size(); i++) {
       PageView view = views.get(i);
@@ -248,11 +249,16 @@ public class ViewManager {
         continue;
       }
 
+      bounds.screenspaceToScreen(screenPos, cursorPos);
+      if (view.renderer.findCursorContainingNode(cursorPos) == null) {
+        continue;
+      }
+
       closestDistSq = distSq;
       closest = view;
 
       closestHit.set(targetPos);
-      bounds.screenspaceToScreen(screenPos, closestScreenHit);
+      closestScreenHit.set(cursorPos);
     }
 
     this.screenPos.set(closestScreenHit);
