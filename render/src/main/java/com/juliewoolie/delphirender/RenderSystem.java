@@ -33,7 +33,6 @@ import com.juliewoolie.dom.event.EventListener;
 import com.juliewoolie.dom.event.EventTarget;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.event.InputEvent;
-import com.juliewoolie.dom.event.MouseEvent;
 import com.juliewoolie.dom.event.MutationEvent;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -73,16 +72,16 @@ public class RenderSystem implements StyleUpdateCallbacks {
   private final Map<DelphiNode, RenderObject> renderElements = new Object2ObjectOpenHashMap<>();
   private ElementRenderObject renderRoot = null;
 
-  private ElementRenderObject activeTooltip = null;
-  private long tooltipDelay = -1;
-  private TooltipBehaviour tooltipBehaviour = TooltipBehaviour.CURSOR_STICKY;
-
   private Queue<ElementRenderObject> awaitingLayout = new ArrayDeque<>(3);
   private Queue<ElementRenderObject> awaitingRedraw = new ArrayDeque<>(3);
+
+  @Getter
+  private final FloatingManager floats;
 
   public RenderSystem(ExtendedView view, RenderScreen screen) {
     this.view = view;
     this.screen = screen;
+    this.floats = new FloatingManager(this);
   }
 
   public void init() {
@@ -95,15 +94,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
 
     EventTarget g = view.getDocument().getGlobalTarget();
     MutationListener listener = new MutationListener();
-    TooltipListener tooltipListener = new TooltipListener();
     InputListener inputListener = new InputListener();
 
     g.addEventListener(EventTypes.APPEND_CHILD, listener);
     g.addEventListener(EventTypes.REMOVE_CHILD, listener);
-
-    g.addEventListener(EventTypes.MOUSE_ENTER, tooltipListener);
-    g.addEventListener(EventTypes.MOUSE_LEAVE, tooltipListener);
-    g.addEventListener(EventTypes.MOUSE_MOVE, tooltipListener);
 
     g.addEventListener(EventTypes.MODIFY_ATTR, new SliderUpdateListener());
 
@@ -153,18 +147,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
       ero.spawnRecursive();
     }
 
-    if (tooltipDelay != -1) {
-      tooltipDelay--;
-
-      if (tooltipDelay < 1) {
-        if (tooltipBehaviour == TooltipBehaviour.CURSOR) {
-          activeTooltip.moveTo(view.getCursorScreen());
-        }
-
-        activeTooltip.spawnRecursive();
-        tooltipDelay = -1;
-      }
-    }
+    floats.tick();
   }
 
   //
@@ -173,7 +156,7 @@ public class RenderSystem implements StyleUpdateCallbacks {
   // in that time are all executed and laid out in a single go.
   //
 
-  private DelphiNode getTooltipRootElement(DelphiNode node) {
+  public DelphiNode getTooltipRootElement(DelphiNode node) {
     if (node.getParent() == null) {
       return null;
     }
@@ -188,9 +171,9 @@ public class RenderSystem implements StyleUpdateCallbacks {
       DelphiNode rootNode = getTooltipRootElement(node);
       RenderObject re = getRenderElement(rootNode);
 
-      if (re != activeTooltip) {
-        return null;
-      }
+//      if (re != activeTooltip) {
+//        return null;
+//      }
 
       return (ElementRenderObject) re;
     }
@@ -443,56 +426,24 @@ public class RenderSystem implements StyleUpdateCallbacks {
       return;
     }
 
-    boolean isCurrent = false;
-
     if (old != null) {
       RenderObject oldRender = getRenderElement(old);
       if (oldRender != null) {
         oldRender.killRecursive();
       }
       removeRenderElement(old);
-      isCurrent = oldRender == activeTooltip;
     }
 
     if (element == null || !element.hasFlag(NodeFlag.HOVERED)) {
       return;
     }
 
-    RenderObject obj = getRenderElement(titleNode);
-    if (obj == null) {
-      obj = initRenderTree(titleNode, TOOLTIP_DEPTH_SCALE);
-    }
-
-    titleNode.getDocument().getStyles().updateDomStyle(titleNode);
-    obj.moveTo(view.getCursorScreen());
-
-    if (isCurrent) {
-      if (obj instanceof ElementRenderObject ero) {
-        LayoutCall.nlayout(ero, screen.getDimensions());
-        activeTooltip = ero;
-      }
-      obj.spawnRecursive();
-    }
+    floats.onTooltipSwapped(element, old);
   }
 
   public void screenSizeChanged(float newHeight) {
     if (renderRoot != null) {
       renderRoot.moveTo(new Vector2f(0, newHeight));
-    }
-  }
-
-  public void setTooltip(ElementRenderObject ero, long delay, TooltipBehaviour b) {
-    if (activeTooltip != null) {
-      activeTooltip.killRecursive();
-    }
-
-    activeTooltip = ero;
-    tooltipBehaviour = b;
-
-    if (delay > 0) {
-      this.tooltipDelay = delay;
-    } else {
-      this.tooltipDelay = -1;
     }
   }
 
@@ -504,6 +455,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
     entities.add(display);
     display.setPersistent(false);
     view.handleEntityVisibility(display);
+  }
+
+  public boolean containsPoint(RenderObject ro, Vector2f p) {
+    return contains(p, ro.position, ro.size);
   }
 
   private boolean contains(Vector2f cursor, Vector2f pos, Vector2f size) {
@@ -521,11 +476,25 @@ public class RenderSystem implements StyleUpdateCallbacks {
     return recursiveIsHidden(ero.parent);
   }
 
+  private boolean filterTooltip(DelphiElement el) {
+    if (!el.hasFlag(NodeFlag.TOOLTIP)) {
+      return true;
+    }
+
+    DelphiNode ttRoot = getTooltipRootElement(el);
+    FloatingWindow win = floats.getFromDomNode(ttRoot);
+
+    if (win == null) {
+      return false;
+    }
+
+    return win.toolTipbehaviour != TooltipBehaviour.CURSOR_STICKY;
+  }
+
   public DelphiElement findCursorContainingNode(Vector2f cursorScreen) {
     return renderElements.entrySet()
         .stream()
         .filter(e -> e.getKey() instanceof DelphiElement)
-        .filter(e -> !e.getKey().hasFlag(NodeFlag.TOOLTIP))
         .filter(e -> {
           RenderObject ro = e.getValue();
           return contains(cursorScreen, ro.position, ro.size);
@@ -534,90 +503,10 @@ public class RenderSystem implements StyleUpdateCallbacks {
           ElementRenderObject ero = (ElementRenderObject) ro.getValue();
           return !recursiveIsHidden(ero);
         })
+        .filter(e -> filterTooltip((DelphiElement) e.getKey()))
         .min(HIGHEST_TO_LOWEST_DEPTH)
         .map(e -> (DelphiElement) e.getKey())
         .orElse(null);
-  }
-
-  class TooltipListener implements EventListener.Typed<MouseEvent> {
-
-    @Override
-    public void handleEvent(MouseEvent event) {
-      final DelphiElement el = (DelphiElement) event.getTarget();
-      DelphiElement tooltip = el.getTooltip();
-
-      if (tooltip == null) {
-        return;
-      }
-
-      TooltipBehaviour behaviour = tooltip.getTooltipBehaviour();
-      long tooltipDelay = tooltip.getTooltipDelay();
-
-      switch (event.getType()) {
-        case EventTypes.MOUSE_ENTER -> {
-          RenderObject obj = getRenderElement(tooltip);
-          if (obj == null) {
-            obj = initRenderTree(tooltip, TOOLTIP_DEPTH_SCALE);
-          }
-
-          el.getDocument().getStyles().updateDomStyle(tooltip);
-
-          if (obj instanceof ElementRenderObject eObj) {
-            LayoutCall.nlayout(eObj, screen.getDimensions());
-            setTooltip(eObj, tooltipDelay, behaviour);
-          }
-
-          ElementRenderObject parent = (ElementRenderObject) getRenderElement(el);
-          assert parent != null;
-
-          switch (behaviour) {
-            case ABOVE:
-              obj.moveTo(parent.position.x, parent.position.y + obj.size.y);
-              break;
-            case RIGHT:
-              obj.moveTo(parent.position.x + parent.size.x, parent.position.y);
-              break;
-            case BELOW:
-              obj.moveTo(parent.position.x, parent.position.y - parent.size.y);
-              break;
-            case LEFT:
-              obj.moveTo(parent.position.x - obj.size.x, parent.position.y);
-              break;
-
-            default:
-              obj.moveTo(event.getScreenPosition());
-              break;
-          }
-
-          if (tooltipDelay < 1) {
-            obj.spawnRecursive();
-          }
-        }
-
-        case EventTypes.MOUSE_LEAVE -> {
-          RenderObject obj = getRenderElement(tooltip);
-
-          if (obj == null) {
-            return;
-          }
-
-          obj.killRecursive();
-          
-          if (obj == activeTooltip) {
-            setTooltip(null, 0, TooltipBehaviour.CURSOR_STICKY);
-          }
-        }
-
-        case EventTypes.MOUSE_MOVE -> {
-          RenderObject obj = getRenderElement(tooltip);
-          if (obj == null || behaviour != TooltipBehaviour.CURSOR_STICKY) {
-            return;
-          }
-
-          obj.moveTo(event.getScreenPosition());
-        }
-      }
-    }
   }
 
   class MutationListener implements EventListener.Typed<MutationEvent> {
