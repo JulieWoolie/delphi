@@ -203,6 +203,10 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
 
     if (titleNode != null) {
       configureAsTitle(titleNode);
+
+      if (!titleNode.getDocument().equals(document)) {
+        document.adopt(titleNode);
+      }
     }
 
     TooltipEventImpl event = new TooltipEventImpl(EventTypes.TOOLTIP_CHANGED, document);
@@ -412,6 +416,9 @@ public class DelphiElement extends DelphiNode implements Element, DelegateTarget
 
     if (hasFlag(NodeFlag.ADDED)) {
       node.setAdded(true);
+    }
+    if (hasFlag(NodeFlag.TOOLTIP)) {
+      node.addFlagRecursive(NodeFlag.TOOLTIP);
     }
 
     children.add(insertionIndex, node);
