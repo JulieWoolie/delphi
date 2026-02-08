@@ -191,8 +191,10 @@ public class Screen implements RenderScreen {
 
     screenHitPoint(out, screenOut);
 
-    return (screenOut.x >= 0 && screenOut.x <= 1)
-        && (screenOut.y >= 0 && screenOut.y <= 1);
+    return true;
+
+//    return (screenOut.x >= 0 && screenOut.x <= 1)
+//        && (screenOut.y >= 0 && screenOut.y <= 1);
   }
 
   public void screenHitPoint(Vector3d hitPoint, Vector2f out) {
