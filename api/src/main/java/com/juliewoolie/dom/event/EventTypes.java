@@ -506,4 +506,28 @@ public interface EventTypes {
    * </table>
    */
   String SLIDER = "slider";
+
+  /**
+   * Fired when a {@link com.juliewoolie.dom.SelectElement}'s value is changed.
+   *  <table>
+   *    <caption>Details</caption>
+   *    <tr>
+   *      <td>Bubbles</td>
+   *      <td>{@code true}</td>
+   *    </tr>
+   *    <tr>
+   *      <td>Cancellable</td>
+   *      <td>{@code true}</td>
+   *    </tr>
+   *    <tr>
+   *      <td>Type</td>
+   *      <td>{@link SelectionEvent}</td>
+   *    </tr>
+   *    <tr>
+   *      <td>Tags</td>
+   *      <td>{@link com.juliewoolie.dom.TagNames#SELECT}</td>
+   *    </tr>
+   *  </table>
+   */
+  String SELECT = "select";
 }
