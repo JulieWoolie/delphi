@@ -47,7 +47,6 @@ public class ViewManager {
   //
   private final Vector3d targetPos = new Vector3d();
   private final Vector2f screenPos = new Vector2f();
-  private final Vector2f cursorDif = new Vector2f();
   private double screenDist;
 
   public ViewManager(Plugin plugin) {
@@ -159,13 +158,6 @@ public class ViewManager {
     }
 
     if (Objects.equals(selectedPre, targeted)) {
-      Vector2f currentScreenPos = selectedPre.cursorScreen;
-      currentScreenPos.sub(screenPos, cursorDif);
-
-      if (isZero(cursorDif)) {
-        return;
-      }
-
       targeted.cursorMoveTo(player, screenPos, targetPos);
       return;
     }

@@ -196,6 +196,10 @@ public class PageInputSystem {
     }
 
     if (Objects.equals(contained, hoveredNode)) {
+      if (view.cursorScreen.equals(view.oldCursor)) {
+        return;
+      }
+
       fireMouseEvent(EventTypes.MOUSE_MOVE,
           player,
           false,

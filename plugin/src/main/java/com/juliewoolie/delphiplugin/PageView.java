@@ -73,6 +73,8 @@ public class PageView implements ExtendedView {
   @Getter
   public final Vector3d cursorWorld = new Vector3d();
 
+  public final Vector2f oldCursor = new Vector2f();
+
   @Getter
   private final PlayerSet players;
 
@@ -686,6 +688,7 @@ public class PageView implements ExtendedView {
       return;
     }
 
+    oldCursor.set(cursorScreen);
     cursorScreen.set(screenPos);
     cursorWorld.set(targetPos);
 
