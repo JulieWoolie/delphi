@@ -15,6 +15,13 @@ import org.jetbrains.annotations.Nullable;
 
 final class PathImpl implements ResourcePath {
 
+  static final char BACKSLASH = '\\';
+  static final char PATH_DELIMITER = '/';
+  static final char MODULE_SEPARATOR = ':';
+  static final char QUERY_SEPARATOR = '?';
+  static final char QUERY_DELIMITER = '&';
+  static final char KEY_VALUE_SEPARATOR = '=';
+
   private String moduleName;
   private final List<String> elements = new ArrayList<>();
   private final Map<String, String> queries = new HashMap<>();
@@ -27,6 +34,144 @@ final class PathImpl implements ResourcePath {
     this.moduleName = source.moduleName;
     this.elements.addAll(source.elements);
     this.queries.putAll(source.queries);
+  }
+
+  public static PathImpl parse(String value, String fallbackModule) {
+    Objects.requireNonNull(value, "Null parse string");
+
+    String path = value.replace(BACKSLASH, PATH_DELIMITER);
+
+    int modIndex = path.indexOf(MODULE_SEPARATOR);
+
+    String moduleName;
+    String afterModule;
+
+    if (modIndex == -1) {
+      if (Strings.isNullOrEmpty(fallbackModule)) {
+        int qIdx = path.indexOf(QUERY_SEPARATOR);
+        String query;
+
+        if (qIdx != -1) {
+          query = path.substring(qIdx + 1);
+          moduleName = path.substring(0, qIdx);
+        } else {
+          moduleName = path;
+          query = "";
+        }
+
+        ResourcePath.validateModuleName(moduleName);
+
+        PathImpl result = new PathImpl(moduleName);
+        parseQueries(result, query);
+
+        return result;
+      }
+
+      moduleName = fallbackModule;
+      afterModule = path;
+    } else {
+      moduleName = path.substring(0, modIndex);
+      afterModule = path.substring(modIndex + 1);
+    }
+
+    ResourcePath.validateModuleName(moduleName);
+
+    String fpath;
+    String query;
+
+    int queryStart = afterModule.indexOf(QUERY_SEPARATOR);
+
+    if (queryStart == -1) {
+      fpath = afterModule;
+      query = null;
+    } else {
+      fpath = afterModule.substring(0, queryStart);
+      query = afterModule.substring(queryStart + 1);
+    }
+
+    PathImpl result = new PathImpl(moduleName);
+    String[] split = fpath.split(PATH_DELIMITER + "");
+
+    for (String s : split) {
+      if (Strings.isNullOrEmpty(s)) {
+        continue;
+      }
+
+      if ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'"))) {
+        s = s.substring(1, s.length() - 1);
+      }
+
+      ResourcePath.validateFilename(s);
+      result.elements.addLast(s);
+    }
+
+    if (query == null) {
+      return result;
+    }
+
+    parseQueries(result, query);
+    return result;
+  }
+
+  private static void parseQueries(PathImpl result, String queryString) {
+    String[] pairs = queryString.split(QUERY_DELIMITER + "");
+
+    for (String pair : pairs) {
+      if (Strings.isNullOrEmpty(pair)) {
+        continue;
+      }
+
+      int eqIdx = pair.indexOf(KEY_VALUE_SEPARATOR);
+
+      String qKey;
+      String qValue;
+
+      if (eqIdx == -1) {
+        qKey = pair.trim();
+        qValue = "";
+      } else {
+        qKey = pair.substring(0, eqIdx).trim();
+        qValue = pair.substring(eqIdx + 1).trim();
+
+        ResourcePath.validateQuery(qValue);
+      }
+
+      ResourcePath.validateQuery(qKey);
+
+      result.queries.put(qKey, qValue);
+    }
+  }
+
+  @Override
+  public ResourcePath normalize(@Nullable ResourcePath cwd) {
+    PathImpl cwdi = (PathImpl) cwd;
+    PathImpl path = new PathImpl(moduleName);
+    path.queries.putAll(queries);
+
+    if (cwdi != null) {
+      path.elements.addAll(cwdi.elements);
+    }
+
+    for (String element : elements) {
+      if (element.equals(".")) {
+        path.elements.clear();
+        if (cwdi != null) {
+          path.elements.addAll(cwdi.elements);
+        }
+        continue;
+      }
+
+      if (element.equals("..")) {
+        if (!path.elements.isEmpty()) {
+          path.elements.removeLast();
+        }
+        continue;
+      }
+
+      path.elements.addLast(element);
+    }
+
+    return path;
   }
 
   void setModule(String moduleName) {
@@ -90,7 +235,7 @@ final class PathImpl implements ResourcePath {
 
   @Override
   public ResourcePath setModuleName(@NotNull String moduleName) {
-    ResourcePath.validateQuery(moduleName);
+    ResourcePath.validateModuleName(moduleName);
     PathImpl p = new PathImpl(this);
     p.setModule(moduleName);
     return p;

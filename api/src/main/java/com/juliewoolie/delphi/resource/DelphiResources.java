@@ -78,7 +78,7 @@ public interface DelphiResources {
    *         {@code false}, if the specified name is already in use.
    *
    * @throws NullPointerException If either {@code moduleName} or {@code module} is {@code null}.
-   * @throws IllegalArgumentException If the module name doesn't pass the {@link ResourcePath#validateQuery(String)} check.
+   * @throws IllegalArgumentException If the module name doesn't pass the {@link ResourcePath#validateModuleName(String)} check.
    */
   boolean registerModule(@NotNull String moduleName, @NotNull ResourceModule module);
 

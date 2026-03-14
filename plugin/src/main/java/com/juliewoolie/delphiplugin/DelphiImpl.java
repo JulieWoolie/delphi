@@ -15,15 +15,12 @@ import com.juliewoolie.delphi.util.Result;
 import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphidom.event.EventImpl;
 import com.juliewoolie.delphiplugin.ViewManager.ViewEntry;
-import com.juliewoolie.delphiplugin.command.PathParser;
 import com.juliewoolie.delphiplugin.math.RayScan;
 import com.juliewoolie.delphiplugin.resource.PageResources;
 import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.juliewoolie.delphiplugin.resource.ViewBuilderImpl;
 import com.juliewoolie.dom.event.EventTypes;
 import com.juliewoolie.dom.style.StylesheetBuilder;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import java.util.Collections;
 import java.util.List;
@@ -53,15 +50,11 @@ public class DelphiImpl implements Delphi {
 
   @Override
   public Result<ResourcePath, DelphiException> parsePath(String string) {
-    PathParser<?> parser = new PathParser<>(pluginResources, new StringReader(string));
-
     try {
-      parser.parse();
-    } catch (CommandSyntaxException exc) {
+      return Result.ok(ResourcePath.create(string));
+    } catch (IllegalArgumentException exc) {
       return Result.err(new DelphiException(DelphiException.ERR_INVALID_PATH, exc.getMessage()));
     }
-
-    return Result.ok(parser.getPath());
   }
 
   @Override

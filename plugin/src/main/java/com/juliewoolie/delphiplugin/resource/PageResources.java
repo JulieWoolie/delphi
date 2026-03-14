@@ -17,13 +17,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.io.IOException;
-import java.util.Objects;
-import javax.xml.parsers.ParserConfigurationException;
-import lombok.Getter;
-import lombok.Setter;
 import com.juliewoolie.chimera.ChimeraSheetBuilder;
 import com.juliewoolie.chimera.ChimeraStylesheet;
 import com.juliewoolie.chimera.parse.Chimera;
@@ -41,12 +34,16 @@ import com.juliewoolie.delphidom.DelphiDocument;
 import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.delphidom.parser.DelphiSaxParser;
 import com.juliewoolie.delphiplugin.PageView;
-import com.juliewoolie.delphiplugin.command.PathParser;
 import com.juliewoolie.dom.Document;
 import com.juliewoolie.dom.ParserException;
 import com.juliewoolie.dom.style.Stylesheet;
 import com.juliewoolie.dom.style.StylesheetBuilder;
 import com.juliewoolie.hephaestus.ScriptElementSystem;
+import java.io.IOException;
+import java.util.Objects;
+import javax.xml.parsers.ParserConfigurationException;
+import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -85,23 +82,21 @@ public class PageResources implements ViewResources {
 
   @Override
   public Result<ResourcePath, DelphiException> resolve(String uri) {
-    ResourcePath path;
-
     try {
-      StringReader reader = new StringReader(uri);
-      PathParser<?> parser = new PathParser<>(pluginResources, reader);
-
-      parser.setModule(module);
-      parser.setPath(ResourcePath.create(moduleName));
-      parser.setCwd(cwd);
-
-      parser.parsePath();
-      path = parser.getPath();
-    } catch (CommandSyntaxException exc) {
+      ResourcePath path = ResourcePath.create(uri, moduleName);
+      ResourcePath normalized = path.normalize(cwd);
+      return Result.ok(normalized);
+    } catch (IllegalArgumentException exc) {
       return Result.err(new DelphiException(ERR_INVALID_PATH, exc.getMessage()));
     }
+  }
 
-    return Result.ok(path);
+  private Result<ResourceModule, DelphiException> resolveModule(ResourcePath path) {
+    if (path.getModuleName().equals(moduleName)) {
+      return Result.ok(module);
+    }
+
+    return pluginResources.findModule(path.getModuleName());
   }
 
   @Override
@@ -110,16 +105,19 @@ public class PageResources implements ViewResources {
   }
 
   public Result<StringBuffer, DelphiException> loadBuffer(ResourcePath path) {
-    if (!(module instanceof IoModule io)) {
-      return Result.err(new DelphiException(ERR_API_MODULE));
-    }
+    return resolveModule(path)
+        .flatMap(module -> {
+          if (!(module instanceof IoModule io)) {
+            return Result.err(new DelphiException(ERR_API_MODULE));
+          }
 
-    try {
-      StringBuffer buff = io.loadString(path);
-      return Result.ok(buff);
-    } catch (IOException exc) {
-      return Result.ioError(exc);
-    }
+          try {
+            StringBuffer buff = io.loadString(path);
+            return Result.ok(buff);
+          } catch (IOException exc) {
+            return Result.ioError(exc);
+          }
+        });
   }
 
   @Override

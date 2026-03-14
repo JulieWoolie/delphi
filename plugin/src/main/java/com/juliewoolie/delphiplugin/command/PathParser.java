@@ -1,6 +1,9 @@
 package com.juliewoolie.delphiplugin.command;
 
 import com.google.common.base.Strings;
+import com.juliewoolie.delphi.resource.ResourceModule;
+import com.juliewoolie.delphi.resource.ResourcePath;
+import com.juliewoolie.delphiplugin.resource.PluginResources;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -11,17 +14,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
-import lombok.Setter;
-import com.juliewoolie.delphi.resource.ResourceModule;
-import com.juliewoolie.delphi.resource.ResourcePath;
-import com.juliewoolie.delphidom.Loggers;
-import com.juliewoolie.delphiplugin.resource.PluginResources;
-import org.slf4j.Logger;
 
-@Getter @Setter
 public class PathParser<S> implements SuggestionProvider<S> {
-
-  private static final Logger LOGGER = Loggers.getLogger();
 
   static final TranslatableExceptionType EMPTY_MODULE
       = new TranslatableExceptionType("delphi.paths.emptyModule");
@@ -41,9 +35,9 @@ public class PathParser<S> implements SuggestionProvider<S> {
   private final StringReader reader;
   private final PluginResources pluginResources;
 
+  @Getter
   private ResourcePath path;
   private ResourcePath suggestionsPath;
-  private ResourcePath cwd;
   private ResourceModule module;
 
   private int suggestionsStart = -1;
@@ -111,12 +105,6 @@ public class PathParser<S> implements SuggestionProvider<S> {
 
     if (str.equals(".")) {
       path = path.clearElements();
-
-      if (cwd == null) {
-        return;
-      }
-
-      path = path.setElements(cwd);
       return;
     }
 

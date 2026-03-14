@@ -30,13 +30,36 @@ public sealed interface ResourcePath permits PathImpl {
   Pattern VALID_QUERY = Pattern.compile("[a-zA-Z0-9.\\-_$]+");
 
   /**
-   * Creates a page path with a specified {@code moduleName}
+   * Parse a resource path from the specified {@code path}.
    *
-   * @param moduleName Path Module name
-   * @return Created path
+   * @param path Resource path
+   * @return Parsed path
+   *
+   * @throws NullPointerException If the specified {@code path} is {@code null}
+   * @throws IllegalArgumentException If the specified {@code path} couldn't be parsed
    */
-  static ResourcePath create(@NotNull String moduleName) {
-    return new PathImpl(moduleName);
+  static ResourcePath create(@NotNull String path) {
+    return PathImpl.parse(path, null);
+  }
+
+  /**
+   * Parse a resource path from the specified {@code path}.
+   * <p>
+   * Depending on if the specified {@code fallbackModule} is {@code null} or not, the parsing will
+   * treat the string differently if no module-filepath separator ({@code :}) is found. If no
+   * fallback is specified, the string is treated as the module name, but if it is specified, it
+   * assumes a file path is being specified.
+   *
+   * @param path Resource path
+   * @param fallbackModule Fallback module name to use if one is not present in the specified {@code path}
+   *
+   * @return Parsed path
+   *
+   * @throws NullPointerException If the specified {@code path} is {@code null}
+   * @throws IllegalArgumentException If the specified {@code path} couldn't be parsed
+   */
+  static ResourcePath create(@NotNull String path, @Nullable String fallbackModule) {
+    return PathImpl.parse(path, fallbackModule);
   }
 
   /**
@@ -78,8 +101,38 @@ public sealed interface ResourcePath permits PathImpl {
       return;
     }
 
-    throw new IllegalArgumentException("Invalid element: " + query);
+    throw new IllegalArgumentException("Invalid query element: " + query);
   }
+
+  /**
+   * Validate a module name.
+   * <p>
+   * For a module name to be "valid" it must not be null and must match the
+   * {@link #VALID_QUERY} regex pattern.
+   *
+   * @param moduleName Module name to validate.
+   *
+   * @throws NullPointerException If the {@code moduleName} is null.
+   * @throws IllegalArgumentException If the {@code moduleName} is invalid.
+   */
+  static void validateModuleName(String moduleName) {
+    Objects.requireNonNull(moduleName, "Null Module name");
+
+    if (VALID_QUERY.matcher(moduleName).matches()) {
+      return;
+    }
+
+    throw new IllegalArgumentException("Invalid module name: " + moduleName);
+  }
+
+  /**
+   * Normalizes and resolves the file path using the optionally specified {@code cwd}.
+   *
+   * @param cwd Current working directory
+   *
+   * @return Normalized file path
+   */
+  ResourcePath normalize(@Nullable ResourcePath cwd);
 
   /**
    * Gets the module name element of the path.
@@ -96,7 +149,7 @@ public sealed interface ResourcePath permits PathImpl {
    * @return A copy of this path with the specified module name
    *
    * @throws NullPointerException If the module name is null
-   * @throws IllegalArgumentException If the module name fails {@link #validateQuery(String)}
+   * @throws IllegalArgumentException If the module name fails {@link #validateModuleName(String)}
    */
   ResourcePath setModuleName(@NotNull String moduleName);
 

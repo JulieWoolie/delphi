@@ -1,11 +1,5 @@
 package com.juliewoolie.delphiplugin.resource;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import lombok.Getter;
 import com.juliewoolie.delphi.DocumentView;
 import com.juliewoolie.delphi.DocumentViewBuilder;
 import com.juliewoolie.delphi.PlayerSet;
@@ -16,7 +10,10 @@ import com.juliewoolie.delphidom.Loggers;
 import com.juliewoolie.delphiplugin.AllPlayersSet;
 import com.juliewoolie.delphiplugin.DelphiImpl;
 import com.juliewoolie.delphiplugin.PlayerSetImpl;
-import com.juliewoolie.delphiplugin.command.PathParser;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -51,10 +48,8 @@ public class ViewBuilderImpl implements DocumentViewBuilder {
     Objects.requireNonNull(path, "Null path");
 
     try {
-      PathParser<?> parser = new PathParser<>(null, new StringReader(path));
-      parser.parse();
-      this.path = parser.getPath();
-    } catch (CommandSyntaxException exc) {
+      this.path = ResourcePath.create(path);
+    } catch (IllegalArgumentException exc) {
       throw new DelphiException(DelphiException.ERR_SYNTAX, exc.getMessage());
     }
 
